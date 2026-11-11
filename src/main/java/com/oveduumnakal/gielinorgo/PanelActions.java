@@ -46,6 +46,32 @@ interface PanelActions
 	void challenge(String championId);
 
 	/**
+	 * Challenges a friend in the player's RuneLite party to a battle between the two teams.
+	 *
+	 * @param memberId the friend's {@link FriendView#memberId()}
+	 */
+	void challengeFriend(long memberId);
+
+	/**
+	 * Offers a friend one of the player's creatures or eggs, for one of theirs or as a gift. Both picks are checked
+	 * again on the game thread; an offer whose picks no longer match is not sent.
+	 *
+	 * @param memberId the friend's {@link FriendView#memberId()}
+	 * @param give what the player picked to give
+	 * @param wantIndex the place in {@link FriendView#tradeable()} of what to ask for, or -1 for nothing
+	 * @param wantLabel the label shown at that place, or null for nothing
+	 */
+	void offerTrade(long memberId, TradePick give, int wantIndex, String wantLabel);
+
+	/**
+	 * Answers the trade a friend is offering.
+	 *
+	 * @param memberId the friend's {@link FriendView#memberId()}
+	 * @param accept true to take the trade, false to turn it down
+	 */
+	void answerTrade(long memberId, boolean accept);
+
+	/**
 	 * Chooses the jar thrown by the Catch option.
 	 *
 	 * @param type the jar type

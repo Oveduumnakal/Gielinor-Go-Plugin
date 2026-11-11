@@ -19,6 +19,12 @@ public class BattleSimTest
 	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
 	private static final Species ARCHER = new Species("Archer", 13, CombatType.RANGED);
 	private static final Species WIZARD = new Species("Wizard", 13, CombatType.MAGIC);
+	private static final Species FIRE_DRAGON = new Species("Green dragon", 88, CombatType.MELEE)
+		.withSecondStyle(CombatType.MAGIC, 0.25);
+	private static final Species SURE_BREATH = new Species("Test dragon", 88, CombatType.MELEE)
+		.withSecondStyle(CombatType.MAGIC, 1.0);
+	private static final Species ICE_WYVERN = new Species("Spitting Wyvern", 139, CombatType.MELEE)
+		.withSecondStyle(CombatType.MAGIC, 1.0);
 	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
 
 	@Test
@@ -130,6 +136,188 @@ public class BattleSimTest
 		}
 
 		assertEquals("hits alternate between the two sides", result.turns() / 2.0, overPlayer, 0.5);
+	}
+
+	@Test
+	public void everyLineKnowsWhatItIs()
+	{
+		BattleResult result = fight(GOBLIN, 10, ARCHER, 10, 3);
+		List<BattleLine> lines = result.lines();
+
+		assertEquals(BattleLine.Kind.OPENING, lines.get(0).kind());
+		assertEquals(BattleLine.Kind.CLOSING, lines.get(lines.size() - 1).kind());
+		for (BattleLine line : lines.subList(1, lines.size() - 1))
+		{
+			BattleLine.Kind expected = line.overPlayer() ? BattleLine.Kind.FOE_HIT : BattleLine.Kind.LEAD_HIT;
+			assertEquals(expected, line.kind());
+		}
+	}
+
+	@Test
+	public void aDragonBreathesFireOnAboutOneHitInFour()
+	{
+		int hits = 0;
+		int breaths = 0;
+		for (int seed = 0; seed < 300; seed++)
+		{
+			for (BattleLine line : fight(FIRE_DRAGON, 40, GOBLIN, 70, seed).lines())
+			{
+				if (line.kind() != BattleLine.Kind.LEAD_HIT)
+					continue;
+
+				hits++;
+				if (line.special())
+				{
+					breaths++;
+					assertTrue(line.text(), line.text().startsWith("Green dragon breathes fire for "));
+				}
+				else
+				{
+					assertTrue(line.text(), line.text().startsWith("-"));
+				}
+			}
+		}
+
+		double share = breaths / (double) hits;
+		assertTrue("expected about 0.25 of " + hits + " hits to be breath, got " + share, share > 0.2 && share < 0.3);
+	}
+
+	@Test
+	public void aWyvernBreathesIce()
+	{
+		for (BattleLine line : fight(ICE_WYVERN, 40, GOBLIN, 70, 1).lines())
+		{
+			if (line.special())
+				assertTrue(line.text(), line.text().startsWith("Spitting Wyvern breathes ice for "));
+		}
+	}
+
+	@Test
+	public void aBreathOverAPlayerReadsTheSameAndTheOthersAreUnchanged()
+	{
+		boolean sawBreath = false;
+		for (int seed = 0; seed < 50 && !sawBreath; seed++)
+		{
+			for (BattleLine line : fight(GOBLIN, 70, FIRE_DRAGON, 40, seed).lines())
+			{
+				if (line.kind() == BattleLine.Kind.FOE_HIT && line.special())
+				{
+					sawBreath = true;
+					assertTrue(line.overPlayer());
+					assertTrue(line.text(), line.text().startsWith("Green dragon breathes fire for "));
+				}
+				else if (line.kind() == BattleLine.Kind.FOE_HIT)
+				{
+					assertTrue(line.text(), line.text().startsWith("Goblin -"));
+				}
+			}
+		}
+
+		assertTrue(sawBreath);
+	}
+
+	@Test
+	public void aBattleWithBreathIsTheSameForTheSameSeed()
+	{
+		for (int seed = 0; seed < 20; seed++)
+		{
+			BattleResult first = fight(FIRE_DRAGON, 30, ARCHER, 30, seed);
+			BattleResult second = fight(FIRE_DRAGON, 30, ARCHER, 30, seed);
+
+			assertEquals(first.log(), second.log());
+			assertEquals(first.won(), second.won());
+			assertEquals(first.hpFractionLeft(), second.hpFractionLeft(), 0);
+		}
+	}
+
+	@Test
+	public void theTriangleUsesTheStyleRolledForTheHit()
+	{
+		Combatant dragon = new Combatant(FIRE_DRAGON, 50, 1.0);
+		Combatant archer = new Combatant(ARCHER, 50, 1.0);
+		Combatant goblin = new Combatant(GOBLIN, 50, 1.0);
+
+		int bite = BattleSim.damage(dragon, CombatType.MELEE, archer, new Random(3));
+		int breath = BattleSim.damage(dragon, CombatType.MAGIC, archer, new Random(3));
+		assertTrue("melee beats ranged, magic loses to it", bite > breath);
+
+		int bitten = BattleSim.damage(dragon, CombatType.MELEE, goblin, new Random(3));
+		int breathed = BattleSim.damage(dragon, CombatType.MAGIC, goblin, new Random(3));
+		assertTrue("magic beats melee", breathed > bitten);
+		assertEquals(bite, BattleSim.damage(dragon, archer, new Random(3)));
+	}
+
+	@Test
+	public void aCreatureWithOneStyleLeavesTheRandomSourceAlone()
+	{
+		Combatant goblin = new Combatant(GOBLIN, 10, 1.0);
+
+		for (long seed = 0; seed < 100; seed++)
+		{
+			Random used = new Random(seed);
+			Random untouched = new Random(seed);
+			for (int i = 0; i < 20; i++)
+				assertEquals(CombatType.MELEE, goblin.rollStyle(used));
+
+			assertEquals("seed " + seed, untouched.nextLong(), used.nextLong());
+		}
+	}
+
+	@Test
+	public void aCreatureWithTwoStylesDrawsExactlyOneValuePerAttack()
+	{
+		Combatant dragon = new Combatant(FIRE_DRAGON, 10, 1.0);
+		boolean breathed = false;
+		boolean bit = false;
+
+		for (long seed = 0; seed < 100; seed++)
+		{
+			Random used = new Random(seed);
+			Random mirror = new Random(seed);
+			for (int i = 0; i < 20; i++)
+			{
+				CombatType expected = mirror.nextDouble() < FIRE_DRAGON.secondChance() ? CombatType.MAGIC
+					: CombatType.MELEE;
+				CombatType style = dragon.rollStyle(used);
+
+				assertEquals("seed " + seed + " attack " + i, expected, style);
+				breathed |= style == CombatType.MAGIC;
+				bit |= style == CombatType.MELEE;
+			}
+
+			assertEquals("seed " + seed, mirror.nextLong(), used.nextLong());
+		}
+
+		assertTrue(breathed && bit);
+	}
+
+	@Test
+	public void aTwoStyleFightDrawsTheSameOnBothSides()
+	{
+		for (long seed = 0; seed < 50; seed++)
+		{
+			Random first = new Random(seed);
+			Random second = new Random(seed);
+
+			BattleResult mine = BattleSim.fight(new Combatant(FIRE_DRAGON, 40, 1.0), new Combatant(GOBLIN, 70, 1.0),
+				first);
+			BattleResult theirs = BattleSim.fight(new Combatant(FIRE_DRAGON, 40, 1.0), new Combatant(GOBLIN, 70, 1.0),
+				second);
+
+			List<BattleLine> mineLines = mine.lines();
+			List<BattleLine> theirLines = theirs.lines();
+			assertEquals(mineLines.size(), theirLines.size());
+			for (int i = 0; i < mineLines.size(); i++)
+			{
+				BattleLine a = mineLines.get(i);
+				BattleLine b = theirLines.get(i);
+
+				assertEquals(a.text(), b.text());
+				assertEquals(a.special(), b.special());
+			}
+
+			assertEquals("seed " + seed, first.nextLong(), second.nextLong());
+		}
 	}
 
 	private static BattleResult fight(Species mine, int myLevel, Species foe, int foeLevel, long seed)

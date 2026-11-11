@@ -20,8 +20,6 @@ import org.slf4j.LoggerFactory;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.Model;
-import net.runelite.api.ModelData;
-import net.runelite.api.NPCComposition;
 import net.runelite.client.callback.ClientThread;
 
 /**
@@ -37,9 +35,6 @@ final class PortraitService implements PortraitSource
 
 	/** Most portraits drawn in one game tick, so a full team never stalls a frame. */
 	static final int PER_TICK = 2;
-
-	/** The game's scale value that means "normal size". */
-	private static final int NORMAL_SCALE = 128;
 
 	/** A picture someone is waiting for. */
 	private static final class Request
@@ -164,36 +159,8 @@ final class PortraitService implements PortraitSource
 	 */
 	private Model build(int npcId)
 	{
-		NPCComposition composition = client.getNpcDefinition(npcId);
-		if (composition != null && composition.getConfigs() != null)
-			composition = composition.transform();
-
-		int[] parts = composition == null ? null : composition.getModels();
-		if (parts == null || parts.length == 0)
-			return null;
-
-		ModelData[] loaded = new ModelData[parts.length];
-		for (int i = 0; i < parts.length; i++)
-		{
-			loaded[i] = client.loadModelData(parts[i]);
-			if (loaded[i] == null)
-				return null;
-		}
-
-		ModelData whole = loaded.length == 1 ? loaded[0].shallowCopy() : client.mergeModels(loaded);
-		whole.cloneVertices();
-		whole.cloneColors();
-		short[] from = composition.getColorToReplace();
-		short[] to = composition.getColorToReplaceWith();
-		for (int i = 0; from != null && to != null && i < Math.min(from.length, to.length); i++)
-			whole.recolor(from[i], to[i]);
-
-		int width = composition.getWidthScale();
-		int height = composition.getHeightScale();
-		if (width != NORMAL_SCALE || height != NORMAL_SCALE)
-			whole.scale(width, height, width);
-
-		return whole.light();
+		NpcModels.Parts parts = NpcModels.load(client, npcId);
+		return parts == null ? null : parts.scaled().light();
 	}
 
 	private static PortraitPainter.Mesh meshOf(Model model)

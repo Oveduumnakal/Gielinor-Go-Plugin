@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /** Checks how long floating lines stay up, how many fit over one head, and battle playback. */
@@ -67,10 +68,16 @@ public class NoticeBoardTest
 		board.tick(0);
 		assertEquals(1, board.visible(0).size());
 
-		board.tick(600);
-		board.tick(1_200);
-		assertEquals(2, board.visible(1_200).size());
-		assertTrue(noticeAt(board.visible(1_200), 1).overPlayer());
+		for (int tick = 1; tick < NoticeBoard.LINE_TICKS; tick++)
+		{
+			board.tick(tick * 600L);
+			assertEquals(1, board.visible(tick * 600L).size());
+		}
+
+		long due = NoticeBoard.LINE_TICKS * 600L;
+		board.tick(due);
+		assertEquals(2, board.visible(due).size());
+		assertTrue(noticeAt(board.visible(due), 1).overPlayer());
 	}
 
 	private static Notice noticeAt(List<NoticeBoard.Shown> lines, int index)
@@ -88,6 +95,68 @@ public class NoticeBoardTest
 		board.clear();
 		board.tick(0);
 
+		assertTrue(board.visible(0).isEmpty());
+	}
+
+	@Test
+	public void aNewQueueAfterTheLastOneFinishedShowsAtOnce()
+	{
+		NoticeBoard board = new NoticeBoard();
+		board.queue(Arrays.asList(Notice.player("old", Tone.INFO)));
+		board.tick(0);
+		board.tick(600);
+		board.tick(1_200);
+
+		board.queue(Arrays.asList(Notice.player("fresh", Tone.INFO)));
+		board.tick(1_800);
+
+		assertEquals("fresh", noticeAt(board.visible(1_800), 1).text());
+	}
+
+	@Test
+	public void aSecondBattleIsHeldBehindTheFirst()
+	{
+		NoticeBoard board = new NoticeBoard();
+		board.enqueue(Arrays.asList(Notice.player("first", Tone.INFO)), true);
+		board.enqueue(Arrays.asList(Notice.player("second", Tone.INFO)), false);
+		board.tick(0);
+
+		assertTrue(board.holding());
+		assertTrue(board.visible(0).isEmpty());
+
+		board.release();
+		board.tick(0);
+		for (int tick = 1; tick <= NoticeBoard.LINE_TICKS; tick++)
+			board.tick(tick * 600L);
+
+		List<NoticeBoard.Shown> lines = board.visible(NoticeBoard.LINE_TICKS * 600L);
+		assertFalse(board.holding());
+		assertEquals(2, lines.size());
+		assertEquals("first", noticeAt(lines, 0).text());
+		assertEquals("second", noticeAt(lines, 1).text());
+	}
+
+	@Test
+	public void linesWithNothingHeldGoStraightToTheQueue()
+	{
+		NoticeBoard board = new NoticeBoard();
+		board.enqueue(Arrays.asList(Notice.player("now", Tone.INFO)), false);
+		board.tick(0);
+
+		assertEquals(1, board.visible(0).size());
+	}
+
+	@Test
+	public void clearDropsHeldLines()
+	{
+		NoticeBoard board = new NoticeBoard();
+		board.enqueue(Arrays.asList(Notice.player("held", Tone.INFO)), true);
+
+		board.clear();
+		board.release();
+		board.tick(0);
+
+		assertFalse(board.holding());
 		assertTrue(board.visible(0).isEmpty());
 	}
 }

@@ -4,8 +4,8 @@ Gielinor Go is a RuneLite plugin that adds a creature-raising side game to Old S
 you walk past, let your normal XP gains train them, and send them into quick battles, all without stopping what you
 were doing.
 
-Everything happens on your own computer. Nobody else can see it, nothing is sent to the game, and the plugin never
-clicks or acts for you.
+Everything happens on your own computer. Nothing is sent to the game, and the plugin never clicks or acts for you.
+Nobody else can see any of it, unless you join a RuneLite party to battle or trade with a friend.
 
 ## Features
 
@@ -21,6 +21,13 @@ clicks or acts for you.
 
   Throwing a jar has a chance to catch the creature. The menu shows your odds before you click. Stronger monsters
   are harder to catch, and better jars (Bronze, Iron, Rune, Dragon) improve your chance.
+
+- **See the catch happen**
+
+  Your character makes a throwing motion when you throw a jar, and a creature you catch vanishes for five
+  seconds before fading back in. Only you see this: the real monster never goes anywhere. A monster that is in a
+  fight with anyone is never hidden, and one that starts fighting while hidden comes straight back. You can switch it
+  off in the settings.
 
 - **Earn jars by playing**
 
@@ -46,11 +53,27 @@ clicks or acts for you.
   Every XP drop you earn, in any skill, also trains your team of up to six creatures. The creature in the lead
   slot learns twice as fast.
 
+- **Your lead walks with you**
+
+  Your lead creature follows a step behind you as a small copy of itself, so it never gets in the way. A gilded
+  lead follows in gold. Only you can see it, it cannot be clicked, and you can switch it off in the settings.
+
 - **Battles that play themselves**
 
   Choose **Battle** on a wild creature and your lead fights it right away. Each hit floats over the creature's
   head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. Melee beats Ranged, Ranged beats Magic, and Magic beats
-  Melee. A creature that loses to you is easier to catch.
+  Melee. A creature that loses to you is easier to catch. Dragons and wyverns bite in melee but about one hit in
+  four is a fire or ice breath, which counts as Magic for that hit and says so ("Green dragon breathes fire for 12").
+
+  With **Battle animations** on (the default), your lead walks up to the wild creature and they face each other.
+  Each hit plays as an attack by one and a flinch by the other, one every 3 game ticks like the floating text, and the
+  loser lies down for a few seconds before getting up. Your lead then walks back to you. The wild creature is
+  hidden for the battle: within 1 game tick it fades into a solid copy of itself, drawn at 75% size, that stands in
+  its place and fights; a faint (90% see-through) ghost of it fades in over 3 game ticks whenever the real monster
+  walks off its tile, and at the end the copy fades back into the real monster over 3 game ticks. Only you see any
+  of this, and
+  the real monster is untouched. A breath plays the creature's breath animation. Creatures with no animation for a
+  move lunge or tip over instead. Switch it off in the settings.
 
 - **Creatures evolve**
 
@@ -71,16 +94,39 @@ clicks or acts for you.
 
 - **Eight cities, eight champions**
 
-  From Lumbridge to Yanille, each city has a champion with a team of three. Stand in the city, open the Cities
+  From Lumbridge to Yanille, each city has a champion with a team of three. Stand in the city, open the Battle
   tab and challenge them with your whole team. Your first win earns the city's sigil and a stack of better jars.
+
+### Friends
+
+- **Battle a friend's team**
+
+  Join a RuneLite party with a friend, using RuneLite's Party plugin, and everyone in it who plays Gielinor Go
+  shows up on your Battle tab. Challenge one and your two teams fight it out at once, with the result floating
+  over both your heads. Friend battles are for fun: both teams fight at full health and nothing is won or lost.
+
+- **Trade creatures and eggs**
+
+  Offer a friend one of your creatures or eggs, for one of theirs or as a gift. They see the offer on your card
+  and choose Accept or Decline, and nothing changes hands until they accept. A traded creature keeps its level,
+  and an egg keeps the walking already done. Jars cannot be traded. Promised creatures and eggs cannot be released or hatched until the trade ends. There is no server to referee, so a trade
+  can complete on one side only: if either player leaves the party, logs out or changes world in the middle of a
+  trade, one creature can end up with both of you while the other one is lost.
+
+- **Only your party hears about it**
+
+  The only things the plugin ever sends are your team (species and levels), your trainer level, the rarities of
+  the eggs you carry and whatever you put in a trade, and only to the people in your own party. You can turn
+  battle challenges off in the settings.
 
 ### Side panel
 
-- **Team, Storage and Creature Log**
+- **Team, Storage, Creature Log and Battle**
 
   The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, the creatures
   you have stored, and a Creature Log of every species in the game so you can see what you have caught, what
-  you have only seen, and how rare the missing ones are.
+  you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
+  you can challenge.
 
 ## Links
 

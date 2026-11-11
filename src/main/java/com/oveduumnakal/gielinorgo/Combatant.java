@@ -4,11 +4,15 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.Random;
+
 /** One side of a battle: a species at a level, with the stats that follow from the two. */
 final class Combatant
 {
 	private final String name;
 	private final CombatType type;
+	private final CombatType secondStyle;
+	private final double secondChance;
 	private final int level;
 	private final int maxHp;
 	private final int attack;
@@ -27,6 +31,8 @@ final class Combatant
 		double tier = Math.sqrt(Math.max(1, species.level()));
 		this.name = species.name();
 		this.type = species.style();
+		this.secondStyle = species.secondStyle();
+		this.secondChance = species.secondChance();
 		this.level = level;
 		this.maxHp = (int) Math.round(20 + 2.0 * level + tier * level / 2.0);
 		this.attack = (int) Math.round(5 + level / 2.0 + tier * level / 8.0);
@@ -44,6 +50,21 @@ final class Combatant
 	CombatType type()
 	{
 		return type;
+	}
+
+	/**
+	 * Picks the style of one attack. A creature with a second style rolls it and uses it on that share of its hits;
+	 * any other uses its one style and does not touch the random source, so battles between those are unchanged.
+	 *
+	 * @param random the battle's random source
+	 * @return the style of this attack
+	 */
+	CombatType rollStyle(Random random)
+	{
+		if (secondStyle == null)
+			return type;
+
+		return random.nextDouble() < secondChance ? secondStyle : type;
 	}
 
 	/** @return the creature level */

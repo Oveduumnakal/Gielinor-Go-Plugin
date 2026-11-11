@@ -12,7 +12,10 @@ import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.Range;
 
-/** Settings for Gielinor Go: how often wild creatures appear and how the game reports what happens. */
+/**
+ * Settings for Gielinor Go: how often wild creatures appear, how the game reports what happens, and whether the lead
+ * creature follows the player.
+ */
 @ConfigGroup(GielinorGoConfig.GROUP)
 public interface GielinorGoConfig extends Config
 {
@@ -87,16 +90,85 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Whether a catch is acted out: the player throws, and a caught creature vanishes and fades back in.
+	 *
+	 * @return true to play the catch effects
+	 */
+	@ConfigItem(
+		keyName = "catchEffects",
+		name = "Catch effects",
+		description = "Your character makes a throwing motion when you throw a jar.\nA creature you catch vanishes"
+			+ " for five seconds and fades back in.\nOnly you can see this, and the real monster is untouched.",
+		position = 4
+	)
+	default boolean catchEffects()
+	{
+		return true;
+	}
+
+	/**
+	 * Whether a battle against a wild creature is acted out: the lead walks up to it and they fight.
+	 *
+	 * @return true to play the battle animations
+	 */
+	@ConfigItem(
+		keyName = "battleAnimations",
+		name = "Battle animations",
+		description = "Your lead creature walks up to the wild creature in a battle. They attack and react to each"
+			+ " hit,\nand the loser lies down for a few seconds.\nOnly you can see this, and the real monster is"
+			+ " untouched.",
+		position = 5
+	)
+	default boolean battleAnimations()
+	{
+		return true;
+	}
+
+	/**
+	 * Whether the lead creature is shown walking behind the player.
+	 *
+	 * @return true to show the follower
+	 */
+	@ConfigItem(
+		keyName = "showFollower",
+		name = "Lead creature follows you",
+		description = "Shows your lead creature walking behind you, shrunk to fit beside you. Only you can see it,"
+			+ " and it cannot be clicked.",
+		position = 6
+	)
+	default boolean showFollower()
+	{
+		return true;
+	}
+
+	/**
+	 * Whether friends in the player's RuneLite party may battle the player's team.
+	 *
+	 * @return true to take up challenges from friends
+	 */
+	@ConfigItem(
+		keyName = "friendBattles",
+		name = "Accept friend battles",
+		description = "Lets friends in your RuneLite party battle your team. The battle plays itself and nothing is"
+			+ " won or lost.\nTurn this off to turn every challenge down.",
+		position = 7
+	)
+	default boolean friendBattles()
+	{
+		return true;
+	}
+
+	/**
 	 * Whether the game keeps running in the Wilderness and on PvP worlds.
 	 *
-	 * @return true to allow wild creatures in PvP areas
+	 * @return true to allow wild creatures and the follower in PvP areas
 	 */
 	@ConfigItem(
 		keyName = "enableInPvp",
 		name = "Play in PvP areas",
-		description = "Lets wild creatures appear in the Wilderness and on PvP worlds. Off by default so nothing"
-			+ " extra is on your screen or in your menus where other players can attack you.",
-		position = 4
+		description = "Lets wild creatures and your follower appear in the Wilderness and on PvP worlds.\nOff by"
+			+ " default so nothing extra is on your screen or in your menus where other players can attack you.",
+		position = 8
 	)
 	default boolean enableInPvp()
 	{

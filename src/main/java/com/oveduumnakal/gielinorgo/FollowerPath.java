@@ -1,0 +1,400 @@
+/*
+ * Copyright (c) 2026, Oveduumnakal
+ * All rights reserved.
+ */
+package com.oveduumnakal.gielinorgo;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+/**
+ * Where the follower stands and how it moves. It walks the tiles the player just left, in the same order, so it
+ * trails one tile behind and takes every corner the player took. Positions are world tiles; a whole number is the
+ * middle of a tile. It has no link to the game client, so it can be tested tick by tick.
+ */
+final class FollowerPath
+{
+	/** Client ticks, 20 ms each, in one game tick. */
+	static final int CLIENT_TICKS = 30;
+
+	/** Most tiles the follower may have left to walk before it gives up and reappears next to the player. */
+	static final int MAX_TRAIL = 8;
+
+	/** Fastest the follower moves, in tiles per game tick. A running player moves 2. */
+	static final int MAX_SPEED = 4;
+
+	/** Units in a full turn on the game's angle scale: 0 faces south, 512 west, 1024 north, 1536 east. */
+	static final int FULL_TURN = 2048;
+
+	/** Most the follower turns in one client tick, on the game's angle scale. */
+	static final int TURN_PER_TICK = 64;
+
+	/** Fastest the follower moves on an errand, in tiles per game tick: faster than a run, so a battle starts soon. */
+	static final int ERRAND_SPEED = 3;
+
+	/** Farthest, in tiles, an errand may take the follower from where it stands now. */
+	static final int MAX_ERRAND = 12;
+
+	/** Closer than this to a tile, in tiles, counts as standing on it. */
+	private static final double ARRIVED = 0.001;
+
+	/** Tiles tried, in order, when the follower is put down next to the player: south first, corners last. */
+	private static final int[][] NEIGHBOURS = {
+		{0, -1}, {-1, 0}, {1, 0}, {0, 1}, {-1, -1}, {1, -1}, {-1, 1}, {1, 1}
+	};
+
+	/** Tells the path which tiles the follower can be put down on. */
+	interface Ground
+	{
+		/**
+		 * Checks one tile on the player's plane.
+		 *
+		 * @param x world x
+		 * @param y world y
+		 * @return true when nothing blocks the tile
+		 */
+		boolean free(int x, int y);
+	}
+
+	private final Deque<int[]> trail = new ArrayDeque<>();
+	private boolean placed;
+	private boolean walking;
+	private int playerX;
+	private int playerY;
+	private int plane;
+	private double x;
+	private double y;
+	private double speed;
+	private int facing;
+	private int wantFacing;
+	private boolean errand;
+	private double errandX;
+	private double errandY;
+	private double lookX;
+	private double lookY;
+
+	/**
+	 * Records where the player is this game tick, and sets the follower's pace for the tick ahead. A first reading,
+	 * a teleport or a change of plane puts the follower down next to the player.
+	 *
+	 * @param x the player's world x
+	 * @param y the player's world y
+	 * @param level the player's plane
+	 * @param ground which tiles are free, for putting the follower down
+	 */
+	void playerAt(int x, int y, int level, Ground ground)
+	{
+		int dx = x - playerX;
+		int dy = y - playerY;
+		int jump = Math.max(Math.abs(dx), Math.abs(dy));
+		if (!placed || level != plane || jump > StepCounter.MAX_STEP)
+		{
+			place(x, y, level, ground);
+			return;
+		}
+
+		if (errand)
+		{
+			playerX = x;
+			playerY = y;
+			return;
+		}
+
+		if (jump > 0)
+		{
+			trail.add(new int[]{playerX, playerY});
+			if (jump == StepCounter.MAX_STEP)
+				trail.add(new int[]{playerX + dx / 2, playerY + dy / 2});
+
+			playerX = x;
+			playerY = y;
+		}
+
+		double left = tilesLeft();
+		if (left > MAX_TRAIL)
+		{
+			place(x, y, level, ground);
+			return;
+		}
+
+		walking = left > ARRIVED;
+		speed = Math.max(1.0, Math.min(MAX_SPEED, left)) / CLIENT_TICKS;
+	}
+
+	/** Moves the follower along its trail for one client tick, and turns it toward the way it is going. */
+	void advance()
+	{
+		if (!placed)
+			return;
+
+		if (errand)
+		{
+			advanceErrand();
+			return;
+		}
+
+		double budget = speed;
+		while (budget > 0 && !trail.isEmpty())
+		{
+			int[] next = trail.peek();
+			double dx = next[0] - x;
+			double dy = next[1] - y;
+			double distance = Math.max(Math.abs(dx), Math.abs(dy));
+			if (distance > ARRIVED)
+				wantFacing = angle(dx, dy);
+
+			if (distance <= budget)
+			{
+				x = next[0];
+				y = next[1];
+				budget -= distance;
+				trail.poll();
+			}
+			else
+			{
+				x += dx / distance * budget;
+				y += dy / distance * budget;
+				budget = 0;
+			}
+		}
+
+		facing = turnToward(facing, wantFacing);
+	}
+
+	/** Forgets the follower's position, so the next reading puts it down next to the player again. */
+	void reset()
+	{
+		placed = false;
+		walking = false;
+		errand = false;
+		trail.clear();
+	}
+
+	/**
+	 * Sends the follower to a spot on its own errand, such as a battle, leaving the player's trail alone. On
+	 * arrival it faces a point. The errand ends with {@link #endErrand(Ground)}, or when the follower is put down
+	 * next to the player again.
+	 *
+	 * @param toX world x of the spot, in tiles
+	 * @param toY world y of the spot, in tiles
+	 * @param faceX world x of what to face once there, in tiles
+	 * @param faceY world y of what to face once there, in tiles
+	 * @return false when there is no follower yet or the spot is more than {@link #MAX_ERRAND} tiles away
+	 */
+	boolean goTo(double toX, double toY, double faceX, double faceY)
+	{
+		if (!placed || Math.max(Math.abs(toX - x), Math.abs(toY - y)) > MAX_ERRAND)
+			return false;
+
+		errand = true;
+		errandX = toX;
+		errandY = toY;
+		lookX = faceX;
+		lookY = faceY;
+		trail.clear();
+		walking = true;
+		return true;
+	}
+
+	/**
+	 * Puts the follower on its spot at once, for an errand that took too long.
+	 */
+	void arriveNow()
+	{
+		if (!errand)
+			return;
+
+		x = errandX;
+		y = errandY;
+		walking = false;
+		wantFacing = angle(lookX - x, lookY - y);
+		facing = wantFacing;
+	}
+
+	/**
+	 * Ends an errand: the follower walks back to the player, to the free tile next to them that is nearest to it.
+	 *
+	 * @param ground which tiles are free
+	 */
+	void endErrand(Ground ground)
+	{
+		if (!errand)
+			return;
+
+		errand = false;
+		trail.clear();
+		int[] best = {playerX, playerY};
+		double bestDistance = Double.MAX_VALUE;
+		for (int[] step : NEIGHBOURS)
+		{
+			int tileX = playerX + step[0];
+			int tileY = playerY + step[1];
+			double distance = Math.max(Math.abs(tileX - x), Math.abs(tileY - y));
+			if (distance < bestDistance && ground.free(tileX, tileY))
+			{
+				best = new int[]{tileX, tileY};
+				bestDistance = distance;
+			}
+		}
+
+		trail.add(best);
+		walking = true;
+		speed = Math.max(1.0, Math.min(MAX_SPEED, tilesLeft())) / CLIENT_TICKS;
+	}
+
+	/** @return whether the follower is on an errand */
+	boolean onErrand()
+	{
+		return errand;
+	}
+
+	/** @return whether the follower is on an errand and has reached its spot */
+	boolean arrived()
+	{
+		return errand && Math.max(Math.abs(errandX - x), Math.abs(errandY - y)) <= ARRIVED;
+	}
+
+	/** @return whether the follower has a position yet */
+	boolean placed()
+	{
+		return placed;
+	}
+
+	/** @return the follower's world x, in tiles; a whole number is the middle of a tile */
+	double x()
+	{
+		return x;
+	}
+
+	/** @return the follower's world y, in tiles; a whole number is the middle of a tile */
+	double y()
+	{
+		return y;
+	}
+
+	/** @return the plane the follower is on */
+	int plane()
+	{
+		return plane;
+	}
+
+	/** @return the way the follower faces, on the game's angle scale */
+	int orientation()
+	{
+		return facing;
+	}
+
+	/** @return whether the follower had tiles to walk at the last game tick, so it should look like it is walking */
+	boolean walking()
+	{
+		return walking;
+	}
+
+	/** Moves the follower toward its errand spot for one client tick, then turns it. */
+	private void advanceErrand()
+	{
+		double dx = errandX - x;
+		double dy = errandY - y;
+		double distance = Math.max(Math.abs(dx), Math.abs(dy));
+		double budget = (double) ERRAND_SPEED / CLIENT_TICKS;
+		if (distance > ARRIVED)
+		{
+			if (distance <= budget)
+			{
+				x = errandX;
+				y = errandY;
+			}
+			else
+			{
+				x += dx / distance * budget;
+				y += dy / distance * budget;
+			}
+
+			wantFacing = angle(dx, dy);
+		}
+
+		walking = !arrived();
+		if (!walking)
+			wantFacing = angle(lookX - x, lookY - y);
+
+		facing = turnToward(facing, wantFacing);
+	}
+
+	/**
+	 * Works out the facing for a direction of travel.
+	 *
+	 * @param dx movement east, any unit
+	 * @param dy movement north, same unit
+	 * @return the angle on the game's scale, 0 to {@link #FULL_TURN} - 1
+	 */
+	static int angle(double dx, double dy)
+	{
+		long turned = Math.round(Math.atan2(-dx, -dy) * FULL_TURN / (2 * Math.PI));
+		return (int) turned & (FULL_TURN - 1);
+	}
+
+	/**
+	 * Turns one client tick's worth toward a facing, the short way round.
+	 *
+	 * @param from the current facing
+	 * @param to the facing wanted
+	 * @return the new facing
+	 */
+	static int turnToward(int from, int to)
+	{
+		int half = FULL_TURN / 2;
+		int difference = ((to - from + half) & (FULL_TURN - 1)) - half;
+		int step = Math.max(-TURN_PER_TICK, Math.min(TURN_PER_TICK, difference));
+		return (from + step) & (FULL_TURN - 1);
+	}
+
+	/**
+	 * Puts the follower down on a free tile next to the player, facing them, or on the player's own tile when every
+	 * tile around them is blocked.
+	 *
+	 * @param px the player's world x
+	 * @param py the player's world y
+	 * @param level the player's plane
+	 * @param ground which tiles are free
+	 */
+	private void place(int px, int py, int level, Ground ground)
+	{
+		trail.clear();
+		placed = true;
+		walking = false;
+		errand = false;
+		speed = 1.0 / CLIENT_TICKS;
+		playerX = px;
+		playerY = py;
+		plane = level;
+		x = px;
+		y = py;
+		for (int[] step : NEIGHBOURS)
+		{
+			if (!ground.free(px + step[0], py + step[1]))
+				continue;
+
+			x = px + step[0];
+			y = py + step[1];
+			facing = angle(-step[0], -step[1]);
+			wantFacing = facing;
+			return;
+		}
+	}
+
+	/** @return the tiles the follower still has to walk, counting a diagonal step as one tile like the game does */
+	private double tilesLeft()
+	{
+		double left = 0;
+		double fromX = x;
+		double fromY = y;
+		for (int[] tile : trail)
+		{
+			left += Math.max(Math.abs(tile[0] - fromX), Math.abs(tile[1] - fromY));
+			fromX = tile[0];
+			fromY = tile[1];
+		}
+
+		return left;
+	}
+}
