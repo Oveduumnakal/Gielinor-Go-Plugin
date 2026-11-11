@@ -15,6 +15,7 @@ final class WildEntry
 	private final int level;
 	private final int combatLevel;
 	private final Set<Trait> traits;
+	private final boolean gilded;
 	private boolean battled;
 	private boolean weakened;
 
@@ -34,6 +35,22 @@ final class WildEntry
 	 */
 	WildEntry(int npcIndex, Species species, int level, int combatLevel, boolean underground)
 	{
+		this(npcIndex, species, level, combatLevel, underground, false);
+	}
+
+	/**
+	 * Creates a wild creature that may be gilded.
+	 *
+	 * @param npcIndex the game's index for the monster
+	 * @param species the species
+	 * @param level the creature level it would be caught at
+	 * @param combatLevel the monster's combat level in the game
+	 * @param underground whether it was met underground, which gives it the {@link Trait#CAVE} trait
+	 * @param gilded whether it is a rare gilded creature
+	 */
+	WildEntry(int npcIndex, Species species, int level, int combatLevel, boolean underground, boolean gilded)
+	{
+		this.gilded = gilded;
 		this.npcIndex = npcIndex;
 		this.species = species;
 		this.level = level;
@@ -73,6 +90,12 @@ final class WildEntry
 	Set<Trait> traits()
 	{
 		return traits;
+	}
+
+	/** @return whether this is a rare gilded creature */
+	boolean gilded()
+	{
+		return gilded;
 	}
 
 	/** @return whether the player has already battled this one */

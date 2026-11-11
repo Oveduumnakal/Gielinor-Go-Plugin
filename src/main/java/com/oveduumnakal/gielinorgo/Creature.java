@@ -27,6 +27,9 @@ final class Creature
 	/** Wall-clock time the creature was caught, in milliseconds. */
 	long caughtAtMs;
 
+	/** Whether this is a rare gilded creature. Only its looks differ. */
+	boolean gilded;
+
 	/** Used by Gson. */
 	Creature()
 	{

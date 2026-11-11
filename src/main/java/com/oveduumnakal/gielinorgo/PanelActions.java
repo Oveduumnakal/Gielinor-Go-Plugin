@@ -39,6 +39,13 @@ interface PanelActions
 	void release(int storageIndex);
 
 	/**
+	 * Challenges a City Champion. It only starts a battle while the player stands in that city.
+	 *
+	 * @param championId the champion's {@link ChampionView#id()}
+	 */
+	void challenge(String championId);
+
+	/**
 	 * Chooses the jar thrown by the Catch option.
 	 *
 	 * @param type the jar type

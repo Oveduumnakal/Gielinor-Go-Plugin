@@ -44,6 +44,13 @@ enum Rarity
 		return color;
 	}
 
+	/** @return tiles the player walks to hatch an egg of this tier: 500 for Common, up to 2,000 for Legendary */
+	int eggTiles()
+	{
+		int[] tiles = {500, 800, 1200, 1600, 2000};
+		return tiles[ordinal()];
+	}
+
 	/**
 	 * Finds the tier for a combat level.
 	 *

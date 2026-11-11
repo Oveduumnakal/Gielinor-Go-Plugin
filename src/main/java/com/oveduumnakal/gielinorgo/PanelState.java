@@ -27,11 +27,15 @@ final class PanelState
 	private final List<LogEntry> log;
 	private final int caughtSpecies;
 	private final int seenSpecies;
+	private final List<EggView> eggs;
+	private final List<ChampionView> champions;
 
 	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
 		JarType selectedJar, int stepProgress, List<CreatureView> team, List<CreatureView> storage,
-		List<LogEntry> log, int caughtSpecies, int seenSpecies)
+		List<LogEntry> log, int caughtSpecies, int seenSpecies, List<EggView> eggs, List<ChampionView> champions)
 	{
+		this.eggs = Collections.unmodifiableList(new ArrayList<>(eggs));
+		this.champions = Collections.unmodifiableList(new ArrayList<>(champions));
 		this.trainerLevel = trainerLevel;
 		this.trainerProgress = trainerProgress;
 		this.battlesWon = battlesWon;
@@ -114,6 +118,18 @@ final class PanelState
 	int seenSpecies()
 	{
 		return seenSpecies;
+	}
+
+	/** @return the eggs being carried, at most {@link SaveData#MAX_EGGS} */
+	List<EggView> eggs()
+	{
+		return eggs;
+	}
+
+	/** @return every City Champion, easiest first, with whether it is beaten and whether the player is there */
+	List<ChampionView> champions()
+	{
+		return champions;
 	}
 
 	/** @return how many species exist */

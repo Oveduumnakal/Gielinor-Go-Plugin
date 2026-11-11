@@ -120,8 +120,10 @@ public class GielinorGoPlugin extends Plugin
 	private GoPersistence persistence;
 	private WildOverlay wildOverlay;
 	private final NoticeBoard noticeBoard = new NoticeBoard();
+	private List<Notice> heldNotices;
 	private FloatingTextOverlay floatingText;
 	private GoPanel panel;
+	private PortraitService portraits;
 	private NavigationButton navButton;
 	private boolean loaded;
 	private boolean unsaved;
@@ -143,13 +145,16 @@ public class GielinorGoPlugin extends Plugin
 	protected void startUp()
 	{
 		tracker = new WildTracker(random);
-		game = new GoGame(loadSpecies(), random, System::currentTimeMillis, this::announce);
+		SpeciesTable species = loadSpecies();
+		game = new GoGame(species, loadEvolutions(species), loadChampions(species), random,
+			System::currentTimeMillis, this::announce);
 		persistence = new GoPersistence(configManager, gson);
 		wildOverlay = new WildOverlay(this, config, outlineRenderer);
 		floatingText = new FloatingTextOverlay(client, this, noticeBoard);
 		overlayManager.add(wildOverlay);
 		overlayManager.add(floatingText);
-		panel = new GoPanel(panelActions());
+		portraits = new PortraitService(client, clientThread, game::speciesFor);
+		panel = new GoPanel(panelActions(), portraits);
 		BufferedImage icon = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
 		navButton = NavigationButton.builder()
 			.tooltip("Gielinor Go")
@@ -169,6 +174,7 @@ public class GielinorGoPlugin extends Plugin
 		overlayManager.remove(floatingText);
 		noticeBoard.clear();
 		clientToolbar.removeNavigation(navButton);
+		portraits.clear();
 		tracker.clear();
 		candidates.clear();
 		lastXp.clear();
@@ -293,6 +299,7 @@ public class GielinorGoPlugin extends Plugin
 
 		ticks++;
 		noticeBoard.tick(System.currentTimeMillis());
+		portraits.tick();
 		countSteps();
 		if (!playable())
 			tracker.clear();
@@ -371,6 +378,44 @@ public class GielinorGoPlugin extends Plugin
 		}
 	}
 
+	private EvolutionTable loadEvolutions(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(EvolutionTable.RESOURCE))
+		{
+			if (in == null)
+				return EvolutionTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return EvolutionTable.load(gson, reader, species);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the evolution list", e);
+			return EvolutionTable.empty();
+		}
+	}
+
+	private ChampionTable loadChampions(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(ChampionTable.RESOURCE))
+		{
+			if (in == null)
+				return ChampionTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return ChampionTable.load(gson, reader, species);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the champion list", e);
+			return ChampionTable.empty();
+		}
+	}
+
 	private void loadSave()
 	{
 		if (configManager.getRSProfileKey() == null)
@@ -410,6 +455,12 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void announce(Notice notice)
 	{
+		if (heldNotices != null)
+		{
+			heldNotices.add(notice);
+			return;
+		}
+
 		if (config.showResults())
 			noticeBoard.show(notice, System.currentTimeMillis());
 
@@ -460,7 +511,9 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		game.markSeen(entry);
-		announce(Notice.creature(entry.npcIndex(), "A wild " + species.name() + " appeared!", Tone.INFO));
+		String kind = entry.gilded() ? "A gilded " : "A wild ";
+		announce(Notice.creature(entry.npcIndex(), kind + species.name() + " appeared!",
+			entry.gilded() ? Tone.FIND : Tone.INFO));
 	}
 
 	private void offerRandomCandidate()
@@ -480,6 +533,8 @@ public class GielinorGoPlugin extends Plugin
 
 		WorldPoint point = player.getWorldLocation();
 		game.addSteps(stepCounter.advance(point.getX(), point.getY(), point.getPlane()));
+		if (game.moveTo(point.getX(), point.getY(), point.getPlane()))
+			refreshPanel();
 	}
 
 	private void addWildOptions(WildEntry entry)
@@ -487,7 +542,7 @@ public class GielinorGoPlugin extends Plugin
 		Species species = entry.species();
 		Rarity rarity = species.rarity();
 		String name = ColorUtil.wrapWithColorTag(species.name(), rarity.color());
-		String target = name + " (Lv " + entry.level() + ")";
+		String target = (entry.gilded() ? "Gilded " : "") + name + " (Lv " + entry.level() + ")";
 		int index = entry.npcIndex();
 		JarType standard = game.jarToThrow();
 		for (JarType specialty : game.matchingSpecialtyJars(entry))
@@ -554,33 +609,52 @@ public class GielinorGoPlugin extends Plugin
 		if (entry == null)
 			return;
 
+		heldNotices = new ArrayList<>();
 		BattleResult result = game.battle(entry);
-		if (result != null && config.showResults())
-			noticeBoard.queue(battleNotices(result, npcIndex));
-
+		playBack(result == null ? null : result.summary(BATTLE_LINES), npcIndex);
 		refreshPanel();
 	}
 
-	/**
-	 * Turns a battle into floating lines: hits on the wild creature go over its head, hits taken go over the
-	 * player's.
-	 *
-	 * @param result the battle
-	 * @param npcIndex the game's index for the wild creature
-	 * @return the lines to play back, one per game tick
-	 */
-	private static List<Notice> battleNotices(BattleResult result, int npcIndex)
+	private void challenge(String championId)
 	{
-		List<Notice> notices = new ArrayList<>();
-		for (BattleLine line : result.summary(BATTLE_LINES))
+		heldNotices = new ArrayList<>();
+		TeamBattleResult result = game.challenge(championId);
+		playBack(result == null ? null : result.lines(), Notice.PLAYER);
+	}
+
+	/**
+	 * Shows a battle one line per game tick, followed by whatever the game announced while resolving it, so
+	 * rewards never float up before the hits that earned them.
+	 *
+	 * @param lines the battle's lines, or null when no battle started
+	 * @param npcIndex the game's index for the wild creature, or {@link Notice#PLAYER} when there is none
+	 */
+	private void playBack(List<BattleLine> lines, int npcIndex)
+	{
+		List<Notice> after = heldNotices;
+		heldNotices = null;
+		if (lines == null || !config.showResults())
 		{
-			if (line.overPlayer())
-				notices.add(Notice.player(line.text(), line.tone()));
-			else
-				notices.add(Notice.creature(npcIndex, line.text(), line.tone()));
+			after.forEach(this::announce);
+			return;
 		}
 
-		return notices;
+		List<Notice> queue = new ArrayList<>();
+		for (BattleLine line : lines)
+		{
+			if (line.overPlayer() || npcIndex == Notice.PLAYER)
+				queue.add(Notice.player(line.text(), line.tone()));
+			else
+				queue.add(Notice.creature(npcIndex, line.text(), line.tone()));
+		}
+
+		queue.addAll(after);
+		noticeBoard.queue(queue);
+		if (!config.chatMessages())
+			return;
+
+		for (Notice notice : after)
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", notice.text(), null);
 	}
 
 	/** @return the panel's actions, each carried over to the game thread and followed by a panel refresh */
@@ -616,6 +690,12 @@ public class GielinorGoPlugin extends Plugin
 			public void selectJar(JarType type)
 			{
 				onGameThread(() -> game.selectJar(type));
+			}
+
+			@Override
+			public void challenge(String championId)
+			{
+				onGameThread(() -> GielinorGoPlugin.this.challenge(championId));
 			}
 		};
 	}

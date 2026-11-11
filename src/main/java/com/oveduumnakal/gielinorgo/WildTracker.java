@@ -22,6 +22,9 @@ final class WildTracker
 	/** Shortest time between two creatures turning wild, in milliseconds. */
 	static final long COOLDOWN_MS = 30_000L;
 
+	/** A wild creature is gilded one time in this many. */
+	static final int GILDED_ONE_IN = 500;
+
 	private final Map<Integer, WildEntry> wild = new LinkedHashMap<>();
 	private final Random random;
 	private long lastWildMs = -COOLDOWN_MS;
@@ -51,7 +54,8 @@ final class WildTracker
 			return null;
 
 		int level = CatchRules.wildLevel(combatLevel, random);
-		WildEntry entry = new WildEntry(npcIndex, species, level, combatLevel, underground);
+		boolean gilded = random.nextInt(GILDED_ONE_IN) == 0;
+		WildEntry entry = new WildEntry(npcIndex, species, level, combatLevel, underground, gilded);
 		wild.put(npcIndex, entry);
 		lastWildMs = nowMs;
 		return entry;

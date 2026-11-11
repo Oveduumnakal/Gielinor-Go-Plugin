@@ -6,70 +6,161 @@ package com.oveduumnakal.gielinorgo;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GridLayout;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 
-/** One team member drawn as a card: name, level, combat style, health and XP bars, and the action buttons. */
+/**
+ * One team member drawn as a slim card: portrait, name, level, combat style, and thin health and XP bars. There
+ * are no buttons: clicking a card makes that creature the lead, and right-clicking opens a short menu. The card
+ * is updated in place, so it never flickers and keeps its hover highlight while numbers change.
+ */
 final class CreatureCard extends JPanel
 {
 	private static final double HP_LOW = 0.25;
 	private static final double HP_MID = 0.5;
+	private static final int HP_BAR_HEIGHT = 5;
+	private static final int XP_BAR_HEIGHT = 3;
+	private static final int STRIPE = 3;
+	private static final Color XP_COLOR = new Color(0x6FB7FF);
 
-	CreatureCard(int index, CreatureView view, PanelActions actions)
+	private final PanelActions actions;
+	private final PortraitSource portraits;
+	private final JLabel portrait = new JLabel();
+	private final JLabel name = PanelUi.label("", FontManager.getRunescapeBoldFont(), Color.WHITE);
+	private final JLabel level = PanelUi.label("", FontManager.getRunescapeSmallFont(), Color.WHITE);
+	private final JLabel style = PanelUi.caption("");
+	private final JLabel lead = PanelUi.label("Lead", FontManager.getRunescapeSmallFont(), ColorScheme.BRAND_ORANGE);
+	private final BarComponent hp = new BarComponent(ColorScheme.PROGRESS_COMPLETE_COLOR, HP_BAR_HEIGHT);
+	private final BarComponent xp = new BarComponent(XP_COLOR, XP_BAR_HEIGHT);
+	private int index;
+	private String portraitOf;
+
+	CreatureCard(PanelActions actions, PortraitSource portraits)
 	{
-		super(new BorderLayout());
+		super(new BorderLayout(8, 0));
+		this.actions = actions;
+		this.portraits = portraits;
 		setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		setBorder(new EmptyBorder(6, 8, 6, 8));
 
-		JPanel body = new JPanel();
-		body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
-		body.setOpaque(false);
+		portrait.setPreferredSize(new Dimension(PortraitService.SIZE, PortraitService.SIZE));
+		add(portrait, BorderLayout.WEST);
 
-		JPanel nameRow = new JPanel(new BorderLayout(4, 0));
-		nameRow.setOpaque(false);
-		nameRow.add(PanelUi.label(view.name(), FontManager.getRunescapeBoldFont(), view.rarity().color()),
-			BorderLayout.CENTER);
-		nameRow.add(PanelUi.label("Lv " + view.level(), FontManager.getRunescapeSmallFont(), Color.WHITE),
-			BorderLayout.EAST);
-		body.add(nameRow);
+		JPanel text = new JPanel();
+		text.setLayout(new BoxLayout(text, BoxLayout.Y_AXIS));
+		text.setOpaque(false);
+		text.add(PanelUi.sides(name, level));
+		text.add(Box.createVerticalStrut(1));
+		text.add(PanelUi.sides(style, lead));
+		text.add(Box.createVerticalStrut(5));
+		text.add(hp);
+		text.add(Box.createVerticalStrut(2));
+		text.add(xp);
+		hp.setMaximumSize(new Dimension(Integer.MAX_VALUE, HP_BAR_HEIGHT));
+		xp.setMaximumSize(new Dimension(Integer.MAX_VALUE, XP_BAR_HEIGHT));
+		for (Component child : text.getComponents())
+			((JComponent) child).setAlignmentX(Component.LEFT_ALIGNMENT);
 
-		JPanel typeRow = new JPanel(new BorderLayout(4, 0));
-		typeRow.setOpaque(false);
-		typeRow.add(PanelUi.label(view.type().label(), FontManager.getRunescapeSmallFont(),
-			ColorScheme.LIGHT_GRAY_COLOR), BorderLayout.CENTER);
-		if (index == 0)
-			typeRow.add(PanelUi.label("LEAD", FontManager.getRunescapeSmallFont(), ColorScheme.BRAND_ORANGE),
-				BorderLayout.EAST);
+		add(text, BorderLayout.CENTER);
+		addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				setBackground(ColorScheme.DARKER_GRAY_HOVER_COLOR);
+			}
 
-		body.add(typeRow);
-		body.add(Box.createVerticalStrut(4));
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			}
 
-		BarComponent hp = new BarComponent(hpColor(view.hpFraction()), 8);
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				pressed(e);
+			}
+		});
+	}
+
+	/**
+	 * Shows a creature on this card.
+	 *
+	 * @param teamIndex the creature's position in the team; 0 is the lead
+	 * @param view the creature
+	 */
+	void update(int teamIndex, CreatureView view)
+	{
+		index = teamIndex;
+		boolean isLead = teamIndex == 0;
+		name.setText(PanelUi.displayName(view));
+		name.setForeground(PanelUi.nameColor(view));
+		level.setText("Lv " + view.level());
+		style.setText(view.type().label());
+		lead.setVisible(isLead);
 		hp.set(view.hpFraction(), hpColor(view.hpFraction()));
-		body.add(PanelUi.barRow("HP", hp));
-		body.add(Box.createVerticalStrut(3));
+		xp.set(view.xpProgress(), XP_COLOR);
+		Color stripe = isLead ? ColorScheme.BRAND_ORANGE : ColorScheme.DARKER_GRAY_COLOR;
+		setBorder(BorderFactory.createCompoundBorder(
+			BorderFactory.createMatteBorder(0, STRIPE, 0, 0, view.gilded() ? PanelUi.GOLD : stripe),
+			BorderFactory.createEmptyBorder(6, 6, 7, 8)));
+		setCursor(Cursor.getPredefinedCursor(isLead ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR));
+		setToolTipText("<html>Health " + Math.round(view.hpFraction() * 100) + "%<br>"
+			+ Math.round(view.xpProgress() * 100) + "% to level " + Math.min(XpRules.MAX_LEVEL, view.level() + 1)
+			+ "<br>" + (isLead ? "Your lead: fights battles and trains twice as fast" : "Click to make lead")
+			+ "<br>Right-click for more</html>");
+		if (view.name().equals(portraitOf))
+			return;
 
-		BarComponent xp = new BarComponent(ColorScheme.BRAND_ORANGE, 8);
-		xp.set(view.xpProgress(), ColorScheme.BRAND_ORANGE);
-		body.add(PanelUi.barRow("XP", xp));
-		body.add(Box.createVerticalStrut(6));
+		portraitOf = view.name();
+		portrait.setIcon(null);
+		String wanted = portraitOf;
+		portraits.request(wanted, image -> showPortrait(wanted, image));
+	}
 
-		JPanel buttons = new JPanel(new GridLayout(1, 0, 4, 0));
-		buttons.setOpaque(false);
-		if (index != 0)
-			buttons.add(PanelUi.button("Make lead", e -> actions.setLead(index)));
+	/**
+	 * Puts a finished picture on the card, unless the card has moved on to another creature in the meantime.
+	 *
+	 * @param speciesName the species the picture is of
+	 * @param image the picture
+	 */
+	private void showPortrait(String speciesName, BufferedImage image)
+	{
+		if (speciesName.equals(portraitOf))
+			portrait.setIcon(new ImageIcon(image));
+	}
 
-		buttons.add(PanelUi.button("Store", e -> actions.moveToStorage(index)));
-		body.add(buttons);
+	private void pressed(MouseEvent event)
+	{
+		if (SwingUtilities.isRightMouseButton(event))
+		{
+			JPopupMenu menu = new JPopupMenu();
+			if (index != 0)
+				menu.add(PanelUi.menuItem("Make lead", () -> actions.setLead(index)));
 
-		add(body, BorderLayout.CENTER);
+			menu.add(PanelUi.menuItem("Move to storage", () -> actions.moveToStorage(index)));
+			menu.show(this, event.getX(), event.getY());
+			return;
+		}
+
+		if (SwingUtilities.isLeftMouseButton(event) && index != 0)
+			actions.setLead(index);
 	}
 
 	private static Color hpColor(double fraction)

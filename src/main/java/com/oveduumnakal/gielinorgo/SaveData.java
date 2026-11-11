@@ -26,6 +26,9 @@ final class SaveData
 	/** Most creatures storage can hold. */
 	static final int STORAGE_SIZE = 300;
 
+	/** Most eggs the player can carry at once. */
+	static final int MAX_EGGS = 3;
+
 	/** Bronze jars a new player starts with. */
 	static final int STARTING_JARS = 10;
 
@@ -58,6 +61,15 @@ final class SaveData
 	/** Battles won. */
 	int battlesWon;
 
+	/** Eggs being carried, each hatching after enough walking. */
+	List<Egg> eggs = new ArrayList<>();
+
+	/** Species keys the player has owned a gilded creature of. */
+	Set<String> gilded = new LinkedHashSet<>();
+
+	/** Ids of the City Champions the player has beaten. */
+	Set<String> sigils = new LinkedHashSet<>();
+
 	/** @return a save for a player who has never played, with the starting jars */
 	static SaveData fresh()
 	{
@@ -78,6 +90,10 @@ final class SaveData
 		jars = jars == null ? new HashMap<>() : new HashMap<>(jars);
 		caught = caught == null ? new HashMap<>() : new HashMap<>(caught);
 		seen = seen == null ? new LinkedHashSet<>() : new LinkedHashSet<>(seen);
+		eggs = eggs == null ? new ArrayList<>() : new ArrayList<>(eggs);
+		gilded = gilded == null ? new LinkedHashSet<>() : new LinkedHashSet<>(gilded);
+		sigils = sigils == null ? new LinkedHashSet<>() : new LinkedHashSet<>(sigils);
+		eggs.removeIf(egg -> egg == null);
 		team.removeIf(creature -> creature == null || creature.species == null);
 		storage.removeIf(creature -> creature == null || creature.species == null);
 		while (team.size() > TEAM_SIZE)

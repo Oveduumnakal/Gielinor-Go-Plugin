@@ -13,9 +13,12 @@ final class LogEntry
 	private final CombatType type;
 	private final int caughtCount;
 	private final boolean seen;
+	private final boolean gilded;
 
-	LogEntry(String name, int speciesLevel, Rarity rarity, CombatType type, int caughtCount, boolean seen)
+	LogEntry(String name, int speciesLevel, Rarity rarity, CombatType type, int caughtCount, boolean seen,
+		boolean gilded)
 	{
+		this.gilded = gilded;
 		this.name = name;
 		this.speciesLevel = speciesLevel;
 		this.rarity = rarity;
@@ -58,6 +61,12 @@ final class LogEntry
 	boolean seen()
 	{
 		return seen;
+	}
+
+	/** @return whether the player has owned a gilded creature of this species */
+	boolean gilded()
+	{
+		return gilded;
 	}
 
 	/** @return whether the player has caught this species at least once */

@@ -15,9 +15,12 @@ final class CreatureView
 	private final double hpFraction;
 	private final Rarity rarity;
 	private final CombatType type;
+	private final boolean gilded;
 
-	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type)
+	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
+		boolean gilded)
 	{
+		this.gilded = gilded;
 		this.name = name;
 		this.level = level;
 		this.xpProgress = xpProgress;
@@ -62,6 +65,12 @@ final class CreatureView
 		return type;
 	}
 
+	/** @return whether this is a rare gilded creature */
+	boolean gilded()
+	{
+		return gilded;
+	}
+
 	@Override
 	public boolean equals(Object other)
 	{
@@ -73,6 +82,7 @@ final class CreatureView
 
 		CreatureView that = (CreatureView) other;
 		return level == that.level
+			&& gilded == that.gilded
 			&& Double.compare(xpProgress, that.xpProgress) == 0
 			&& Double.compare(hpFraction, that.hpFraction) == 0
 			&& rarity == that.rarity
@@ -83,6 +93,6 @@ final class CreatureView
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type);
+		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type, gilded);
 	}
 }

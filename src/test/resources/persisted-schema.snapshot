@@ -1,16 +1,25 @@
 class Creature {
   caughtAtMs: long
+  gilded: boolean
   hpFraction: double
   hpStampMs: long
   species: String
   xp: long
 }
+class Egg {
+  rarity: String
+  tilesLeft: int
+  tilesTotal: int
+}
 class SaveData {
   battlesWon: int
   caught: Map<String, Integer>
+  eggs: List<Egg>
+  gilded: Set<String>
   jars: Map<String, Integer>
   seen: Set<String>
   selectedJar: String
+  sigils: Set<String>
   stepProgress: int
   storage: List<Creature>
   team: List<Creature>

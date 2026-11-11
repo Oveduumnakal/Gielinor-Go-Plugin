@@ -5,12 +5,18 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.List;
 import javax.swing.Box;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 import net.runelite.client.ui.ColorScheme;
@@ -31,7 +37,7 @@ final class StorageTab extends JPanel
 		super(new BorderLayout());
 		this.actions = actions;
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
-		header = PanelUi.label("", FontManager.getRunescapeBoldFont(), ColorScheme.LIGHT_GRAY_COLOR);
+		header = PanelUi.caption("");
 		header.setBorder(new EmptyBorder(6, 8, 6, 8));
 		add(header, BorderLayout.NORTH);
 		PanelColumn column = new PanelColumn();
@@ -46,7 +52,7 @@ final class StorageTab extends JPanel
 	 */
 	void update(List<CreatureView> storage)
 	{
-		header.setText(storage.size() + " / " + SaveData.STORAGE_SIZE + " stored");
+		header.setText("STORED  " + storage.size() + " / " + SaveData.STORAGE_SIZE);
 		if (storage.equals(shown))
 			return;
 
@@ -55,38 +61,79 @@ final class StorageTab extends JPanel
 		if (storage.isEmpty())
 			stack.add(PanelUi.emptyState(EMPTY_TEXT));
 
+		if (!storage.isEmpty())
+			stack.add(PanelUi.hint("Click a creature to move it to your team. Right-click to release."));
+
 		for (int i = 0; i < storage.size(); i++)
 		{
 			if (i > 0)
-				stack.add(Box.createVerticalStrut(3));
+				stack.add(Box.createVerticalStrut(1));
 
 			stack.add(row(i, storage.get(i)));
 		}
+
+		for (Component child : stack.getComponents())
+			((JComponent) child).setAlignmentX(Component.LEFT_ALIGNMENT);
 
 		stack.revalidate();
 		stack.repaint();
 	}
 
+	/**
+	 * Builds one stored creature's line. Clicking it moves the creature onto the team; right-clicking opens a
+	 * menu that can also release it.
+	 *
+	 * @param index the creature's position in storage
+	 * @param view the creature
+	 * @return the line
+	 */
 	private JPanel row(int index, CreatureView view)
 	{
-		JPanel row = new JPanel(new BorderLayout(0, 3));
+		JLabel name = PanelUi.label(PanelUi.displayName(view), FontManager.getRunescapeSmallFont(),
+			PanelUi.nameColor(view));
+		JPanel row = PanelUi.sides(name, PanelUi.caption("Lv " + view.level()));
+		row.setOpaque(true);
 		row.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		row.setBorder(new EmptyBorder(4, 8, 4, 8));
+		row.setBorder(new EmptyBorder(5, 8, 5, 8));
+		row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		row.setToolTipText("<html>" + view.type().label() + " - " + view.rarity().label()
+			+ "<br>Click to move to your team<br>Right-click to release</html>");
+		row.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseEntered(MouseEvent e)
+			{
+				row.setBackground(ColorScheme.DARKER_GRAY_HOVER_COLOR);
+			}
 
-		JPanel top = new JPanel(new BorderLayout(4, 0));
-		top.setOpaque(false);
-		top.add(PanelUi.label(view.name(), FontManager.getRunescapeSmallFont(), view.rarity().color()),
-			BorderLayout.CENTER);
-		top.add(PanelUi.label("Lv " + view.level(), FontManager.getRunescapeSmallFont(),
-			ColorScheme.LIGHT_GRAY_COLOR), BorderLayout.EAST);
-		row.add(top, BorderLayout.NORTH);
+			@Override
+			public void mouseExited(MouseEvent e)
+			{
+				row.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+			}
 
-		JPanel buttons = new JPanel(new GridLayout(1, 2, 4, 0));
-		buttons.setOpaque(false);
-		buttons.add(PanelUi.button("To team", e -> actions.moveToTeam(index)));
-		buttons.add(PanelUi.button("Release", e -> confirmRelease(index, view.name())));
-		row.add(buttons, BorderLayout.CENTER);
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				pressed(e, row, index, view.name());
+			}
+		});
 		return row;
+	}
+
+	private void pressed(MouseEvent event, JPanel row, int index, String name)
+	{
+		if (SwingUtilities.isRightMouseButton(event))
+		{
+			JPopupMenu menu = new JPopupMenu();
+			menu.add(PanelUi.menuItem("Move to team", () -> actions.moveToTeam(index)));
+			menu.add(PanelUi.menuItem("Release...", () -> confirmRelease(index, name)));
+			menu.show(row, event.getX(), event.getY());
+			return;
+		}
+
+		if (SwingUtilities.isLeftMouseButton(event))
+			actions.moveToTeam(index);
 	}
 
 	private void confirmRelease(int index, String name)
