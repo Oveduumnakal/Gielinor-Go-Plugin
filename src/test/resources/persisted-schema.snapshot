@@ -1,0 +1,19 @@
+class Creature {
+  caughtAtMs: long
+  hpFraction: double
+  hpStampMs: long
+  species: String
+  xp: long
+}
+class SaveData {
+  battlesWon: int
+  caught: Map<String, Integer>
+  jars: Map<String, Integer>
+  seen: Set<String>
+  selectedJar: String
+  stepProgress: int
+  storage: List<Creature>
+  team: List<Creature>
+  trainerXp: long
+  version: int
+}

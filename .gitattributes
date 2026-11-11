@@ -1,0 +1,13 @@
+# Normalize line endings so checked-in files stay stable across platforms.
+# Git stores text as LF; without this, a Windows checkout (core.autocrlf=true)
+# rewrites files to CRLF.
+* text=auto
+
+# Shell scripts must stay LF; Windows batch scripts must stay CRLF.
+*.sh    text eol=lf
+gradlew text eol=lf
+*.bat   text eol=crlf
+
+# Binary assets git must not touch.
+*.png binary
+*.jar binary
