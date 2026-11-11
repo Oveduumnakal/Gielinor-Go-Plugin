@@ -14,7 +14,10 @@ OUT = "src/main/resources/com/oveduumnakal/gielinorgo/species.json"
 UA = "species-data-script/1.0"
 PAGE = 500
 QUERY = ("bucket('infobox_monster').select('page_name','name','combat_level','attack_style','attribute',"
-         "'attack_speed','size','poisonous','slayer_level').limit(%d).offset(%d).run()")
+         "'attack_speed','size','poisonous','slayer_level','id').limit(%d).offset(%d).run()")
+
+# NPC ids kept per species, for drawing its portrait. A few are enough: the plugin tries them in order.
+MAX_IDS = 4
 
 # Trait rules. Each trait makes one specialty jar work better (see JarType.java). CAVE is not listed here:
 # it depends on where the creature is met, not on its species.
@@ -63,6 +66,18 @@ def as_int(value):
         return 0
 
 
+def ids_of(row):
+    found = []
+    for value in as_list(row.get("id")):
+        try:
+            npc_id = int(value)
+        except (TypeError, ValueError):
+            continue
+        if npc_id > 0 and npc_id not in found:
+            found.append(npc_id)
+    return found[:MAX_IDS]
+
+
 def traits_of(name, row):
     attributes = " ".join(str(a).lower() for a in as_list(row.get("attribute")))
     poison = " ".join(str(p).lower() for p in as_list(row.get("poisonous")))
@@ -94,10 +109,12 @@ def clean_name(name):
 
 
 def record(entry):
-    name, level, style, traits = entry
+    name, level, style, traits, ids = entry
     data = {"name": name, "level": level, "style": style}
     if traits:
         data["traits"] = traits
+    if ids:
+        data["ids"] = ids
     return data
 
 
@@ -131,7 +148,7 @@ def main():
             continue
         key = name.lower()
         if key not in best or level > best[key][1]:
-            best[key] = (name, level, style_of(row.get("attack_style")), traits_of(name, row))
+            best[key] = (name, level, style_of(row.get("attack_style")), traits_of(name, row), ids_of(row))
     entries = sorted(best.values(), key=lambda e: e[0].lower())
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("[\n")
@@ -142,6 +159,7 @@ def main():
         print(s, sum(1 for e in entries if e[2] == s))
     for t in TRAIT_ORDER:
         print(t, sum(1 for e in entries if t in e[3]))
+    print("with ids", sum(1 for e in entries if e[4]))
 
 
 if __name__ == "__main__":

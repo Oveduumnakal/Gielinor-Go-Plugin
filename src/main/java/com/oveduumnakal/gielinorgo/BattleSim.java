@@ -36,6 +36,61 @@ final class BattleSim
 	{
 		List<BattleLine> log = new ArrayList<>();
 		log.add(opening(mine, foe));
+		int turns = duel(mine, foe, random, log);
+		boolean won = ahead(mine, foe);
+		log.add(closing(mine, foe, won));
+		return new BattleResult(won, log, mine.hpFraction(), turns);
+	}
+
+	/**
+	 * Fights a whole team against another. The first creature on each side fights; the loser is replaced by the
+	 * next on its side, and the winner carries on with the health it has left.
+	 *
+	 * @param mine the player's creatures, in the order they fight; their health is changed by the battle
+	 * @param theirs the opposing creatures, in the order they fight
+	 * @param random the source of damage spread and of the first move on a level tie
+	 * @return the outcome, with one line per creature knocked out
+	 */
+	static TeamBattleResult teamFight(List<Combatant> mine, List<Combatant> theirs, Random random)
+	{
+		List<BattleLine> log = new ArrayList<>();
+		int myIndex = 0;
+		int theirIndex = 0;
+		while (myIndex < mine.size() && theirIndex < theirs.size())
+		{
+			Combatant fighter = mine.get(myIndex);
+			Combatant foe = theirs.get(theirIndex);
+			duel(fighter, foe, random, null);
+			if (ahead(fighter, foe))
+			{
+				foe.knockOut();
+				log.add(new BattleLine(fighter.name() + " beat " + foe.name() + " (Lv " + foe.level() + ")",
+					Tone.GOOD, true));
+				theirIndex++;
+			}
+			else
+			{
+				fighter.knockOut();
+				log.add(new BattleLine(fighter.name() + " lost to " + foe.name() + " (Lv " + foe.level() + ")",
+					Tone.BAD, true));
+				myIndex++;
+			}
+		}
+
+		return new TeamBattleResult(theirIndex >= theirs.size(), log);
+	}
+
+	/**
+	 * Trades blows until one side is out of health or the turn limit is reached.
+	 *
+	 * @param mine the player's creature
+	 * @param foe the opposing creature
+	 * @param random the source of damage spread and of the first move on a level tie
+	 * @param log receives one line per attack, or null to keep no lines
+	 * @return how many attacks were made
+	 */
+	private static int duel(Combatant mine, Combatant foe, Random random, List<BattleLine> log)
+	{
 		boolean myTurn = mine.level() > foe.level() || (mine.level() == foe.level() && random.nextBoolean());
 		int turns = 0;
 		while (!mine.fainted() && !foe.fainted() && turns < MAX_TURNS)
@@ -44,14 +99,27 @@ final class BattleSim
 			Combatant defender = myTurn ? foe : mine;
 			int damage = damage(attacker, defender, random);
 			defender.hit(damage);
-			log.add(strike(attacker, defender, damage, myTurn));
+			if (log != null)
+				log.add(strike(attacker, defender, damage, myTurn));
+
 			myTurn = !myTurn;
 			turns++;
 		}
 
-		boolean won = foe.fainted() || (!mine.fainted() && mine.hpFraction() >= foe.hpFraction());
-		log.add(closing(mine, foe, won));
-		return new BattleResult(won, log, mine.hpFraction(), turns);
+		return turns;
+	}
+
+	/**
+	 * Decides who is winning a duel that has stopped.
+	 *
+	 * @param mine the player's creature
+	 * @param foe the opposing creature
+	 * @return true when the foe is out of health, or when neither is and the player's creature has kept at least
+	 *     as large a share of its health
+	 */
+	private static boolean ahead(Combatant mine, Combatant foe)
+	{
+		return foe.fainted() || (!mine.fainted() && mine.hpFraction() >= foe.hpFraction());
 	}
 
 	/**

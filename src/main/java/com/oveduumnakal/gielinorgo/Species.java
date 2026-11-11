@@ -17,6 +17,7 @@ final class Species
 	private int level;
 	private CombatType style;
 	private List<Trait> traits;
+	private int[] ids;
 
 	/** Used by Gson. */
 	Species()
@@ -67,6 +68,12 @@ final class Species
 		}
 
 		return all;
+	}
+
+	/** @return the NPC ids the game uses for this species, for drawing its portrait; empty when none are known */
+	int[] ids()
+	{
+		return ids == null ? new int[0] : ids.clone();
 	}
 
 	/** @return the rarity tier for this species' combat level */

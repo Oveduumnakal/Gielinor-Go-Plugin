@@ -88,6 +88,12 @@ final class Combatant
 		return hp <= 0;
 	}
 
+	/** Takes the fighter out of the battle, for a duel that ran out of turns. */
+	void knockOut()
+	{
+		hp = 0;
+	}
+
 	/**
 	 * Takes damage.
 	 *

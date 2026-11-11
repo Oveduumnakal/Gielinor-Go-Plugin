@@ -56,7 +56,7 @@ final class LogTab extends JPanel
 		super(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
-		header = PanelUi.label("", FontManager.getRunescapeBoldFont(), ColorScheme.LIGHT_GRAY_COLOR);
+		header = PanelUi.caption("");
 		search = new IconTextField();
 		search.setIcon(IconTextField.Icon.SEARCH);
 		search.setPreferredSize(new Dimension(PluginPanel.PANEL_WIDTH - 20, 28));
@@ -97,8 +97,8 @@ final class LogTab extends JPanel
 	 */
 	void update(PanelState state)
 	{
-		header.setText(state.caughtSpecies() + " / " + state.totalSpecies() + " caught · "
-			+ state.seenSpecies() + " seen");
+		header.setText("CAUGHT  " + state.caughtSpecies() + " / " + state.totalSpecies() + "   SEEN  "
+			+ state.seenSpecies());
 		if (state.log() == shown)
 			return;
 
@@ -231,8 +231,12 @@ final class LogTab extends JPanel
 			if (!isKnown(entry))
 				return null;
 
-			return "Lv " + entry.speciesLevel() + " · " + entry.type().label() + " · "
+			String tip = "Lv " + entry.speciesLevel() + " · " + entry.type().label() + " · "
 				+ entry.rarity().label();
+			if (entry.gilded())
+				return tip + " · gilded owned";
+
+			return tip;
 		}
 	}
 
@@ -262,7 +266,7 @@ final class LogTab extends JPanel
 				name.setText(entry.name());
 				name.setForeground(entry.rarity().color());
 				right.setText("×" + entry.caughtCount());
-				right.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
+				right.setForeground(entry.gilded() ? PanelUi.GOLD : ColorScheme.LIGHT_GRAY_COLOR);
 			}
 			else if (entry.seen())
 			{

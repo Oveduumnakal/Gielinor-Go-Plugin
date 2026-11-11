@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 
@@ -21,6 +22,7 @@ final class WildOverlay extends Overlay
 	private static final int OUTLINE_WIDTH = 2;
 	private static final int OUTLINE_FEATHER = 4;
 	private static final int TAG_HEIGHT_OFFSET = 40;
+	private static final Color GILDED_COLOR = new Color(0xFFD23F);
 
 	private final GielinorGoPlugin plugin;
 	private final GielinorGoConfig config;
@@ -44,12 +46,13 @@ final class WildOverlay extends Overlay
 			if (npc == null)
 				continue;
 
-			outlineRenderer.drawOutline(npc, OUTLINE_WIDTH, config.outlineColor(), OUTLINE_FEATHER);
-			String tag = "Wild Lv " + entry.level();
+			Color outline = entry.gilded() ? GILDED_COLOR : config.outlineColor();
+			outlineRenderer.drawOutline(npc, OUTLINE_WIDTH, outline, OUTLINE_FEATHER);
+			String tag = (entry.gilded() ? "Gilded Lv " : "Wild Lv ") + entry.level();
 			Point location = npc.getCanvasTextLocation(graphics, tag, npc.getLogicalHeight() + TAG_HEIGHT_OFFSET);
 			Rarity rarity = entry.species().rarity();
 			if (location != null)
-				OverlayUtil.renderTextLocation(graphics, location, tag, rarity.color());
+				OverlayUtil.renderTextLocation(graphics, location, tag, entry.gilded() ? GILDED_COLOR : rarity.color());
 		}
 
 		return null;

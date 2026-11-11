@@ -52,13 +52,35 @@ clicks or acts for you.
   head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. Melee beats Ranged, Ranged beats Magic, and Magic beats
   Melee. A creature that loses to you is easier to catch.
 
+- **Creatures evolve**
+
+  Many creatures grow into a stronger relative when they reach a certain level: an Imp becomes a Lesser demon,
+  then a Greater demon, then a Black demon. There are over 150 evolutions to find.
+
+- **Eggs hatch as you walk**
+
+  Battle wins sometimes drop an egg. Carry up to three, and each hatches into a new creature once you have
+  walked far enough. Rarer eggs take longer and hatch rarer creatures.
+
+- **Gilded creatures**
+
+  One wild creature in 500 is gilded: gold outline in the world, gold name in your panel. They are only for
+  showing off.
+
+### City Champions
+
+- **Eight cities, eight champions**
+
+  From Lumbridge to Yanille, each city has a champion with a team of three. Stand in the city, open the Cities
+  tab and challenge them with your whole team. Your first win earns the city's sigil and a stack of better jars.
+
 ### Side panel
 
 - **Team, Storage and Creature Log**
 
-  The side panel shows your team with health and XP bars, the creatures you have stored, and a Creature Log of
-  every species in the game so you can see what you have caught, what you have only seen, and how rare the
-  missing ones are.
+  The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, the creatures
+  you have stored, and a Creature Log of every species in the game so you can see what you have caught, what
+  you have only seen, and how rare the missing ones are.
 
 ## Links
 

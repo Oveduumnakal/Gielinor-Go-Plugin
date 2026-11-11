@@ -7,6 +7,7 @@ package com.oveduumnakal.gielinorgo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -32,7 +33,15 @@ final class GoGame
 	/** Least health, as a share of full, the lead needs to start a battle. */
 	static final double MIN_BATTLE_HP = 0.25;
 
+	/** Chance that a battle win drops an egg, while the player has room for one. */
+	static final double EGG_DROP_CHANCE = 0.10;
+
+	/** Most evolutions one creature can go through in a single burst of XP. */
+	private static final int MAX_EVOLUTIONS_AT_ONCE = 5;
+
 	private final SpeciesTable species;
+	private final EvolutionTable evolutions;
+	private final ChampionTable champions;
 	private final Random random;
 	private final LongSupplier clock;
 	private final Consumer<Notice> notices;
@@ -40,6 +49,7 @@ final class GoGame
 	private List<LogEntry> log;
 	private long xpCarry;
 	private boolean dirty;
+	private String cityId;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -51,7 +61,25 @@ final class GoGame
 	 */
 	GoGame(SpeciesTable species, Random random, LongSupplier clock, Consumer<Notice> notices)
 	{
+		this(species, EvolutionTable.empty(), ChampionTable.empty(), random, clock, notices);
+	}
+
+	/**
+	 * Creates a game with a fresh save, evolution lines and City Champions.
+	 *
+	 * @param species every catchable species
+	 * @param evolutions which species grow into which
+	 * @param champions the City Champions
+	 * @param random the source of every roll
+	 * @param clock wall-clock time in milliseconds
+	 * @param notices receives each line the player should be told, with whose head it belongs over
+	 */
+	GoGame(SpeciesTable species, EvolutionTable evolutions, ChampionTable champions, Random random,
+		LongSupplier clock, Consumer<Notice> notices)
+	{
 		this.species = species;
+		this.evolutions = evolutions;
+		this.champions = champions;
 		this.random = random;
 		this.clock = clock;
 		this.notices = notices;
@@ -159,6 +187,107 @@ final class GoGame
 			data.addJars(JarType.BRONZE, 1);
 			tell("+1 Bronze jar (walking)", Tone.FIND);
 		}
+
+		Iterator<Egg> carried = data.eggs.iterator();
+		while (carried.hasNext())
+		{
+			Egg egg = carried.next();
+			boolean wasReady = egg.tilesLeft <= 0;
+			egg.tilesLeft = Math.max(0, egg.tilesLeft - tiles);
+			if (egg.tilesLeft > 0)
+				continue;
+
+			if (hatch(egg))
+				carried.remove();
+			else if (!wasReady)
+				tell("An egg is ready, but storage is full", Tone.BAD);
+		}
+	}
+
+	/**
+	 * Records where the player is standing, so the game knows which City Champion can be challenged.
+	 *
+	 * @param x world x
+	 * @param y world y
+	 * @param plane world plane
+	 * @return true when the player walked into or out of a champion's city, so the panel needs a refresh
+	 */
+	boolean moveTo(int x, int y, int plane)
+	{
+		Champion here = champions.at(x, y, plane);
+		String id = here == null ? null : here.id();
+		if (id == null ? cityId == null : id.equals(cityId))
+			return false;
+
+		cityId = id;
+		return true;
+	}
+
+	/**
+	 * Challenges a City Champion with the whole team. Creatures too tired to battle sit out.
+	 *
+	 * @param championId the champion's id
+	 * @return the battle, or null when no battle could start
+	 */
+	TeamBattleResult challenge(String championId)
+	{
+		Champion champion = champions.byId(championId);
+		if (champion == null)
+			return null;
+
+		if (!champion.id().equals(cityId))
+		{
+			tell("Go to " + champion.city() + " to challenge its champion", Tone.BAD);
+			return null;
+		}
+
+		long now = clock.getAsLong();
+		List<Creature> fighters = new ArrayList<>();
+		List<Combatant> mine = new ArrayList<>();
+		for (Creature creature : data.team)
+		{
+			Species found = species.find(creature.species);
+			double health = creature.hpFractionAt(now);
+			if (found == null || health < MIN_BATTLE_HP)
+				continue;
+
+			fighters.add(creature);
+			mine.add(new Combatant(found, creature.level(), health));
+		}
+
+		if (mine.isEmpty())
+		{
+			tell(data.team.isEmpty() ? "Catch a creature first" : "Your team is too tired", Tone.BAD);
+			return null;
+		}
+
+		List<Combatant> theirs = new ArrayList<>();
+		for (Champion.Member member : champion.team())
+			theirs.add(new Combatant(species.find(member.species()), member.level(), 1.0));
+
+		TeamBattleResult fought = BattleSim.teamFight(mine, theirs, random);
+		for (int i = 0; i < fighters.size(); i++)
+		{
+			Creature fighter = fighters.get(i);
+			fighter.hpFraction = mine.get(i).hpFraction();
+			fighter.hpStampMs = now;
+		}
+
+		dirty = true;
+		List<BattleLine> lines = new ArrayList<>();
+		lines.add(new BattleLine("Challenging the " + champion.title() + "!", Tone.INFO, true));
+		lines.addAll(fought.lines());
+		if (fought.won())
+		{
+			lines.add(new BattleLine("You beat the " + champion.title() + "!", Tone.GOOD, true));
+			rewardChampionWin(champion);
+		}
+		else
+		{
+			lines.add(new BattleLine("The " + champion.title() + " won. Rest and try again", Tone.BAD, true));
+		}
+
+		return new TeamBattleResult(fought.won(), lines);
 	}
 
 	/** Rewards an OSRS level-up with Bronze jars. */
@@ -273,11 +402,15 @@ final class GoGame
 			return CatchOutcome.BROKE_FREE;
 		}
 
-		keep(new Creature(entry.species().key(), entry.level(), clock.getAsLong()));
-		data.caught.merge(entry.species().key(), 1, Integer::sum);
-		data.seen.add(entry.species().key());
-		log = null;
-		tell(entry, "Caught " + name + " (Lv " + entry.level() + ")!", Tone.GOOD);
+		Creature caught = new Creature(entry.species().key(), entry.level(), clock.getAsLong());
+		caught.gilded = entry.gilded();
+		keep(caught);
+		recordOwned(caught);
+		if (caught.gilded)
+			tell(entry, "Caught gilded " + name + " (Lv " + entry.level() + ")!", Tone.FIND);
+		else
+			tell(entry, "Caught " + name + " (Lv " + entry.level() + ")!", Tone.GOOD);
+
 		addTrainerXp(CatchRules.catchXp(entry.level()));
 		return CatchOutcome.CAUGHT;
 	}
@@ -416,9 +549,119 @@ final class GoGame
 		for (JarType type : JarType.values())
 			jars.put(type, data.jarCount(type));
 
+		List<EggView> eggs = new ArrayList<>();
+		for (Egg egg : data.eggs)
+			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal));
+
 		return new PanelState(trainerLevel(), XpRules.trainerProgress(data.trainerXp), data.battlesWon, jars,
 			selectedJar(), data.stepProgress, views(data.team, now), views(data.storage, now), log(),
-			data.caughtSpecies(), data.seen.size());
+			data.caughtSpecies(), data.seen.size(), eggs, championViews());
+	}
+
+	private List<ChampionView> championViews()
+	{
+		List<ChampionView> views = new ArrayList<>();
+		for (Champion champion : champions.all())
+		{
+			List<String> team = new ArrayList<>();
+			for (Champion.Member member : champion.team())
+				team.add(species.find(member.species()).name() + " " + member.level());
+
+			String reward = champion.rewardJars() + " " + champion.rewardJar().label() + " jars";
+			views.add(new ChampionView(champion.id(), champion.city(), String.join(", ", team), reward,
+				data.sigils.contains(champion.id()), champion.id().equals(cityId)));
+		}
+
+		return views;
+	}
+
+	/**
+	 * Records that the player owns a creature of a species, for the Creature Log.
+	 *
+	 * @param creature the creature just caught, hatched or evolved
+	 */
+	private void recordOwned(Creature creature)
+	{
+		data.caught.merge(creature.species, 1, Integer::sum);
+		data.seen.add(creature.species);
+		if (creature.gilded)
+			data.gilded.add(creature.species);
+
+		log = null;
+		dirty = true;
+	}
+
+	/**
+	 * Hatches an egg into a level 1 creature of a random species of the egg's rarity.
+	 *
+	 * @param egg the egg whose walking is done
+	 * @return true when the egg is used up; false when there is no room, so it waits
+	 */
+	private boolean hatch(Egg egg)
+	{
+		if (data.team.size() >= SaveData.TEAM_SIZE && data.storage.size() >= SaveData.STORAGE_SIZE)
+			return false;
+
+		List<Species> pool = new ArrayList<>();
+		for (Species candidate : species.all())
+		{
+			if (candidate.rarity() == egg.rarityTier())
+				pool.add(candidate);
+		}
+
+		if (pool.isEmpty())
+			return true;
+
+		Species born = pool.get(random.nextInt(pool.size()));
+		Creature creature = new Creature(born.key(), 1, clock.getAsLong());
+		creature.gilded = random.nextInt(WildTracker.GILDED_ONE_IN) == 0;
+		keep(creature);
+		recordOwned(creature);
+		tell("Egg hatched: " + (creature.gilded ? "gilded " : "") + born.name() + "!", Tone.FIND);
+		return true;
+	}
+
+	/**
+	 * Turns a creature into the next species of its line for every evolution level it has reached.
+	 *
+	 * @param creature the creature that just gained XP
+	 */
+	private void evolveIfReady(Creature creature)
+	{
+		EvolutionTable.Step step = evolutions.next(creature.species);
+		for (int i = 0; i < MAX_EVOLUTIONS_AT_ONCE && step != null && creature.level() >= step.level(); i++)
+		{
+			Species grown = species.find(step.to());
+			String before = nameOf(creature);
+			creature.species = grown.key();
+			recordOwned(creature);
+			tell(before + " evolved into " + grown.name() + "!", Tone.GOOD);
+			step = evolutions.next(creature.species);
+		}
+	}
+
+	/**
+	 * Pays out a win against a City Champion: XP for the team every time, and the sigil, jars and trainer XP the
+	 * first time.
+	 *
+	 * @param champion the champion that was beaten
+	 */
+	private void rewardChampionWin(Champion champion)
+	{
+		data.battlesWon++;
+		boolean first = data.sigils.add(champion.id());
+		long creatureXp = 0;
+		for (Champion.Member member : champion.team())
+			creatureXp += 20L + 5L * member.level();
+
+		shareXp(first ? creatureXp : creatureXp / 2);
+		if (!first)
+			return;
+
+		tell("Sigil of " + champion.city() + " earned!", Tone.FIND);
+		data.addJars(champion.rewardJar(), champion.rewardJars());
+		tell("+" + champion.rewardJars() + " " + champion.rewardJar().label() + " jars (champion)", Tone.FIND);
+		addTrainerXp(50L + 10L * champion.topLevel());
 	}
 
 	private JarType selectedJar()
@@ -448,13 +691,21 @@ final class GoGame
 		if (lead.level() > before)
 			tell(leadSpecies.name() + " grew to Lv " + lead.level() + "!", Tone.GOOD);
 
+		evolveIfReady(lead);
 		addTrainerXp(5L + entry.level());
-		if (random.nextDouble() >= JAR_DROP_CHANCE)
+		if (random.nextDouble() < JAR_DROP_CHANCE)
+		{
+			JarType drop = randomUnlockedJar();
+			data.addJars(drop, 1);
+			tell("+1 " + drop.label() + " jar (battle win)", Tone.FIND);
+		}
+
+		if (data.eggs.size() >= SaveData.MAX_EGGS || random.nextDouble() >= EGG_DROP_CHANCE)
 			return;
 
-		JarType drop = randomUnlockedJar();
-		data.addJars(drop, 1);
-		tell("+1 " + drop.label() + " jar (battle win)", Tone.FIND);
+		Rarity rarity = entry.species().rarity();
+		data.eggs.add(new Egg(rarity));
+		tell("+1 " + rarity.label() + " egg (battle win)", Tone.FIND);
 	}
 
 	private JarType randomUnlockedJar()
@@ -502,6 +753,8 @@ final class GoGame
 			Creature creature = data.team.get(i);
 			if (creature.level() > before[i])
 				tell(nameOf(creature) + " grew to Lv " + creature.level() + "!", Tone.GOOD);
+
+			evolveIfReady(creature);
 		}
 	}
 
@@ -549,7 +802,7 @@ final class GoGame
 			Rarity rarity = found == null ? Rarity.COMMON : found.rarity();
 			CombatType type = found == null ? CombatType.MELEE : found.style();
 			views.add(new CreatureView(nameOf(creature), creature.level(), XpRules.progress(creature.xp),
-				creature.hpFractionAt(now), rarity, type));
+				creature.hpFractionAt(now), rarity, type, creature.gilded));
 		}
 
 		return views;
@@ -565,7 +818,7 @@ final class GoGame
 		{
 			Integer count = data.caught.get(entry.key());
 			entries.add(new LogEntry(entry.name(), entry.level(), entry.rarity(), entry.style(),
-				count == null ? 0 : count, data.seen.contains(entry.key())));
+				count == null ? 0 : count, data.seen.contains(entry.key()), data.gilded.contains(entry.key())));
 		}
 
 		log = Collections.unmodifiableList(entries);
