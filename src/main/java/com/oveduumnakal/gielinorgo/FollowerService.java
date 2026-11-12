@@ -485,7 +485,7 @@ final class FollowerService
 		return farthest;
 	}
 
-	private static double heightOf(ModelData data)
+	static double heightOf(ModelData data)
 	{
 		float[] y = data.getVerticesY();
 		double tallest = 0;

@@ -204,7 +204,8 @@ public class GielinorGoPlugin extends Plugin
 		lastHelloTick = -HELLO_TICKS;
 		persistence = new GoPersistence(configManager, gson);
 		wildOverlay = new WildOverlay(this, config, outlineRenderer);
-		floatingText = new FloatingTextOverlay(client, this, noticeBoard);
+		floatingText = new FloatingTextOverlay(client, this, noticeBoard,
+			anchor -> stage == null ? null : stage.spotOf(anchor));
 		overlayManager.add(wildOverlay);
 		overlayManager.add(floatingText);
 		portraits = new PortraitService(client, clientThread, game::speciesFor);
@@ -1105,7 +1106,11 @@ public class GielinorGoPlugin extends Plugin
 		List<Notice> queue = new ArrayList<>();
 		for (BattleLine line : lines)
 		{
-			if (line.overPlayer() || npcIndex == Notice.PLAYER)
+			if (staged && npcIndex != Notice.PLAYER && line.overPlayer())
+				queue.add(Notice.stageLead(line.text(), line.tone()));
+			else if (staged && npcIndex != Notice.PLAYER)
+				queue.add(Notice.stageFoe(npcIndex, line.text(), line.tone()));
+			else if (line.overPlayer() || npcIndex == Notice.PLAYER)
 				queue.add(Notice.player(line.text(), line.tone()));
 			else
 				queue.add(Notice.creature(npcIndex, line.text(), line.tone()));
