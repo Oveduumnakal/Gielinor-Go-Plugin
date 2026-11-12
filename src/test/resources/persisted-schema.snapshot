@@ -23,6 +23,7 @@ class SaveData {
   eggs: List<Egg>
   gilded: Set<String>
   jars: Map<String, Integer>
+  milestones: Set<String>
   seen: Set<String>
   selectedJar: String
   sigils: Set<String>

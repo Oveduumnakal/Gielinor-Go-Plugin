@@ -180,6 +180,17 @@ public class DataTest
 	}
 
 	@Test
+	public void anOldSaveLoadsWithNoMilestonesPaid()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"team\":[{\"species\":\"goblin\",\"xp\":5}]}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+
+		assertTrue(loaded.milestones.isEmpty());
+	}
+
+	@Test
 	public void anOldSaveWithoutANicknameStillLoads()
 	{
 		MapStore store = new MapStore();

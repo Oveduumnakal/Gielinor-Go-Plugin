@@ -179,6 +179,22 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   the next egg. The plugin goes by your computer's clock, so changing the clock would cheat; nothing stops that in
   a single-player side game.
 
+### Creature Log milestones
+
+- **Rewards for a growing Log**
+
+  Catching new species pays rewards once each, at 25, 50, 100, 250 and 500 species: 5 Iron jars; 5 Rune jars and a
+  Rare egg; 5 Dragon jars and an Epic egg; the **Gilded charm**; then 10 Dragon jars and a Legendary egg. The charm
+  is not an item: from then on gilded creatures turn up twice as often (1 in 250 instead of 1 in 500), in the wild
+  and from eggs. Completing a family, such as every goblin or every dragon, pays 3 jars of the family's specialty
+  type and an egg of the rarest creature in it. Milestones you had already reached are paid when you log in. When
+  your egg bag is full an egg reward waits until you have a free slot.
+
+- **Progress on the Log tab**
+
+  Under the Log header the next goal shows with a bar (`Next: 100 species`, `87 / 100`). The **Milestones...**
+  button lists every milestone and family with its bar, its reward and a tick once it is paid.
+
 ### City Champions
 
 - **Eight cities, eight champions**

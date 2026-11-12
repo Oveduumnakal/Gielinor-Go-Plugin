@@ -201,4 +201,28 @@ public class GameDataTest
 		assertNotNull(resource + " is missing from the resources", in);
 		return new InputStreamReader(in, StandardCharsets.UTF_8);
 	}
+
+	@Test
+	public void everyFamilyIsMadeOfRealSpeciesAndBigEnough() throws IOException
+	{
+		List<Family> families;
+		try (Reader reader = open(Family.RESOURCE))
+		{
+			families = Family.load(gson, reader);
+		}
+
+		assertTrue("expected about 10 families, got " + families.size(), families.size() >= 8);
+		Set<String> ids = new HashSet<>();
+		for (Family family : families)
+		{
+			assertTrue(family.id() + " is listed twice", ids.add(family.id()));
+			assertTrue(family.id() + ": jar must be a specialty jar", family.jar().specialty());
+			assertTrue(family.id() + ": too few species", family.species().size() >= 3);
+			for (String key : family.species())
+				assertNotNull(family.id() + ": unknown species " + key, species.find(key));
+		}
+
+		Milestones milestones = new Milestones(species, families);
+		assertEquals(5 + families.size(), milestones.all().size());
+	}
 }

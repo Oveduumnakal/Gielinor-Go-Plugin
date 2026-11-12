@@ -109,6 +109,9 @@ final class GoGame
 	private Supplier<TodayView> today = () -> TodayView.NONE;
 	private final TaskCalendar taskCalendar = new TaskCalendar();
 	private TaskBoard board;
+	private Milestones milestoneTable = Milestones.NONE;
+	private boolean milestonesDue;
+	private boolean walking;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -171,6 +174,8 @@ final class GoGame
 		log = null;
 		xpCarry = 0;
 		dirty = false;
+		milestonesDue = true;
+		settleMilestones();
 	}
 
 	/** @return whether the save changed since the last call; calling this clears the flag */
@@ -261,6 +266,7 @@ final class GoGame
 			tell("+1 Bronze jar (walking)", Tone.FIND, JarType.BRONZE);
 		}
 
+		walking = true;
 		Iterator<Egg> carried = data.eggs.iterator();
 		while (carried.hasNext())
 		{
@@ -278,6 +284,9 @@ final class GoGame
 			else if (!wasReady)
 				tell("An egg is ready, but storage is full", Tone.BAD);
 		}
+
+		walking = false;
+		settleMilestones();
 	}
 
 	/**
@@ -512,6 +521,7 @@ final class GoGame
 
 		addTrainerXp(CatchRules.catchXp(entry.level()));
 		payCatch(entry);
+		settleMilestones();
 		return CatchOutcome.CAUGHT;
 	}
 
@@ -743,7 +753,10 @@ final class GoGame
 	void giveAway(Egg egg)
 	{
 		if (data.eggs.remove(egg))
+		{
 			dirty = true;
+			milestonesDue = true;
+		}
 	}
 
 	/**
@@ -760,6 +773,7 @@ final class GoGame
 
 		keep(creature);
 		recordOwned(creature);
+		settleMilestones();
 		return true;
 	}
 
@@ -794,7 +808,8 @@ final class GoGame
 		TaskView tasks = startTasks().view(now, bestUnlockedJar());
 		return new PanelState(trainerLevel(), XpRules.trainerProgress(data.trainerXp), data.battlesWon, jars,
 			selectedJar(), data.stepProgress, views(data.team, now), views(data.storage, now), log(),
-			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get(), tasks);
+			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get(), tasks)
+			.withGoals(milestoneTable.progress(data));
 	}
 
 	/** @return how many caught species the species list still knows, so removed species do not inflate the total */
@@ -841,6 +856,7 @@ final class GoGame
 
 		log = null;
 		dirty = true;
+		milestonesDue = true;
 	}
 
 	/**
@@ -866,7 +882,7 @@ final class GoGame
 
 		Species born = pool.get(random.nextInt(pool.size()));
 		Creature creature = new Creature(born.key(), 1, clock.getAsLong());
-		creature.gilded = random.nextInt(WildTracker.GILDED_ONE_IN) == 0;
+		creature.gilded = random.nextInt(gildedOneIn()) == 0;
 		creature.setRolls(StatRolls.roll(random));
 		keep(creature);
 		recordOwned(creature);
@@ -896,6 +912,8 @@ final class GoGame
 			tell(before + " evolved into " + grown.name() + "!", Tone.GOOD);
 			step = evolutions.next(creature.species);
 		}
+
+		settleMilestones();
 	}
 
 	/**
@@ -921,6 +939,93 @@ final class GoGame
 		tell("+" + champion.rewardJars() + " " + champion.rewardJar().label() + " jars (champion)", Tone.FIND,
 			champion.rewardJar());
 		addTrainerXp(50L + 10L * champion.topLevel());
+	}
+
+	/**
+	 * Sets the Creature Log milestones the game pays. Without this call there are none.
+	 *
+	 * @param table the milestones
+	 */
+	void milestones(Milestones table)
+	{
+		milestoneTable = table == null ? Milestones.NONE : table;
+		milestonesDue = true;
+	}
+
+	/** @return whether the Gilded charm is owned, which is milestone {@link Milestones#CHARM_ID} being paid */
+	boolean hasGildedCharm()
+	{
+		return data.milestones.contains(Milestones.CHARM_ID);
+	}
+
+	/** @return how rare a gilded creature is: one in this many, 500 or half of it with the Gilded charm */
+	int gildedOneIn()
+	{
+		return gildedOneIn(WildTracker.GILDED_ONE_IN);
+	}
+
+	/**
+	 * Applies the Gilded charm to odds that may already carry an event boost.
+	 *
+	 * @param base the odds without the charm: one in this many
+	 * @return {@code base}, or half of it with the charm
+	 */
+	int gildedOneIn(int base)
+	{
+		return hasGildedCharm() ? Math.max(1, base / 2) : base;
+	}
+
+	/**
+	 * Pays the milestones that are reached and not yet paid, unless the egg list is being walked over. A reward with
+	 * an egg waits for a free egg slot and is tried again at the next chance.
+	 */
+	private void settleMilestones()
+	{
+		if (milestonesDue && !walking)
+			payMilestones();
+	}
+
+	/** Pays every reached, unpaid milestone whose reward fits and tells the player. */
+	private void payMilestones()
+	{
+		milestonesDue = false;
+		for (String id : milestoneTable.reached(data))
+		{
+			if (data.milestones.contains(id))
+				continue;
+
+			Milestones.Milestone milestone = milestoneTable.byId(id);
+			Milestones.Reward reward = milestone.reward();
+			if (reward.egg() != null && !hasRoomForEgg())
+			{
+				milestonesDue = true;
+				continue;
+			}
+
+			data.milestones.add(id);
+			dirty = true;
+			List<String> parts = new ArrayList<>();
+			if (reward.jars() > 0)
+			{
+				data.addJars(reward.jar(), reward.jars());
+				parts.add("+" + reward.jars() + " " + reward.jar().label() + " jars");
+			}
+
+			if (reward.egg() != null)
+			{
+				data.eggs.add(new Egg(reward.egg()));
+				parts.add("+1 " + reward.egg().label() + " egg");
+			}
+
+			if (reward.charm())
+				parts.add("Gilded charm: gilded odds doubled");
+
+			String line = "Milestone: " + milestone.label() + "! " + String.join(", ", parts);
+			if (reward.jar() == null)
+				tell(line, Tone.FIND);
+			else
+				tell(line, Tone.FIND, reward.jar());
+		}
 	}
 
 	/**
