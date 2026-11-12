@@ -239,8 +239,7 @@ public class GielinorGoPlugin extends Plugin
 		follower = new FollowerService(client, animations, game::speciesFor);
 		followerTag = new FollowerTagOverlay(client, follower, () -> follower.showingAs() ? null : leadTag);
 		overlayManager.add(followerTag);
-		effects = new CatchEffects(client, animations, config::catchEffects);
-		renderCallbackManager.register(effects);
+		effects = new CatchEffects(client, config::catchEffects);
 		jarFlight = new JarFlightOverlay(client);
 		overlayManager.add(jarFlight);
 		stage = new BattleStage(client, follower, System::currentTimeMillis);
@@ -275,7 +274,6 @@ public class GielinorGoPlugin extends Plugin
 		clientThread.invoke(arena::clear);
 		clientThread.invoke(bodies::clear);
 		clientThread.invoke(follower::remove);
-		renderCallbackManager.unregister(effects);
 		clientThread.invoke(effects::clear);
 		clientThread.invoke(jarFlight::clear);
 		overlayManager.remove(jarFlight);
@@ -341,7 +339,6 @@ public class GielinorGoPlugin extends Plugin
 
 		if (state == GameState.LOADING)
 		{
-			effects.sceneLoading();
 			bodies.sceneLoading();
 			stage.clear();
 			arena.clear();
@@ -494,7 +491,6 @@ public class GielinorGoPlugin extends Plugin
 	public void onNpcDespawned(NpcDespawned event)
 	{
 		int index = event.getNpc().getIndex();
-		effects.forget(event.getNpc());
 		candidates.remove(index);
 		tracker.leftView(index, System.currentTimeMillis());
 	}
@@ -1305,7 +1301,9 @@ public class GielinorGoPlugin extends Plugin
 
 	/**
 	 * Acts a throw out on screen, when that setting is on: the player throws whenever a jar was really used and
-	 * then reacts to the result. A caught creature, or one that fled, is gone from the screen.
+	 * then reacts to the result, and the creature's body reacts when the jar lands: a caught one shrinks into the
+	 * jar, one that breaks free attacks and stands again, one that flees runs off fading out. With the setting off a
+	 * caught or fled creature simply disappears.
 	 *
 	 * @param outcome what the throw led to
 	 * @param wildId the wild creature's id
@@ -1317,13 +1315,16 @@ public class GielinorGoPlugin extends Plugin
 		if (!thrown)
 			return;
 
+		WildBody body = bodies.get(wildId);
+		boolean played = config.catchEffects() && body != null && body.beginCatch(outcome);
 		if (config.catchEffects() && effects.throwJar())
 		{
 			effects.react(outcome);
 			jarFlight.start(jar, () -> bodies.spotOf(wildId));
 		}
 
-		if (outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED)
+		boolean gone = outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED;
+		if (gone && !played)
 		{
 			bodies.remove(wildId, System.currentTimeMillis());
 			stage.forget(wildId);

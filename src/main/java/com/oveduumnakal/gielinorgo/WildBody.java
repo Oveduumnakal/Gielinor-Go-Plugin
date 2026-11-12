@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import net.runelite.api.Client;
 import net.runelite.api.Model;
 import net.runelite.api.Perspective;
+import net.runelite.api.Player;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.LocalPoint;
 
@@ -63,6 +64,13 @@ final class WildBody
 	private boolean fadeBroken;
 	private boolean unreachableNoted;
 	private volatile StageAnchors.Spot spot;
+	private volatile StageAnchors.Spot lastSpot;
+	private BodyCatch scene;
+	private boolean turningAway;
+	private double runFromX;
+	private double runFromY;
+	private double runDirX;
+	private double runDirY;
 
 	/**
 	 * Creates a body on a tile. It is not in the scene until the first {@link #clientTick}.
@@ -242,6 +250,12 @@ final class WildBody
 		return spot;
 	}
 
+	/** @return where the body was last drawn, kept while it is out of sight, for text floating over it */
+	StageAnchors.Spot lastSpot()
+	{
+		return lastSpot;
+	}
+
 	/** @return whether the body is in the scene right now */
 	boolean drawn()
 	{
@@ -306,12 +320,123 @@ final class WildBody
 		if (body == null)
 			return;
 
+		if (scene != null)
+			stepCatch(nowMs);
+
 		advanceWalk();
 		facing = FollowerPath.turnToward(facing, wantFacing);
 		body.clientTick();
-		body.setBase(walking() ? body.walkAnimation() : body.standAnimation());
+		body.setBase(walking() || turningAway ? body.walkAnimation() : body.standAnimation());
 		fade(nowMs);
 		place(view);
+	}
+
+	/**
+	 * Starts the catch scene on the body: a jar has been thrown at it. It flinches when the jar lands, and then a
+	 * caught creature shrinks away, one that breaks free turns to the player and attacks, and one that flees turns
+	 * and runs off fading out ({@link BodyCatch}). A body that lies knocked out stays down until its second act.
+	 *
+	 * @param outcome what the throw led to
+	 * @return true when the scene plays; false when the throw touches nothing or the creature is already leaving, so
+	 *     the caller ends the creature itself if it was caught or fled
+	 */
+	boolean beginCatch(CatchOutcome outcome)
+	{
+		if (body == null || !BodyCatch.plays(outcome) || life.leaving())
+			return false;
+
+		boolean lying = life.knockedOut() || body.lyingDown();
+		if (!life.beginCatch())
+			return false;
+
+		body.endTurn();
+		route.clear();
+		turningAway = false;
+		scene = new BodyCatch(outcome, lying);
+		return true;
+	}
+
+	/** @return whether a catch scene is playing on the body */
+	boolean catching()
+	{
+		return scene != null;
+	}
+
+	private void stepCatch(long nowMs)
+	{
+		BodyCatch current = scene;
+		current.tick();
+		if (current.getsUp())
+			body.recover();
+
+		TargetScript.Step step = current.step();
+		if (step == TargetScript.Step.HIT)
+			body.act(CreatureBody.Act.HIT);
+		else if (step == TargetScript.Step.ATTACK)
+			body.act(CreatureBody.Act.ATTACK);
+
+		if (current.turn() != TargetScript.Turn.NONE)
+			startCatchTurn(current.turn());
+
+		body.setSize(current.size());
+		if (turningAway)
+		{
+			double run = current.runTiles();
+			x = runFromX + runDirX * run;
+			y = runFromY + runDirY * run;
+		}
+
+		if (current.removesBody())
+		{
+			scene = null;
+			life.endCatch(false, nowMs);
+		}
+		else if (current.standsAgain())
+		{
+			scene = null;
+			life.endCatch(true, nowMs);
+			turningAway = false;
+			facingHeld = false;
+			body.setSize(1.0);
+			body.recover();
+		}
+	}
+
+	/**
+	 * Works out which way the body turns for its second act: to the player, or away from the player and running that
+	 * way.
+	 *
+	 * @param turn the turn, not none
+	 */
+	private void startCatchTurn(TargetScript.Turn turn)
+	{
+		Player player = client.getLocalPlayer();
+		WorldView view = client.getTopLevelWorldView();
+		LocalPoint from = player == null || view == null ? null : player.getLocalLocation();
+		double dx = from == null ? 0 : x - (from.getX() / (double) TILE - 0.5 + view.getBaseX());
+		double dy = from == null ? 0 : y - (from.getY() / (double) TILE - 0.5 + view.getBaseY());
+		double length = Math.hypot(dx, dy);
+		if (length < 0.01)
+		{
+			double turned = facing * 2 * Math.PI / FollowerPath.FULL_TURN;
+			dx = -Math.sin(turned);
+			dy = -Math.cos(turned);
+			length = 1;
+		}
+
+		runDirX = dx / length;
+		runDirY = dy / length;
+		runFromX = x;
+		runFromY = y;
+		facingHeld = true;
+		if (turn == TargetScript.Turn.TO_PLAYER)
+		{
+			wantFacing = FollowerPath.angle(-runDirX, -runDirY);
+			return;
+		}
+
+		wantFacing = FollowerPath.angle(runDirX, runDirY);
+		turningAway = true;
 	}
 
 	private void advanceWalk()
@@ -343,7 +468,8 @@ final class WildBody
 	{
 		try
 		{
-			body.setOpacity(fadeBroken ? 1.0 : life.opacity(nowMs));
+			double shown = scene == null ? 1.0 : scene.opacity();
+			body.setOpacity(fadeBroken ? 1.0 : Math.min(life.opacity(nowMs), shown));
 		}
 		catch (RuntimeException | AssertionError e)
 		{
@@ -366,11 +492,15 @@ final class WildBody
 				body.setActive(false);
 
 			spot = null;
+			if (inScene && lastSpot != null)
+				lastSpot = new StageAnchors.Spot(new LocalPoint(sceneX, sceneY, view), plane, drawnHeight);
+
 			return;
 		}
 
 		LocalPoint at = new LocalPoint(sceneX, sceneY, view);
 		spot = new StageAnchors.Spot(at, plane, drawnHeight);
+		lastSpot = spot;
 		body.setLocation(at, plane);
 		body.setOrientation(facing);
 		if (!body.isActive())

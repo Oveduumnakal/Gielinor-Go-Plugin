@@ -324,8 +324,8 @@ final class WildBodies
 	StageAnchors.Spot spotOf(int wildId)
 	{
 		WildBody body = bodies.get(wildId);
-		if (body != null && body.spot() != null)
-			return body.spot();
+		if (body != null && body.lastSpot() != null)
+			return body.lastSpot();
 
 		Farewell gone = farewells.get(wildId);
 		return gone == null ? null : gone.spot;
@@ -351,7 +351,7 @@ final class WildBodies
 
 	private void farewell(int wildId, WildBody body, long nowMs)
 	{
-		StageAnchors.Spot spot = body.spot();
+		StageAnchors.Spot spot = body.lastSpot();
 		if (spot != null)
 			farewells.put(wildId, new Farewell(spot, nowMs + FAREWELL_MS));
 	}
