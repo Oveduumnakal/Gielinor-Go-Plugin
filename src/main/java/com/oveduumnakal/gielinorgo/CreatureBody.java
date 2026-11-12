@@ -59,6 +59,7 @@ final class CreatureBody extends RuneLiteObject
 	private final int heightScale;
 	private final AnimationController controller;
 	private boolean lying;
+	private double size = 1.0;
 	private int level = OpacityFade.SOLID;
 	private Mode mode = Mode.LOOP;
 	private int base = AnimationTable.NONE;
@@ -156,10 +157,22 @@ final class CreatureBody extends RuneLiteObject
 			tipped[wanted] = lieDown(data);
 	}
 
-	/** @return whether any of the body is drawn: false while it is fully faded out */
+	/**
+	 * Sets how big the body is drawn compared with its own size. The scaling is done after the pose each frame, as
+	 * shrinking before posing makes the model come apart. A body that stands with no animation cannot be resized,
+	 * as its plain model is shared; it keeps its size until size 0 takes it out of sight ({@link #visible()}).
+	 *
+	 * @param factor 1 for its own size down to 0 for nothing; values outside that are clamped
+	 */
+	void setSize(double factor)
+	{
+		size = Math.max(0.0, Math.min(1.0, factor));
+	}
+
+	/** @return whether any of the body is drawn: false while it is fully faded out or has shrunk to nothing */
 	boolean visible()
 	{
-		return level != OpacityFade.HIDDEN;
+		return level != OpacityFade.HIDDEN && size > 0.0;
 	}
 
 	/** @return the id of the NPC this body shows */
@@ -267,8 +280,10 @@ final class CreatureBody extends RuneLiteObject
 		if (posed == null || posed == getBaseModel())
 			return stillNow();
 
-		if (widthScale != NpcModels.NORMAL_SCALE || heightScale != NpcModels.NORMAL_SCALE)
-			posed.scale(widthScale, heightScale, widthScale);
+		int wide = Math.max(1, (int) Math.round(widthScale * size));
+		int tall = Math.max(1, (int) Math.round(heightScale * size));
+		if (wide != NpcModels.NORMAL_SCALE || tall != NpcModels.NORMAL_SCALE)
+			posed.scale(wide, tall, wide);
 
 		return posed;
 	}

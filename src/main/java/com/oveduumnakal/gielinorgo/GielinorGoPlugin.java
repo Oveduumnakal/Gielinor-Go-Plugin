@@ -209,7 +209,7 @@ public class GielinorGoPlugin extends Plugin
 		follower = new FollowerService(client, animations, game::speciesFor);
 		followerTag = new FollowerTagOverlay(client, follower, () -> leadTag);
 		overlayManager.add(followerTag);
-		effects = new CatchEffects(client);
+		effects = new CatchEffects(client, animations, config::catchEffects);
 		renderCallbackManager.register(effects);
 		jarFlight = new JarFlightOverlay(client);
 		overlayManager.add(jarFlight);
@@ -299,6 +299,9 @@ public class GielinorGoPlugin extends Plugin
 	public void onGameStateChanged(GameStateChanged event)
 	{
 		GameState state = event.getGameState();
+		if (state == GameState.LOADING)
+			effects.sceneLoading();
+
 		if (state == GameState.LOGGED_IN && !loaded)
 			loadSave();
 
@@ -1011,7 +1014,8 @@ public class GielinorGoPlugin extends Plugin
 
 	/**
 	 * Acts a throw out on screen, when that setting is on: the player throws whenever a jar was really used and
-	 * then reacts to the result, and a caught creature vanishes when the jar lands and fades back in.
+	 * then reacts to the result, and the creature reacts when the jar lands: a caught one shrinks into the jar and
+	 * fades back in later, one that breaks free attacks, one that flees runs off and fades back in.
 	 *
 	 * @param outcome what the throw led to
 	 * @param npcIndex the game's index for the monster thrown at
@@ -1033,8 +1037,7 @@ public class GielinorGoPlugin extends Plugin
 			jarFlight.start(jar, candidates.get(npcIndex));
 		}
 
-		if (outcome == CatchOutcome.CAUGHT)
-			effects.vanish(candidates.get(npcIndex));
+		effects.play(outcome, candidates.get(npcIndex));
 	}
 
 	private void battle(int npcIndex)

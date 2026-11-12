@@ -26,8 +26,10 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 
   Your character makes a throwing motion when you throw a jar, then cheers for a catch, stamps when the
   creature breaks free and cries when it runs away (skipped if you moved or started something else). The jar you threw
-  flies in an arc from your hand to the creature. A creature you
-  catch vanishes as the jar lands, for five seconds, before fading back in. Only you see this: the real monster never goes anywhere. A monster that is in a
+  flies in an arc from your hand to the creature. The creature reacts when the jar lands: a creature you catch
+  flinches, shrinks into the jar and stays gone for five seconds before fading back in; one that breaks free turns
+  to you and attacks; one that runs away turns and runs off, fading out, and fades back in where it really is.
+  Only you see this: the real monster never goes anywhere, a copy acts in its place. A monster that is in a
   fight with anyone is never hidden, and one that starts fighting while hidden comes straight back. You can switch it
   off in the settings.
 
