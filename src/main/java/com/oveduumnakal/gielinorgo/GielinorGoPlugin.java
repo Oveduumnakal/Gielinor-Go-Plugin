@@ -1023,8 +1023,8 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
-	 * Acts a throw out on screen, when that setting is on: the player throws whenever a jar was really used, and
-	 * a caught creature vanishes and fades back in.
+	 * Acts a throw out on screen, when that setting is on: the player throws whenever a jar was really used and
+	 * then reacts to the result, and a caught creature vanishes when the jar lands and fades back in.
 	 *
 	 * @param outcome what the throw led to
 	 * @param npcIndex the game's index for the monster thrown at
@@ -1039,7 +1039,9 @@ public class GielinorGoPlugin extends Plugin
 		if (!config.catchEffects())
 			return;
 
-		effects.throwJar();
+		if (effects.throwJar())
+			effects.react(outcome);
+
 		if (outcome == CatchOutcome.CAUGHT)
 			effects.vanish(candidates.get(npcIndex));
 	}

@@ -97,7 +97,8 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "catchEffects",
 		name = "Catch effects",
-		description = "Your character makes a throwing motion when you throw a jar.\nA creature you catch vanishes"
+		description = "Your character makes a throwing motion when you throw a jar, then cheers for a catch,"
+			+ " stamps when the creature breaks free or cries when it runs away.\nA creature you catch vanishes"
 			+ " for five seconds and fades back in.\nOnly you can see this, and the real monster is untouched.",
 		position = 4
 	)

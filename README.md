@@ -24,8 +24,9 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 
 - **See the catch happen**
 
-  Your character makes a throwing motion when you throw a jar, and a creature you catch vanishes for five
-  seconds before fading back in. Only you see this: the real monster never goes anywhere. A monster that is in a
+  Your character makes a throwing motion when you throw a jar, then cheers for a catch, stamps when the
+  creature breaks free and cries when it runs away (skipped if you moved or started something else). A creature you
+  catch vanishes as the jar lands, for five seconds, before fading back in. Only you see this: the real monster never goes anywhere. A monster that is in a
   fight with anyone is never hidden, and one that starts fighting while hidden comes straight back. You can switch it
   off in the settings.
 

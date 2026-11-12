@@ -19,20 +19,22 @@ import net.runelite.api.Player;
 import net.runelite.api.Renderable;
 import net.runelite.api.RuneLiteObject;
 import net.runelite.api.coords.LocalPoint;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.gameval.AnimationID;
 import net.runelite.client.callback.RenderCallback;
 
 /**
- * What a catch looks like: the player makes a throwing motion, and a creature that was caught drops out of sight
- * for five seconds and then fades back in. All of it is drawn on the player's own screen only. The monster in the real
- * game is untouched, nothing is sent to the game, and other players see nothing. Every method must be called on
- * the game thread; RuneLite calls {@link #addEntity(Renderable, boolean)} from it too.
+ * What a catch looks like: the player makes a throwing motion, a creature that was caught drops out of sight when
+ * the jar lands, stays hidden for five seconds and then fades back in, and the player reacts to the result.
+ * All of it is drawn on the player's own screen only. The monster in the real game is untouched, nothing is sent
+ * to the game, and other players see nothing. Every method must be called on the game thread; RuneLite calls
+ * {@link #addEntity(Renderable, boolean)} from it too.
  */
 final class CatchEffects implements RenderCallback
 {
 	private static final Logger log = LoggerFactory.getLogger(CatchEffects.class);
 
-	/** Client ticks, 20 ms each, a caught creature stays out of sight: five seconds. */
+	/** Client ticks, 20 ms each, a caught creature stays out of sight after landing: five seconds. */
 	static final int HIDDEN_TICKS = 250;
 
 	/** Client ticks a caught creature takes to fade back in. */
@@ -44,6 +46,9 @@ final class CatchEffects implements RenderCallback
 	/** {@link #shadeAt(int)} for a creature that is still out of sight. */
 	static final int HIDDEN = -1;
 
+	/** {@link #shadeAt(int)} for a creature that is still in sight because the jar has not landed yet. */
+	static final int VISIBLE = -3;
+
 	/** {@link #shadeAt(int)} for a creature whose effect is over. */
 	static final int DONE = -2;
 
@@ -53,10 +58,25 @@ final class CatchEffects implements RenderCallback
 	/** The animation id that means the player is not doing anything. */
 	private static final int NO_ANIMATION = -1;
 
-	/** One caught creature that is out of sight or fading back in. */
+	/** The one reaction that is waiting for its moment. */
+	private static final class Reaction
+	{
+		private final int animation;
+		private final WorldPoint tile;
+		private int age;
+
+		private Reaction(int animation, WorldPoint tile)
+		{
+			this.animation = animation;
+			this.tile = tile;
+		}
+	}
+
+	/** One caught creature that is waiting for the jar to land, out of sight or fading back in. */
 	private static final class Vanish
 	{
 		private final NPC npc;
+		/** Client ticks since the throw. */
 		private int age;
 		private Model[] shades;
 		private RuneLiteObject ghost;
@@ -69,6 +89,8 @@ final class CatchEffects implements RenderCallback
 
 	private final Client client;
 	private final Map<Integer, Vanish> vanishing = new HashMap<>();
+	private WorldPoint thrownFrom;
+	private Reaction reaction;
 
 	/**
 	 * Creates the effects with nothing playing.
@@ -81,22 +103,39 @@ final class CatchEffects implements RenderCallback
 	}
 
 	/**
-	 * Makes the player's character throw. The motion is left out while the character is in the middle of
-	 * something else, such as fishing or fighting, so a real animation is never cut short on screen.
+	 * Makes the player's character throw, and remembers the tile it threw from. The motion is left out while the
+	 * character is in the middle of something else, such as fishing or fighting, so a real animation is never cut
+	 * short on screen.
+	 *
+	 * @return whether the throw was played
 	 */
-	void throwJar()
+	boolean throwJar()
 	{
 		Player player = client.getLocalPlayer();
 		if (player == null || player.getAnimation() != NO_ANIMATION)
-			return;
+			return false;
 
+		thrownFrom = player.getWorldLocation();
 		player.setAnimation(AnimationID.HUMAN_THROW);
 		player.setAnimationFrame(0);
+		return true;
 	}
 
 	/**
-	 * Takes a caught creature out of sight; it fades back in by itself. A monster in any fight is left alone, so
-	 * nothing that can hurt anyone is ever hidden.
+	 * Lines up the character's reaction to a throw that was played. It starts once the throw is over, and only if
+	 * the character is then idle and still on the tile it threw from. A newer result replaces a waiting one.
+	 *
+	 * @param outcome what the throw led to
+	 */
+	void react(CatchOutcome outcome)
+	{
+		int animation = CatchScene.reactionFor(outcome);
+		reaction = animation == CatchScene.NONE ? null : new Reaction(animation, thrownFrom);
+	}
+
+	/**
+	 * Marks a caught creature to leave sight when the jar lands; it fades back in by itself. A monster in any fight is
+	 * left alone, so nothing that can hurt anyone is ever hidden.
 	 *
 	 * @param npc the monster that was caught, or null when it already left view
 	 */
@@ -111,6 +150,7 @@ final class CatchEffects implements RenderCallback
 	/** Moves every effect on by one client tick. */
 	void clientTick()
 	{
+		tickReaction();
 		Iterator<Vanish> effects = vanishing.values().iterator();
 		while (effects.hasNext())
 		{
@@ -133,6 +173,27 @@ final class CatchEffects implements RenderCallback
 				effects.remove();
 			}
 		}
+	}
+
+	/** Ages the waiting reaction and plays it when its moment comes. */
+	private void tickReaction()
+	{
+		if (reaction == null)
+			return;
+
+		reaction.age++;
+		if (reaction.age < CatchScene.REACT_TICK)
+			return;
+
+		Reaction due = reaction;
+		reaction = null;
+		Player player = client.getLocalPlayer();
+		if (player == null || player.getAnimation() != NO_ANIMATION || due.tile == null
+			|| !due.tile.equals(player.getWorldLocation()))
+			return;
+
+		player.setAnimation(due.animation);
+		player.setAnimationFrame(0);
 	}
 
 	/**
@@ -167,6 +228,7 @@ final class CatchEffects implements RenderCallback
 	{
 		vanishing.values().forEach(this::finish);
 		vanishing.clear();
+		reaction = null;
 	}
 
 	/**
@@ -184,22 +246,26 @@ final class CatchEffects implements RenderCallback
 			return true;
 
 		Vanish effect = vanishing.get(((NPC) renderable).getIndex());
-		return effect == null || effect.npc != renderable;
+		return effect == null || effect.npc != renderable || shadeAt(effect.age) == VISIBLE;
 	}
 
 	/**
 	 * Works out what a caught creature looks like at one moment of its effect.
 	 *
-	 * @param age client ticks since the catch
-	 * @return {@link #HIDDEN} while it is out of sight, then the fade step from 0 (faintest) to
-	 *     {@link #FADE_STEPS} - 1 (nearly solid), then {@link #DONE}
+	 * @param age client ticks since the throw
+	 * @return {@link #VISIBLE} until the jar lands, {@link #HIDDEN} while it is out of sight,
+	 *     then the fade step from 0 (faintest) to {@link #FADE_STEPS} - 1 (nearly solid), then {@link #DONE}
 	 */
 	static int shadeAt(int age)
 	{
-		if (age <= HIDDEN_TICKS)
+		if (!CatchScene.landed(age))
+			return VISIBLE;
+
+		int hiddenFor = age - CatchScene.LAND_TICK;
+		if (hiddenFor <= HIDDEN_TICKS)
 			return HIDDEN;
 
-		int fading = age - HIDDEN_TICKS - 1;
+		int fading = hiddenFor - HIDDEN_TICKS - 1;
 		return fading >= FADE_TICKS ? DONE : fading * FADE_STEPS / FADE_TICKS;
 	}
 
