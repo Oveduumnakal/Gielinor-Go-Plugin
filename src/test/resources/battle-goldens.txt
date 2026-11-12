@@ -100,209 +100,221 @@ Wizard -15 (101/161) | BAD true FOE_HIT false RANGED false
 -20 (0/104) | GOOD false LEAD_HIT false MAGIC false
 Your Wizard won! | GOOD false CLOSING false null false
 == dragon is mine 0
-won=true turns=12 hpLeft=0.502262443438914 hp 111.0 0.0
+won=true turns=10 hpLeft=0.5610859728506787 hp 124.0 0.0
 Your Green dragon (Lv 30) attacks! | INFO false OPENING false null false
 Green dragon -22 (199/221) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -38 (134/172) | GOOD false LEAD_HIT false MELEE false
-Green dragon -20 (179/221) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -87 (47/172) | GOOD false LEAD_HIT true MAGIC false
-Green dragon -25 (154/221) | BAD true FOE_HIT false MELEE false
-Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
-Green dragon -16 (138/221) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -30 (17/172) | GOOD false LEAD_HIT false MELEE false
-Green dragon -13 (125/221) | BAD true FOE_HIT false MELEE false
-Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
-Green dragon -14 (111/221) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -100 (0/172) | GOOD false LEAD_HIT true MAGIC false
+Green dragon uses Bite: -37 (135/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -17 (182/221) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -37 (98/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -17 (165/221) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -37 (61/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -25 (140/221) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -43 (18/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -16 (124/221) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -33 (0/172) | GOOD false LEAD_HIT false MELEE false
 Your Green dragon won! | GOOD false CLOSING false null false
 == dragon is theirs 0
-won=false turns=8 hpLeft=0.0 hp 0.0 161.0
+won=false turns=6 hpLeft=0.0 hp 0.0 186.0
 Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
 -25 (229/254) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Dragonfire: -73 (80/153) | BAD true FOE_HIT true MAGIC false
--24 (205/254) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Bite: -35 (45/153) | BAD true FOE_HIT false MELEE false
--27 (178/254) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Bite: -29 (16/153) | BAD true FOE_HIT false MELEE false
--17 (161/254) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Dragonfire: -70 (0/153) | BAD true FOE_HIT true MAGIC false
+Green dragon uses Dragonfire: -86 (67/153) | BAD true FOE_HIT true MAGIC false
+-21 (208/254) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Bite: -30 (37/153) | BAD true FOE_HIT false MELEE false
+-22 (186/254) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Dragonfire: -98 (0/153) | BAD true FOE_HIT true MAGIC false
 Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
 == dragon is mine 1
-won=true turns=8 hpLeft=0.6842105263157895 hp 169.0 0.0
+won=true turns=8 hpLeft=0.757085020242915 hp 187.0 0.0
 Your Green dragon (Lv 34) attacks! | INFO false OPENING false null false
 Green dragon -19 (228/247) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -98 (74/172) | GOOD false LEAD_HIT true MAGIC false
-Green dragon -22 (206/247) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -51 (23/172) | GOOD false LEAD_HIT false MELEE false
-Green dragon -22 (184/247) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -41 (131/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -10 (218/247) | BAD true FOE_HIT false MELEE false
 Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
-Green dragon -15 (169/247) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -39 (0/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -10 (208/247) | BAD true FOE_HIT false MELEE false
+Green dragon uses Dragonfire: -107 (24/172) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -21 (187/247) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -41 (0/172) | GOOD false LEAD_HIT false MELEE false
 Your Green dragon won! | GOOD false CLOSING false null false
 == dragon is theirs 1
-won=false turns=3 hpLeft=0.0 hp 0.0 244.0
+won=false turns=5 hpLeft=0.0 hp 0.0 237.0
 Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
-Green dragon uses Dragonfire: -77 (76/153) | BAD true FOE_HIT true MAGIC false
--17 (244/261) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Dragonfire: -101 (0/153) | BAD true FOE_HIT true MAGIC false
+Green dragon uses Dragonfire: -84 (69/153) | BAD true FOE_HIT true MAGIC false
+-12 (249/261) | GOOD false LEAD_HIT false MAGIC false
+Green dragon's Dragonfire missed | INFO true FOE_HIT true MAGIC false
+-12 (237/261) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Dragonfire: -88 (0/153) | BAD true FOE_HIT true MAGIC false
 Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
 == dragon is mine 2
-won=true turns=4 hpLeft=0.8759124087591241 hp 240.0 0.0
+won=true turns=6 hpLeft=0.8832116788321168 hp 242.0 0.0
 Your Green dragon (Lv 38) attacks! | INFO false OPENING false null false
 Green dragon -16 (258/274) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -139 (33/172) | GOOD false LEAD_HIT true MAGIC false
-Green dragon -18 (240/274) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -101 (0/172) | GOOD false LEAD_HIT true MAGIC false
+Green dragon uses Dragonfire: -133 (39/172) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -7 (251/274) | BAD true FOE_HIT false MELEE false
+Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
+Green dragon -9 (242/274) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -57 (0/172) | GOOD false LEAD_HIT false MELEE false
 Your Green dragon won! | GOOD false CLOSING false null false
 == dragon is theirs 2
-won=false turns=7 hpLeft=0.0 hp 0.0 210.0
+won=false turns=7 hpLeft=0.0 hp 0.0 196.0
 Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
-Green dragon's Dragonfire missed | INFO true FOE_HIT true MAGIC false
--18 (250/268) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Dragonfire: -105 (48/153) | BAD true FOE_HIT true MAGIC false
--15 (235/268) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Bite: -40 (8/153) | BAD true FOE_HIT false MELEE false
--25 (210/268) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Bite: -39 (0/153) | BAD true FOE_HIT false MELEE false
-Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
-== dragon is mine 3
-won=true turns=5 hpLeft=0.9069767441860465 hp 273.0 0.0
-Your Green dragon (Lv 42) attacks! | INFO false OPENING false null false
-Green dragon uses Dragonfire: -111 (61/172) | GOOD false LEAD_HIT true MAGIC false
-Green dragon -14 (287/301) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -59 (2/172) | GOOD false LEAD_HIT false MELEE false
-Green dragon -14 (273/301) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -63 (0/172) | GOOD false LEAD_HIT false MELEE false
-Your Green dragon won! | GOOD false CLOSING false null false
-== dragon is theirs 3
-won=false turns=5 hpLeft=0.0 hp 0.0 231.0
-Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
-Green dragon uses Dragonfire: -79 (74/153) | BAD true FOE_HIT true MAGIC false
--21 (253/274) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Bite: -40 (34/153) | BAD true FOE_HIT false MELEE false
--22 (231/274) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Dragonfire: -74 (79/153) | BAD true FOE_HIT true MAGIC false
+-24 (244/268) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Bite: -42 (37/153) | BAD true FOE_HIT false MELEE false
+-25 (219/268) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Bite: -36 (1/153) | BAD true FOE_HIT false MELEE false
+-23 (196/268) | GOOD false LEAD_HIT false MAGIC false
 Green dragon uses Bite: -43 (0/153) | BAD true FOE_HIT false MELEE false
 Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
+== dragon is mine 3
+won=true turns=3 hpLeft=0.9601328903654485 hp 289.0 0.0
+Your Green dragon (Lv 42) attacks! | INFO false OPENING false null false
+Green dragon uses Dragonfire: -144 (28/172) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -12 (289/301) | BAD true FOE_HIT false MELEE false
+Green dragon uses Dragonfire: -138 (0/172) | GOOD false LEAD_HIT true MAGIC false
+Your Green dragon won! | GOOD false CLOSING false null false
+== dragon is theirs 3
+won=false turns=3 hpLeft=0.0 hp 0.0 255.0
+Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
+Green dragon uses Dragonfire: -103 (50/153) | BAD true FOE_HIT true MAGIC false
+-19 (255/274) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Dragonfire: -98 (0/153) | BAD true FOE_HIT true MAGIC false
+Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
 == dragon is mine 4
-won=true turns=5 hpLeft=0.9298780487804879 hp 305.0 0.0
+won=true turns=7 hpLeft=0.9237804878048781 hp 303.0 0.0
 Your Green dragon (Lv 46) attacks! | INFO false OPENING false null false
 Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
-Green dragon -13 (315/328) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -121 (51/172) | GOOD false LEAD_HIT true MAGIC false
-Green dragon -10 (305/328) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -165 (0/172) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -12 (316/328) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -67 (105/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -2 (314/328) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -71 (34/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -11 (303/328) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -54 (0/172) | GOOD false LEAD_HIT false MELEE false
 Your Green dragon won! | GOOD false CLOSING false null false
 == dragon is theirs 4
-won=false turns=5 hpLeft=0.0 hp 0.0 238.0
+won=false turns=9 hpLeft=0.0 hp 0.0 205.0
 Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
 Green dragon's Dragonfire missed | INFO true FOE_HIT true MAGIC false
--23 (258/281) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Dragonfire: -79 (74/153) | BAD true FOE_HIT true MAGIC false
--20 (238/281) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Dragonfire: -109 (0/153) | BAD true FOE_HIT true MAGIC false
+-21 (260/281) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Bite: -42 (111/153) | BAD true FOE_HIT false MELEE false
+-11 (249/281) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Bite: -44 (67/153) | BAD true FOE_HIT false MELEE false
+-21 (228/281) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Bite: -33 (34/153) | BAD true FOE_HIT false MELEE false
+-23 (205/281) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Dragonfire: -96 (0/153) | BAD true FOE_HIT true MAGIC false
 Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
 == dragon is mine 5
-won=true turns=3 hpLeft=0.9887323943661972 hp 351.0 0.0
+won=true turns=3 hpLeft=0.971830985915493 hp 345.0 0.0
 Your Green dragon (Lv 50) attacks! | INFO false OPENING false null false
-Green dragon uses Dragonfire: -158 (14/172) | GOOD false LEAD_HIT true MAGIC false
-Green dragon -4 (351/355) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -147 (0/172) | GOOD false LEAD_HIT true MAGIC false
+Green dragon uses Dragonfire: -164 (8/172) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -10 (345/355) | BAD true FOE_HIT false MELEE false
+Green dragon uses Dragonfire: -169 (0/172) | GOOD false LEAD_HIT true MAGIC false
 Your Green dragon won! | GOOD false CLOSING false null false
 == dragon is theirs 5
-won=false turns=3 hpLeft=0.0 hp 0.0 273.0
+won=false turns=3 hpLeft=0.0 hp 0.0 266.0
 Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
-Green dragon uses Dragonfire: -97 (56/153) | BAD true FOE_HIT true MAGIC false
--15 (273/288) | GOOD false LEAD_HIT false MAGIC false
-Green dragon uses Dragonfire: -90 (0/153) | BAD true FOE_HIT true MAGIC false
+Green dragon uses Dragonfire: -102 (51/153) | BAD true FOE_HIT true MAGIC false
+-22 (266/288) | GOOD false LEAD_HIT false MAGIC false
+Green dragon uses Dragonfire: -105 (0/153) | BAD true FOE_HIT true MAGIC false
 Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
 == wyvern 0
-won=true turns=8 hpLeft=0.963855421686747 hp 400.0 0.0
+won=true turns=6 hpLeft=0.9855421686746988 hp 409.0 0.0
 Your Spitting Wyvern (Lv 50) attacks! Melee beats Ranged! | GOOD false OPENING false null false
 Spitting Wyvern -4 (411/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Bite: -109 (120/229) | GOOD false LEAD_HIT false MELEE false
-Spitting Wyvern -2 (409/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Icy breath: -103 (17/229) | GOOD false LEAD_HIT true MAGIC true
-Spitting Wyvern -8 (401/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern's Icy breath missed | INFO false LEAD_HIT true MAGIC true
-Spitting Wyvern -1 (400/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Bite: -90 (0/229) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern uses Bite: -108 (121/229) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern -1 (410/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern uses Bite: -108 (13/229) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern -1 (409/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern uses Bite: -108 (0/229) | GOOD false LEAD_HIT false MELEE false
 Your Spitting Wyvern won! | GOOD false CLOSING false null false
 == two dragons 0
-won=false turns=6 hpLeft=0.0 hp 0.0 187.0
+won=true turns=13 hpLeft=0.003115264797507788 hp 1.0 0.0
 Your Green dragon (Lv 45) attacks! | INFO false OPENING false null false
-Green dragon uses Dragonfire: -110 (265/375) | GOOD false LEAD_HIT true MAGIC false
-Spitting Wyvern uses Bite: -67 (254/321) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -42 (223/375) | GOOD false LEAD_HIT false MELEE false
-Spitting Wyvern uses Icy breath: -135 (119/321) | BAD true FOE_HIT true MAGIC true
-Green dragon uses Bite: -36 (187/375) | GOOD false LEAD_HIT false MELEE false
-Spitting Wyvern uses Icy breath: -125 (0/321) | BAD true FOE_HIT true MAGIC true
-Your Green dragon lost to the Spitting Wyvern. | BAD false CLOSING false null false
+Green dragon uses Dragonfire: -126 (249/375) | GOOD false LEAD_HIT true MAGIC false
+Spitting Wyvern uses Icy breath: -169 (152/321) | BAD true FOE_HIT true MAGIC true
+Green dragon uses Bite: -37 (212/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern's Icy breath missed | INFO true FOE_HIT true MAGIC true
+Green dragon uses Bite: -50 (162/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern uses Bite: -54 (98/321) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -31 (131/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern uses Bite: -45 (53/321) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -51 (80/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern uses Bite: -52 (1/321) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -37 (43/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern's Icy breath missed | INFO true FOE_HIT true MAGIC true
+Green dragon uses Dragonfire: -131 (0/375) | GOOD false LEAD_HIT true MAGIC false
+Your Green dragon won! | GOOD false CLOSING false null false
 == wyvern 1
 won=true turns=8 hpLeft=0.9686746987951808 hp 402.0 0.0
 Your Spitting Wyvern (Lv 50) attacks! Melee beats Ranged! | GOOD false OPENING false null false
 Spitting Wyvern -4 (411/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Bite: -93 (136/229) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern uses Bite: -100 (129/229) | GOOD false LEAD_HIT false MELEE false
 Spitting Wyvern -1 (410/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Icy breath: -126 (10/229) | GOOD false LEAD_HIT true MAGIC true
-Spitting Wyvern -7 (403/415) | BAD true FOE_HIT false RANGED false
 Spitting Wyvern's Icy breath missed | INFO false LEAD_HIT true MAGIC true
-Spitting Wyvern -1 (402/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Bite: -96 (0/229) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern -1 (409/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern uses Icy breath: -109 (20/229) | GOOD false LEAD_HIT true MAGIC true
+Spitting Wyvern -7 (402/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern uses Bite: -100 (0/229) | GOOD false LEAD_HIT false MELEE false
 Your Spitting Wyvern won! | GOOD false CLOSING false null false
 == two dragons 1
-won=true turns=9 hpLeft=0.42679127725856697 hp 137.0 0.0
+won=true turns=13 hpLeft=0.17133956386292834 hp 55.0 0.0
 Your Green dragon (Lv 45) attacks! | INFO false OPENING false null false
 Green dragon uses Bite: -37 (338/375) | GOOD false LEAD_HIT false MELEE false
-Spitting Wyvern uses Bite: -63 (258/321) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -103 (235/375) | GOOD false LEAD_HIT true MAGIC false
-Spitting Wyvern's Icy breath missed | INFO true FOE_HIT true MAGIC true
+Spitting Wyvern uses Bite: -46 (275/321) | BAD true FOE_HIT false MELEE false
 Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
-Spitting Wyvern uses Bite: -55 (203/321) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -124 (111/375) | GOOD false LEAD_HIT true MAGIC false
-Spitting Wyvern uses Bite: -66 (137/321) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -117 (0/375) | GOOD false LEAD_HIT true MAGIC false
-Your Green dragon won! | GOOD false CLOSING false null false
-== wyvern 2
-won=true turns=6 hpLeft=0.9662650602409638 hp 401.0 0.0
-Your Spitting Wyvern (Lv 50) attacks! Melee beats Ranged! | GOOD false OPENING false null false
-Spitting Wyvern -4 (411/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Icy breath: -127 (102/229) | GOOD false LEAD_HIT true MAGIC true
-Spitting Wyvern -6 (405/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Icy breath: -90 (12/229) | GOOD false LEAD_HIT true MAGIC true
-Spitting Wyvern -4 (401/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Icy breath: -115 (0/229) | GOOD false LEAD_HIT true MAGIC true
-Your Spitting Wyvern won! | GOOD false CLOSING false null false
-== two dragons 2
-won=false turns=6 hpLeft=0.0 hp 0.0 165.0
-Your Green dragon (Lv 45) attacks! | INFO false OPENING false null false
-Green dragon uses Bite: -28 (347/375) | GOOD false LEAD_HIT false MELEE false
-Spitting Wyvern uses Icy breath: -177 (144/321) | BAD true FOE_HIT true MAGIC true
-Green dragon uses Dragonfire: -136 (211/375) | GOOD false LEAD_HIT true MAGIC false
-Spitting Wyvern uses Bite: -61 (83/321) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -46 (165/375) | GOOD false LEAD_HIT false MELEE false
-Spitting Wyvern uses Icy breath: -178 (0/321) | BAD true FOE_HIT true MAGIC true
-Your Green dragon lost to the Spitting Wyvern. | BAD false CLOSING false null false
-== wyvern 3
-won=true turns=6 hpLeft=0.9662650602409638 hp 401.0 0.0
-Your Spitting Wyvern (Lv 50) attacks! Melee beats Ranged! | GOOD false OPENING false null false
-Spitting Wyvern -4 (411/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Bite: -87 (142/229) | GOOD false LEAD_HIT false MELEE false
-Spitting Wyvern -5 (406/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Bite: -110 (32/229) | GOOD false LEAD_HIT false MELEE false
-Spitting Wyvern -5 (401/415) | BAD true FOE_HIT false RANGED false
-Spitting Wyvern uses Bite: -116 (0/229) | GOOD false LEAD_HIT false MELEE false
-Your Spitting Wyvern won! | GOOD false CLOSING false null false
-== two dragons 3
-won=true turns=7 hpLeft=0.1526479750778816 hp 49.0 0.0
-Your Green dragon (Lv 45) attacks! | INFO false OPENING false null false
-Green dragon uses Dragonfire: -123 (252/375) | GOOD false LEAD_HIT true MAGIC false
-Spitting Wyvern uses Icy breath: -145 (176/321) | BAD true FOE_HIT true MAGIC true
-Green dragon uses Bite: -37 (215/375) | GOOD false LEAD_HIT false MELEE false
-Spitting Wyvern uses Bite: -69 (107/321) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -97 (118/375) | GOOD false LEAD_HIT true MAGIC false
-Spitting Wyvern uses Bite: -58 (49/321) | BAD true FOE_HIT false MELEE false
+Spitting Wyvern uses Bite: -49 (226/321) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -50 (288/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern's Icy breath missed | INFO true FOE_HIT true MAGIC true
+Green dragon uses Bite: -37 (251/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern uses Bite: -49 (177/321) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -40 (211/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern uses Bite: -60 (117/321) | BAD true FOE_HIT false MELEE false
+Green dragon uses Dragonfire: -103 (108/375) | GOOD false LEAD_HIT true MAGIC false
+Spitting Wyvern uses Bite: -62 (55/321) | BAD true FOE_HIT false MELEE false
 Green dragon uses Dragonfire: -134 (0/375) | GOOD false LEAD_HIT true MAGIC false
 Your Green dragon won! | GOOD false CLOSING false null false
+== wyvern 2
+won=true turns=6 hpLeft=0.9855421686746988 hp 409.0 0.0
+Your Spitting Wyvern (Lv 50) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Spitting Wyvern -4 (411/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern uses Icy breath: -121 (108/229) | GOOD false LEAD_HIT true MAGIC true
+Spitting Wyvern -1 (410/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern's Icy breath missed | INFO false LEAD_HIT true MAGIC true
+Spitting Wyvern -1 (409/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern uses Bite: -117 (0/229) | GOOD false LEAD_HIT false MELEE false
+Your Spitting Wyvern won! | GOOD false CLOSING false null false
+== two dragons 2
+won=false turns=8 hpLeft=0.0 hp 0.0 39.0
+Your Green dragon (Lv 45) attacks! | INFO false OPENING false null false
+Green dragon uses Bite: -49 (326/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern uses Bite: -69 (252/321) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -48 (278/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern uses Icy breath: -154 (98/321) | BAD true FOE_HIT true MAGIC true
+Green dragon uses Dragonfire: -141 (137/375) | GOOD false LEAD_HIT true MAGIC false
+Spitting Wyvern uses Bite: -48 (50/321) | BAD true FOE_HIT false MELEE false
+Green dragon uses Dragonfire: -98 (39/375) | GOOD false LEAD_HIT true MAGIC false
+Spitting Wyvern uses Bite: -72 (0/321) | BAD true FOE_HIT false MELEE false
+Your Green dragon lost to the Spitting Wyvern. | BAD false CLOSING false null false
+== wyvern 3
+won=true turns=4 hpLeft=0.9855421686746988 hp 409.0 0.0
+Your Spitting Wyvern (Lv 50) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Spitting Wyvern -4 (411/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern uses Bite: -116 (113/229) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern -2 (409/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern uses Icy breath: -114 (0/229) | GOOD false LEAD_HIT true MAGIC true
+Your Spitting Wyvern won! | GOOD false CLOSING false null false
+== two dragons 3
+won=false turns=8 hpLeft=0.0 hp 0.0 179.0
+Your Green dragon (Lv 45) attacks! | INFO false OPENING false null false
+Green dragon uses Dragonfire: -99 (276/375) | GOOD false LEAD_HIT true MAGIC false
+Spitting Wyvern uses Icy breath: -173 (148/321) | BAD true FOE_HIT true MAGIC true
+Green dragon uses Bite: -47 (229/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern uses Bite: -57 (91/321) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -50 (179/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern uses Bite: -65 (26/321) | BAD true FOE_HIT false MELEE false
+Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
+Spitting Wyvern uses Icy breath: -152 (0/321) | BAD true FOE_HIT true MAGIC true
+Your Green dragon lost to the Spitting Wyvern. | BAD false CLOSING false null false
 == same species same level 0
 won=true turns=15 hpLeft=0.13541666666666666 hp 13.0 0.0
 Your Goblin (Lv 20) attacks! | INFO false OPENING false null false
@@ -966,7 +978,7 @@ Goblin -6 (45/134) | BAD true FOE_HIT false RANGED false
 -32 (0/126) | GOOD false LEAD_HIT false MELEE false
 Your Goblin won! | GOOD false CLOSING false null false
 == team 0
-won=false mine 0.0 0.0 0.0 0.0 theirs 0.0 0.0 270.0
+won=false mine 0.0 0.0 0.0 0.0 theirs 0.0 0.0 132.0
 Gob lost to Archer (Lv 20) | BAD true OTHER false null false
 Green dragon beat Archer (Lv 20) | GOOD true OTHER false null false
 Green dragon beat Wizard (Lv 25) | GOOD true OTHER false null false
@@ -979,36 +991,34 @@ duel 0 0 false goblin archer false
   Gob -9 (0/73) | BAD true FOE_HIT false RANGED false
   out Gob lost to Archer (Lv 20) | BAD true OTHER false null false
 duel 1 0 true green dragon archer false
-  Green dragon uses Bite: -82 (0/96) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Bite: -67 (0/96) | GOOD false LEAD_HIT false MELEE false
   out Green dragon beat Archer (Lv 20) | GOOD true OTHER false null false
 duel 1 1 true green dragon wizard false
-  Green dragon uses Dragonfire: -108 (7/115) | GOOD false LEAD_HIT true MAGIC false
-  Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
-  Green dragon uses Dragonfire: -114 (0/115) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon uses Bite: -53 (62/115) | GOOD false LEAD_HIT false MELEE false
+  Green dragon -1 (232/258) | BAD true FOE_HIT false MAGIC false
+  Green dragon uses Dragonfire: -86 (0/115) | GOOD false LEAD_HIT true MAGIC false
   out Green dragon beat Wizard (Lv 25) | GOOD true OTHER false null false
 duel 1 2 false green dragon green dragon false
-  Green dragon uses Dragonfire: -147 (79/258) | BAD true FOE_HIT true MAGIC false
-  Green dragon uses Bite: -29 (292/321) | GOOD false LEAD_HIT false MELEE false
-  Green dragon uses Dragonfire: -138 (0/258) | BAD true FOE_HIT true MAGIC false
+  Green dragon's Dragonfire missed | INFO true FOE_HIT true MAGIC false
+  Green dragon uses Dragonfire: -143 (89/258) | BAD true FOE_HIT true MAGIC false
+  Green dragon uses Dragonfire: -108 (0/258) | BAD true FOE_HIT true MAGIC false
   out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 2 2 false spitting wyvern green dragon false
-  Green dragon uses Bite: -52 (128/257) | BAD true FOE_HIT false MELEE false
-  Green dragon uses Bite: -49 (79/257) | BAD true FOE_HIT false MELEE false
-  Green dragon uses Dragonfire: -117 (0/257) | BAD true FOE_HIT true MAGIC false
+  Green dragon uses Dragonfire: -141 (39/257) | BAD true FOE_HIT true MAGIC false
+  Spitting Wyvern uses Bite: -22 (132/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Bite: -47 (0/257) | BAD true FOE_HIT false MELEE false
   out Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 3 2 false wizard green dragon false
-  Green dragon uses Bite: -59 (45/104) | BAD true FOE_HIT false MELEE false
-  -1 (270/321) | GOOD false LEAD_HIT false MAGIC false
-  Green dragon uses Dragonfire: -124 (0/104) | BAD true FOE_HIT true MAGIC false
+  Green dragon uses Dragonfire: -110 (0/104) | BAD true FOE_HIT true MAGIC false
   out Wizard lost to Green dragon (Lv 45) | BAD true OTHER false null false
 == team 1
-won=false mine 0.0 0.0 0.0 0.0 theirs 0.0 0.0 48.0 319.0
+won=true mine 0.0 0.0 143.5 123.0 theirs 0.0 0.0 0.0 0.0
 Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 Gob lost to Wizard (Lv 26) | BAD true OTHER false null false
 Green dragon beat Wizard (Lv 26) | GOOD true OTHER false null false
-Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
-Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
-Wizard lost to Green dragon (Lv 45) | BAD true OTHER false null false
+Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+Green dragon lost to King Black Dragon (Lv 29) | BAD true OTHER false null false
+Spitting Wyvern beat King Black Dragon (Lv 29) | GOOD true OTHER false null false
 duel 0 0 true goblin archer false
   Gob -11 (77/88) | BAD true FOE_HIT false RANGED false
   Gob -12 (45/88) | BAD true FOE_HIT false RANGED false
@@ -1018,31 +1028,32 @@ duel 0 1 false goblin wizard false
   Gob -25 (0/88) | BAD true FOE_HIT false MAGIC false
   out Gob lost to Wizard (Lv 26) | BAD true OTHER false null false
 duel 1 1 true green dragon wizard false
-  Green dragon uses Dragonfire: -123 (0/119) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon uses Dragonfire: -114 (5/119) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon -4 (246/277) | BAD true FOE_HIT false MAGIC false
+  Green dragon uses Bite: -43 (0/119) | GOOD false LEAD_HIT false MELEE false
   out Green dragon beat Wizard (Lv 26) | GOOD true OTHER false null false
-duel 1 2 false green dragon green dragon false
-  Green dragon uses Dragonfire: -120 (130/277) | BAD true FOE_HIT true MAGIC false
-  Green dragon uses Dragonfire: -127 (3/277) | BAD true FOE_HIT true MAGIC false
-  Green dragon uses Dragonfire: -111 (0/277) | BAD true FOE_HIT true MAGIC false
-  out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
-duel 2 2 false spitting wyvern green dragon false
-  Green dragon uses Dragonfire: -108 (78/265) | BAD true FOE_HIT true MAGIC false
-  Spitting Wyvern uses Bite: -29 (96/321) | GOOD false LEAD_HIT false MELEE false
-  Green dragon uses Bite: -54 (0/265) | BAD true FOE_HIT false MELEE false
-  out Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
-duel 3 2 false wizard green dragon false
-  Green dragon uses Dragonfire: -120 (3/123) | BAD true FOE_HIT true MAGIC false
-  -9 (48/321) | GOOD false LEAD_HIT false MAGIC false
-  Green dragon uses Bite: -48 (0/123) | BAD true FOE_HIT false MELEE false
-  out Wizard lost to Green dragon (Lv 45) | BAD true OTHER false null false
+duel 1 2 true green dragon green dragon false
+  Green dragon uses Bite: -48 (198/277) | BAD true FOE_HIT false MELEE false
+  Green dragon uses Bite: -45 (89/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Dragonfire: -108 (0/321) | GOOD false LEAD_HIT true MAGIC false
+  out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+duel 1 3 false green dragon king black dragon false
+  Green dragon uses Dragonfire: -106 (213/319) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon uses Dragonfire: -121 (92/319) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon -39 (0/277) | BAD true FOE_HIT false MELEE false
+  out Green dragon lost to King Black Dragon (Lv 29) | BAD true OTHER false null false
+duel 2 3 true spitting wyvern king black dragon false
+  Spitting Wyvern uses Icy breath: -89 (3/319) | GOOD false LEAD_HIT true MAGIC true
+  Spitting Wyvern -42 (144/265) | BAD true FOE_HIT false MELEE false
+  Spitting Wyvern uses Bite: -24 (0/319) | GOOD false LEAD_HIT false MELEE false
+  out Spitting Wyvern beat King Black Dragon (Lv 29) | GOOD true OTHER false null false
 == team 2
-won=false mine 0.0 0.0 0.0 0.0 theirs 0.0 0.0 116.0
+won=true mine 0.0 0.0 108.1 142.0 theirs 0.0 0.0 0.0
 Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 Gob lost to Wizard (Lv 27) | BAD true OTHER false null false
 Green dragon beat Wizard (Lv 27) | GOOD true OTHER false null false
 Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
-Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
-Wizard lost to Green dragon (Lv 45) | BAD true OTHER false null false
+Spitting Wyvern beat Green dragon (Lv 45) | GOOD true OTHER false null false
 duel 0 0 true goblin archer false
   -24 (72/96) | GOOD false LEAD_HIT false MELEE false
   -25 (26/96) | GOOD false LEAD_HIT false MELEE false
@@ -1054,25 +1065,22 @@ duel 0 1 false goblin wizard false
   Gob -22 (0/104) | BAD true FOE_HIT false MAGIC false
   out Gob lost to Wizard (Lv 27) | BAD true OTHER false null false
 duel 1 1 true green dragon wizard false
-  Green dragon uses Dragonfire: -140 (0/123) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon uses Bite: -62 (48/123) | GOOD false LEAD_HIT false MELEE false
+  Green dragon -3 (264/296) | BAD true FOE_HIT false MAGIC false
+  Green dragon uses Dragonfire: -119 (0/123) | GOOD false LEAD_HIT true MAGIC false
   out Green dragon beat Wizard (Lv 27) | GOOD true OTHER false null false
 duel 1 2 false green dragon green dragon false
-  Green dragon uses Dragonfire: -102 (165/296) | BAD true FOE_HIT true MAGIC false
-  Green dragon uses Bite: -55 (110/296) | BAD true FOE_HIT false MELEE false
-  Green dragon uses Dragonfire: -140 (0/296) | BAD true FOE_HIT true MAGIC false
+  Green dragon uses Bite: -36 (228/296) | BAD true FOE_HIT false MELEE false
+  Green dragon uses Bite: -48 (143/296) | BAD true FOE_HIT false MELEE false
+  Green dragon uses Dragonfire: -139 (0/296) | BAD true FOE_HIT true MAGIC false
   out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
-duel 2 2 false spitting wyvern green dragon false
-  Green dragon uses Dragonfire: -112 (80/273) | BAD true FOE_HIT true MAGIC false
-  Spitting Wyvern uses Bite: -23 (127/321) | GOOD false LEAD_HIT false MELEE false
-  Green dragon uses Dragonfire: -133 (0/273) | BAD true FOE_HIT true MAGIC false
-  out Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
-duel 3 2 false wizard green dragon false
-  Green dragon uses Bite: -41 (101/142) | BAD true FOE_HIT false MELEE false
-  Green dragon uses Bite: -39 (62/142) | BAD true FOE_HIT false MELEE false
-  Green dragon uses Dragonfire: -123 (0/142) | BAD true FOE_HIT true MAGIC false
-  out Wizard lost to Green dragon (Lv 45) | BAD true OTHER false null false
+duel 2 2 true spitting wyvern green dragon false
+  Green dragon uses Bite: -39 (153/273) | BAD true FOE_HIT false MELEE false
+  Green dragon uses Bite: -44 (109/273) | BAD true FOE_HIT false MELEE false
+  Spitting Wyvern uses Bite: -43 (0/321) | GOOD false LEAD_HIT false MELEE false
+  out Spitting Wyvern beat Green dragon (Lv 45) | GOOD true OTHER false null false
 == team 3
-won=false mine 0.0 0.0 0.0 0.0 theirs 0.0 0.0 0.0 303.0
+won=false mine 0.0 0.0 0.0 0.0 theirs 0.0 0.0 0.0 305.0
 Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 Gob lost to Wizard (Lv 28) | BAD true OTHER false null false
 Green dragon beat Wizard (Lv 28) | GOOD true OTHER false null false
@@ -1094,26 +1102,27 @@ duel 1 1 true green dragon wizard false
   Green dragon uses Dragonfire: -130 (0/126) | GOOD false LEAD_HIT true MAGIC false
   out Green dragon beat Wizard (Lv 28) | GOOD true OTHER false null false
 duel 1 2 false green dragon green dragon false
-  Green dragon uses Bite: -52 (269/321) | GOOD false LEAD_HIT false MELEE false
-  Green dragon uses Dragonfire: -124 (55/315) | BAD true FOE_HIT true MAGIC false
-  Green dragon uses Dragonfire: -109 (0/315) | BAD true FOE_HIT true MAGIC false
+  Green dragon uses Bite: -43 (278/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Bite: -66 (164/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Dragonfire: -102 (0/315) | BAD true FOE_HIT true MAGIC false
   out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 2 2 false spitting wyvern green dragon false
-  Green dragon uses Dragonfire: -142 (55/281) | BAD true FOE_HIT true MAGIC false
-  Green dragon uses Bite: -50 (5/281) | BAD true FOE_HIT false MELEE false
-  Green dragon uses Bite: -58 (0/281) | BAD true FOE_HIT false MELEE false
+  Green dragon uses Bite: -44 (153/281) | BAD true FOE_HIT false MELEE false
+  Spitting Wyvern uses Bite: -29 (54/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Bite: -50 (0/281) | BAD true FOE_HIT false MELEE false
   out Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 3 2 true wizard green dragon false
-  Green dragon uses Bite: -53 (108/161) | BAD true FOE_HIT false MELEE false
-  -18 (0/321) | GOOD false LEAD_HIT false MAGIC false
+  Green dragon uses Bite: -46 (115/161) | BAD true FOE_HIT false MELEE false
+  Green dragon uses Bite: -52 (63/161) | BAD true FOE_HIT false MELEE false
+  -8 (0/321) | GOOD false LEAD_HIT false MAGIC false
   out Wizard beat Green dragon (Lv 45) | GOOD true OTHER false null false
 duel 3 3 false wizard king black dragon false
-  -15 (325/340) | GOOD false LEAD_HIT false MAGIC false
-  Wizard -41 (23/161) | BAD true FOE_HIT false MELEE false
-  Wizard -51 (0/161) | BAD true FOE_HIT false MELEE false
+  -20 (320/340) | GOOD false LEAD_HIT false MAGIC false
+  -15 (305/340) | GOOD false LEAD_HIT false MAGIC false
+  Wizard -44 (0/161) | BAD true FOE_HIT false MELEE false
   out Wizard lost to King Black Dragon (Lv 31) | BAD true OTHER false null false
 == team 4
-won=true mine 0.0 78.69999999999999 201.6 180.0 theirs 0.0 0.0 0.0
+won=true mine 0.0 48.69999999999999 201.6 180.0 theirs 0.0 0.0 0.0
 Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 Gob lost to Wizard (Lv 29) | BAD true OTHER false null false
 Green dragon beat Wizard (Lv 29) | GOOD true OTHER false null false
@@ -1129,22 +1138,23 @@ duel 0 1 false goblin wizard false
   Gob -30 (0/134) | BAD true FOE_HIT false MAGIC false
   out Gob lost to Wizard (Lv 29) | BAD true OTHER false null false
 duel 1 1 true green dragon wizard false
-  Green dragon uses Bite: -57 (10/130) | GOOD false LEAD_HIT false MELEE false
-  Green dragon -3 (297/333) | BAD true FOE_HIT false MAGIC false
-  Green dragon uses Bite: -55 (0/130) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Bite: -64 (3/130) | GOOD false LEAD_HIT false MELEE false
+  Green dragon -1 (299/333) | BAD true FOE_HIT false MAGIC false
+  Green dragon uses Bite: -56 (0/130) | GOOD false LEAD_HIT false MELEE false
   out Green dragon beat Wizard (Lv 29) | GOOD true OTHER false null false
 duel 1 2 true green dragon green dragon false
-  Green dragon uses Dragonfire: -171 (150/321) | GOOD false LEAD_HIT true MAGIC false
-  Green dragon uses Bite: -59 (91/321) | GOOD false LEAD_HIT false MELEE false
-  Green dragon uses Dragonfire: -139 (0/321) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon uses Bite: -62 (259/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Dragonfire: -171 (88/321) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon uses Dragonfire: -157 (0/321) | GOOD false LEAD_HIT true MAGIC false
   out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
 == team 5
-won=true mine 0.0 158.8 207.2 199.0 theirs 0.0 0.0 0.0 0.0
+won=true mine 0.0 0.0 207.2 199.0 theirs 0.0 0.0 0.0 0.0
 Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 Gob lost to Wizard (Lv 30) | BAD true OTHER false null false
 Green dragon beat Wizard (Lv 30) | GOOD true OTHER false null false
 Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
-Green dragon beat King Black Dragon (Lv 33) | GOOD true OTHER false null false
+Green dragon lost to King Black Dragon (Lv 33) | BAD true OTHER false null false
+Spitting Wyvern beat King Black Dragon (Lv 33) | GOOD true OTHER false null false
 duel 0 0 true goblin archer false
   -38 (58/96) | GOOD false LEAD_HIT false MELEE false
   -35 (23/96) | GOOD false LEAD_HIT false MELEE false
@@ -1156,25 +1166,27 @@ duel 0 1 false goblin wizard false
   Gob -30 (0/149) | BAD true FOE_HIT false MAGIC false
   out Gob lost to Wizard (Lv 30) | BAD true OTHER false null false
 duel 1 1 true green dragon wizard false
-  Green dragon uses Bite: -58 (0/134) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Bite: -68 (0/134) | GOOD false LEAD_HIT false MELEE false
   out Green dragon beat Wizard (Lv 30) | GOOD true OTHER false null false
 duel 1 2 true green dragon green dragon false
-  Green dragon uses Dragonfire: -140 (181/321) | GOOD false LEAD_HIT true MAGIC false
-  Green dragon uses Dragonfire: -153 (28/321) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon uses Bite: -68 (253/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Bite: -36 (162/352) | BAD true FOE_HIT false MELEE false
   Green dragon uses Dragonfire: -137 (0/321) | GOOD false LEAD_HIT true MAGIC false
   out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
-duel 1 3 true green dragon king black dragon false
-  Green dragon uses Bite: -54 (306/360) | GOOD false LEAD_HIT false MELEE false
-  Green dragon uses Dragonfire: -182 (124/360) | GOOD false LEAD_HIT true MAGIC false
-  Green dragon uses Dragonfire: -174 (0/360) | GOOD false LEAD_HIT true MAGIC false
-  out Green dragon beat King Black Dragon (Lv 33) | GOOD true OTHER false null false
+duel 1 3 false green dragon king black dragon false
+  Green dragon uses Bite: -52 (308/360) | GOOD false LEAD_HIT false MELEE false
+  Green dragon -49 (14/352) | BAD true FOE_HIT false MELEE false
+  Green dragon -41 (0/352) | BAD true FOE_HIT false MELEE false
+  out Green dragon lost to King Black Dragon (Lv 33) | BAD true OTHER false null false
+duel 2 3 true spitting wyvern king black dragon false
+  Spitting Wyvern uses Icy breath: -132 (0/360) | GOOD false LEAD_HIT true MAGIC true
+  out Spitting Wyvern beat King Black Dragon (Lv 33) | GOOD true OTHER false null false
 == team 6
-won=true mine 0.0 0.0 155.79999999999998 218.0 theirs 0.0 0.0 0.0
+won=true mine 0.0 208.90000000000003 212.79999999999998 218.0 theirs 0.0 0.0 0.0
 Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 Gob beat Wizard (Lv 31) | GOOD true OTHER false null false
 Gob lost to Green dragon (Lv 45) | BAD true OTHER false null false
-Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
-Spitting Wyvern beat Green dragon (Lv 45) | GOOD true OTHER false null false
+Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
 duel 0 0 true goblin archer false
   -44 (52/96) | GOOD false LEAD_HIT false MELEE false
   -45 (7/96) | GOOD false LEAD_HIT false MELEE false
@@ -1186,19 +1198,15 @@ duel 0 1 true goblin wizard false
   -17 (0/138) | GOOD false LEAD_HIT false MELEE false
   out Gob beat Wizard (Lv 31) | GOOD true OTHER false null false
 duel 0 2 false goblin green dragon false
-  Green dragon uses Dragonfire: -130 (0/165) | BAD true FOE_HIT true MAGIC false
+  Green dragon uses Bite: -54 (0/165) | BAD true FOE_HIT false MELEE false
   out Gob lost to Green dragon (Lv 45) | BAD true OTHER false null false
-duel 1 2 false green dragon green dragon false
-  Green dragon uses Bite: -75 (246/321) | GOOD false LEAD_HIT false MELEE false
-  Green dragon uses Bite: -60 (121/321) | GOOD false LEAD_HIT false MELEE false
-  Green dragon uses Dragonfire: -119 (0/371) | BAD true FOE_HIT true MAGIC false
-  out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
-duel 2 2 true spitting wyvern green dragon false
-  Green dragon uses Bite: -57 (156/304) | BAD true FOE_HIT false MELEE false
-  Spitting Wyvern uses Icy breath: -105 (0/321) | GOOD false LEAD_HIT true MAGIC true
-  out Spitting Wyvern beat Green dragon (Lv 45) | GOOD true OTHER false null false
+duel 1 2 true green dragon green dragon false
+  Green dragon uses Bite: -63 (258/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Bite: -55 (135/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Dragonfire: -148 (0/321) | GOOD false LEAD_HIT true MAGIC false
+  out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
 == team 7
-won=true mine 0.0 110.0 218.39999999999998 237.0 theirs 0.0 0.0 0.0 0.0
+won=true mine 0.0 170.0 218.39999999999998 237.0 theirs 0.0 0.0 0.0 0.0
 Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 Gob beat Wizard (Lv 32) | GOOD true OTHER false null false
 Gob lost to Green dragon (Lv 45) | BAD true OTHER false null false
@@ -1215,17 +1223,17 @@ duel 0 1 true goblin wizard false
   -23 (0/142) | GOOD false LEAD_HIT false MELEE false
   out Gob beat Wizard (Lv 32) | GOOD true OTHER false null false
 duel 0 2 false goblin green dragon false
-  Green dragon uses Bite: -58 (0/180) | BAD true FOE_HIT false MELEE false
+  Green dragon uses Bite: -71 (0/180) | BAD true FOE_HIT false MELEE false
   out Gob lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 1 2 true green dragon green dragon false
-  Green dragon uses Dragonfire: -193 (128/321) | GOOD false LEAD_HIT true MAGIC false
-  Green dragon uses Dragonfire: -128 (223/390) | BAD true FOE_HIT true MAGIC false
-  Green dragon uses Dragonfire: -215 (0/321) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon uses Bite: -77 (244/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Bite: -84 (160/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon uses Dragonfire: -184 (0/321) | GOOD false LEAD_HIT true MAGIC false
   out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
 duel 1 3 true green dragon king black dragon false
-  Green dragon uses Bite: -74 (307/381) | GOOD false LEAD_HIT false MELEE false
-  Green dragon -33 (152/390) | BAD true FOE_HIT false MELEE false
-  Green dragon uses Dragonfire: -199 (0/381) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
+  Green dragon uses Dragonfire: -189 (192/381) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon uses Dragonfire: -214 (0/381) | GOOD false LEAD_HIT true MAGIC false
   out Green dragon beat King Black Dragon (Lv 35) | GOOD true OTHER false null false
 == team with a turn limit 0
 won=false mine 0.0 0.0 theirs 0.0 12.0
@@ -1361,97 +1369,97 @@ duel 1 1 true goblin archer false
   -18 (0/96) | GOOD false LEAD_HIT false MELEE false
   out Goblin beat Archer (Lv 20) | GOOD true OTHER false null false
 == duel 0 mine
-first won=true hp 219.0 0.0
+first won=true hp 221.0 0.0
 Green dragon -19 (269/288) | BAD true FOE_HIT false MELEE false
 Green dragon uses Bite: -53 (134/187) | GOOD false LEAD_HIT false MELEE false
-Green dragon -16 (253/288) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -118 (16/187) | GOOD false LEAD_HIT true MAGIC false
-Green dragon -22 (231/288) | BAD true FOE_HIT false MELEE false
-Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
-Green dragon -12 (219/288) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -43 (0/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -13 (256/288) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -53 (81/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -13 (243/288) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -53 (28/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -22 (221/288) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -60 (0/187) | GOOD false LEAD_HIT false MELEE false
 == duel 0 theirs
-first won=true hp 219.0 0.0
+first won=true hp 221.0 0.0
 -19 (269/288) | GOOD false LEAD_HIT false MELEE false
 Green dragon uses Bite: -53 (134/187) | BAD true FOE_HIT false MELEE false
--16 (253/288) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Dragonfire: -118 (16/187) | BAD true FOE_HIT true MAGIC false
--22 (231/288) | GOOD false LEAD_HIT false MELEE false
-Green dragon's Dragonfire missed | INFO true FOE_HIT true MAGIC false
--12 (219/288) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Bite: -43 (0/187) | BAD true FOE_HIT false MELEE false
+-13 (256/288) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Bite: -53 (81/187) | BAD true FOE_HIT false MELEE false
+-13 (243/288) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Bite: -53 (28/187) | BAD true FOE_HIT false MELEE false
+-22 (221/288) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Bite: -60 (0/187) | BAD true FOE_HIT false MELEE false
 == duel 1 mine
-first won=true hp 219.0 0.0
+first won=true hp 239.0 0.0
 Green dragon -18 (276/294) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -119 (68/187) | GOOD false LEAD_HIT true MAGIC false
-Green dragon -22 (254/294) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -63 (5/187) | GOOD false LEAD_HIT false MELEE false
-Green dragon -21 (233/294) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -50 (137/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -8 (268/294) | BAD true FOE_HIT false MELEE false
 Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
-Green dragon -14 (219/294) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -48 (0/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -8 (260/294) | BAD true FOE_HIT false MELEE false
+Green dragon uses Dragonfire: -129 (8/187) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -21 (239/294) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -50 (0/187) | GOOD false LEAD_HIT false MELEE false
 == duel 1 theirs
-first won=true hp 219.0 0.0
+first won=true hp 239.0 0.0
 -18 (276/294) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Dragonfire: -119 (68/187) | BAD true FOE_HIT true MAGIC false
--22 (254/294) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Bite: -63 (5/187) | BAD true FOE_HIT false MELEE false
--21 (233/294) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Bite: -50 (137/187) | BAD true FOE_HIT false MELEE false
+-8 (268/294) | GOOD false LEAD_HIT false MELEE false
 Green dragon's Dragonfire missed | INFO true FOE_HIT true MAGIC false
--14 (219/294) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Bite: -48 (0/187) | BAD true FOE_HIT false MELEE false
+-8 (260/294) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Dragonfire: -129 (8/187) | BAD true FOE_HIT true MAGIC false
+-21 (239/294) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Bite: -50 (0/187) | BAD true FOE_HIT false MELEE false
 == duel 2 mine
-first won=true hp 263.0 0.0
+first won=true hp 264.0 0.0
 Green dragon -18 (283/301) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -150 (37/187) | GOOD false LEAD_HIT true MAGIC false
-Green dragon -20 (263/301) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -109 (0/187) | GOOD false LEAD_HIT true MAGIC false
+Green dragon uses Dragonfire: -144 (43/187) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -8 (275/301) | BAD true FOE_HIT false MELEE false
+Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
+Green dragon -11 (264/301) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -61 (0/187) | GOOD false LEAD_HIT false MELEE false
 == duel 2 theirs
-first won=true hp 263.0 0.0
+first won=true hp 264.0 0.0
 -18 (283/301) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Dragonfire: -150 (37/187) | BAD true FOE_HIT true MAGIC false
--20 (263/301) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Dragonfire: -109 (0/187) | BAD true FOE_HIT true MAGIC false
+Green dragon uses Dragonfire: -144 (43/187) | BAD true FOE_HIT true MAGIC false
+-8 (275/301) | GOOD false LEAD_HIT false MELEE false
+Green dragon's Dragonfire missed | INFO true FOE_HIT true MAGIC false
+-11 (264/301) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Bite: -61 (0/187) | BAD true FOE_HIT false MELEE false
 == duel 3 mine
-first won=true hp 236.0 0.0
+first won=true hp 276.0 0.0
 Green dragon -17 (291/308) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -46 (141/187) | GOOD false LEAD_HIT false MELEE false
-Green dragon -17 (274/308) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -59 (82/187) | GOOD false LEAD_HIT false MELEE false
-Green dragon -18 (256/308) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -63 (19/187) | GOOD false LEAD_HIT false MELEE false
-Green dragon -20 (236/308) | BAD true FOE_HIT false MELEE false
-Green dragon uses Bite: -65 (0/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Bite: -63 (124/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -15 (276/308) | BAD true FOE_HIT false MELEE false
+Green dragon uses Dragonfire: -140 (0/187) | GOOD false LEAD_HIT true MAGIC false
 == duel 3 theirs
-first won=true hp 236.0 0.0
+first won=true hp 276.0 0.0
 -17 (291/308) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Bite: -46 (141/187) | BAD true FOE_HIT false MELEE false
--17 (274/308) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Bite: -59 (82/187) | BAD true FOE_HIT false MELEE false
--18 (256/308) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Bite: -63 (19/187) | BAD true FOE_HIT false MELEE false
--20 (236/308) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Bite: -65 (0/187) | BAD true FOE_HIT false MELEE false
+Green dragon uses Bite: -63 (124/187) | BAD true FOE_HIT false MELEE false
+-15 (276/308) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Dragonfire: -140 (0/187) | BAD true FOE_HIT true MAGIC false
 == duel 4 mine
-first won=true hp 304.0 0.0
-Green dragon uses Dragonfire: -123 (64/187) | GOOD false LEAD_HIT true MAGIC false
-Green dragon -10 (304/314) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -151 (0/187) | GOOD false LEAD_HIT true MAGIC false
+first won=true hp 277.0 0.0
+Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
+Green dragon -19 (295/314) | BAD true FOE_HIT false MELEE false
+Green dragon uses Dragonfire: -136 (51/187) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -18 (277/314) | BAD true FOE_HIT false MELEE false
+Green dragon uses Dragonfire: -120 (0/187) | GOOD false LEAD_HIT true MAGIC false
 == duel 4 theirs
-first won=true hp 304.0 0.0
-Green dragon uses Dragonfire: -123 (64/187) | BAD true FOE_HIT true MAGIC false
--10 (304/314) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Dragonfire: -151 (0/187) | BAD true FOE_HIT true MAGIC false
+first won=true hp 277.0 0.0
+Green dragon's Dragonfire missed | INFO true FOE_HIT true MAGIC false
+-19 (295/314) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Dragonfire: -136 (51/187) | BAD true FOE_HIT true MAGIC false
+-18 (277/314) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Dragonfire: -120 (0/187) | BAD true FOE_HIT true MAGIC false
 == duel 5 mine
-first won=true hp 310.0 0.0
-Green dragon uses Dragonfire: -138 (49/187) | GOOD false LEAD_HIT true MAGIC false
-Green dragon -11 (310/321) | BAD true FOE_HIT false MELEE false
-Green dragon uses Dragonfire: -128 (0/187) | GOOD false LEAD_HIT true MAGIC false
+first won=true hp 303.0 0.0
+Green dragon uses Dragonfire: -144 (43/187) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -18 (303/321) | BAD true FOE_HIT false MELEE false
+Green dragon uses Dragonfire: -148 (0/187) | GOOD false LEAD_HIT true MAGIC false
 == duel 5 theirs
-first won=true hp 310.0 0.0
-Green dragon uses Dragonfire: -138 (49/187) | BAD true FOE_HIT true MAGIC false
--11 (310/321) | GOOD false LEAD_HIT false MELEE false
-Green dragon uses Dragonfire: -128 (0/187) | BAD true FOE_HIT true MAGIC false
+first won=true hp 303.0 0.0
+Green dragon uses Dragonfire: -144 (43/187) | BAD true FOE_HIT true MAGIC false
+-18 (303/321) | GOOD false LEAD_HIT false MELEE false
+Green dragon uses Dragonfire: -148 (0/187) | BAD true FOE_HIT true MAGIC false
 == duel without lines 0
 first won=true hp 19.0 0.0
 == duel without lines 1

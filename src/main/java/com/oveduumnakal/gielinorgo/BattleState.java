@@ -23,7 +23,7 @@ import java.util.Random;
  * a creature with one move of accuracy 1 makes exactly the calls battles made before moves existed: (1) the pick of
  * the move, one draw, only when the attacker has more than one move and was not told which to use; (2) the accuracy
  * roll, one draw, only when the move's accuracy is below 1; (3) the damage spread, one draw, only when the move
- * hits. The pick is weighted by power times accuracy times the combat triangle against the opposing creature.
+ * hits. The pick is uniform over every move the creature knows.
  *
  * <p>The other choices come first in their turn: a switch, a jar or a run happens before the opposing creature
  * attacks, whoever is faster. A switch costs the turn: the opposing creature attacks the one that stepped in. A
@@ -331,7 +331,7 @@ final class BattleState
 
 		Combatant attacker = mineAttacks ? mine() : foe();
 		Combatant defender = mineAttacks ? foe() : mine();
-		Move move = pick(attacker, defender, mineAttacks ? moveIndex : -1);
+		Move move = pick(attacker, mineAttacks ? moveIndex : -1);
 		boolean wording = mineAttacks == mode.mineFirstWording;
 		BattleLine line;
 		if (move.accuracy() < 1.0 && random.nextDouble() >= move.accuracy())
@@ -354,10 +354,9 @@ final class BattleState
 
 	/**
 	 * Picks the move an attacker uses. A move the player chose is used as it is; a creature with one move uses it; any
-	 * other picks by one weighted draw, so the stronger and the more accurate moves, and those the combat triangle
-	 * favours against the defender, come up more often.
+	 * other picks uniformly at random from every move it knows, with one draw.
 	 */
-	private Move pick(Combatant attacker, Combatant defender, int chosen)
+	private Move pick(Combatant attacker, int chosen)
 	{
 		List<Move> known = attacker.moves();
 		if (chosen >= 0 && chosen < known.size())
@@ -366,24 +365,7 @@ final class BattleState
 		if (known.size() == 1)
 			return known.get(0);
 
-		double[] weights = new double[known.size()];
-		double total = 0;
-		for (int i = 0; i < weights.length; i++)
-		{
-			Move move = known.get(i);
-			weights[i] = move.power() * move.accuracy() * move.style().multiplierAgainst(defender.type());
-			total += weights[i];
-		}
-
-		double roll = random.nextDouble() * total;
-		for (int i = 0; i < weights.length; i++)
-		{
-			roll -= weights[i];
-			if (roll < 0)
-				return known.get(i);
-		}
-
-		return known.get(known.size() - 1);
+		return known.get(random.nextInt(known.size()));
 	}
 
 	private void switchTo(int place, Turn turn)

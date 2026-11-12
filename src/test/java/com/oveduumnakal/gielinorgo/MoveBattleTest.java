@@ -28,10 +28,11 @@ public class MoveBattleTest
 	private static final Move STRONG = new Move("strong", "Strong", CombatType.MELEE, 2.0, 1.0);
 	private static final Move SHAKY = new Move("shaky", "Shaky", CombatType.MELEE, 2.0, 0.5);
 
-	/** A random source that returns scripted doubles first and counts every draw. */
+	/** A random source that returns scripted doubles and move picks first and counts every draw. */
 	private static final class Scripted extends Random
 	{
 		private final Deque<Double> queue = new ArrayDeque<>();
+		private final Deque<Integer> picks = new ArrayDeque<>();
 		private int draws;
 
 		private Scripted(Double... values)
@@ -44,6 +45,13 @@ public class MoveBattleTest
 		{
 			draws++;
 			return queue.isEmpty() ? 0.5 : queue.poll();
+		}
+
+		@Override
+		public int nextInt(int bound)
+		{
+			draws++;
+			return picks.isEmpty() ? 0 : picks.poll();
 		}
 
 		@Override
@@ -127,14 +135,15 @@ public class MoveBattleTest
 	@Test
 	public void theRandomDrawsComeInTheOrderPickAccuracyDamage()
 	{
-		Scripted random = new Scripted(0.99, 0.4, 0.5);
+		Scripted random = new Scripted(0.4, 0.5);
+		random.picks.add(1);
 		Combatant mine = fighter(30, WEAK, SHAKY);
 		Combatant foe = dummy(10);
 		BattleState state = duel(mine, foe, random);
 
 		BattleLine line = firstHit(state.step(BattleChoice.attack()));
 
-		assertTrue("0.99 of the weights picks the last move, Shaky: " + line.text(),
+		assertTrue("the pick of 1 is the second move, Shaky: " + line.text(),
 			line.text().startsWith("Fighter uses Shaky: -"));
 		assertFalse("0.4 is under its accuracy of 0.5, so it hits", line.miss());
 		assertTrue("the third draw was the damage spread", random.queue.isEmpty());
@@ -143,7 +152,8 @@ public class MoveBattleTest
 	@Test
 	public void aFailedAccuracyRollIsAMissWithNoDamageAndNoSpreadDraw()
 	{
-		Scripted random = new Scripted(0.99, 0.9);
+		Scripted random = new Scripted(0.9);
+		random.picks.add(1);
 		Combatant foe = dummy(10);
 		BattleState state = duel(fighter(30, WEAK, SHAKY), foe, random);
 
@@ -170,7 +180,7 @@ public class MoveBattleTest
 	}
 
 	@Test
-	public void theAutoPickFavoursTheStrongerMove()
+	public void theAutoPickIsUniformOverEveryKnownMove()
 	{
 		int strong = 0;
 		int weak = 0;
@@ -186,23 +196,28 @@ public class MoveBattleTest
 			}
 		}
 
-		assertTrue("Strong has twice the weight: " + strong + " against " + weak, strong > weak * 1.5);
-		assertTrue("Weak still comes up: " + weak, weak > 50);
+		assertTrue("each move is picked about half the time: " + strong + " against " + weak,
+			Math.abs(strong - weak) < 0.2 * (strong + weak));
 	}
 
 	@Test
-	public void theAutoPickWeighsTheCombatTriangle()
+	public void theAutoPickIgnoresTheCombatTriangle()
 	{
 		Move magic = new Move("zap", "Zap", CombatType.MAGIC, 1.0, 1.0);
 		int zaps = 0;
+		int blows = 0;
 		for (int seed = 0; seed < 400; seed++)
 		{
 			BattleState state = duel(fighter(60, WEAK, magic), dummy(60), new Random(seed));
 			for (BattleLine line : state.step(BattleChoice.attack()).hits())
+			{
+				blows += line.text().startsWith("Fighter uses") ? 1 : 0;
 				zaps += line.text().startsWith("Fighter uses Zap") ? 1 : 0;
+			}
 		}
 
-		assertTrue("magic beats the melee dummy, so Zap is favoured: " + zaps, zaps > 400 * 0.5);
+		assertTrue("Zap is picked about half the time: " + zaps + " of " + blows,
+			Math.abs(zaps - blows / 2.0) < 0.1 * blows);
 	}
 
 	@Test
