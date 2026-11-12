@@ -47,6 +47,8 @@ public class FriendTradesTest
 	{
 		annGame = new GoGame(table, new Random(1), () -> now, notice -> annTold.add(notice.text()));
 		bobGame = new GoGame(table, new Random(2), () -> now, notice -> bobTold.add(notice.text()));
+		annGame.setBankNear(true);
+		bobGame.setBankNear(true);
 		ann = new FriendTrades(table, annGame, new Random(3), () -> now, message -> fromAnn.add(sentBy(message, ANN)),
 			notice -> annTold.add(notice.text()));
 		bob = new FriendTrades(table, bobGame, new Random(4), () -> now, message -> fromBob.add(sentBy(message, BOB)),

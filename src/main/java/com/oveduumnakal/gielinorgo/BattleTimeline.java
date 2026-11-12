@@ -81,7 +81,10 @@ final class BattleTimeline
 		FINISH,
 
 		/** The lead creature goes down, but the battle goes on: another creature of the team must step in. */
-		LEAD_FELL
+		LEAD_FELL,
+
+		/** Another creature of the team steps in as the lead, in a battle that played its switches by itself. */
+		LEAD_ENTERS
 	}
 
 	/** One beat of the fight, with how the attack of that beat is made. */
@@ -90,6 +93,20 @@ final class BattleTimeline
 		private final Beat beat;
 		private final CombatType style;
 		private final ProjectileLook look;
+		private final Combatant entered;
+
+		/**
+		 * Describes the step in which a creature of the team steps in as the lead.
+		 *
+		 * @param entered the creature that steps in
+		 */
+		Step(Combatant entered)
+		{
+			this.beat = Beat.LEAD_ENTERS;
+			this.style = null;
+			this.look = null;
+			this.entered = entered;
+		}
 
 		/**
 		 * Describes a step with no projectile.
@@ -114,6 +131,13 @@ final class BattleTimeline
 			this.beat = beat;
 			this.style = style;
 			this.look = look;
+			this.entered = null;
+		}
+
+		/** @return the creature that steps in at a {@link Beat#LEAD_ENTERS} beat, else null */
+		Combatant entered()
+		{
+			return entered;
 		}
 
 		/** @return what happens */
@@ -150,6 +174,7 @@ final class BattleTimeline
 	private int held;
 	private int wait;
 	private int sinceFirst = -1;
+	private int faceOffs;
 
 	/**
 	 * Plans a battle.
@@ -170,6 +195,16 @@ final class BattleTimeline
 
 		this.leadWon = leadWon;
 		this.sealed = sealed;
+		countFaceOffs(this.steps);
+	}
+
+	private void countFaceOffs(List<Step> added)
+	{
+		for (Step step : added)
+		{
+			if (step.beat() == Beat.FACE_OFF)
+				faceOffs++;
+		}
 	}
 
 	/**
@@ -195,6 +230,7 @@ final class BattleTimeline
 			return;
 
 		steps.addAll(more);
+		countFaceOffs(more);
 		if (phase == Phase.WAITING && next < steps.size())
 			phase = Phase.FIGHTING;
 	}
@@ -342,11 +378,13 @@ final class BattleTimeline
 	 * Tells whether the battle lines may start showing: from one game tick after the first beat, so each line
 	 * appears as its blow lands ({@link TurnMotion#IMPACT_TICK} client ticks, one game tick, after its beat starts).
 	 *
-	 * @return true from one game tick after the first beat
+	 * The face-off beat has no text (the opening line is not shown), so the lines wait one more beat for each face-off.
+	 *
+	 * @return true from one game tick after the first beat, plus one beat for each face-off
 	 */
 	boolean linesDue()
 	{
-		return sinceFirst >= 1;
+		return sinceFirst >= 1 + faceOffs * BEAT_TICKS;
 	}
 
 	/** @return the stage the battle is at */

@@ -128,6 +128,30 @@ public class StatRollsTest
 		assertArrayEquals(new int[] {3, -1, 0, 5}, rolls.values());
 	}
 
+	@Test
+	public void theTooltipShowsTheNetPercentageOfRollAndTemperament()
+	{
+		StatRolls rolls = new StatRolls(0, 2, 0, -4, Temperament.NIMBLE);
+
+		assertEquals("Health 0 (-10%) · Attack +2 (+3%)<br>Defence 0 · Speed -4 (+3%)", rolls.describeNet());
+	}
+
+	@Test
+	public void steadyAndUnrolledCreaturesShowNoPercentages()
+	{
+		assertEquals("Health 0 · Attack 0<br>Defence 0 · Speed 0", StatRolls.AVERAGE.describeNet());
+		assertEquals("Health +2 (+3%) · Attack 0<br>Defence 0 · Speed -4 (-6%)",
+			new StatRolls(2, 0, 0, -4, Temperament.STEADY).describeNet());
+	}
+
+	@Test
+	public void aTemperamentSaysWhatItDoes()
+	{
+		assertEquals("+10% Speed, -10% Health", Temperament.NIMBLE.effect());
+		assertEquals("+10% Attack, -10% Defence", Temperament.BRAVE.effect());
+		assertEquals("no effect", Temperament.STEADY.effect());
+	}
+
 	private static StatRolls.Rating rated(int hp, int attack, int defence, int speed)
 	{
 		return new StatRolls(hp, attack, defence, speed, Temperament.STEADY).rating();

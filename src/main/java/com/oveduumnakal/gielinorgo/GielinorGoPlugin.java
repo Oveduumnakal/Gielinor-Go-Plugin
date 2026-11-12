@@ -30,16 +30,21 @@ import org.slf4j.LoggerFactory;
 
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.GameObject;
 import net.runelite.api.GameState;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.NPC;
+import net.runelite.api.NPCComposition;
+import net.runelite.api.ObjectComposition;
 import net.runelite.api.Player;
 import net.runelite.api.Skill;
 import net.runelite.api.WorldType;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ClientTick;
+import net.runelite.api.events.GameObjectDespawned;
+import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.MenuOpened;
@@ -152,6 +157,8 @@ public class GielinorGoPlugin extends Plugin
 	private final Map<Skill, Integer> lastXp = new EnumMap<>(Skill.class);
 	private final Map<Skill, Integer> lastLevel = new EnumMap<>(Skill.class);
 	private final StepCounter stepCounter = new StepCounter();
+	private final BankSpots bankSpots = new BankSpots();
+	private final Map<Integer, Boolean> bankObjects = new HashMap<>();
 	private WildTracker tracker = new WildTracker(random);
 	private final SpawnClock spawnClock = SpawnClock.system();
 	private SpawnCalendar calendar;
@@ -355,6 +362,7 @@ public class GielinorGoPlugin extends Plugin
 			stage.clear();
 			arena.clear();
 			follower.sceneLoading();
+			bankSpots.clear();
 		}
 
 		if (state != GameState.LOGIN_SCREEN && state != GameState.HOPPING)
@@ -372,6 +380,8 @@ public class GielinorGoPlugin extends Plugin
 		effects.clear();
 		jarFlight.clear();
 		tracker.clear();
+		bankSpots.clear();
+		game.setBankNear(false);
 		candidates.clear();
 		stepCounter.reset();
 		noticeBoard.clear();
@@ -396,6 +406,98 @@ public class GielinorGoPlugin extends Plugin
 
 		candidates.put(npc.getIndex(), npc);
 		offer(npc);
+	}
+
+	/**
+	 * Remembers a banker that came into view, so the team can be changed near it.
+	 *
+	 * @param event the spawn
+	 */
+	@Subscribe
+	public void onBankerSpawned(NpcSpawned event)
+	{
+		try
+		{
+			NPC npc = event.getNpc();
+			NPCComposition composition = npc.getTransformedComposition();
+			WorldPoint point = npc.getWorldLocation();
+			if (composition != null && point != null && offersBank(composition.getActions()))
+				bankSpots.add(npc, point.getX(), point.getY(), point.getPlane());
+		}
+		catch (RuntimeException e)
+		{
+			log.debug("Gielinor Go: could not check a monster for a bank", e);
+		}
+	}
+
+	/**
+	 * Forgets a banker that left view.
+	 *
+	 * @param event the despawn
+	 */
+	@Subscribe
+	public void onBankerDespawned(NpcDespawned event)
+	{
+		bankSpots.remove(event.getNpc());
+	}
+
+	/**
+	 * Remembers a bank booth or chest that came into view, so the team can be changed near it. What an object id
+	 * offers is looked up once and kept.
+	 *
+	 * @param event the spawn
+	 */
+	@Subscribe
+	public void onBankObjectSpawned(GameObjectSpawned event)
+	{
+		try
+		{
+			GameObject object = event.getGameObject();
+			if (!bankObjects.computeIfAbsent(object.getId(), this::objectOffersBank))
+				return;
+
+			WorldPoint point = object.getWorldLocation();
+			if (point != null)
+				bankSpots.add(object, point.getX(), point.getY(), point.getPlane());
+		}
+		catch (RuntimeException e)
+		{
+			log.debug("Gielinor Go: could not check an object for a bank", e);
+		}
+	}
+
+	/**
+	 * Forgets a bank booth or chest that left view.
+	 *
+	 * @param event the despawn
+	 */
+	@Subscribe
+	public void onBankObjectDespawned(GameObjectDespawned event)
+	{
+		bankSpots.remove(event.getGameObject());
+	}
+
+	private boolean objectOffersBank(int id)
+	{
+		ObjectComposition composition = client.getObjectDefinition(id);
+		if (composition != null && composition.getImpostorIds() != null)
+			composition = composition.getImpostor();
+
+		return composition != null && offersBank(composition.getActions());
+	}
+
+	private static boolean offersBank(String[] actions)
+	{
+		if (actions == null)
+			return false;
+
+		for (String action : actions)
+		{
+			if ("Bank".equals(action))
+				return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -1017,7 +1119,8 @@ public class GielinorGoPlugin extends Plugin
 	private void updateFollower()
 	{
 		Creature lead = config.showFollower() && !hiddenForPvp() ? game.data().lead() : null;
-		leadTag = lead != null && config.showLeadName() ? lead.nickname : null;
+		leadTag = lead != null && config.showLeadName()
+			? FollowerTagOverlay.nameFor(lead.nickname, lead.species) : null;
 		follower.gameTick(lead == null ? null : lead.species, lead == null ? 0 : lead.npcId,
 			lead != null && lead.gilded);
 	}
@@ -1073,6 +1176,9 @@ public class GielinorGoPlugin extends Plugin
 		game.addSteps(stepCounter.advance(point.getX(), point.getY(), point.getPlane()));
 		if (game.moveTo(point.getX(), point.getY(), point.getPlane()))
 			refreshPanel();
+
+		bankSpots.forgetFar(point.getX(), point.getY());
+		game.setBankNear(bankSpots.near(point.getX(), point.getY(), point.getPlane()));
 	}
 
 	private void addWildOptions(WildEntry entry, boolean withBattle)
@@ -1204,11 +1310,36 @@ public class GielinorGoPlugin extends Plugin
 
 		heldNotices = new ArrayList<>();
 		BattleResult result = game.battle(entry);
-		List<BattleLine> lines = result == null ? null : result.summary(BATTLE_LINES);
-		boolean staged = lines != null && config.battleAnimations()
-			&& !arena.active() && stage.start(candidates.get(npcIndex), lines, result.won());
+		List<BattleLine> lines = result == null ? null : result.playbackSummary(BATTLE_LINES);
+		boolean staged;
+		if (result != null && result.switches() > 0)
+			staged = stageTeamBattle(npcIndex, result, lines);
+		else
+			staged = lines != null && config.battleAnimations()
+				&& !arena.active() && stage.start(candidates.get(npcIndex), lines, result.won());
+
 		playBack(lines, npcIndex, staged);
 		refreshPanel();
+	}
+
+	/**
+	 * Acts out an automatic battle in which creatures stepped in, through the same open timeline a battle the player
+	 * steers uses: the face-off, then every beat at once ({@link WildScript}), then the end. The real lead is shown
+	 * again when the scene ends.
+	 *
+	 * @param npcIndex the game's index for the monster
+	 * @param result the battle
+	 * @param lines the lines of the battle, as {@link WildScript} cut them
+	 * @return whether the battle is on stage, so its text waits for the scene
+	 */
+	private boolean stageTeamBattle(int npcIndex, BattleResult result, List<BattleLine> lines)
+	{
+		if (!config.battleAnimations() || arena.active() || stage.active()
+			|| !stage.startOpen(candidates.get(npcIndex), lines.subList(0, 1)))
+			return false;
+
+		stage.playScript(WildScript.of(result), result.won(), result.opener(), result.leadOpened());
+		return true;
 	}
 
 	/**
@@ -1368,6 +1499,9 @@ public class GielinorGoPlugin extends Plugin
 		List<Notice> queue = new ArrayList<>();
 		for (BattleLine line : lines)
 		{
+			if (line.kind() == BattleLine.Kind.OPENING)
+				continue;
+
 			if (staged && npcIndex != Notice.PLAYER && line.overPlayer())
 				queue.add(Notice.stageLead(line.text(), line.tone()));
 			else if (staged && npcIndex != Notice.PLAYER)

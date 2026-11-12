@@ -130,7 +130,7 @@ final class CreatureCard extends JPanel
 			+ Math.round(view.hpFraction() * 100) + "%<br>"
 			+ Math.round(view.xpProgress() * 100) + "% to level " + Math.min(XpRules.MAX_LEVEL, view.level() + 1)
 			+ "<br>" + (isLead ? "Your lead: fights battles and trains twice as fast" : "Click to make lead")
-			+ "<br>Right-click for more</html>");
+			+ "<br>" + view.type().matchup() + "<br>Right-click for more</html>");
 		String wanted = PortraitSource.cacheKey(view.name(), view.npcId());
 		if (wanted.equals(portraitOf))
 			return;
