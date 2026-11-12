@@ -25,7 +25,10 @@ final class Notice
 		/** Over the monster {@link #npcIndex()} names, or over the player when that is {@link #PLAYER}. */
 		HEAD,
 
-		/** Over the stand-in of the wild creature on stage; falls back to the monster or the player. */
+		/**
+		 * Over the stand-in of the wild creature on stage, or the opposing creature of a team battle on stage; falls
+		 * back to the monster, or to the player when the notice has no monster.
+		 */
 		STAGE_FOE,
 
 		/** Over the lead creature's body while a battle is on stage; falls back to the player. */
@@ -91,6 +94,19 @@ final class Notice
 	static Notice stageFoe(int npcIndex, String text, Tone tone)
 	{
 		return new Notice(text, tone, npcIndex, Anchor.STAGE_FOE, null);
+	}
+
+	/**
+	 * Makes a notice about the opposing creature of a team battle acted out on screen, which is no monster in the
+	 * game. It floats over that creature; once no stage shows it, it floats over the player's head.
+	 *
+	 * @param text the line
+	 * @param tone its mood
+	 * @return the notice
+	 */
+	static Notice stageFoe(String text, Tone tone)
+	{
+		return new Notice(text, tone, PLAYER, Anchor.STAGE_FOE, null);
 	}
 
 	/**

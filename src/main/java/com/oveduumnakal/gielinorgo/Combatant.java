@@ -10,6 +10,7 @@ import java.util.Random;
 final class Combatant
 {
 	private final String name;
+	private final String speciesKey;
 	private final CombatType type;
 	private final CombatType secondStyle;
 	private final double secondChance;
@@ -19,6 +20,7 @@ final class Combatant
 	private final int defence;
 	private final int speed;
 	private double hp;
+	private boolean gilded;
 
 	/**
 	 * Builds a fighter.
@@ -71,6 +73,7 @@ final class Combatant
 	{
 		double tier = Math.sqrt(Math.max(1, species.level()));
 		this.name = displayName;
+		this.speciesKey = species.key();
 		this.type = species.style();
 		this.secondStyle = species.secondStyle();
 		this.secondChance = species.secondChance();
@@ -86,6 +89,30 @@ final class Combatant
 	String name()
 	{
 		return name;
+	}
+
+	/** @return the key of the species, so a battle that is acted out on screen can draw it */
+	String speciesKey()
+	{
+		return speciesKey;
+	}
+
+	/**
+	 * Notes that this fighter is a gilded creature. It only changes how the fighter is drawn, never a stat.
+	 *
+	 * @param shining whether the creature is gilded
+	 * @return this fighter
+	 */
+	Combatant gilded(boolean shining)
+	{
+		this.gilded = shining;
+		return this;
+	}
+
+	/** @return whether the creature is gilded, so it is drawn gold */
+	boolean isGilded()
+	{
+		return gilded;
 	}
 
 	/** @return the combat style */

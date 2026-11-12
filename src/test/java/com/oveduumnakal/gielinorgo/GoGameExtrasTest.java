@@ -120,6 +120,49 @@ public class GoGameExtrasTest
 	}
 
 	@Test
+	public void aChampionBattleKeepsItsDuelsForTheScene()
+	{
+		Creature dragon = new Creature("king black dragon", 40, now);
+		dragon.gilded = true;
+		game.data().team.add(dragon);
+		game.data().team.add(new Creature("imp", 5, now));
+		game.moveTo(3222, 3218, 0);
+
+		TeamBattleResult fought = game.challenge("lumbridge");
+
+		assertTrue(fought.leadFirst());
+		assertFalse(fought.duels().isEmpty());
+		Duel first = fought.duels().get(0);
+		assertEquals("king black dragon", first.mineSpecies());
+		assertTrue(first.mineGilded());
+		assertEquals("chicken", first.theirSpecies());
+		assertEquals(40, first.mineLevel());
+		assertTrue(first.mineWon());
+		assertTrue(fought.lines().contains(first.knockOut()));
+		assertEquals("only the opening comes before the first knock-out", 1, fought.leadIn().size());
+		assertEquals("only the verdict comes after", 1, fought.leadOut().size());
+	}
+
+	@Test
+	public void aTiredLeadMeansTheLeadIsNotFirst()
+	{
+		Creature tired = new Creature("king black dragon", 40, now);
+		tired.hpFraction = 0.0;
+		tired.hpStampMs = now;
+		game.data().team.add(tired);
+		game.data().team.add(new Creature("imp", 5, now));
+		game.moveTo(3222, 3218, 0);
+
+		TeamBattleResult fought = game.challenge("lumbridge");
+
+		assertFalse(fought.leadFirst());
+		Duel first = fought.duels().get(0);
+
+		assertEquals("imp", first.mineSpecies());
+		assertEquals(0, first.mineIndex());
+	}
+
+	@Test
 	public void aBigJumpEvolvesThroughEveryStage()
 	{
 		game.data().team.add(new Creature("imp", 1, now));
