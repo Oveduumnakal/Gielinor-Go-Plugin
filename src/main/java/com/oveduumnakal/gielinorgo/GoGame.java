@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Consumer;
+import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
@@ -468,6 +469,27 @@ final class GoGame
 	 */
 	CatchOutcome tryCatch(WildEntry entry, JarType jar, boolean knockedOut)
 	{
+		return throwJar(entry, jar, () -> CatchRules.chance(jar, entry.combatLevel(), entry.weakened(),
+			entry.traits(), knockedOut));
+	}
+
+	/**
+	 * Throws a jar in the middle of a battle, at a creature that is still standing: the chance grows with the health
+	 * it has lost ({@link CatchRules#inBattle}). The jar, the room and the trade locks are checked as for any throw.
+	 *
+	 * @param entry the wild creature
+	 * @param jar the jar to throw, or null for the one {@link #jarToThrow()} picks
+	 * @param healthLeft the share of full health the creature has left
+	 * @return what happened, see {@link #tryCatch(WildEntry, JarType)}
+	 */
+	private CatchOutcome tryCatchInBattle(WildEntry entry, JarType jar, double healthLeft)
+	{
+		JarType use = jar == null ? jarToThrow() : jar;
+		return throwJar(entry, use, () -> CatchRules.inBattle(use, entry.combatLevel(), entry.traits(), healthLeft));
+	}
+
+	private CatchOutcome throwJar(WildEntry entry, JarType jar, DoubleSupplier chance)
+	{
 		String name = entry.species().name();
 		if (jar == null || data.jarCount(jar) <= 0)
 		{
@@ -483,8 +505,7 @@ final class GoGame
 
 		data.addJars(jar, -1);
 		dirty = true;
-		if (random.nextDouble() >= CatchRules.chance(jar, entry.combatLevel(), entry.weakened(), entry.traits(),
-			knockedOut))
+		if (random.nextDouble() >= chance.getAsDouble())
 		{
 			if (random.nextDouble() < CatchRules.FLEE_CHANCE)
 			{
@@ -559,6 +580,252 @@ final class GoGame
 		}
 
 		return result;
+	}
+
+	/**
+	 * Starts a battle against a wild creature that the player steers turn by turn. The lead fights first and the
+	 * rest of the team, the ones rested enough to battle, can be switched in. Nothing is paid until the battle is
+	 * over ({@link #act}). The battle does not change the creature until then; {@link #forfeit} ends one that
+	 * cannot go on.
+	 *
+	 * @param entry the wild creature
+	 * @return the battle, or null when no battle could start
+	 */
+	BattleSession startBattle(WildEntry entry)
+	{
+		Creature lead = data.lead();
+		Species leadSpecies = lead == null ? null : species.find(lead.species);
+		if (leadSpecies == null)
+		{
+			tell("Catch a creature first", Tone.BAD);
+			return null;
+		}
+
+		if (entry.battled())
+		{
+			tell(entry, "Already battled", Tone.BAD);
+			return null;
+		}
+
+		long now = clock.getAsLong();
+		if (lead.hpFractionAt(now) < MIN_BATTLE_HP)
+		{
+			tell(nameOf(lead) + " is too tired", Tone.BAD);
+			return null;
+		}
+
+		List<Creature> fighters = new ArrayList<>();
+		List<Combatant> mine = restedTeam(now, fighters);
+		Combatant foe = new Combatant(entry.species(), entry.level(), 1.0);
+		BattleState state = new BattleState(mine, Collections.singletonList(foe), random, BattleState.Mode.WILD,
+			(jar, healthLeft) -> tryCatchInBattle(entry, jar, healthLeft));
+		return new BattleSession(state, fighters, entry, null, BattleSim.opening(mine.get(0), foe));
+	}
+
+	/**
+	 * Starts a battle against a City Champion that the player steers turn by turn. The team fights in order, the
+	 * creatures too tired to battle sit out, and a fainted creature must be replaced.
+	 *
+	 * @param championId the champion's id
+	 * @return the battle, or null when no battle could start
+	 */
+	BattleSession startChallenge(String championId)
+	{
+		Champion champion = champions.byId(championId);
+		if (champion == null)
+			return null;
+
+		if (!champion.id().equals(cityId))
+		{
+			tell("Go to " + champion.city() + " to challenge its champion", Tone.BAD);
+			return null;
+		}
+
+		List<Creature> fighters = new ArrayList<>();
+		List<Combatant> mine = restedTeam(clock.getAsLong(), fighters);
+		if (mine.isEmpty())
+		{
+			tell(data.team.isEmpty() ? "Catch a creature first" : "Your team is too tired", Tone.BAD);
+			return null;
+		}
+
+		List<Combatant> theirs = new ArrayList<>();
+		for (Champion.Member member : champion.team())
+			theirs.add(new Combatant(species.find(member.species()), member.level(), 1.0));
+
+		BattleState state = new BattleState(mine, theirs, random, BattleState.Mode.CHAMPION);
+		BattleLine opening = new BattleLine("Challenging the " + champion.title() + "!", Tone.INFO, true);
+		return new BattleSession(state, fighters, null, champion, opening);
+	}
+
+	/**
+	 * Builds the fighters of a steered battle: the team in order, the creatures too tired to battle left out.
+	 *
+	 * @param now the time, for the health each creature has recovered
+	 * @param fighters receives the saved creature behind each fighter, in the same order
+	 * @return the fighters
+	 */
+	private List<Combatant> restedTeam(long now, List<Creature> fighters)
+	{
+		List<Combatant> mine = new ArrayList<>();
+		for (Creature creature : data.team)
+		{
+			Species found = species.find(creature.species);
+			double health = creature.hpFractionAt(now);
+			if (found == null || health < MIN_BATTLE_HP)
+				continue;
+
+			fighters.add(creature);
+			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls())
+				.gilded(creature.gilded));
+		}
+
+		return mine;
+	}
+
+	/**
+	 * Plays one turn of a battle the player steers. The health of every creature that lost some is written to the
+	 * saved creature after each turn. When the turn ends the battle the rewards are paid as for an automatic
+	 * battle: a win over a wild creature through {@code rewardWin}, a win over a champion through
+	 * {@code rewardChampionWin}, and the task hooks for both; a catch goes through the usual jar, storage and trade
+	 * lock checks. A choice the battle does not accept now changes nothing.
+	 *
+	 * @param session the battle
+	 * @param choice what the player does
+	 * @return what the turn did, or null when the battle is over already or the choice was not accepted
+	 */
+	TurnResult act(BattleSession session, BattleChoice choice)
+	{
+		if (session.over())
+			return null;
+
+		TurnResult turn;
+		try
+		{
+			turn = session.state().step(choice);
+		}
+		catch (IllegalArgumentException e)
+		{
+			return null;
+		}
+
+		writeHealth(session);
+		if (turn.status().over())
+			settle(session, turn.status());
+
+		return turn;
+	}
+
+	/**
+	 * Ends a battle the player steers because the player left it: logging out, hopping, walking away or the creature
+	 * going away. It counts as running.
+	 *
+	 * @param session the battle
+	 * @return the turn that ended it, or null when the battle was over already
+	 */
+	TurnResult forfeit(BattleSession session)
+	{
+		return act(session, BattleChoice.run());
+	}
+
+	/**
+	 * The lines that close a battle the player steers, to show after the turn that ended it.
+	 *
+	 * @param session the battle
+	 * @param turn the turn that ended it
+	 * @return the closing lines; none when the turn did not end the battle, or the player ran or caught
+	 */
+	List<BattleLine> closingLines(BattleSession session, TurnResult turn)
+	{
+		TurnResult.Status status = turn.status();
+		if (status != TurnResult.Status.WON && status != TurnResult.Status.LOST)
+			return Collections.emptyList();
+
+		boolean won = status == TurnResult.Status.WON;
+		if (session.wild())
+		{
+			BattleState state = session.state();
+			return Collections.singletonList(BattleSim.closing(state.mine(), state.foe(), won));
+		}
+
+		String title = session.champion().title();
+		if (won)
+			return Collections.singletonList(new BattleLine("You beat the " + title + "!", Tone.GOOD, true));
+
+		return Collections.singletonList(new BattleLine("The " + title + " won. Rest and try again", Tone.BAD,
+			true));
+	}
+
+	/**
+	 * Describes a steered battle that waits for a choice, for the panel and the on-screen prompt.
+	 *
+	 * @param session the battle
+	 * @param secondsLeft the whole seconds left to choose
+	 * @param timeLeft the share of the time left, from 0 to 1
+	 * @return the view
+	 */
+	BattleView battleView(BattleSession session, int secondsLeft, double timeLeft)
+	{
+		BattleState state = session.state();
+		List<BattleView.Option> options = new ArrayList<>();
+		for (int place : state.switchTargets())
+		{
+			Combatant one = state.team().get(place);
+			options.add(new BattleView.Option(place, one.name(), one.level(), one.hpFraction()));
+		}
+
+		JarType jar = jarToThrow();
+		boolean canCatch = session.wild() && jar != null && !state.needsSwitch();
+		return new BattleView(state.mine(), state.foe(), state.needsSwitch(), canCatch, jar,
+			jar == null ? 0 : data.jarCount(jar), secondsLeft, timeLeft, options);
+	}
+
+	private void writeHealth(BattleSession session)
+	{
+		long now = clock.getAsLong();
+		List<Creature> fighters = session.fighters();
+		for (int i = 0; i < fighters.size(); i++)
+		{
+			if (!session.changed(i))
+				continue;
+
+			Creature fighter = fighters.get(i);
+			fighter.hpFraction = session.fighter(i).hpFraction();
+			fighter.hpStampMs = now;
+			session.written(i);
+			dirty = true;
+		}
+	}
+
+	private void settle(BattleSession session, TurnResult.Status status)
+	{
+		BattleState state = session.state();
+		if (session.wild())
+		{
+			WildEntry entry = session.entry();
+			if (status == TurnResult.Status.WON || status == TurnResult.Status.LOST
+				|| status == TurnResult.Status.RAN)
+				entry.markBattled(status == TurnResult.Status.WON);
+
+			if (status == TurnResult.Status.WON)
+			{
+				Creature fighter = session.fighters().get(state.myIndex());
+				rewardWin(fighter, species.find(fighter.species), entry);
+				payTasks(startTasks().battleWon());
+			}
+
+			dirty = true;
+			return;
+		}
+
+		if (status == TurnResult.Status.WON)
+		{
+			rewardChampionWin(session.champion());
+			payTasks(startTasks().battleWon());
+			payTasks(startTasks().championBeaten());
+		}
+
+		dirty = true;
 	}
 
 	/**
