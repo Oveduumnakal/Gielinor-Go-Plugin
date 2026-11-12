@@ -73,6 +73,9 @@ final class SaveData
 	/** Progress on the daily and weekly tasks and the login streak. Null in saves from before tasks existed. */
 	TaskProgress tasks = new TaskProgress();
 
+	/** Healing items owned, keyed by {@link ItemType#name()}. Null in saves from before items existed. */
+	Map<String, Integer> items = new HashMap<>();
+
 	/** @return a save for a player who has never played, with the starting jars */
 	static SaveData fresh()
 	{
@@ -91,6 +94,7 @@ final class SaveData
 		team = team == null ? new ArrayList<>() : new ArrayList<>(team);
 		storage = storage == null ? new ArrayList<>() : new ArrayList<>(storage);
 		jars = jars == null ? new HashMap<>() : new HashMap<>(jars);
+		items = items == null ? new HashMap<>() : new HashMap<>(items);
 		caught = caught == null ? new HashMap<>() : new HashMap<>(caught);
 		seen = seen == null ? new LinkedHashSet<>() : new LinkedHashSet<>(seen);
 		eggs = eggs == null ? new ArrayList<>() : new ArrayList<>(eggs);
@@ -153,6 +157,29 @@ final class SaveData
 	void addJars(JarType type, int delta)
 	{
 		jars.put(type.name(), Math.max(0, jarCount(type) + delta));
+	}
+
+	/**
+	 * Counts the healing items owned of one type.
+	 *
+	 * @param type the item type
+	 * @return the number owned, never negative
+	 */
+	int itemCount(ItemType type)
+	{
+		Integer count = items.get(type.name());
+		return count == null ? 0 : Math.max(0, count);
+	}
+
+	/**
+	 * Adds or removes healing items of one type.
+	 *
+	 * @param type the item type
+	 * @param delta the change, negative to spend
+	 */
+	void addItems(ItemType type, int delta)
+	{
+		items.put(type.name(), Math.max(0, itemCount(type) + delta));
 	}
 
 	/** @return the lead creature, or null when the team is empty */

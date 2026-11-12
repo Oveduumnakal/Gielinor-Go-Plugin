@@ -233,12 +233,14 @@ final class GoGame
 
 		addOsrsXp(gained);
 		JarType jar = JarType.forSkill(skill);
-		if (jar == null || random.nextDouble() >= CatchRules.specialtyDropChance(gained))
-			return;
+		if (jar != null && random.nextDouble() < CatchRules.specialtyDropChance(gained))
+		{
+			data.addJars(jar, 1);
+			dirty = true;
+			tell("+1 " + jar.label() + " jar (" + skillName(skill) + ")", Tone.FIND, jar);
+		}
 
-		data.addJars(jar, 1);
-		dirty = true;
-		tell("+1 " + jar.label() + " jar (" + skillName(skill) + ")", Tone.FIND, jar);
+		rollSkillItems(skill, gained);
 	}
 
 	/**
@@ -794,7 +796,7 @@ final class GoGame
 		TaskView tasks = startTasks().view(now, bestUnlockedJar());
 		return new PanelState(trainerLevel(), XpRules.trainerProgress(data.trainerXp), data.battlesWon, jars,
 			selectedJar(), data.stepProgress, views(data.team, now), views(data.storage, now), log(),
-			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get(), tasks);
+			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get(), tasks, itemCounts());
 	}
 
 	/** @return how many caught species the species list still knows, so removed species do not inflate the total */
@@ -921,6 +923,8 @@ final class GoGame
 		tell("+" + champion.rewardJars() + " " + champion.rewardJar().label() + " jars (champion)", Tone.FIND,
 			champion.rewardJar());
 		addTrainerXp(50L + 10L * champion.topLevel());
+		giveItems(ItemType.LARGE_SALVE, ItemRules.CHAMPION_LARGE_SALVES, "champion");
+		giveItems(ItemType.REVIVE, ItemRules.CHAMPION_REVIVES, "champion");
 	}
 
 	/**
@@ -1076,7 +1080,10 @@ final class GoGame
 
 		double eggChance = entry.roaming() ? ROAMING_EGG_CHANCE : EGG_DROP_CHANCE;
 		if (!hasRoomForEgg() || random.nextDouble() >= eggChance)
+		{
+			rollWinItems();
 			return;
+		}
 
 		Rarity rarity = entry.species().rarity();
 		if (entry.roaming())
@@ -1084,6 +1091,7 @@ final class GoGame
 
 		data.eggs.add(new Egg(rarity));
 		tell("+1 " + rarity.label() + " egg (battle win)", Tone.FIND);
+		rollWinItems();
 	}
 
 	private JarType randomUnlockedJar()
@@ -1134,6 +1142,114 @@ final class GoGame
 
 			evolveIfReady(creature);
 		}
+	}
+
+	/** @return how many of each healing item the player owns, with an entry for every item */
+	private Map<ItemType, Integer> itemCounts()
+	{
+		Map<ItemType, Integer> counts = new EnumMap<>(ItemType.class);
+		for (ItemType type : ItemType.values())
+			counts.put(type, data.itemCount(type));
+
+		return counts;
+	}
+
+	/**
+	 * Rolls, after an XP drop, for each healing item the skill can turn up. Every item has its own roll, which is
+	 * separate from the specialty jar's.
+	 *
+	 * @param skill the skill's enum name
+	 * @param gained OSRS XP in the drop
+	 */
+	private void rollSkillItems(String skill, int gained)
+	{
+		for (ItemType type : ItemType.forSkill(skill))
+		{
+			if (random.nextDouble() < ItemRules.xpChance(gained))
+				giveItems(type, 1, skillName(skill));
+		}
+	}
+
+	/** Rolls, after a battle win, for each healing item a win can drop. */
+	private void rollWinItems()
+	{
+		for (ItemType type : ItemType.values())
+		{
+			double chance = ItemRules.winChance(type);
+			if (chance > 0 && random.nextDouble() < chance)
+				giveItems(type, 1, "battle win");
+		}
+	}
+
+	/**
+	 * Adds healing items to the save and tells the player.
+	 *
+	 * @param type the item
+	 * @param count how many
+	 * @param source what the line names in brackets, such as {@code Herblore}
+	 */
+	private void giveItems(ItemType type, int count, String source)
+	{
+		data.addItems(type, count);
+		dirty = true;
+		String name = count == 1 ? type.label() : type.label() + "s";
+		notices.accept(Notice.playerItem("+" + count + " " + name + " (" + source + ")", Tone.FIND, type));
+	}
+
+	/**
+	 * Uses a healing item on a creature outside battle. Nothing is spent when the player has none, when the creature
+	 * is not the player's, or when the item would do nothing.
+	 *
+	 * @param creature a team member or stored creature
+	 * @param type the item
+	 * @return true when an item was used up
+	 */
+	boolean useItem(Creature creature, ItemType type)
+	{
+		if (creature == null || type == null || !data.team.contains(creature) && !data.storage.contains(creature))
+			return false;
+
+		if (data.itemCount(type) <= 0)
+		{
+			tell("No " + type.label() + " left", Tone.BAD);
+			return false;
+		}
+
+		if (type.cures())
+		{
+			tell("Nothing to cure", Tone.BAD);
+			return false;
+		}
+
+		long now = clock.getAsLong();
+		double health = creature.hpFractionAt(now);
+		if (!ItemRules.appliesOutsideBattle(type, health))
+		{
+			tell(refusal(creature, type), Tone.BAD);
+			return false;
+		}
+
+		creature.hpFraction = ItemRules.healthAfter(type, health);
+		creature.hpStampMs = now;
+		data.addItems(type, -1);
+		dirty = true;
+		tell(nameOf(creature) + " is at " + Math.round(creature.hpFraction * 100) + "% health", Tone.GOOD);
+		return true;
+	}
+
+	/**
+	 * Words why an item cannot be used on a creature.
+	 *
+	 * @param creature the creature
+	 * @param type the item
+	 * @return the line to show
+	 */
+	private String refusal(Creature creature, ItemType type)
+	{
+		if (type.revives())
+			return nameOf(creature) + " does not need reviving";
+
+		return nameOf(creature) + " is already at full health";
 	}
 
 	/**

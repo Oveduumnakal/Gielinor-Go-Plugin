@@ -31,12 +31,25 @@ final class PanelState
 	private final List<ChampionView> champions;
 	private final TodayView today;
 	private final TaskView tasks;
+	private final Map<ItemType, Integer> items;
 
 	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
 		JarType selectedJar, int stepProgress, List<CreatureView> team, List<CreatureView> storage,
 		List<LogEntry> log, int caughtSpecies, int seenSpecies, List<EggView> eggs, List<ChampionView> champions,
 		TodayView today, TaskView tasks)
 	{
+		this(trainerLevel, trainerProgress, battlesWon, jars, selectedJar, stepProgress, team, storage, log,
+			caughtSpecies, seenSpecies, eggs, champions, today, tasks, Collections.emptyMap());
+	}
+
+	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
+		JarType selectedJar, int stepProgress, List<CreatureView> team, List<CreatureView> storage,
+		List<LogEntry> log, int caughtSpecies, int seenSpecies, List<EggView> eggs, List<ChampionView> champions,
+		TodayView today, TaskView tasks, Map<ItemType, Integer> items)
+	{
+		Map<ItemType, Integer> copy = new EnumMap<>(ItemType.class);
+		copy.putAll(items);
+		this.items = Collections.unmodifiableMap(copy);
 		this.today = today;
 		this.tasks = tasks;
 		this.eggs = Collections.unmodifiableList(new ArrayList<>(eggs));
@@ -147,6 +160,12 @@ final class PanelState
 	TaskView tasks()
 	{
 		return tasks;
+	}
+
+	/** @return healing items owned; every item has an entry once the game has built the state */
+	Map<ItemType, Integer> items()
+	{
+		return items;
 	}
 
 	/** @return how many species exist */
