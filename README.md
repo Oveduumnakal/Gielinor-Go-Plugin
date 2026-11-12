@@ -25,7 +25,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 - **See the catch happen**
 
   Your character makes a throwing motion when you throw a jar, then cheers for a catch, stamps when the
-  creature breaks free and cries when it runs away (skipped if you moved or started something else). A creature you
+  creature breaks free and cries when it runs away (skipped if you moved or started something else). The jar you threw
+  flies in an arc from your hand to the creature. A creature you
   catch vanishes as the jar lands, for five seconds, before fading back in. Only you see this: the real monster never goes anywhere. A monster that is in a
   fight with anyone is never hidden, and one that starts fighting while hidden comes straight back. You can switch it
   off in the settings.
@@ -40,7 +41,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Training a skill can turn up a jar that is much better on one kind of creature. Mining finds Cave jars for
   creatures you meet underground, Agility finds Swift jars for fast attackers, Prayer finds Blessed jars for
   undead and demons, and so on for almost every skill. When you own one that suits the creature in front of
-  you, it shows up as its own **Catch** option with its odds.
+  you, it shows up as its own **Catch** option with its odds. Every jar has its own small picture, in the jar list on
+  the panel, on the champion cards and beside the "+1 ... jar" lines that float over your head.
 
 - **Everything shows where it happens**
 

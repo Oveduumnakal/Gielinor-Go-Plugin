@@ -83,6 +83,8 @@ final class GoPanel extends PluginPanel
 				JarChoice choice = (JarChoice) value;
 				setForeground(choice.count > 0 ? Color.WHITE : ColorScheme.MEDIUM_GRAY_COLOR);
 				setToolTipText(jarTooltip(choice.type));
+				setIcon(JarIcons.swing(choice.type));
+				setIconTextGap(6);
 			}
 
 			return this;

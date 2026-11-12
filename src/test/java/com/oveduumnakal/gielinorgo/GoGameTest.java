@@ -243,6 +243,47 @@ public class GoGameTest
 	}
 
 	@Test
+	public void jarFindsCarryTheirJarForThePicture()
+	{
+		game.addSteps(GoGame.TILES_PER_JAR);
+		game.onLevelUp();
+		for (int i = 0; i < 200; i++)
+			game.addSkillXp("MINING", 5_000);
+
+		assertEquals(JarType.BRONZE, noticeFor("+1 Bronze jar (walking)").jar());
+		assertEquals(JarType.BRONZE, noticeFor("+" + GoGame.JARS_PER_LEVEL_UP + " Bronze jars (level up)").jar());
+		assertEquals(JarType.CAVE, noticeFor("+1 Cave jar (Mining)").jar());
+	}
+
+	@Test
+	public void aBattleWinJarCarriesItsJarAndOtherLinesCarryNone()
+	{
+		game.data().trainerXp = XpRules.trainerXpForLevel(XpRules.MAX_LEVEL);
+		for (int i = 0; i < 300; i++)
+		{
+			game.data().team.clear();
+			game.data().team.add(new Creature("king black dragon", 40, now));
+			game.battle(wild(CHICKEN, 2, 1));
+		}
+
+		int found = 0;
+		for (Notice notice : notices)
+		{
+			if (!notice.text().endsWith(" jar (battle win)"))
+			{
+				assertNull(notice.text(), notice.jar());
+				continue;
+			}
+
+			found++;
+			assertNotNull(notice.text(), notice.jar());
+			assertEquals(notice.text(), "+1 " + notice.jar().label() + " jar (battle win)");
+		}
+
+		assertTrue(found > 0);
+	}
+
+	@Test
 	public void battleNeedsACreature()
 	{
 		assertNull(game.battle(wild(CHICKEN, 2, 1)));
