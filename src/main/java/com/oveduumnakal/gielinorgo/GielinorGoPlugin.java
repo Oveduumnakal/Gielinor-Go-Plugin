@@ -301,6 +301,12 @@ public class GielinorGoPlugin extends Plugin
 		if (state == GameState.LOGGED_IN && !loaded)
 			loadSave();
 
+		if (state == GameState.LOADING)
+		{
+			stage.clear();
+			follower.sceneLoading();
+		}
+
 		if (state != GameState.LOGIN_SCREEN && state != GameState.HOPPING)
 			return;
 
