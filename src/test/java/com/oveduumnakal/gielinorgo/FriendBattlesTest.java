@@ -586,7 +586,7 @@ public class FriendBattlesTest
 		ann.challenge(BOB, "Bob", annData);
 		bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
 
-		assertNull(ann.receive(otherVersion(last(fromBob), 3), ANN, "Bob", annData, true));
+		assertNull(ann.receive(otherVersion(last(fromBob), 2), ANN, "Bob", annData, true));
 
 		assertEquals("Bob runs a different version of Gielinor Go", last(annTold));
 	}

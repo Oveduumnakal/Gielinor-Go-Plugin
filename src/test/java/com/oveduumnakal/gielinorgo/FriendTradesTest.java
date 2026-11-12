@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -886,6 +887,77 @@ public class FriendTradesTest
 		long xp = XpRules.xpForLevel(20);
 		assertTrue(bob.receive(offerOf(Item.creature("imp", 20, xp, false)), BOB, "Ann"));
 		assertEquals("Imp (Lv 20) as a gift", bob.offerFrom(ANN));
+	}
+
+	private static final String MOVES = "{\"moves\":["
+		+ "{\"id\":\"a\",\"name\":\"Aa\",\"style\":\"MELEE\",\"power\":1.0,\"accuracy\":1.0},"
+		+ "{\"id\":\"b\",\"name\":\"Bb\",\"style\":\"MELEE\",\"power\":1.3,\"accuracy\":0.9},"
+		+ "{\"id\":\"c\",\"name\":\"Cc\",\"style\":\"MELEE\",\"power\":1.6,\"accuracy\":0.8},"
+		+ "{\"id\":\"d\",\"name\":\"Dd\",\"style\":\"MELEE\",\"power\":2.0,\"accuracy\":0.7}],"
+		+ "\"defaults\":{\"MELEE\":\"all\"},"
+		+ "\"pools\":{\"all\":{\"styles\":[\"MELEE\"],\"learns\":[[\"a\",1],[\"b\",10],[\"c\",20],[\"d\",40]]}},"
+		+ "\"species\":{}}";
+
+	private void giveBothTheMoves()
+	{
+		MoveTable moves = MoveTable.load(new Gson(), new StringReader(MOVES));
+		annGame.moves(moves);
+		bobGame.moves(moves);
+	}
+
+	@Test
+	public void aTradedCreatureKeepsTheMovesItKnew()
+	{
+		giveBothTheMoves();
+		annImp.moves = new ArrayList<>(Arrays.asList("a", "c"));
+
+		swap();
+
+		Creature bobGot = only(bobGame.data().team);
+		Creature annGot = only(annGame.data().team);
+		assertEquals(Arrays.asList("a", "c"), bobGot.moves);
+		assertEquals("the other side's creature arrived with the moves of its level", Arrays.asList("a"),
+			annGot.moves);
+	}
+
+	@Test
+	public void anOfferWithMovesTheCreatureCannotKnowIsIgnored()
+	{
+		giveBothTheMoves();
+		long xp = XpRules.xpForLevel(20);
+		String[] ok = {"a", "b", "c"};
+		String[] early = {"a", "d"};
+		String[] unknown = {"a", "zzz"};
+		String[] repeated = {"a", "a"};
+		String[] tooMany = {"a", "b", "c", "d", "a"};
+		String[] blank = {"a", null};
+
+		assertFalse(bob.receive(offerOf(Item.creature("imp", 20, xp, false, StatRolls.AVERAGE, early)), BOB, "Ann"));
+		assertFalse(bob.receive(offerOf(Item.creature("imp", 20, xp, false, StatRolls.AVERAGE, unknown)), BOB, "Ann"));
+		assertFalse(bob.receive(offerOf(Item.creature("imp", 20, xp, false, StatRolls.AVERAGE, repeated)), BOB, "Ann"));
+		assertFalse(bob.receive(offerOf(Item.creature("imp", 20, xp, false, StatRolls.AVERAGE, tooMany)), BOB, "Ann"));
+		assertFalse(bob.receive(offerOf(Item.creature("imp", 20, xp, false, StatRolls.AVERAGE, blank)), BOB, "Ann"));
+		assertEquals("", bob.offerFrom(ANN));
+
+		assertTrue(bob.receive(offerOf(Item.creature("imp", 20, xp, false, StatRolls.AVERAGE, ok)), BOB, "Ann"));
+		assertEquals("Imp (Lv 20) as a gift", bob.offerFrom(ANN));
+	}
+
+	@Test
+	public void aCreatureThatLearnedAMoveBetweenOfferAndAgreementCallsTheTradeOff()
+	{
+		giveBothTheMoves();
+		annImp.moves = new ArrayList<>(Arrays.asList("a", "b"));
+		ann.offer(BOB, "Bob", annImp, null);
+		bob.receive(last(fromAnn), BOB, "Ann");
+		bob.answer(ANN, "Ann", true);
+
+		annImp.moves = new ArrayList<>(Arrays.asList("a", "c"));
+		ann.receive(last(fromBob), ANN, "Bob");
+
+		assertEquals("the swap was not made", 1, annGame.data().team.size());
+		assertSame(annImp, only(annGame.data().team));
+		assertTrue(bobGame.data().team.size() == 1);
 	}
 
 	@Test

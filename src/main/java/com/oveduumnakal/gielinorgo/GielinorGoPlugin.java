@@ -221,7 +221,8 @@ public class GielinorGoPlugin extends Plugin
 		game.elite(loadElite(species));
 		game.moves(loadMoves());
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
-		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce);
+		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce)
+			.withMoves(game.moveTable());
 		trades = new FriendTrades(species, game, random, System::currentTimeMillis, this::sendToParty,
 			this::announce);
 		game.tradeLocks(trades);

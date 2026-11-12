@@ -4,11 +4,15 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 
@@ -589,7 +593,34 @@ final class FriendTrades implements GoGame.TradeLocks
 
 		return item.species() != null && species.find(item.species()) != null && item.rolls() != null
 			&& item.xp() >= 0 && item.xp() <= XpRules.xpForLevel(XpRules.MAX_LEVEL)
-			&& XpRules.levelForXp(item.xp()) == item.level();
+			&& XpRules.levelForXp(item.xp()) == item.level() && validMoves(item);
+	}
+
+	/**
+	 * Checks the moves a creature in a message carries: none, or at most four that are all different and all in the
+	 * species' pool at the creature's level.
+	 *
+	 * @param item a creature whose species and level are already checked
+	 * @return true when the moves are allowed
+	 */
+	private boolean validMoves(Item item)
+	{
+		String[] ids = item.moves();
+		if (ids == null)
+			return true;
+
+		if (ids.length > MoveTable.MAX_KNOWN)
+			return false;
+
+		Species found = species.find(item.species());
+		Set<String> seen = new HashSet<>();
+		for (String id : ids)
+		{
+			if (id == null || !seen.add(id) || !game.moveTable().knows(found, item.level(), id))
+				return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -605,7 +636,21 @@ final class FriendTrades implements GoGame.TradeLocks
 			return want.egg().equals(got.egg());
 
 		return got.egg() == null && Species.keyFor(want.species()).equals(Species.keyFor(got.species()))
-			&& XpRules.levelForXp(got.xp()) == want.level() && sameRolls(want, got);
+			&& XpRules.levelForXp(got.xp()) == want.level() && sameRolls(want, got) && sameMoves(want, got);
+	}
+
+	/**
+	 * Checks that two creatures know the same moves, when the one asked for names them. A request from a build that
+	 * sends no moves matches any creature.
+	 *
+	 * @param want what was asked for
+	 * @param got what was found or offered
+	 * @return true when the moves match or the request names none
+	 */
+	private static boolean sameMoves(Item want, Item got)
+	{
+		String[] asked = want.moves();
+		return asked == null || Arrays.equals(asked, got.moves());
 	}
 
 	/**
@@ -644,7 +689,8 @@ final class FriendTrades implements GoGame.TradeLocks
 		for (Creature creature : game.data().team)
 		{
 			boolean same = Species.keyFor(creature.species).equals(Species.keyFor(want.species()));
-			if (same && creature.level() == want.level() && sameRolls(want, describe(new Mine(creature, null))))
+			if (same && creature.level() == want.level() && sameRolls(want, describe(new Mine(creature, null)))
+				&& sameMoves(want, describe(new Mine(creature, null))))
 				return new Mine(creature, null);
 		}
 
@@ -750,7 +796,8 @@ final class FriendTrades implements GoGame.TradeLocks
 			return before.egg().equals(now.egg());
 
 		return now.egg() == null && Species.keyFor(before.species()).equals(Species.keyFor(now.species()))
-			&& before.xp() == now.xp() && before.gilded() == now.gilded() && before.rolls().equals(now.rolls());
+			&& before.xp() == now.xp() && before.gilded() == now.gilded() && before.rolls().equals(now.rolls())
+			&& Arrays.equals(before.moves(), now.moves());
 	}
 
 	/**
@@ -808,15 +855,22 @@ final class FriendTrades implements GoGame.TradeLocks
 		creature.xp = XpRules.capped(item.xp());
 		creature.gilded = item.gilded();
 		creature.setRolls(item.rolls());
+		Species found = species.find(item.species());
+		MoveLearning.start(creature, found, game.moveTable());
+		if (item.moves() != null)
+			creature.moves = new ArrayList<>(Arrays.asList(item.moves()));
+
 		return game.receive(creature);
 	}
 
-	private static Item describe(Mine mine)
+	private Item describe(Mine mine)
 	{
 		if (mine.creature != null)
 		{
 			Creature creature = mine.creature;
-			return Item.creature(creature.species, creature.level(), creature.xp, creature.gilded, creature.rolls());
+			String[] moves = MoveLearning.sendable(creature, species.find(creature.species), game.moveTable());
+			return Item.creature(creature.species, creature.level(), creature.xp, creature.gilded, creature.rolls(),
+				moves);
 		}
 
 		return Item.egg(mine.egg.rarityTier().name(), mine.egg.tilesLeft);

@@ -42,9 +42,10 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	/**
 	 * The version of the battle rules and message layout this build speaks. Two players can only fight each other
 	 * when it matches, since a different rule would give each of them a different winner. A message from a build
-	 * that sends no version reads as 0.
+	 * that sends no version reads as 0. Version 3 added the moves of each creature and the moves of a traded one, and
+	 * changed how a creature attacks (accuracy, power, no second style).
 	 */
-	static final int PROTOCOL = 2;
+	static final int PROTOCOL = 3;
 
 	/** One creature or one egg named in a trade. Exactly one of the species and the egg rarity is set. */
 	static final class Item
@@ -55,6 +56,7 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 		private boolean gilded;
 		private int[] rolls;
 		private String temperament;
+		private String[] moves;
 		private String egg;
 		private int tilesLeft;
 
@@ -97,6 +99,24 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 			Item item = creature(species, level, xp, gilded);
 			item.rolls = rolls.values();
 			item.temperament = rolls.temperament() == Temperament.STEADY ? null : rolls.temperament().name();
+			return item;
+		}
+
+		/**
+		 * Names a creature with its rolls, temperament and moves.
+		 *
+		 * @param species the species key
+		 * @param level the creature's level
+		 * @param xp the creature's XP, or 0 when only the level is known
+		 * @param gilded whether the creature is gilded
+		 * @param rolls the creature's rolls and temperament
+		 * @param moves the ids of the creature's moves; null or empty leaves them to the receiver
+		 * @return the item
+		 */
+		static Item creature(String species, int level, long xp, boolean gilded, StatRolls rolls, String[] moves)
+		{
+			Item item = creature(species, level, xp, gilded, rolls);
+			item.moves = moves == null || moves.length == 0 ? null : moves.clone();
 			return item;
 		}
 
@@ -156,6 +176,12 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 			return rolls != null || temperament != null;
 		}
 
+		/** @return the ids of the creature's moves as sent, or null when it sent none */
+		String[] moves()
+		{
+			return moves == null ? null : moves.clone();
+		}
+
 		/** @return the egg's rarity name, or null for a creature */
 		String egg()
 		{
@@ -179,6 +205,7 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	private int[] levels;
 	private int[][] rolls;
 	private String[] temperaments;
+	private String[][] moves;
 	private int version;
 	private String[] eggs;
 	private Item give;
@@ -272,6 +299,25 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	{
 		want = item;
 		return this;
+	}
+
+	/**
+	 * Adds the moves of the team in {@code species}.
+	 *
+	 * @param teamMoves the move ids of each creature, in the order of the team; an empty list leaves a creature's
+	 *     moves to what its level unlocks
+	 * @return this message
+	 */
+	GielinorGoPartyMessage moved(String[][] teamMoves)
+	{
+		moves = teamMoves;
+		return this;
+	}
+
+	/** @return the move ids of each creature; as sent, so it may be null (each level decides) or nonsense */
+	String[][] moves()
+	{
+		return moves;
 	}
 
 	/** @return the rolls of each creature; as sent, so it may be null (all average) or nonsense */

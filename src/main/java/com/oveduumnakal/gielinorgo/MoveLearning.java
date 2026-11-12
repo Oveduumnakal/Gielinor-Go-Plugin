@@ -246,6 +246,27 @@ final class MoveLearning
 	}
 
 	/**
+	 * Lists the ids of the moves a creature shows to a friend or sends in a trade. Only moves its species' pool allows
+	 * at its level are listed, so the other side never turns it away.
+	 *
+	 * @param creature the creature
+	 * @param species its species
+	 * @param table the moves
+	 * @return the ids, in the order the creature knows the moves; empty when the table has none for the species
+	 */
+	static String[] sendable(Creature creature, Species species, MoveTable table)
+	{
+		List<String> ids = new ArrayList<>();
+		for (Move move : known(creature, species, table))
+		{
+			if (table.knows(species, creature.level(), move.id()))
+				ids.add(move.id());
+		}
+
+		return ids.toArray(new String[0]);
+	}
+
+	/**
 	 * Lists the moves waiting for a choice.
 	 *
 	 * @param creature the creature
