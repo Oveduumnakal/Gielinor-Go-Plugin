@@ -18,6 +18,7 @@ final class Notice
 	private final int npcIndex;
 	private final Anchor anchor;
 	private final JarType jar;
+	private final ItemType item;
 
 	/** Where a notice floats: over a head as usual, or over a body that is acted out on a battle stage. */
 	enum Anchor
@@ -37,11 +38,17 @@ final class Notice
 
 	private Notice(String text, Tone tone, int npcIndex, Anchor anchor, JarType jar)
 	{
+		this(text, tone, npcIndex, anchor, jar, null);
+	}
+
+	private Notice(String text, Tone tone, int npcIndex, Anchor anchor, JarType jar, ItemType item)
+	{
 		this.text = text;
 		this.tone = tone;
 		this.npcIndex = npcIndex;
 		this.anchor = anchor;
 		this.jar = jar;
+		this.item = item;
 	}
 
 	/**
@@ -67,6 +74,20 @@ final class Notice
 	static Notice player(String text, Tone tone, JarType jar)
 	{
 		return new Notice(text, tone, PLAYER, Anchor.HEAD, jar);
+	}
+
+	/**
+	 * Makes a notice about a healing item the player found, shown over the player's head with the item's picture
+	 * beside it.
+	 *
+	 * @param text the line
+	 * @param tone its mood
+	 * @param item the item the line is about
+	 * @return the notice
+	 */
+	static Notice playerItem(String text, Tone tone, ItemType item)
+	{
+		return new Notice(text, tone, PLAYER, Anchor.HEAD, null, item);
 	}
 
 	/**
@@ -138,6 +159,12 @@ final class Notice
 	JarType jar()
 	{
 		return jar;
+	}
+
+	/** @return the healing item this line is about, whose picture is drawn beside it, or null */
+	ItemType item()
+	{
+		return item;
 	}
 
 	/** @return the game's index for the monster this floats over, or {@link #PLAYER} */

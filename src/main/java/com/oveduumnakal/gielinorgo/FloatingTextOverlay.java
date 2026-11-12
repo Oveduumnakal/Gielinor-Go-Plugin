@@ -180,6 +180,7 @@ final class FloatingTextOverlay extends Overlay
 		graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha));
 		graphics.drawString(text, x, y);
 		drawJar(graphics, notice.jar(), x, y, alpha);
+		drawItem(graphics, notice.item(), x, y, alpha);
 	}
 
 	/**
@@ -194,6 +195,27 @@ final class FloatingTextOverlay extends Overlay
 	private static void drawJar(Graphics2D graphics, JarType jar, int x, int y, int alpha)
 	{
 		BufferedImage image = JarIcons.image(jar);
+		if (image == null)
+			return;
+
+		Composite before = graphics.getComposite();
+		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha / 255f));
+		graphics.drawImage(image, x - image.getWidth() - 2, y - image.getHeight() + 3, null);
+		graphics.setComposite(before);
+	}
+
+	/**
+	 * Draws a healing item's picture just left of a line's text, fading with it.
+	 *
+	 * @param graphics the canvas
+	 * @param item the item the line is about, or null
+	 * @param x the left edge of the text
+	 * @param y the baseline of the text
+	 * @param alpha the line's opacity, from 0 to 255
+	 */
+	private static void drawItem(Graphics2D graphics, ItemType item, int x, int y, int alpha)
+	{
+		BufferedImage image = ItemIcons.image(item);
 		if (image == null)
 			return;
 

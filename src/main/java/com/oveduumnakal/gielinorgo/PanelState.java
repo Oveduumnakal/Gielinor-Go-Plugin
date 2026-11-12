@@ -34,6 +34,7 @@ final class PanelState
 	private final BattleView battle;
 	private MilestoneView milestones = MilestoneView.NONE;
 	private EliteView elite = EliteView.NONE;
+	private final Map<ItemType, Integer> items;
 
 	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
 		JarType selectedJar, int stepProgress, List<CreatureView> team, List<CreatureView> storage,
@@ -41,7 +42,36 @@ final class PanelState
 		TodayView today, TaskView tasks)
 	{
 		this(trainerLevel, trainerProgress, battlesWon, jars, selectedJar, stepProgress, team, storage, log,
-			caughtSpecies, seenSpecies, eggs, champions, today, tasks, null);
+			caughtSpecies, seenSpecies, eggs, champions, today, tasks, Collections.emptyMap());
+	}
+
+	/**
+	 * Builds a snapshot with the healing items owned and no battle waiting.
+	 *
+	 * @param trainerLevel the trainer level
+	 * @param trainerProgress progress to the next trainer level
+	 * @param battlesWon battles won so far
+	 * @param jars jars owned
+	 * @param selectedJar the jar the player chose to throw
+	 * @param stepProgress tiles walked towards the next jar
+	 * @param team the team, lead first
+	 * @param storage the stored creatures
+	 * @param log the Creature Log
+	 * @param caughtSpecies how many species were caught
+	 * @param seenSpecies how many species were seen
+	 * @param eggs the eggs carried
+	 * @param champions every City Champion
+	 * @param today the Today section
+	 * @param tasks the Tasks section
+	 * @param items healing items owned
+	 */
+	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
+		JarType selectedJar, int stepProgress, List<CreatureView> team, List<CreatureView> storage,
+		List<LogEntry> log, int caughtSpecies, int seenSpecies, List<EggView> eggs, List<ChampionView> champions,
+		TodayView today, TaskView tasks, Map<ItemType, Integer> items)
+	{
+		this(trainerLevel, trainerProgress, battlesWon, jars, selectedJar, stepProgress, team, storage, log,
+			caughtSpecies, seenSpecies, eggs, champions, today, tasks, items, null);
 	}
 
 	/**
@@ -62,14 +92,18 @@ final class PanelState
 	 * @param champions every City Champion
 	 * @param today the Today section
 	 * @param tasks the Tasks section
+	 * @param items healing items owned
 	 * @param battle the battle that waits for a choice, or null when none does
 	 */
-	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
+	private PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
 		JarType selectedJar, int stepProgress, List<CreatureView> team, List<CreatureView> storage,
 		List<LogEntry> log, int caughtSpecies, int seenSpecies, List<EggView> eggs, List<ChampionView> champions,
-		TodayView today, TaskView tasks, BattleView battle)
+		TodayView today, TaskView tasks, Map<ItemType, Integer> items, BattleView battle)
 	{
 		this.battle = battle;
+		Map<ItemType, Integer> copy = new EnumMap<>(ItemType.class);
+		copy.putAll(items);
+		this.items = Collections.unmodifiableMap(copy);
 		this.today = today;
 		this.tasks = tasks;
 		this.eggs = Collections.unmodifiableList(new ArrayList<>(eggs));
@@ -96,7 +130,7 @@ final class PanelState
 	PanelState withBattle(BattleView waiting)
 	{
 		PanelState copy = new PanelState(trainerLevel, trainerProgress, battlesWon, jars, selectedJar, stepProgress,
-			team, storage, log, caughtSpecies, seenSpecies, eggs, champions, today, tasks, waiting);
+			team, storage, log, caughtSpecies, seenSpecies, eggs, champions, today, tasks, items, waiting);
 		return copy.withGoals(milestones, elite);
 	}
 
@@ -225,6 +259,12 @@ final class PanelState
 	MilestoneView milestones()
 	{
 		return milestones;
+	}
+
+	/** @return healing items owned; every item has an entry once the game has built the state */
+	Map<ItemType, Integer> items()
+	{
+		return items;
 	}
 
 	/** @return how many species exist */

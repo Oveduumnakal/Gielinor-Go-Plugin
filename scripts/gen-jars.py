@@ -6,7 +6,8 @@ Run from the repository root (needs Pillow):
     python3 scripts/gen-jars.py [contact-sheet.png]
 
 It writes one 32x32 PNG per jar to src/main/resources/com/oveduumnakal/gielinorgo/jars/<name>.png, where <name> is
-the lower-case JarType name (bronze.png ... mystic.png). The optional argument is a path for a contact sheet that
+the lower-case JarType name (bronze.png ... mystic.png). It also writes the four healing-item pictures (small_salve, large_salve, revive, antidote) to
+src/main/resources/com/oveduumnakal/gielinorgo/items/. The optional argument is a path for a contact sheet that
 shows every jar at 32 px and at 16 px on the panel colour; keep it outside the repository.
 
 Everything is drawn here from polygons and arcs, at 4x size and averaged down (box filter, so nothing leaks into the margin). The output is the same
@@ -203,7 +204,75 @@ def contact_sheet(images, path):
     sheet.save(path)
 
 
+ITEMS_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "src", "main", "resources", "com", "oveduumnakal",
+    "gielinorgo", "items")
+
+
+def draw_pot(body, liquid, cork):
+    """Draws a round-bellied pot with a cork; a bigger body makes the Large salve."""
+    big = Image.new("RGBA", (SIZE * SCALE, SIZE * SCALE), (0, 0, 0, 0))
+    d = ImageDraw.Draw(big)
+    outline = shade(body, 0.45)
+    d.rounded_rectangle(px(11.5, 3.5, 20.5, 9), radius=1 * SCALE, fill=outline)
+    d.rounded_rectangle(px(5.5, 9.5, 26.5, 29.5), radius=8 * SCALE, fill=outline)
+    d.rounded_rectangle(px(12.5, 4.5, 19.5, 9), radius=1 * SCALE, fill=cork)
+    d.rounded_rectangle(px(6.5, 10.5, 25.5, 28.5), radius=7 * SCALE, fill=body)
+    d.rounded_rectangle(px(8.5, 15, 23.5, 27), radius=5 * SCALE, fill=liquid)
+    d.rectangle(px(8.5, 15, 23.5, 16), fill=shade(liquid, 1.3))
+    shine = Image.new("RGBA", big.size, (0, 0, 0, 0))
+    ImageDraw.Draw(shine).rounded_rectangle(px(8, 17, 10, 25), radius=1 * SCALE, fill=(255, 255, 255, 90))
+    return Image.alpha_composite(big, shine)
+
+
+def draw_vial(liquid, symbol):
+    """Draws a tall thin vial with a cork and a coloured liquid; symbol draws on top, or is None."""
+    big = Image.new("RGBA", (SIZE * SCALE, SIZE * SCALE), (0, 0, 0, 0))
+    d = ImageDraw.Draw(big)
+    outline = shade(liquid, 0.45)
+    d.rounded_rectangle(px(13, 2.5, 19, 9), radius=1 * SCALE, fill=outline)
+    d.rounded_rectangle(px(8.5, 8.5, 23.5, 30), radius=6 * SCALE, fill=outline)
+    d.rounded_rectangle(px(13.5, 3, 18.5, 8.5), radius=1 * SCALE, fill=(150, 110, 70, 255))
+    d.rounded_rectangle(px(9.5, 9.5, 22.5, 29), radius=5 * SCALE, fill=CLEAR_GLASS)
+    d.rounded_rectangle(px(9.5, 15, 22.5, 29), radius=5 * SCALE, fill=liquid)
+    d.rectangle(px(9.5, 15, 22.5, 16), fill=shade(liquid, 1.3))
+    shine = Image.new("RGBA", big.size, (0, 0, 0, 0))
+    ImageDraw.Draw(shine).rounded_rectangle(px(11, 12, 12.5, 26), radius=0.7 * SCALE, fill=(255, 255, 255, 110))
+    big = Image.alpha_composite(big, shine)
+    if symbol is not None:
+        top = Image.new("RGBA", big.size, (0, 0, 0, 0))
+        symbol(ImageDraw.Draw(top))
+        big = Image.alpha_composite(big, top)
+
+    return big
+
+
+def vial_wing(d):
+    polygon(d, [(22, 17), (29, 10), (30, 16), (27, 15), (29, 20), (25, 19), (26, 24), (22, 22)], WHITE)
+
+
+def vial_cross(d):
+    d.rectangle(px(14.5, 17.5, 17.5, 26.5), fill=WHITE)
+    d.rectangle(px(11.5, 20.5, 20.5, 23.5), fill=WHITE)
+
+
+ITEMS = [
+    ("small_salve", lambda: draw_pot((176, 138, 96, 255), (96, 190, 90, 255), (150, 110, 70, 255))),
+    ("large_salve", lambda: draw_pot((120, 96, 140, 255), (70, 140, 220, 255), (150, 110, 70, 255))),
+    ("revive", lambda: draw_vial((226, 70, 96, 255), vial_wing)),
+    ("antidote", lambda: draw_vial((70, 190, 170, 255), vial_cross)),
+]
+
+
+def write_items():
+    """Writes the four healing-item pictures to the items folder."""
+    os.makedirs(ITEMS_DIR, exist_ok=True)
+    for name, make_item in ITEMS:
+        make_item().resize((SIZE, SIZE), Image.BOX).save(os.path.join(ITEMS_DIR, name + ".png"), optimize=False)
+
+
 def main():
+    write_items()
     os.makedirs(OUT_DIR, exist_ok=True)
     images = []
     for entry in JARS:
