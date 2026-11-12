@@ -1053,6 +1053,26 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
+	 * Settles the move the creature a panel pick points at waits to learn, once it is checked that the same creature
+	 * is still there. A battle the player steers keeps the moves it started with.
+	 *
+	 * @param pick the creature as the panel showed it
+	 * @param forgetIndex the place of the known move to forget, or -1 to skip the new move
+	 */
+	private void resolveMove(TradePick pick, int forgetIndex)
+	{
+		if (!pick.matches(game.snapshot()))
+		{
+			announce(Notice.player("What you picked has changed. Pick again", Tone.BAD));
+			return;
+		}
+
+		SaveData data = game.data();
+		List<Creature> kept = pick.from() == Holding.TEAM ? data.team : data.storage;
+		game.resolveMove(kept.get(pick.index()), forgetIndex);
+	}
+
+	/**
 	 * Uses a healing item on the creature a panel pick points at, once it is checked that the same creature is
 	 * still there.
 	 *
@@ -1921,6 +1941,12 @@ public class GielinorGoPlugin extends Plugin
 			public void useItem(TradePick pick, ItemType type)
 			{
 				onGameThread(() -> GielinorGoPlugin.this.useItem(pick, type));
+			}
+
+			@Override
+			public void resolveMove(TradePick pick, int forgetIndex)
+			{
+				onGameThread(() -> GielinorGoPlugin.this.resolveMove(pick, forgetIndex));
 			}
 
 			@Override

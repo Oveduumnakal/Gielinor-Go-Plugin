@@ -4,6 +4,9 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /** One owned creature as the side panel shows it. Immutable, so it can cross from the game thread to the UI. */
@@ -19,6 +22,8 @@ final class CreatureView
 	private final String nickname;
 	private final StatRolls rolls;
 	private final int npcId;
+	private final List<Move> moves;
+	private final List<Move> pending;
 
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname)
@@ -35,6 +40,31 @@ final class CreatureView
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname, StatRolls rolls, int npcId)
 	{
+		this(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId,
+			Collections.emptyList(), Collections.emptyList());
+	}
+
+	/**
+	 * Describes a creature with its moves.
+	 *
+	 * @param name the species name
+	 * @param level the creature level
+	 * @param xpProgress progress to the next level, from 0 to 1
+	 * @param hpFraction the share of full health
+	 * @param rarity the species' rarity
+	 * @param type the species' combat style
+	 * @param gilded whether it is gilded
+	 * @param nickname its nickname, or null
+	 * @param rolls its rolls and temperament
+	 * @param npcId the NPC id its portrait is drawn from, or 0
+	 * @param moves the moves it knows, in the order learned
+	 * @param pending the moves that wait for a choice, oldest first
+	 */
+	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
+		boolean gilded, String nickname, StatRolls rolls, int npcId, List<Move> moves, List<Move> pending)
+	{
+		this.moves = Collections.unmodifiableList(new ArrayList<>(moves));
+		this.pending = Collections.unmodifiableList(new ArrayList<>(pending));
 		this.npcId = npcId;
 		this.rolls = rolls;
 		this.gilded = gilded;
@@ -57,6 +87,18 @@ final class CreatureView
 	int npcId()
 	{
 		return npcId;
+	}
+
+	/** @return the moves it knows, in the order learned; empty when the game has no moves */
+	List<Move> moves()
+	{
+		return moves;
+	}
+
+	/** @return the moves that wait for the player to forget one or skip, oldest first */
+	List<Move> pending()
+	{
+		return pending;
 	}
 
 	/** @return the nickname the player gave it, or null when it has none */
@@ -156,12 +198,15 @@ final class CreatureView
 			&& Objects.equals(name, that.name)
 			&& Objects.equals(nickname, that.nickname)
 			&& npcId == that.npcId
+			&& moves.equals(that.moves)
+			&& pending.equals(that.pending)
 			&& rolls.equals(that.rolls);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId);
+		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId, moves,
+			pending);
 	}
 }

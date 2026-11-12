@@ -99,6 +99,14 @@ interface PanelActions
 	void useItem(TradePick pick, ItemType type);
 
 	/**
+	 * Settles the move a creature waits to learn.
+	 *
+	 * @param pick the creature as the panel showed it
+	 * @param forgetIndex the place of the known move to forget, or -1 to skip the new move
+	 */
+	void resolveMove(TradePick pick, int forgetIndex);
+
+	/**
 	 * Chooses the jar thrown by the Catch option.
 	 *
 	 * @param type the jar type

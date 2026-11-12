@@ -26,8 +26,9 @@ import net.runelite.client.ui.FontManager;
 
 /**
  * The battle box at the top of the side panel, shown only while a battle the player steers waits for a choice: both
- * creatures with their health, the time left, and the buttons for Attack, Switch, Catch and Run. It is built once and
- * updated in place, and it reports each choice to a consumer.
+ * creatures with their health, the time left, and the buttons for Attack, Switch, Catch and Run. Attack opens the
+ * creature's moves when it knows more than one. It is built once and updated in place, and it reports each choice to a
+ * consumer.
  */
 final class BattleBox extends JPanel
 {
@@ -49,6 +50,7 @@ final class BattleBox extends JPanel
 	private final JButton jar;
 	private final JButton run;
 	private List<BattleView.Option> options = Collections.emptyList();
+	private List<Move> moves = Collections.emptyList();
 
 	/**
 	 * Builds the box, hidden until a battle waits.
@@ -63,7 +65,7 @@ final class BattleBox extends JPanel
 		setBorder(BorderFactory.createCompoundBorder(new EmptyBorder(0, 8, 6, 8),
 			BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(ColorScheme.BRAND_ORANGE),
 				new EmptyBorder(6, 6, 6, 6))));
-		attack = PanelUi.button("Attack", e -> choose.accept(BattleChoice.attack()));
+		attack = PanelUi.button("Attack", e -> openMoveMenu());
 		swap = PanelUi.button("Switch", e -> openSwitchMenu());
 		jar = PanelUi.button("Catch", e -> choose.accept(BattleChoice.catching(null)));
 		run = PanelUi.button("Run", e -> choose.accept(BattleChoice.run()));
@@ -110,6 +112,7 @@ final class BattleBox extends JPanel
 			return;
 
 		options = view.options();
+		moves = view.moves();
 		title.setText(view.forcedSwitch() ? "CHOOSE YOUR NEXT CREATURE" : "YOUR TURN · " + view.secondsLeft() + "s");
 		mineName.setText(view.mineName() + " Lv " + view.mineLevel());
 		foeName.setText(view.foeName() + " Lv " + view.foeLevel());
@@ -119,6 +122,8 @@ final class BattleBox extends JPanel
 		foeBar.setToolTipText(Math.round(view.foeHp() * 100) + "% health");
 		timeBar.set(view.timeLeft(), TIME);
 		attack.setEnabled(!view.forcedSwitch());
+		attack.setText(view.canChooseMove() ? "Attack..." : "Attack");
+		attack.setToolTipText(view.canChooseMove() ? "Choose one of your creature's moves" : null);
 		run.setEnabled(!view.forcedSwitch());
 		swap.setEnabled(view.canSwitch());
 		swap.setToolTipText(view.canSwitch() ? "Choose a creature to step in. It costs your turn."
@@ -135,6 +140,42 @@ final class BattleBox extends JPanel
 
 		return "<html>Throw a " + view.jarLabel() + " jar. The more health the creature has lost,<br>the better "
 			+ "the chance. It costs your turn.</html>";
+	}
+
+	/**
+	 * Attacks at once when the creature knows one move, and otherwise opens the list of its moves under the Attack
+	 * button.
+	 */
+	private void openMoveMenu()
+	{
+		if (moves.size() <= 1)
+		{
+			choose.accept(BattleChoice.attack());
+			return;
+		}
+
+		JPopupMenu menu = moveMenu();
+		if (attack.isShowing())
+			menu.show(attack, 0, attack.getHeight());
+	}
+
+	/**
+	 * Builds the list of the creature's moves.
+	 *
+	 * @return a menu with one item per move, each attacking with that move
+	 */
+	JPopupMenu moveMenu()
+	{
+		JPopupMenu menu = new JPopupMenu();
+		for (int i = 0; i < moves.size(); i++)
+		{
+			Move move = moves.get(i);
+			String text = move.plain() ? "Attack" : move.name() + " \u00b7 " + move.describe();
+			int place = i;
+			menu.add(PanelUi.menuItem(text, () -> choose.accept(BattleChoice.attack(place))));
+		}
+
+		return menu;
 	}
 
 	/** Opens the list of creatures that could step in, under the Switch button. */

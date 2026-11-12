@@ -68,6 +68,48 @@ public class BattleBoxTest
 		assertEquals(Arrays.asList(BattleChoice.attack(), BattleChoice.catching(null), BattleChoice.run()), chosen);
 	}
 
+	private static BattleView viewWithMoves(Move... moves)
+	{
+		Combatant mine = new Combatant(GOBLIN, "Bob", 42, 0.6).moves(Arrays.asList(moves));
+		Combatant foe = new Combatant(GOBLIN, "Lesser demon", 17, 0.25);
+		return new BattleView(mine, foe, false, true, JarType.BRONZE, 12, 10, 1.0, twoOptions());
+	}
+
+	@Test
+	public void attackOpensTheMovesWhenTheCreatureKnowsMoreThanOne()
+	{
+		List<BattleChoice> chosen = new ArrayList<>();
+		BattleBox box = new BattleBox(chosen::add);
+		box.show(viewWithMoves(TestMoves.BITE, TestMoves.DRAGONFIRE));
+
+		box.attackButton().doClick();
+		assertTrue("Attack does not choose by itself when there is a choice", chosen.isEmpty());
+		assertEquals("Attack...", box.attackButton().getText());
+
+		JPopupMenu menu = box.moveMenu();
+		assertEquals(2, menu.getComponentCount());
+		assertEquals("Bite \u00b7 Melee, power 1, accuracy 100%", ((JMenuItem) menu.getComponent(0)).getText());
+		assertEquals("Dragonfire \u00b7 Magic, power 1.6, accuracy 90%",
+			((JMenuItem) menu.getComponent(1)).getText());
+
+		((JMenuItem) menu.getComponent(1)).doClick();
+
+		assertEquals(Collections.singletonList(BattleChoice.attack(1)), chosen);
+	}
+
+	@Test
+	public void aCreatureWithOneMoveJustAttacks()
+	{
+		List<BattleChoice> chosen = new ArrayList<>();
+		BattleBox box = new BattleBox(chosen::add);
+		box.show(viewWithMoves(TestMoves.BITE));
+
+		box.attackButton().doClick();
+
+		assertEquals("Attack", box.attackButton().getText());
+		assertEquals(Collections.singletonList(BattleChoice.attack()), chosen);
+	}
+
 	@Test
 	public void theSwitchListHoldsTheCreaturesThatCanStepIn()
 	{

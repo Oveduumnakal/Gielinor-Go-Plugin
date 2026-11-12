@@ -28,8 +28,9 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 
 /**
- * One team member drawn as a slim card: portrait, name, level, combat style, and thin health and XP bars. There
- * are no buttons: clicking a card makes that creature the lead, and right-clicking opens a short menu. The card
+ * One team member drawn as a slim card: portrait, name, level, combat style, and thin health and XP bars. A gold
+ * {@code New move} line shows while a move waits to be learned; clicking it opens the moves dialog. There are no
+ * buttons: clicking a card makes that creature the lead, and right-clicking opens a short menu. The card
  * is updated in place, so it never flickers and keeps its hover highlight while numbers change.
  */
 final class CreatureCard extends JPanel
@@ -48,6 +49,7 @@ final class CreatureCard extends JPanel
 	private final JLabel level = PanelUi.label("", FontManager.getRunescapeSmallFont(), Color.WHITE);
 	private final JLabel style = PanelUi.caption("");
 	private final JLabel badge = PanelUi.label("", FontManager.getRunescapeSmallFont(), ColorScheme.BRAND_ORANGE);
+	private final JLabel newMove = PanelUi.label("New move", FontManager.getRunescapeSmallFont(), PanelUi.GOLD);
 	private final BarComponent hp = new BarComponent(ColorScheme.PROGRESS_COMPLETE_COLOR, HP_BAR_HEIGHT);
 	private final BarComponent xp = new BarComponent(XP_COLOR, XP_BAR_HEIGHT);
 	private Map<ItemType, Integer> items = Collections.emptyMap();
@@ -71,6 +73,7 @@ final class CreatureCard extends JPanel
 		text.add(PanelUi.sides(name, level));
 		text.add(Box.createVerticalStrut(1));
 		text.add(PanelUi.sides(style, badge));
+		text.add(newMove);
 		text.add(Box.createVerticalStrut(5));
 		text.add(hp);
 		text.add(Box.createVerticalStrut(2));
@@ -80,6 +83,17 @@ final class CreatureCard extends JPanel
 		for (Component child : text.getComponents())
 			((JComponent) child).setAlignmentX(Component.LEFT_ALIGNMENT);
 
+		newMove.setVisible(false);
+		newMove.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		newMove.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				if (SwingUtilities.isLeftMouseButton(e))
+					showMoves();
+			}
+		});
 		add(text, BorderLayout.CENTER);
 		addMouseListener(new MouseAdapter()
 		{
@@ -119,6 +133,9 @@ final class CreatureCard extends JPanel
 		level.setText("Lv " + view.level());
 		style.setText(view.type().label() + " \u00b7 " + view.temperamentLabel());
 		showBadge(view, isLead);
+		newMove.setVisible(!view.pending().isEmpty());
+		newMove.setToolTipText(view.pending().isEmpty() ? null : "Wants to learn "
+			+ view.pending().get(0).name() + ". Click to choose.");
 		hp.set(view.hpFraction(), hpColor(view.hpFraction()));
 		xp.set(view.xpProgress(), XP_COLOR);
 		Color stripe = isLead ? ColorScheme.BRAND_ORANGE : ColorScheme.DARKER_GRAY_COLOR;
@@ -130,7 +147,7 @@ final class CreatureCard extends JPanel
 			+ Math.round(view.hpFraction() * 100) + "%<br>"
 			+ Math.round(view.xpProgress() * 100) + "% to level " + Math.min(XpRules.MAX_LEVEL, view.level() + 1)
 			+ "<br>" + (isLead ? "Your lead: fights battles and trains twice as fast" : "Click to make lead")
-			+ "<br>" + view.type().matchup() + "<br>Right-click for more</html>");
+			+ "<br>" + view.type().matchup() + PanelUi.tooltipMoves(view) + "<br>Right-click for more</html>");
 		String wanted = PortraitSource.cacheKey(view.name(), view.npcId());
 		if (wanted.equals(portraitOf))
 			return;
@@ -186,6 +203,7 @@ final class CreatureCard extends JPanel
 
 			menu.add(PanelUi.menuItem("Move to storage", () -> actions.moveToStorage(index)));
 			menu.add(PanelUi.menuItem("Rename...", this::rename));
+			menu.add(PanelUi.menuItem("Moves...", this::showMoves));
 			ItemMenu.addTo(menu, items, shown.hpFraction(),
 				type -> actions.useItem(TradePick.of(Holding.TEAM, index, shown), type));
 			menu.show(this, event.getX(), event.getY());
@@ -204,6 +222,17 @@ final class CreatureCard extends JPanel
 	void items(Map<ItemType, Integer> owned)
 	{
 		items = owned;
+	}
+
+	/** Shows the creature's moves and, when a new one waits, asks which to forget or whether to skip it. */
+	private void showMoves()
+	{
+		CreatureView view = shown;
+		int place = index;
+		if (view == null)
+			return;
+
+		MoveDialog.show(this, view, forget -> actions.resolveMove(TradePick.of(Holding.TEAM, place, view), forget));
 	}
 
 	/** Asks for a new nickname for the creature on this card and hands it to the game. */
