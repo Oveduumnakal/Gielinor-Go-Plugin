@@ -26,6 +26,9 @@ final class CatchRules
 	 */
 	static final double KNOCKED_OUT_BONUS = 2.0;
 
+	/** Most a catch chance grows while a battle is on: the share of health lost times this, added to 1. */
+	static final double BATTLE_BONUS = 0.5;
+
 	/** Chance that a creature runs away after breaking out of a jar. */
 	static final double FLEE_CHANCE = 0.3;
 
@@ -88,6 +91,24 @@ final class CatchRules
 			base *= WEAKENED_BONUS;
 
 		return Math.max(MIN_CHANCE, Math.min(MAX_CHANCE, base));
+	}
+
+	/**
+	 * Chance that a jar thrown in the middle of a battle catches the creature still standing. The more health it has
+	 * lost, the better: {@code 1 + 0.5 * share lost}, so {@code 1.0} at full health and {@code 1.5} near zero. The
+	 * weakened and knocked-out bonuses do not apply, since the battle is not over.
+	 *
+	 * @param jar the jar thrown
+	 * @param combatLevel the monster's combat level
+	 * @param traits the monster's traits, which a specialty jar may be good at
+	 * @param healthLeft the share of full health the monster has left, from 0 to 1
+	 * @return the chance, from {@link #MIN_CHANCE} to {@link #MAX_CHANCE}
+	 */
+	static double inBattle(JarType jar, int combatLevel, Set<Trait> traits, double healthLeft)
+	{
+		double lost = Math.max(0.0, Math.min(1.0, 1.0 - healthLeft));
+		double base = jar.bonusAgainst(traits) * CHANCE_PIVOT / (CHANCE_PIVOT + Math.max(0, combatLevel));
+		return Math.max(MIN_CHANCE, Math.min(MAX_CHANCE, base * (1.0 + BATTLE_BONUS * lost)));
 	}
 
 	/**
