@@ -12,6 +12,8 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -48,6 +50,7 @@ final class CreatureCard extends JPanel
 	private final JLabel badge = PanelUi.label("", FontManager.getRunescapeSmallFont(), ColorScheme.BRAND_ORANGE);
 	private final BarComponent hp = new BarComponent(ColorScheme.PROGRESS_COMPLETE_COLOR, HP_BAR_HEIGHT);
 	private final BarComponent xp = new BarComponent(XP_COLOR, XP_BAR_HEIGHT);
+	private Map<ItemType, Integer> items = Collections.emptyMap();
 	private int index;
 	private CreatureView shown;
 	private String portraitOf;
@@ -183,12 +186,24 @@ final class CreatureCard extends JPanel
 
 			menu.add(PanelUi.menuItem("Move to storage", () -> actions.moveToStorage(index)));
 			menu.add(PanelUi.menuItem("Rename...", this::rename));
+			ItemMenu.addTo(menu, items, shown.hpFraction(),
+				type -> actions.useItem(TradePick.of(Holding.TEAM, index, shown), type));
 			menu.show(this, event.getX(), event.getY());
 			return;
 		}
 
 		if (SwingUtilities.isLeftMouseButton(event) && index != 0)
 			actions.setLead(index);
+	}
+
+	/**
+	 * Tells the card which healing items the player owns, for its {@code Use} menu.
+	 *
+	 * @param owned how many of each item the player owns
+	 */
+	void items(Map<ItemType, Integer> owned)
+	{
+		items = owned;
 	}
 
 	/** Asks for a new nickname for the creature on this card and hands it to the game. */

@@ -96,6 +96,7 @@ final class GoPanel extends PluginPanel
 	private final BarComponent trainerBar;
 	private final JLabel winsLabel;
 	private final JLabel stepsLabel;
+	private final ItemsRow itemsRow = new ItemsRow();
 	private final JComboBox<JarChoice> jarBox = new JComboBox<>();
 	private final TeamTab teamTab;
 	private final StorageTab storageTab;
@@ -141,6 +142,9 @@ final class GoPanel extends PluginPanel
 		stepsLabel.setToolTipText("Walk " + (GoGame.TILES_PER_JAR - state.stepProgress())
 			+ " more tiles to find a Bronze jar");
 		showJars(state);
+		itemsRow.update(state.items());
+		teamTab.items(state.items());
+		storageTab.items(state.items());
 		teamTab.update(state.team(), state.eggs(), state.tasks());
 		storageTab.update(state.storage());
 		logTab.update(state);
@@ -194,6 +198,8 @@ final class GoPanel extends PluginPanel
 		jarRow.add(PanelUi.caption("Throw"), BorderLayout.WEST);
 		jarRow.add(jarBox, BorderLayout.CENTER);
 		header.add(jarRow);
+		header.add(Box.createVerticalStrut(6));
+		header.add(itemsRow);
 		for (Component child : header.getComponents())
 			((JComponent) child).setAlignmentX(Component.LEFT_ALIGNMENT);
 

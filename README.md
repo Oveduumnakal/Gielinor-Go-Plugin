@@ -46,6 +46,19 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   you, it shows up as its own **Catch** option with its odds. Every jar has its own small picture, in the jar list on
   the panel, on the champion cards and beside the "+1 ... jar" lines that float over your head.
 
+- **Healing items**
+
+  Four items help a hurt creature. A **Small salve** restores 25% health and a **Large salve** 60%. A **Revive
+  draught** lifts a creature that is too tired to battle (below 25% health) to 50%. An **Antidote** is meant to cure
+  poison, venom and burn in battle; battles do not use items yet, so it is only collected for now. Small salves turn
+  up while training Herblore or Cooking and after about one battle win in ten; Herblore also finds Antidotes.
+  Bigger XP drops find more, up to a 30% chance, and the roll is separate from the specialty jar's, so one drop can
+  give a jar, an item, both or neither. Battle wins can also drop a Large salve (3%) or a Revive draught (2%), and
+  your first win over each City Champion pays 2 Large salves and a Revive draught. Right-click a creature on the
+  Team or Storage tab and choose **Use** to pick an item that would help it; one that would do nothing is not
+  offered and never spent. Health also comes back by itself over five minutes. The **Items** line under the jar list
+  shows how many of each you own, greyed at zero. Items cannot be traded.
+
 - **Everything shows where it happens**
 
   News about a creature floats over that creature: it appeared, you caught it, it broke free. Things you find or

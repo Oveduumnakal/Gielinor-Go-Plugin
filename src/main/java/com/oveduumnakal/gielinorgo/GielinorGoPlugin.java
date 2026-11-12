@@ -860,6 +860,26 @@ public class GielinorGoPlugin extends Plugin
 		game.rename(kept.get(pick.index()), name);
 	}
 
+	/**
+	 * Uses a healing item on the creature a panel pick points at, once it is checked that the same creature is
+	 * still there.
+	 *
+	 * @param pick the creature as the panel showed it
+	 * @param type the item to use
+	 */
+	private void useItem(TradePick pick, ItemType type)
+	{
+		if (!pick.matches(game.snapshot()))
+		{
+			announce(Notice.player("What you picked has changed. Pick again", Tone.BAD));
+			return;
+		}
+
+		SaveData data = game.data();
+		List<Creature> kept = pick.from() == Holding.TEAM ? data.team : data.storage;
+		game.useItem(kept.get(pick.index()), type);
+	}
+
 	private void answerTrade(long memberId, boolean accept)
 	{
 		trades.answer(memberId, friendName(partyService.getMemberById(memberId)), accept);
@@ -1256,6 +1276,12 @@ public class GielinorGoPlugin extends Plugin
 			public void rename(TradePick pick, String name)
 			{
 				onGameThread(() -> GielinorGoPlugin.this.rename(pick, name));
+			}
+
+			@Override
+			public void useItem(TradePick pick, ItemType type)
+			{
+				onGameThread(() -> GielinorGoPlugin.this.useItem(pick, type));
 			}
 
 			@Override
