@@ -390,7 +390,7 @@ final class BattleStage implements RenderCallback, StageAnchors
 		try
 		{
 			acting.settle();
-			follower.showAs(entered.speciesKey(), entered.isGilded());
+			follower.showAs(entered.speciesKey(), entered.npcId(), entered.isGilded());
 			switched = true;
 		}
 		catch (RuntimeException | AssertionError e)

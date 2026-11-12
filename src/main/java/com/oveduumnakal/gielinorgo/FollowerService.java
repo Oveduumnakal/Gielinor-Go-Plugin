@@ -66,6 +66,9 @@ final class FollowerService
 	private CreatureBody body;
 	private String shownKey;
 	private boolean shownGilded;
+	private int shownNpc;
+	private int leadNpc;
+	private int asNpc;
 	private String leadKey;
 	private boolean leadGilded;
 	private String asKey;
@@ -104,6 +107,19 @@ final class FollowerService
 	 */
 	void gameTick(String speciesKey, boolean gilded)
 	{
+		gameTick(speciesKey, 0, gilded);
+	}
+
+	/**
+	 * Tells the follower which creature to be, drawn as the NPC it was caught as.
+	 *
+	 * @param speciesKey the lead creature's species, or null when no follower should show
+	 * @param npcId the NPC id the lead was caught as, or 0 for the species' first; one the species does not have
+	 *     counts as 0 ({@link Species#npcIdFor(int)})
+	 * @param gilded whether the lead creature is gilded
+	 */
+	void gameTick(String speciesKey, int npcId, boolean gilded)
+	{
 		Player player = client.getLocalPlayer();
 		WorldView view = player == null ? null : player.getWorldView();
 		if (speciesKey == null || view == null || !view.isTopLevel())
@@ -114,10 +130,12 @@ final class FollowerService
 
 		leadKey = speciesKey;
 		leadGilded = gilded;
+		leadNpc = npcId;
 		String key = asKey != null ? asKey : speciesKey;
 		boolean look = asKey != null ? asGilded : gilded;
-		if (!key.equals(shownKey) || look != shownGilded)
-			rebuild(key, look);
+		int npc = asKey != null ? asNpc : npcId;
+		if (!key.equals(shownKey) || look != shownGilded || npc != shownNpc)
+			rebuild(key, npc, look);
 
 		if (body == null)
 			return;
@@ -251,7 +269,7 @@ final class FollowerService
 	private void renewBody()
 	{
 		String key = shownKey;
-		rebuild(key, shownGilded);
+		rebuild(key, shownNpc, shownGilded);
 		if (body == null)
 			shownKey = null;
 	}
@@ -292,14 +310,30 @@ final class FollowerService
 	 */
 	void showAs(String speciesKey, boolean gilded)
 	{
+		showAs(speciesKey, 0, gilded);
+	}
+
+	/**
+	 * Shows another creature in the lead's place, drawn as the NPC it was caught as; see
+	 * {@link #showAs(String, boolean)}.
+	 *
+	 * @param speciesKey the species to show, or null to show the lead again
+	 * @param npcId the NPC id to draw it with, or 0 for the species' first; ignored for null
+	 * @param gilded whether the creature is painted gold; ignored for null
+	 */
+	void showAs(String speciesKey, int npcId, boolean gilded)
+	{
 		asKey = speciesKey;
 		asGilded = gilded;
+		asNpc = npcId;
 		showingAs = speciesKey != null;
 		String key = speciesKey != null ? speciesKey : leadKey;
 		boolean look = speciesKey != null ? gilded : leadGilded;
-		boolean different = key != null && (speciesKey != null || !key.equals(shownKey) || look != shownGilded);
+		int npc = speciesKey != null ? npcId : leadNpc;
+		boolean different = key != null
+			&& (speciesKey != null || !key.equals(shownKey) || look != shownGilded || npc != shownNpc);
 		if (different && wanted && client.getGameState() == GameState.LOGGED_IN)
-			swap(key, look);
+			swap(key, npc, look);
 	}
 
 	/** @return whether another creature than the lead is shown, so the lead's name tag must not be drawn */
@@ -499,9 +533,10 @@ final class FollowerService
 	 * stood. A species that cannot be drawn leaves no follower, and is not tried again until the lead changes.
 	 *
 	 * @param speciesKey the species to show
+	 * @param npcId the NPC id to draw it with, 0 for the species' first
 	 * @param gilded whether to paint it gold
 	 */
-	private void rebuild(String speciesKey, boolean gilded)
+	private void rebuild(String speciesKey, int npcId, boolean gilded)
 	{
 		if (body != null && body.isActive())
 			body.setActive(false);
@@ -509,16 +544,17 @@ final class FollowerService
 		if (path.onErrand())
 			path.reset();
 
-		swap(speciesKey, gilded);
+		swap(speciesKey, npcId, gilded);
 	}
 
 	/**
 	 * Swaps the follower's body for one of another creature, leaving the path, and an errand on it, alone.
 	 *
 	 * @param speciesKey the species to show
+	 * @param npcId the NPC id to draw it with, 0 for the species' first
 	 * @param gilded whether to paint it gold
 	 */
-	private void swap(String speciesKey, boolean gilded)
+	private void swap(String speciesKey, int npcId, boolean gilded)
 	{
 		if (body != null && body.isActive())
 			body.setActive(false);
@@ -526,11 +562,12 @@ final class FollowerService
 		body = null;
 		shownKey = speciesKey;
 		shownGilded = gilded;
+		shownNpc = npcId;
 		Species species = speciesLookup.apply(speciesKey);
 		if (species == null)
 			return;
 
-		body = CreatureBody.petSized(client, animations, species, gilded);
+		body = CreatureBody.petSized(client, animations, species, npcId, gilded);
 		if (body == null)
 			return;
 

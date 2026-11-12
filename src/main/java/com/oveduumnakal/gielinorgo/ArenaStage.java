@@ -152,11 +152,27 @@ final class ArenaStage implements StageAnchors
 	 */
 	boolean startOpen(String foeSpecies, String mineSpecies, boolean mineGilded, boolean leadFirst)
 	{
+		return startOpen(foeSpecies, mineSpecies, mineGilded, 0, leadFirst);
+	}
+
+	/**
+	 * Starts the scene for a battle the player steers, with the player's first creature drawn as the NPC it was
+	 * caught as.
+	 *
+	 * @param foeSpecies the species key of the first opposing creature
+	 * @param mineSpecies the species key of the player's first creature to fight
+	 * @param mineGilded whether that creature is gilded
+	 * @param mineNpcId the NPC id to draw that creature with, 0 for the species' first
+	 * @param leadFirst whether the player's first creature to fight is the lead beside the player
+	 * @return true when the battle is on stage
+	 */
+	boolean startOpen(String foeSpecies, String mineSpecies, boolean mineGilded, int mineNpcId, boolean leadFirst)
+	{
 		TeamScript.Run open = TeamScript.openRun();
 		List<TeamScript.Entry> first = new ArrayList<>();
 		first.add(TeamScript.enterFoe(foeSpecies));
 		if (!leadFirst)
-			first.add(TeamScript.enterMine(mineSpecies, mineGilded));
+			first.add(TeamScript.enterMine(mineSpecies, mineGilded, mineNpcId));
 
 		open.append(first);
 		return begin(foeSpecies, open);
@@ -392,7 +408,7 @@ final class ArenaStage implements StageAnchors
 
 			case ENTER_MINE:
 				follower.fadeTo(0.0);
-				follower.showAs(entry.species(), entry.gilded());
+				follower.showAs(entry.species(), entry.npcId(), entry.gilded());
 				leadFade = new OpacityFade(0.0);
 				leadFade.moveAt(1.0, FADE_RATE);
 				break;

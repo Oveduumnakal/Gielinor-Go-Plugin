@@ -40,11 +40,15 @@ final class PortraitService implements PortraitSource
 	private static final class Request
 	{
 		private final String key;
+		private final String speciesKey;
+		private final int npcId;
 		private final Consumer<BufferedImage> onReady;
 
-		private Request(String key, Consumer<BufferedImage> onReady)
+		private Request(String key, String speciesKey, int npcId, Consumer<BufferedImage> onReady)
 		{
 			this.key = key;
+			this.speciesKey = speciesKey;
+			this.npcId = npcId;
 			this.onReady = onReady;
 		}
 	}
@@ -73,7 +77,13 @@ final class PortraitService implements PortraitSource
 	@Override
 	public void request(String speciesName, Consumer<BufferedImage> onReady)
 	{
-		String key = Species.keyFor(speciesName);
+		request(speciesName, 0, onReady);
+	}
+
+	@Override
+	public void request(String speciesName, int npcId, Consumer<BufferedImage> onReady)
+	{
+		String key = PortraitSource.cacheKey(speciesName, npcId);
 		BufferedImage ready = drawn.get(key);
 		if (ready != null)
 		{
@@ -82,7 +92,7 @@ final class PortraitService implements PortraitSource
 		}
 
 		if (!undrawable.contains(key))
-			clientThread.invokeLater(() -> waiting.add(new Request(key, onReady)));
+			clientThread.invokeLater(() -> waiting.add(new Request(key, Species.keyFor(speciesName), npcId, onReady)));
 	}
 
 	/** Draws a few of the waiting portraits. Called once per game tick, on the game thread. */
@@ -108,7 +118,7 @@ final class PortraitService implements PortraitSource
 		BufferedImage image = drawn.get(request.key);
 		if (image == null && !undrawable.contains(request.key))
 		{
-			image = draw(speciesLookup.apply(request.key));
+			image = draw(speciesLookup.apply(request.speciesKey), request.npcId);
 			if (image == null)
 				undrawable.add(request.key);
 			else
@@ -123,17 +133,19 @@ final class PortraitService implements PortraitSource
 	}
 
 	/**
-	 * Draws a species from the first of its NPC ids that has a usable model.
+	 * Draws a species from the first of its NPC ids that has a usable model, the one a creature was caught as
+	 * first.
 	 *
 	 * @param species the species, or null
+	 * @param preferred the NPC id to try first, or 0 for the species' first
 	 * @return the picture, or null when none of its ids can be drawn
 	 */
-	private BufferedImage draw(Species species)
+	private BufferedImage draw(Species species, int preferred)
 	{
 		if (species == null)
 			return null;
 
-		for (int npcId : species.ids())
+		for (int npcId : tryOrder(species, preferred))
 		{
 			try
 			{
@@ -149,6 +161,31 @@ final class PortraitService implements PortraitSource
 		}
 
 		return null;
+	}
+
+	/**
+	 * Puts the NPC id a creature looks like first, then the rest of the species' ids in their order.
+	 *
+	 * @param species the species
+	 * @param preferred the NPC id to try first, 0 or an id the species does not have for none
+	 * @return the ids to try, in order
+	 */
+	static int[] tryOrder(Species species, int preferred)
+	{
+		int first = species.npcIdFor(preferred);
+		int[] all = species.ids();
+		int[] order = new int[all.length];
+		int next = 0;
+		if (all.length > 0)
+			order[next++] = first;
+
+		for (int id : all)
+		{
+			if (id != first)
+				order[next++] = id;
+		}
+
+		return order;
 	}
 
 	/**

@@ -18,6 +18,7 @@ final class CreatureView
 	private final boolean gilded;
 	private final String nickname;
 	private final StatRolls rolls;
+	private final int npcId;
 
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname)
@@ -28,6 +29,13 @@ final class CreatureView
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname, StatRolls rolls)
 	{
+		this(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, 0);
+	}
+
+	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
+		boolean gilded, String nickname, StatRolls rolls, int npcId)
+	{
+		this.npcId = npcId;
 		this.rolls = rolls;
 		this.gilded = gilded;
 		this.nickname = nickname;
@@ -43,6 +51,12 @@ final class CreatureView
 	String name()
 	{
 		return name;
+	}
+
+	/** @return the NPC id its portrait is drawn from, or 0 for the species' first */
+	int npcId()
+	{
+		return npcId;
 	}
 
 	/** @return the nickname the player gave it, or null when it has none */
@@ -129,12 +143,13 @@ final class CreatureView
 			&& type == that.type
 			&& Objects.equals(name, that.name)
 			&& Objects.equals(nickname, that.nickname)
+			&& npcId == that.npcId
 			&& rolls.equals(that.rolls);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls);
+		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId);
 	}
 }

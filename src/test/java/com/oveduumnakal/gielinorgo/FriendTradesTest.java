@@ -101,6 +101,18 @@ public class FriendTradesTest
 	}
 
 	@Test
+	public void aTradedCreatureArrivesWithNoSourceNpc()
+	{
+		annImp.npcId = 101;
+
+		swap();
+
+		Creature bobGot = only(bobGame.data().team);
+		assertEquals(0, bobGot.npcId);
+		assertEquals(101, annImp.npcId);
+	}
+
+	@Test
 	public void aTradedCreatureCountsInTheCreatureLog()
 	{
 		swap();
