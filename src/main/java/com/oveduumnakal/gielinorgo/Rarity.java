@@ -51,6 +51,13 @@ enum Rarity
 		return tiles[ordinal()];
 	}
 
+	/** @return the next tier up, or this one when it is already {@link #LEGENDARY} */
+	Rarity next()
+	{
+		Rarity[] all = values();
+		return all[Math.min(all.length - 1, ordinal() + 1)];
+	}
+
 	/**
 	 * Finds the tier for a combat level.
 	 *

@@ -96,11 +96,21 @@ final class PanelUi
 	 */
 	static JLabel wrapped(String text, Color color)
 	{
-		JLabel label = new JLabel("<html><div style='width:" + CARD_TEXT_WIDTH + "px'>" + escape(text)
-			+ "</div></html>");
+		JLabel label = new JLabel(wrappedHtml(text));
 		label.setFont(FontManager.getRunescapeSmallFont());
 		label.setForeground(color);
 		return label;
+	}
+
+	/**
+	 * Builds the HTML a {@link #wrapped} label shows, for changing its text later.
+	 *
+	 * @param text the text, shown as written
+	 * @return the text escaped and laid out to the card width
+	 */
+	static String wrappedHtml(String text)
+	{
+		return "<html><div style='width:" + CARD_TEXT_WIDTH + "px'>" + escape(text) + "</div></html>";
 	}
 
 	/**

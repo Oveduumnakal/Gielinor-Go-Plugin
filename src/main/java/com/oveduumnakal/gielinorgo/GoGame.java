@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 
 /**
  * The game itself: jars, catching, training and battles, all applied to one {@link SaveData}. It has no link to
@@ -35,6 +36,9 @@ final class GoGame
 
 	/** Chance that a battle win drops an egg, while the player has room for one. */
 	static final double EGG_DROP_CHANCE = 0.10;
+
+	/** Chance that a battle win over a roaming creature drops an egg, while the player has room for one. */
+	static final double ROAMING_EGG_CHANCE = 0.30;
 
 	/** Most evolutions one creature can go through in a single burst of XP. */
 	private static final int MAX_EVOLUTIONS_AT_ONCE = 5;
@@ -96,6 +100,7 @@ final class GoGame
 	private boolean dirty;
 	private String cityId;
 	private TradeLocks tradeLocks = NO_LOCKS;
+	private Supplier<TodayView> today = () -> TodayView.NONE;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -129,6 +134,16 @@ final class GoGame
 		this.random = random;
 		this.clock = clock;
 		this.notices = notices;
+	}
+
+	/**
+	 * Sets where the panel's Today section comes from.
+	 *
+	 * @param source gives what the Today section shows right now
+	 */
+	void today(Supplier<TodayView> source)
+	{
+		this.today = source;
 	}
 
 	/** @return the live save */
@@ -744,7 +759,7 @@ final class GoGame
 
 		return new PanelState(trainerLevel(), XpRules.trainerProgress(data.trainerXp), data.battlesWon, jars,
 			selectedJar(), data.stepProgress, views(data.team, now), views(data.storage, now), log(),
-			knownCaughtSpecies(), data.seen.size(), eggs, championViews());
+			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get());
 	}
 
 	/** @return how many caught species the species list still knows, so removed species do not inflate the total */
@@ -907,10 +922,14 @@ final class GoGame
 			tell("+1 " + drop.label() + " jar (battle win)", Tone.FIND);
 		}
 
-		if (!hasRoomForEgg() || random.nextDouble() >= EGG_DROP_CHANCE)
+		double eggChance = entry.roaming() ? ROAMING_EGG_CHANCE : EGG_DROP_CHANCE;
+		if (!hasRoomForEgg() || random.nextDouble() >= eggChance)
 			return;
 
 		Rarity rarity = entry.species().rarity();
+		if (entry.roaming())
+			rarity = rarity.next();
+
 		data.eggs.add(new Egg(rarity));
 		tell("+1 " + rarity.label() + " egg (battle win)", Tone.FIND);
 	}

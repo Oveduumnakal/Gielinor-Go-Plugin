@@ -22,12 +22,21 @@ public class WildTrackerTest
 
 	private static final int ID = 3029;
 
+	private static final double ALWAYS = 1.0;
+
+	private static final double NEVER = 0.0;
+
+	private static WildEntry offer(WildTracker tracker, int index, int id, long nowMs, double chance)
+	{
+		return tracker.offer(index, id, GOBLIN, 13, false, nowMs, chance, WildTracker.GILDED_ONE_IN, false);
+	}
+
 	@Test
-	public void oneInOneAlwaysTurnsWild()
+	public void aChanceOfOneAlwaysTurnsWild()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
 
-		WildEntry entry = tracker.offer(5, ID, GOBLIN, 13, false, 0, 1);
+		WildEntry entry = offer(tracker, 5, ID, 0, ALWAYS);
 
 		assertNotNull(entry);
 		assertEquals(5, entry.npcIndex());
@@ -38,10 +47,10 @@ public class WildTrackerTest
 	public void cooldownBlocksASecondCreature()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		assertNotNull(tracker.offer(1, ID, GOBLIN, 13, false, 0, 1));
+		assertNotNull(offer(tracker, 1, ID, 0, ALWAYS));
 
-		assertNull(tracker.offer(2, ID, GOBLIN, 13, false, WildTracker.COOLDOWN_MS - 1, 1));
-		assertNotNull(tracker.offer(2, ID, GOBLIN, 13, false, WildTracker.COOLDOWN_MS, 1));
+		assertNull(offer(tracker, 2, ID, WildTracker.COOLDOWN_MS - 1, ALWAYS));
+		assertNotNull(offer(tracker, 2, ID, WildTracker.COOLDOWN_MS, ALWAYS));
 	}
 
 	@Test
@@ -49,7 +58,7 @@ public class WildTrackerTest
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
 		for (int i = 0; i < 10; i++)
-			tracker.offer(i, ID, GOBLIN, 13, false, i * WildTracker.COOLDOWN_MS, 1);
+			offer(tracker, i, ID, i * WildTracker.COOLDOWN_MS, ALWAYS);
 
 		assertEquals(WildTracker.MAX_WILD, tracker.all().size());
 	}
@@ -58,16 +67,16 @@ public class WildTrackerTest
 	public void theSameMonsterIsNotOfferedTwice()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		assertNotNull(tracker.offer(1, ID, GOBLIN, 13, false, 0, 1));
+		assertNotNull(offer(tracker, 1, ID, 0, ALWAYS));
 
-		assertNull(tracker.offer(1, ID, GOBLIN, 13, false, 10 * WildTracker.COOLDOWN_MS, 1));
+		assertNull(offer(tracker, 1, ID, 10 * WildTracker.COOLDOWN_MS, ALWAYS));
 	}
 
 	@Test
 	public void removingFreesASlot()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		tracker.offer(1, ID, GOBLIN, 13, false, 0, 1);
+		offer(tracker, 1, ID, 0, ALWAYS);
 
 		tracker.remove(1, 0);
 
@@ -82,7 +91,7 @@ public class WildTrackerTest
 		int wild = 0;
 		for (int i = 0; i < 4000; i++)
 		{
-			if (new WildTracker(shared).offer(1, ID, GOBLIN, 13, false, 0, 8) != null)
+			if (offer(new WildTracker(shared), 1, ID, 0, 1.0 / 8) != null)
 				wild++;
 		}
 
@@ -92,14 +101,15 @@ public class WildTrackerTest
 	@Test
 	public void monstersWithoutASpeciesNeverTurnWild()
 	{
-		assertNull(new WildTracker(new Random(1)).offer(1, ID, null, 13, false, 0, 1));
+		assertNull(new WildTracker(new Random(1)).offer(1, ID, null, 13, false, 0, ALWAYS,
+			WildTracker.GILDED_ONE_IN, false));
 	}
 
 	@Test
 	public void aWildCreatureIsStillWildWhenItComesBack()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		WildEntry entry = tracker.offer(1, ID, GOBLIN, 13, false, 0, 1);
+		WildEntry entry = offer(tracker, 1, ID, 0, ALWAYS);
 		entry.markBattled(true);
 
 		tracker.leftView(1, 1_000);
@@ -114,31 +124,31 @@ public class WildTrackerTest
 	public void aMonsterThatRolledNoDoesNotRollAgainOnReload()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		assertNull(tracker.offer(1, ID, GOBLIN, 13, false, 0, Integer.MAX_VALUE));
+		assertNull(offer(tracker, 1, ID, 0, NEVER));
 		tracker.leftView(1, 1_000);
 
 		assertFalse(tracker.mayRoll(1, ID, 2_000));
 		assertNull(tracker.restore(1, ID, 2_000));
-		assertNull(tracker.offer(1, ID, GOBLIN, 13, false, 2_000, 1));
+		assertNull(offer(tracker, 1, ID, 2_000, ALWAYS));
 	}
 
 	@Test
 	public void aRollIsForgottenAfterTheMemoryRunsOut()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		assertNull(tracker.offer(1, ID, GOBLIN, 13, false, 0, Integer.MAX_VALUE));
+		assertNull(offer(tracker, 1, ID, 0, NEVER));
 		tracker.leftView(1, 1_000);
 
 		long later = 1_000 + WildTracker.MEMORY_MS;
 		assertTrue(tracker.mayRoll(1, ID, later));
-		assertNotNull(tracker.offer(1, ID, GOBLIN, 13, false, later, 1));
+		assertNotNull(offer(tracker, 1, ID, later, ALWAYS));
 	}
 
 	@Test
 	public void aWildCreatureIsForgottenAfterTheMemoryRunsOut()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		tracker.offer(1, ID, GOBLIN, 13, false, 0, 1);
+		offer(tracker, 1, ID, 0, ALWAYS);
 		tracker.leftView(1, 1_000);
 
 		assertNull(tracker.restore(1, ID, 1_000 + WildTracker.MEMORY_MS));
@@ -148,8 +158,8 @@ public class WildTrackerTest
 	public void aWildCreatureInViewKeepsItsRollPastTheMemory()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		WildEntry entry = tracker.offer(1, ID, GOBLIN, 13, false, 0, 1);
-		tracker.offer(2, ID, GOBLIN, 13, false, 10 * WildTracker.MEMORY_MS, Integer.MAX_VALUE);
+		WildEntry entry = offer(tracker, 1, ID, 0, ALWAYS);
+		offer(tracker, 2, ID, 10 * WildTracker.MEMORY_MS, NEVER);
 		tracker.leftView(1, 10 * WildTracker.MEMORY_MS);
 
 		assertSame(entry, tracker.restore(1, ID, 10 * WildTracker.MEMORY_MS + 1));
@@ -159,7 +169,7 @@ public class WildTrackerTest
 	public void aDifferentMonsterOnAReusedIndexRollsFresh()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		assertNull(tracker.offer(1, ID, GOBLIN, 13, false, 0, Integer.MAX_VALUE));
+		assertNull(offer(tracker, 1, ID, 0, NEVER));
 		tracker.leftView(1, 1_000);
 
 		assertTrue(tracker.mayRoll(1, ID + 1, 2_000));
@@ -170,7 +180,7 @@ public class WildTrackerTest
 	public void aCaughtCreatureIsNotWildWhenItComesBack()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		tracker.offer(1, ID, GOBLIN, 13, false, 0, 1);
+		offer(tracker, 1, ID, 0, ALWAYS);
 		tracker.remove(1, 1_000);
 		tracker.leftView(1, 2_000);
 
@@ -182,10 +192,10 @@ public class WildTrackerTest
 	public void aRestoredCreatureStillCountsTowardTheCap()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		tracker.offer(0, ID, GOBLIN, 13, false, 0, 1);
+		offer(tracker, 0, ID, 0, ALWAYS);
 		tracker.leftView(0, 1);
 		for (int i = 1; i <= WildTracker.MAX_WILD; i++)
-			tracker.offer(i, ID, GOBLIN, 13, false, i * WildTracker.COOLDOWN_MS, 1);
+			offer(tracker, i, ID, i * WildTracker.COOLDOWN_MS, ALWAYS);
 
 		assertNull(tracker.restore(0, ID, 4 * WildTracker.COOLDOWN_MS));
 	}
@@ -194,9 +204,9 @@ public class WildTrackerTest
 	public void aCooldownBlockIsNotARoll()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		tracker.offer(1, ID, GOBLIN, 13, false, 0, 1);
+		offer(tracker, 1, ID, 0, ALWAYS);
 
-		assertNull(tracker.offer(2, ID, GOBLIN, 13, false, 1, 1));
+		assertNull(offer(tracker, 2, ID, 1, ALWAYS));
 		assertTrue(tracker.mayRoll(2, ID, 2));
 	}
 
@@ -204,7 +214,7 @@ public class WildTrackerTest
 	public void clearingTheWildKeepsABattledCreatureForWhenItComesBack()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		WildEntry entry = tracker.offer(1, ID, GOBLIN, 13, false, 0, 1);
+		WildEntry entry = offer(tracker, 1, ID, 0, ALWAYS);
 		entry.markBattled(true);
 
 		tracker.clearWild(5_000);
@@ -220,19 +230,19 @@ public class WildTrackerTest
 	public void clearingTheWildKeepsANoRollAsNo()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		assertNull(tracker.offer(1, ID, GOBLIN, 13, false, 0, Integer.MAX_VALUE));
+		assertNull(offer(tracker, 1, ID, 0, NEVER));
 
 		tracker.clearWild(5_000);
 
 		assertFalse(tracker.mayRoll(1, ID, 6_000));
-		assertNull(tracker.offer(1, ID, GOBLIN, 13, false, 6_000, 1));
+		assertNull(offer(tracker, 1, ID, 6_000, ALWAYS));
 	}
 
 	@Test
 	public void clearingTheWildRestartsTheMemoryOfTheRolls()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		WildEntry entry = tracker.offer(1, ID, GOBLIN, 13, false, 0, 1);
+		WildEntry entry = offer(tracker, 1, ID, 0, ALWAYS);
 		long later = 10 * WildTracker.MEMORY_MS;
 
 		tracker.clearWild(later);
@@ -244,7 +254,7 @@ public class WildTrackerTest
 	public void clearingEverythingForgetsTheRollsToo()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		tracker.offer(1, ID, GOBLIN, 13, false, 0, 1);
+		offer(tracker, 1, ID, 0, ALWAYS);
 
 		tracker.clear();
 
@@ -256,10 +266,10 @@ public class WildTrackerTest
 	public void aBlockedRestoreCanBeRetriedWhenARoomOpens()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		WildEntry entry = tracker.offer(0, ID, GOBLIN, 13, false, 0, 1);
+		WildEntry entry = offer(tracker, 0, ID, 0, ALWAYS);
 		tracker.leftView(0, 1);
 		for (int i = 1; i <= WildTracker.MAX_WILD; i++)
-			tracker.offer(i, ID, GOBLIN, 13, false, i * WildTracker.COOLDOWN_MS, 1);
+			offer(tracker, i, ID, i * WildTracker.COOLDOWN_MS, ALWAYS);
 
 		long now = 4 * WildTracker.COOLDOWN_MS;
 		assertTrue(tracker.canRestore(0, ID, now));
@@ -276,10 +286,10 @@ public class WildTrackerTest
 	public void aRestoreBlockedByTheCapKeepsTheEntryFromExpiring()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		WildEntry entry = tracker.offer(0, ID, GOBLIN, 13, false, 0, 1);
+		WildEntry entry = offer(tracker, 0, ID, 0, ALWAYS);
 		tracker.leftView(0, 1);
 		for (int i = 1; i <= WildTracker.MAX_WILD; i++)
-			tracker.offer(i, ID, GOBLIN, 13, false, i * WildTracker.COOLDOWN_MS, 1);
+			offer(tracker, i, ID, i * WildTracker.COOLDOWN_MS, ALWAYS);
 
 		long step = WildTracker.MEMORY_MS - 1_000;
 		long now = 0;
@@ -298,10 +308,126 @@ public class WildTrackerTest
 	public void aCreatureThatCannotBeRestoredIsNotRestorable()
 	{
 		WildTracker tracker = new WildTracker(new Random(1));
-		assertNull(tracker.offer(1, ID, GOBLIN, 13, false, 0, Integer.MAX_VALUE));
+		assertNull(offer(tracker, 1, ID, 0, NEVER));
 		tracker.leftView(1, 1);
 
 		assertFalse(tracker.canRestore(1, ID, 2));
 		assertFalse(tracker.canRestore(9, ID, 2));
+	}
+
+	@Test
+	public void aChanceOfZeroNeverTurnsWild()
+	{
+		WildTracker tracker = new WildTracker(new Random(1));
+		for (int i = 0; i < 200; i++)
+			assertNull(offer(tracker, i, ID, i * WildTracker.COOLDOWN_MS, NEVER));
+
+		assertTrue(tracker.all().isEmpty());
+	}
+
+	@Test
+	public void theGildedOddsParameterIsUsed()
+	{
+		int always = 0;
+		int ordinary = 0;
+		for (int i = 0; i < 400; i++)
+		{
+			WildTracker tracker = new WildTracker(new Random(i));
+			if (tracker.offer(1, ID, GOBLIN, 13, false, 0, ALWAYS, 1, false).gilded())
+				always++;
+
+			if (tracker.offer(2, ID, GOBLIN, 13, false, WildTracker.COOLDOWN_MS, ALWAYS, 1_000_000, false).gilded())
+				ordinary++;
+		}
+
+		assertEquals(400, always);
+		assertEquals(0, ordinary);
+	}
+
+	@Test
+	public void roamingAppearsAboutOneTimeInTwenty()
+	{
+		int roaming = 0;
+		Random shared = new Random(2024);
+		for (int i = 0; i < 10_000; i++)
+		{
+			WildTracker tracker = new WildTracker(shared);
+			WildEntry entry = tracker.offer(1, ID, GOBLIN, 13, false, 0, ALWAYS, WildTracker.GILDED_ONE_IN, true);
+			assertNotNull(entry);
+			if (entry.roaming())
+				roaming++;
+		}
+
+		assertTrue("expected about 500 of 10000, got " + roaming, roaming > 420 && roaming < 580);
+	}
+
+	@Test
+	public void aRoamingCreatureIsTenLevelsAboveTheSameRollWithoutRoaming()
+	{
+		for (int seed = 0; seed < 2000; seed++)
+		{
+			WildEntry roamer = new WildTracker(new Random(seed))
+				.offer(1, ID, GOBLIN, 13, false, 0, ALWAYS, WildTracker.GILDED_ONE_IN, true);
+			if (!roamer.roaming())
+				continue;
+
+			Random replay = new Random(seed);
+			replay.nextDouble();
+			int plain = CatchRules.wildLevel(13, replay);
+			assertEquals(Math.min(99, plain + WildTracker.ROAMING_LEVELS), roamer.level());
+			return;
+		}
+
+		throw new AssertionError("no roaming creature in 2000 seeds");
+	}
+
+	@Test
+	public void roamingIsCappedAtLevelNinetyNine()
+	{
+		Species boss = new Species("Boss", 1000, CombatType.MELEE);
+		int capped = 0;
+		for (int seed = 0; seed < 2000; seed++)
+		{
+			WildEntry entry = new WildTracker(new Random(seed))
+				.offer(1, ID, boss, 1000, false, 0, ALWAYS, WildTracker.GILDED_ONE_IN, true);
+			assertTrue(entry.level() <= 99);
+			if (entry.roaming() && entry.level() == 99)
+				capped++;
+		}
+
+		assertTrue(capped > 0);
+	}
+
+	@Test
+	public void nothingRoamsWhenRoamingIsOff()
+	{
+		for (int seed = 0; seed < 2000; seed++)
+		{
+			WildEntry entry = new WildTracker(new Random(seed))
+				.offer(1, ID, GOBLIN, 13, false, 0, ALWAYS, WildTracker.GILDED_ONE_IN, false);
+			assertFalse(entry.roaming());
+		}
+	}
+
+	@Test
+	public void aRestoredCreatureKeepsItsRoamingFlag()
+	{
+		for (int seed = 0; seed < 2000; seed++)
+		{
+			WildTracker tracker = new WildTracker(new Random(seed));
+			WildEntry entry = tracker.offer(1, ID, GOBLIN, 13, false, 0, ALWAYS, WildTracker.GILDED_ONE_IN, true);
+			if (!entry.roaming())
+				continue;
+
+			tracker.leftView(1, 1_000);
+			WildEntry back = tracker.restore(1, ID, 2_000);
+
+			assertSame(entry, back);
+			assertTrue(back.roaming());
+			assertEquals(entry.level(), back.level());
+			return;
+		}
+
+		throw new AssertionError("no roaming creature in 2000 seeds");
 	}
 }
