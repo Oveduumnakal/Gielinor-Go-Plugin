@@ -70,6 +70,7 @@ final class FollowerService
 	private int idle = AnimationTable.NONE;
 	private int walk = AnimationTable.NONE;
 	private boolean wanted;
+	private final SceneReload reload = new SceneReload();
 
 	/**
 	 * Creates the service. Nothing is shown until the first {@link #gameTick(String, boolean)}.
@@ -132,15 +133,40 @@ final class FollowerService
 		path.playerAt(tileX, tileY, plane, (x, y) -> free(view, plane, x, y));
 	}
 
-	/** Moves the follower a little and keeps it in the scene. Called once per client tick. */
+	/**
+	 * Notes that a new map area is loading. The client drops what was added to the old scene, so the follower is
+	 * taken out and put back once the game is playable again.
+	 */
+	void sceneLoading()
+	{
+		reload.loading();
+	}
+
+	/**
+	 * Moves the follower a little and keeps it in the scene. Called once per client tick. Nothing moves while the
+	 * game is not fully logged in, so a half-loaded scene cannot place the follower.
+	 */
 	void clientTick()
 	{
-		if (body == null || !wanted || client.getGameState() != GameState.LOGGED_IN)
+		boolean playable = client.getGameState() == GameState.LOGGED_IN;
+		if (client.getGameState() == GameState.LOADING)
+			reload.loading();
+
+		if (body == null || !wanted || !playable)
 			return;
 
 		WorldView view = client.getTopLevelWorldView();
 		if (view == null)
 			return;
+
+		SceneReload.Step step = reload.next(true);
+		if (step == SceneReload.Step.DROP)
+		{
+			if (body.isActive())
+				body.setActive(false);
+
+			return;
+		}
 
 		followDrawnCharacter(view);
 		if (!path.placed())
@@ -170,7 +196,9 @@ final class FollowerService
 		body.setLocation(new LocalPoint(x, y, view), path.plane());
 		body.setOrientation(path.orientation());
 		body.setBase(path.walking() ? walk : idle);
-		if (!body.isActive())
+		if (step == SceneReload.Step.ADD)
+			body.setActive(true);
+		else if (!body.isActive())
 			body.setActive(true);
 	}
 
