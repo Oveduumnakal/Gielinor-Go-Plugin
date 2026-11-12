@@ -168,6 +168,13 @@ final class FollowerService
 			return;
 		}
 
+		if (step == SceneReload.Step.ADD)
+		{
+			renewBody();
+			if (body == null)
+				return;
+		}
+
 		followDrawnCharacter(view);
 		if (!path.placed())
 			return;
@@ -196,10 +203,21 @@ final class FollowerService
 		body.setLocation(new LocalPoint(x, y, view), path.plane());
 		body.setOrientation(path.orientation());
 		body.setBase(path.walking() ? walk : idle);
-		if (step == SceneReload.Step.ADD)
+		if (!body.isActive())
 			body.setActive(true);
-		else if (!body.isActive())
-			body.setActive(true);
+	}
+
+	/**
+	 * Swaps the old body for a fresh one of the same creature, for after a map load: a new scene object with newly
+	 * lit models. The old body leaves the scene first. The path is left alone, so the follower reappears where it
+	 * was. When the new body cannot be built, the remembered creature is forgotten so each game tick tries again.
+	 */
+	private void renewBody()
+	{
+		String key = shownKey;
+		rebuild(key, shownGilded);
+		if (body == null)
+			shownKey = null;
 	}
 
 	/** Takes the follower off the screen until the next game tick asks for it again. */
