@@ -56,6 +56,62 @@ public class NoticeBoardTest
 	}
 
 	@Test
+	public void stageFactoriesKeepTheFallbackHead()
+	{
+		Notice foe = Notice.stageFoe(7, "hit", Tone.GOOD);
+		Notice lead = Notice.stageLead("ouch", Tone.BAD);
+
+		assertEquals(Notice.Anchor.STAGE_FOE, foe.anchor());
+		assertEquals(7, foe.npcIndex());
+		assertFalse(foe.overPlayer());
+		assertEquals(Notice.Anchor.STAGE_LEAD, lead.anchor());
+		assertEquals(Notice.PLAYER, lead.npcIndex());
+		assertTrue(lead.overPlayer());
+		assertEquals(Notice.Anchor.HEAD, Notice.creature(7, "x", Tone.INFO).anchor());
+		assertEquals(Notice.Anchor.HEAD, Notice.player("x", Tone.INFO).anchor());
+	}
+
+	@Test
+	public void anchorsAreDifferentPlacesEvenOverTheSameMonster()
+	{
+		Notice head = Notice.creature(7, "a", Tone.INFO);
+
+		assertTrue(head.sameAnchor(Notice.creature(7, "b", Tone.INFO)));
+		assertFalse(head.sameAnchor(Notice.stageFoe(7, "b", Tone.INFO)));
+		assertFalse(Notice.player("a", Tone.INFO).sameAnchor(Notice.stageLead("b", Tone.INFO)));
+		assertTrue(Notice.stageLead("a", Tone.INFO).sameAnchor(Notice.stageLead("b", Tone.BAD)));
+	}
+
+	@Test
+	public void stageAnchorsStackAndAreCountedEach()
+	{
+		NoticeBoard board = new NoticeBoard();
+		board.show(Notice.player("reward", Tone.FIND), 0);
+		for (int i = 0; i < NoticeBoard.MAX_PER_HEAD + 2; i++)
+		{
+			board.show(Notice.stageFoe(7, "foe " + i, Tone.INFO), i);
+			board.show(Notice.stageLead("lead " + i, Tone.INFO), i);
+		}
+
+		List<NoticeBoard.Shown> visible = board.visible(10);
+		int foes = 0;
+		int leads = 0;
+		for (NoticeBoard.Shown line : visible)
+		{
+			if (line.notice().anchor() == Notice.Anchor.STAGE_FOE)
+				foes++;
+			else if (line.notice().anchor() == Notice.Anchor.STAGE_LEAD)
+				leads++;
+		}
+
+		assertEquals(NoticeBoard.MAX_PER_HEAD, foes);
+		assertEquals(NoticeBoard.MAX_PER_HEAD, leads);
+		assertEquals(2 * NoticeBoard.MAX_PER_HEAD + 1, visible.size());
+		assertEquals("reward", noticeAt(visible, 0).text());
+		assertEquals("foe 2", noticeAt(visible, 1).text());
+	}
+
+	@Test
 	public void queuedLinesComeOutOnePerTick()
 	{
 		NoticeBoard board = new NoticeBoard();

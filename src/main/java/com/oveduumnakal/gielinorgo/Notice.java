@@ -16,12 +16,27 @@ final class Notice
 	private final String text;
 	private final Tone tone;
 	private final int npcIndex;
+	private final Anchor anchor;
 
-	private Notice(String text, Tone tone, int npcIndex)
+	/** Where a notice floats: over a head as usual, or over a body that is acted out on a battle stage. */
+	enum Anchor
+	{
+		/** Over the monster {@link #npcIndex()} names, or over the player when that is {@link #PLAYER}. */
+		HEAD,
+
+		/** Over the stand-in of the wild creature on stage; falls back to the monster or the player. */
+		STAGE_FOE,
+
+		/** Over the lead creature's body while a battle is on stage; falls back to the player. */
+		STAGE_LEAD
+	}
+
+	private Notice(String text, Tone tone, int npcIndex, Anchor anchor)
 	{
 		this.text = text;
 		this.tone = tone;
 		this.npcIndex = npcIndex;
+		this.anchor = anchor;
 	}
 
 	/**
@@ -33,7 +48,7 @@ final class Notice
 	 */
 	static Notice player(String text, Tone tone)
 	{
-		return new Notice(text, tone, PLAYER);
+		return new Notice(text, tone, PLAYER, Anchor.HEAD);
 	}
 
 	/**
@@ -46,7 +61,34 @@ final class Notice
 	 */
 	static Notice creature(int npcIndex, String text, Tone tone)
 	{
-		return new Notice(text, tone, npcIndex);
+		return new Notice(text, tone, npcIndex, Anchor.HEAD);
+	}
+
+	/**
+	 * Makes a notice about a wild creature whose battle is on stage. It floats over the creature's stand-in; once
+	 * no stage shows it, it floats over the monster, as {@link #creature(int, String, Tone)} would.
+	 *
+	 * @param npcIndex the game's index for the monster, kept for the fallback
+	 * @param text the line
+	 * @param tone its mood
+	 * @return the notice
+	 */
+	static Notice stageFoe(int npcIndex, String text, Tone tone)
+	{
+		return new Notice(text, tone, npcIndex, Anchor.STAGE_FOE);
+	}
+
+	/**
+	 * Makes a notice about the lead creature while a battle is on stage. It floats over the lead's body; once no
+	 * stage shows it, it floats over the player's head.
+	 *
+	 * @param text the line
+	 * @param tone its mood
+	 * @return the notice
+	 */
+	static Notice stageLead(String text, Tone tone)
+	{
+		return new Notice(text, tone, PLAYER, Anchor.STAGE_LEAD);
 	}
 
 	/** @return the line */
@@ -71,5 +113,20 @@ final class Notice
 	boolean overPlayer()
 	{
 		return npcIndex == PLAYER;
+	}
+
+	/** @return where this floats: over a head, or over a body on a battle stage */
+	Anchor anchor()
+	{
+		return anchor;
+	}
+
+	/**
+	 * @param other another notice
+	 * @return whether both float over the same place, so they share one stack of lines
+	 */
+	boolean sameAnchor(Notice other)
+	{
+		return anchor == other.anchor && npcIndex == other.npcIndex;
 	}
 }

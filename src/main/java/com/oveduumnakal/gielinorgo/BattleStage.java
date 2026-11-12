@@ -30,10 +30,11 @@ import net.runelite.client.callback.RenderCallback;
  * ticks); at a normal end the stand-in fades out while the ghost fades up to solid over the same 3 game ticks, and
  * only then is the real monster shown. An abort shows it at once. The stand-in is drawn at {@link #WILD_SIZE} of
  * the real size. The real monster is untouched, nothing is sent to the game, and other players see nothing.
+ * Battle text floats over the stand-in and the lead ({@link #spotOf(Notice.Anchor)}).
  * The order of events comes from {@link BattleTimeline}. Every method must be called on the game thread;
  * RuneLite calls {@link #addEntity(Renderable, boolean)} from it too.
  */
-final class BattleStage implements RenderCallback
+final class BattleStage implements RenderCallback, StageAnchors
 {
 	private static final Logger log = LoggerFactory.getLogger(BattleStage.class);
 
@@ -52,7 +53,7 @@ final class BattleStage implements RenderCallback
 	private final Client client;
 	private final FollowerService follower;
 	private final AnimationTable animations;
-	private BattleTimeline timeline;
+	private volatile BattleTimeline timeline;
 	private NPC npc;
 	private CreatureBody standIn;
 	private NpcGhost ghost;
@@ -63,6 +64,8 @@ final class BattleStage implements RenderCallback
 	private double centerY;
 	private int plane;
 	private int facing;
+	private int foeHeight;
+	private volatile Spot foeSpot;
 
 	/**
 	 * Creates the stage with nothing playing.
@@ -128,6 +131,8 @@ final class BattleStage implements RenderCallback
 			centerY = y;
 			plane = view.getPlane();
 			facing = wild.getCurrentOrientation();
+			foeHeight = (int) Math.round(FollowerService.heightOf(parts.data()) * shrunk(parts.heightScale())
+				/ NpcModels.NORMAL_SCALE);
 			timeline = new BattleTimeline(BattleTimeline.beatsOf(lines), leadWon);
 			fades = new BattleFades(true);
 			place(view);
@@ -252,6 +257,30 @@ final class BattleStage implements RenderCallback
 	boolean isStaged(NPC other)
 	{
 		return other != null && other == npc;
+	}
+
+	/**
+	 * Finds where battle text floats while a battle is on stage: over the stand-in, pushed with its lunge and
+	 * recoil, or over the lead's body.
+	 *
+	 * @param anchor which body
+	 * @return its place, or null when no battle is on stage or that body is not drawn
+	 */
+	@Override
+	public Spot spotOf(Notice.Anchor anchor)
+	{
+		if (timeline == null)
+			return null;
+
+		if (anchor == Notice.Anchor.STAGE_FOE)
+			return foeSpot;
+
+		if (anchor != Notice.Anchor.STAGE_LEAD)
+			return null;
+
+		LocalPoint ground = follower.groundPoint();
+		WorldView view = client.getTopLevelWorldView();
+		return ground == null || view == null ? null : new Spot(ground, view.getPlane(), follower.tagHeight());
 	}
 
 	/** Ends the battle on stage, if any, and shows the real monster again; the lead walks back to the player. */
@@ -438,10 +467,13 @@ final class BattleStage implements RenderCallback
 			if (standIn.isActive())
 				standIn.setActive(false);
 
+			foeSpot = null;
 			return;
 		}
 
-		standIn.setLocation(new LocalPoint(x, y, view), plane);
+		LocalPoint at = new LocalPoint(x, y, view);
+		foeSpot = new Spot(at, plane, foeHeight);
+		standIn.setLocation(at, plane);
 		standIn.setOrientation(facing);
 		if (!standIn.isActive())
 			standIn.setActive(true);
@@ -457,6 +489,7 @@ final class BattleStage implements RenderCallback
 		CreatureBody body = standIn;
 		boolean sendBack = timeline != null && errandOpen;
 		timeline = null;
+		foeSpot = null;
 		npc = null;
 		standIn = null;
 		fades = null;

@@ -23,7 +23,7 @@ final class NoticeBoard
 	/** Game ticks between two battle lines. */
 	static final int LINE_TICKS = 3;
 
-	/** Most lines floating over one head at once. */
+	/** Most lines floating over one head, or one stage anchor, at once. */
 	static final int MAX_PER_HEAD = 4;
 
 	/** A notice on screen, with the time it appeared. */
@@ -72,14 +72,14 @@ final class NoticeBoard
 		int sameHead = 0;
 		for (Shown line : shown)
 		{
-			if (line.notice.npcIndex() == notice.npcIndex())
+			if (line.notice.sameAnchor(notice))
 				sameHead++;
 		}
 
 		Iterator<Shown> oldestFirst = shown.iterator();
 		while (sameHead >= MAX_PER_HEAD && oldestFirst.hasNext())
 		{
-			if (oldestFirst.next().notice.npcIndex() != notice.npcIndex())
+			if (!oldestFirst.next().notice.sameAnchor(notice))
 				continue;
 
 			oldestFirst.remove();
