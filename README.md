@@ -83,7 +83,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   weaker in each. A temperament is either Steady, which changes nothing, or gives 10% more of one stat and 10% less
   of another: Brave (attack up, defence down), Reckless, Fierce, Guarded, Stubborn, Hardy, Stout, Hasty and Nimble.
   The four rolls add up to a rating: Weak, Average, Strong or Exceptional. The card shows the temperament beside the
-  style and the rating on the right, and hovering shows the numbers (`Health +3 · Attack -1 · Defence 0 · Speed +5`).
+  style and the rating on the right, and hovering explains them: the temperament with its effect (`Nimble: +10% Speed, -10% Health`) and each
+  stat's roll with the net percentage it really gets from roll and temperament together (`Speed -4 (+3%)`).
   Average creatures show no rating word, and a rated lead shows its rating in place of "Lead". Catching a rated
   creature adds a line with its rating. The faster creature strikes first in a battle; with equal speed the higher
   level goes first, and then it is a coin toss. Wild creatures fight at average until you catch them. Creatures

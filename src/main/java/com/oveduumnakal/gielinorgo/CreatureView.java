@@ -69,6 +69,18 @@ final class CreatureView
 		return rolls.temperament().label();
 	}
 
+	/** @return what its temperament does, such as {@code +10% Speed, -10% Health}, or {@code no effect} */
+	String temperamentEffect()
+	{
+		return rolls.temperament().effect();
+	}
+
+	/** @return its rolls with the net percentage each stat gets, as two HTML lines */
+	String rollsNetLines()
+	{
+		return rolls.describeNet();
+	}
+
 	/** @return its four rolls as a line, such as {@code Health +3 · Attack -1 · Defence 0 · Speed +5} */
 	String rollsLine()
 	{

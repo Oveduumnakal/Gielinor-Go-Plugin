@@ -41,6 +41,16 @@ enum Temperament
 		return label;
 	}
 
+	/** @return what it does, such as {@code +10% Speed, -10% Health}, or {@code no effect} for steady */
+	String effect()
+	{
+		if (up == null)
+			return "no effect";
+
+		long percent = Math.round(SHIFT * 100);
+		return "+" + percent + "% " + up.label() + ", -" + percent + "% " + down.label();
+	}
+
 	/**
 	 * Finds a temperament by the name saved or sent for it.
 	 *
