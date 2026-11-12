@@ -7,8 +7,10 @@ package com.oveduumnakal.gielinorgo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -173,6 +175,56 @@ public class GoGameExtrasTest
 	}
 
 	@Test
+	public void everyHatchRollsItsOwnMakeUp()
+	{
+		Set<StatRolls> seen = new HashSet<>();
+		for (int i = 0; i < 30; i++)
+		{
+			game.data().eggs.clear();
+			game.data().eggs.add(new Egg(Rarity.EPIC));
+			game.addSteps(Rarity.EPIC.eggTiles());
+			Creature born = newest();
+
+			assertTrue(born.rolls().valid());
+			seen.add(born.rolls());
+		}
+
+		assertTrue("30 hatches should not all roll alike, got " + seen.size(), seen.size() > 10);
+	}
+
+	@Test
+	public void evolutionKeepsTheRollsAndTemperament()
+	{
+		Creature imp = new Creature("imp", 19, now);
+		imp.setRolls(new StatRolls(5, -2, 3, 1, Temperament.FIERCE));
+		game.data().team.add(imp);
+
+		game.addOsrsXp(10 * (int) (XpRules.xpForLevel(20) - XpRules.xpForLevel(19)));
+
+		assertEquals("lesser demon", lead().species);
+		assertEquals(new StatRolls(5, -2, 3, 1, Temperament.FIERCE), lead().rolls());
+		assertEquals("FIERCE", lead().temperament);
+	}
+
+	@Test
+	public void aSavedCreatureWithRollsOutOfRangeIsPulledBackIn()
+	{
+		SaveData data = SaveData.fresh();
+		Creature odd = new Creature("imp", 5, now);
+		odd.rollHp = 40;
+		odd.rollSpeed = -40;
+		odd.temperament = "GRUMPY";
+		data.team.add(odd);
+
+		data.sanitized();
+
+		assertEquals(StatRolls.MAX, odd.rollHp);
+		assertEquals(StatRolls.MIN, odd.rollSpeed);
+		assertNull(odd.temperament);
+		assertTrue(odd.rolls().valid());
+	}
+
+	@Test
 	public void aReadyEggWaitsForRoom()
 	{
 		for (int i = 0; i < SaveData.TEAM_SIZE; i++)
@@ -270,6 +322,13 @@ public class GoGameExtrasTest
 	private Creature lead()
 	{
 		return game.data().lead();
+	}
+
+	private Creature newest()
+	{
+		List<Creature> stored = game.data().storage;
+		List<Creature> team = game.data().team;
+		return stored.isEmpty() ? team.get(team.size() - 1) : stored.get(stored.size() - 1);
 	}
 
 	private Egg firstEgg()

@@ -193,6 +193,31 @@ final class PanelUi
 	}
 
 	/**
+	 * Picks the colour of a rating word.
+	 *
+	 * @param rating the rating
+	 * @return gold for exceptional, green for strong, otherwise grey
+	 */
+	static Color ratingColor(StatRolls.Rating rating)
+	{
+		if (rating == StatRolls.Rating.EXCEPTIONAL)
+			return GOLD;
+
+		return rating == StatRolls.Rating.STRONG ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.LIGHT_GRAY_COLOR;
+	}
+
+	/**
+	 * Writes the hidden numbers of a creature for a tooltip.
+	 *
+	 * @param view the creature
+	 * @return two lines of HTML: the rating and temperament, then the four rolls
+	 */
+	static String tooltipRolls(CreatureView view)
+	{
+		return view.rating().label() + " \u00b7 " + view.temperamentLabel() + "<br>" + view.rollsLine();
+	}
+
+	/**
 	 * Picks the colour of a creature's name.
 	 *
 	 * @param view the creature

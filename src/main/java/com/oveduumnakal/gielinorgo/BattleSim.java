@@ -110,7 +110,7 @@ final class BattleSim
 	 */
 	private static int duel(Combatant mine, Combatant foe, Random random, List<BattleLine> log)
 	{
-		boolean myTurn = mine.level() > foe.level() || (mine.level() == foe.level() && random.nextBoolean());
+		boolean myTurn = movesFirst(mine, foe, random);
 		int turns = 0;
 		while (!mine.fainted() && !foe.fainted() && turns < MAX_TURNS)
 		{
@@ -127,6 +127,24 @@ final class BattleSim
 		}
 
 		return turns;
+	}
+
+	/**
+	 * Decides who attacks first: the faster creature, then the higher level, then a coin toss. Creatures with no
+	 * rolls are exactly as fast as their level says, so for them this is the old rule and the coin is tossed only
+	 * when the levels are equal.
+	 *
+	 * @param mine the player's creature
+	 * @param foe the opposing creature
+	 * @param random the source of the coin toss
+	 * @return true when the player's creature attacks first
+	 */
+	private static boolean movesFirst(Combatant mine, Combatant foe, Random random)
+	{
+		if (mine.speed() != foe.speed())
+			return mine.speed() > foe.speed();
+
+		return mine.level() > foe.level() || (mine.level() == foe.level() && random.nextBoolean());
 	}
 
 	/**

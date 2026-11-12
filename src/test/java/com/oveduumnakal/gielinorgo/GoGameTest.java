@@ -6,8 +6,10 @@ package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -465,6 +467,72 @@ public class GoGameTest
 		game.release(0);
 
 		assertTrue(messages.contains("Released Bob"));
+	}
+
+	@Test
+	public void everyCatchRollsItsOwnMakeUp()
+	{
+		game.data().addJars(JarType.BRONZE, 500);
+		Set<StatRolls> seen = new HashSet<>();
+		for (int i = 0; i < 40; i++)
+		{
+			catchUntilCaught(wild(CHICKEN, 3, 1));
+			StatRolls rolls = newest().rolls();
+
+			assertTrue(rolls.valid());
+			seen.add(rolls);
+		}
+
+		assertTrue("40 catches should not all roll alike, got " + seen.size(), seen.size() > 10);
+		List<CreatureView> shown = game.snapshot().team();
+		StatRolls first = shown.get(0).rolls();
+		assertTrue(first.valid());
+	}
+
+	@Test
+	public void aRatedCatchSaysSoOnASecondLine()
+	{
+		game.data().addJars(JarType.BRONZE, 1000);
+		boolean rated = false;
+		for (int i = 0; i < 60 && !rated; i++)
+		{
+			catchUntilCaught(wild(CHICKEN, 3, 1));
+			StatRolls rolls = newest().rolls();
+			rated = rolls.rating() != StatRolls.Rating.AVERAGE;
+			if (rated)
+			{
+				String note = rolls.rating().label() + " (" + rolls.temperament().label() + ")";
+				assertTrue(note, messages.contains(note));
+				assertTrue("the catch line itself is unchanged", messages.contains("Caught Chicken (Lv 3)!"));
+			}
+		}
+
+		assertTrue("some of 60 catches should be rated", rated);
+	}
+
+	@Test
+	public void anAverageCatchAddsNoRatingLine()
+	{
+		game.data().addJars(JarType.BRONZE, 1000);
+		for (int i = 0; i < 60; i++)
+		{
+			messages.clear();
+			catchUntilCaught(wild(CHICKEN, 3, 1));
+			if (newest().rolls().rating() == StatRolls.Rating.AVERAGE)
+			{
+				assertFalse(messages.stream().anyMatch(line -> line.contains("Strong") || line.contains("Weak")));
+				return;
+			}
+		}
+
+		throw new AssertionError("no average catch in 60");
+	}
+
+	private Creature newest()
+	{
+		List<Creature> stored = game.data().storage;
+		List<Creature> team = game.data().team;
+		return stored.isEmpty() ? team.get(team.size() - 1) : stored.get(stored.size() - 1);
 	}
 
 	private void record(Notice notice)

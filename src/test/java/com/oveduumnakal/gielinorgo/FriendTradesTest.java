@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import com.google.gson.Gson;
 import com.oveduumnakal.gielinorgo.GielinorGoPartyMessage.Item;
 import org.junit.Before;
 import org.junit.Test;
@@ -984,6 +985,90 @@ public class FriendTradesTest
 
 		while (game.data().storage.size() < SaveData.STORAGE_SIZE - free)
 			game.data().storage.add(new Creature("imp", 1, now));
+	}
+
+	@Test
+	public void rollsAndTemperamentSurviveATrade()
+	{
+		StatRolls annRolls = new StatRolls(3, -1, 2, 5, Temperament.BRAVE);
+		StatRolls bobRolls = new StatRolls(-4, 0, 1, -2, Temperament.STEADY);
+		annImp.setRolls(annRolls);
+		bobCow.setRolls(bobRolls);
+
+		swap();
+
+		Creature bobGot = only(bobGame.data().team);
+		Creature annGot = only(annGame.data().team);
+		assertEquals(annRolls, bobGot.rolls());
+		assertEquals("BRAVE", bobGot.temperament);
+		assertEquals(bobRolls, annGot.rolls());
+	}
+
+	@Test
+	public void aTradedCreatureWithNoRollsStaysAverage()
+	{
+		swap();
+
+		Creature bobGot = only(bobGame.data().team);
+		assertEquals(StatRolls.AVERAGE, bobGot.rolls());
+		assertNull(bobGot.temperament);
+	}
+
+	@Test
+	public void theOfferNamesTheRatingOfWhatIsGiven()
+	{
+		annImp.setRolls(new StatRolls(5, 5, 3, 0, Temperament.BRAVE));
+
+		ann.offer(BOB, "Bob", annImp, null);
+		bob.receive(last(fromAnn), BOB, "Ann");
+
+		assertEquals("Offered gilded Imp (Lv 20) Strong to Bob", last(annTold));
+		assertEquals("gilded Imp (Lv 20) Strong as a gift", bob.offerFrom(ANN));
+	}
+
+	@Test
+	public void aRollOutOfRangeOrAnUnknownTemperamentIsRefused()
+	{
+		long xp = XpRules.xpForLevel(20);
+		StatRolls tooHigh = new StatRolls(9, 0, 0, 0, Temperament.STEADY);
+		StatRolls tooLow = new StatRolls(0, 0, 0, -6, Temperament.STEADY);
+
+		assertFalse(bob.receive(offerOf(Item.creature("imp", 20, xp, false, tooHigh)), BOB, "Ann"));
+		assertFalse(bob.receive(offerOf(Item.creature("imp", 20, xp, false, tooLow)), BOB, "Ann"));
+		GielinorGoPartyMessage odd = offerOf(Item.creature("imp", 20, xp, false,
+			new StatRolls(0, 0, 0, 0, Temperament.BRAVE)));
+		Gson gson = new Gson();
+		GielinorGoPartyMessage grumpy = gson.fromJson(gson.toJson(odd).replace("BRAVE", "GRUMPY"),
+			GielinorGoPartyMessage.class);
+		grumpy.setMemberId(ANN);
+		assertFalse(bob.receive(grumpy, BOB, "Ann"));
+
+		assertEquals("", bob.offerFrom(ANN));
+		assertTrue(fromBob.isEmpty());
+		assertTrue(bob.receive(offerOf(Item.creature("imp", 20, xp, false, StatRolls.AVERAGE)), BOB, "Ann"));
+	}
+
+	@Test
+	public void aFriendSendingNoRollsAtAllMeansAverage()
+	{
+		annImp.setRolls(new StatRolls(5, 5, 3, 0, Temperament.BRAVE));
+		ann.offer(BOB, "Bob", annImp, null);
+		Gson gson = new Gson();
+		String wire = gson.toJson(last(fromAnn)).replaceAll(",\"rolls\":\\[[^\\]]*\\]", "")
+			.replace(",\"temperament\":\"BRAVE\"", "");
+		assertFalse("the old layout has no rolls", wire.contains("rolls"));
+		GielinorGoPartyMessage old = gson.fromJson(wire, GielinorGoPartyMessage.class);
+		old.setMemberId(ANN);
+
+		assertTrue(bob.receive(old, BOB, "Ann"));
+		assertEquals("gilded Imp (Lv 20) as a gift", bob.offerFrom(ANN));
+		bob.answer(ANN, "Ann", true);
+		ann.receive(last(fromBob), ANN, "Bob");
+		bob.receive(last(fromAnn), BOB, "Ann");
+
+		List<Creature> team = bobGame.data().team;
+		Creature got = team.get(team.size() - 1);
+		assertEquals(StatRolls.AVERAGE, got.rolls());
 	}
 
 	private void swap()
