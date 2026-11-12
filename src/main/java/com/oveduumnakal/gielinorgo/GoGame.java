@@ -238,7 +238,7 @@ final class GoGame
 
 		data.addJars(jar, 1);
 		dirty = true;
-		tell("+1 " + jar.label() + " jar (" + skillName(skill) + ")", Tone.FIND);
+		tell("+1 " + jar.label() + " jar (" + skillName(skill) + ")", Tone.FIND, jar);
 	}
 
 	/**
@@ -258,7 +258,7 @@ final class GoGame
 		{
 			data.stepProgress -= TILES_PER_JAR;
 			data.addJars(JarType.BRONZE, 1);
-			tell("+1 Bronze jar (walking)", Tone.FIND);
+			tell("+1 Bronze jar (walking)", Tone.FIND, JarType.BRONZE);
 		}
 
 		Iterator<Egg> carried = data.eggs.iterator();
@@ -373,7 +373,7 @@ final class GoGame
 	{
 		data.addJars(JarType.BRONZE, JARS_PER_LEVEL_UP);
 		dirty = true;
-		tell("+" + JARS_PER_LEVEL_UP + " Bronze jars (level up)", Tone.FIND);
+		tell("+" + JARS_PER_LEVEL_UP + " Bronze jars (level up)", Tone.FIND, JarType.BRONZE);
 	}
 
 	/**
@@ -819,7 +819,7 @@ final class GoGame
 
 			String reward = champion.rewardJars() + " " + champion.rewardJar().label() + " jars";
 			views.add(new ChampionView(champion.id(), champion.city(), String.join(", ", team), reward,
-				data.sigils.contains(champion.id()), champion.id().equals(cityId)));
+				data.sigils.contains(champion.id()), champion.id().equals(cityId), champion.rewardJar()));
 		}
 
 		return views;
@@ -916,7 +916,8 @@ final class GoGame
 
 		tell("Sigil of " + champion.city() + " earned!", Tone.FIND);
 		data.addJars(champion.rewardJar(), champion.rewardJars());
-		tell("+" + champion.rewardJars() + " " + champion.rewardJar().label() + " jars (champion)", Tone.FIND);
+		tell("+" + champion.rewardJars() + " " + champion.rewardJar().label() + " jars (champion)", Tone.FIND,
+			champion.rewardJar());
 		addTrainerXp(50L + 10L * champion.topLevel());
 	}
 
@@ -1068,7 +1069,7 @@ final class GoGame
 		{
 			JarType drop = randomUnlockedJar();
 			data.addJars(drop, 1);
-			tell("+1 " + drop.label() + " jar (battle win)", Tone.FIND);
+			tell("+1 " + drop.label() + " jar (battle win)", Tone.FIND, drop);
 		}
 
 		double eggChance = entry.roaming() ? ROAMING_EGG_CHANCE : EGG_DROP_CHANCE;
@@ -1142,6 +1143,18 @@ final class GoGame
 	private void tell(String text, Tone tone)
 	{
 		notices.accept(Notice.player(text, tone));
+	}
+
+	/**
+	 * Tells the player about a jar they found, with the jar's picture beside the line.
+	 *
+	 * @param text the line
+	 * @param tone its mood
+	 * @param jar the jar the line is about
+	 */
+	private void tell(String text, Tone tone, JarType jar)
+	{
+		notices.accept(Notice.player(text, tone, jar));
 	}
 
 	/**

@@ -15,8 +15,15 @@ final class ChampionView
 	private final String reward;
 	private final boolean beaten;
 	private final boolean here;
+	private final JarType rewardJar;
 
 	ChampionView(String id, String city, String team, String reward, boolean beaten, boolean here)
+	{
+		this(id, city, team, reward, beaten, here, null);
+	}
+
+	ChampionView(String id, String city, String team, String reward, boolean beaten, boolean here,
+		JarType rewardJar)
 	{
 		this.id = id;
 		this.city = city;
@@ -24,6 +31,7 @@ final class ChampionView
 		this.reward = reward;
 		this.beaten = beaten;
 		this.here = here;
+		this.rewardJar = rewardJar;
 	}
 
 	/** @return the id the panel passes back when the player challenges this champion */
@@ -50,6 +58,12 @@ final class ChampionView
 		return reward;
 	}
 
+	/** @return the jar the first-win reward is paid in, whose picture the card shows, or null */
+	JarType rewardJar()
+	{
+		return rewardJar;
+	}
+
 	/** @return whether the player has beaten this champion and holds the city's sigil */
 	boolean beaten()
 	{
@@ -74,6 +88,7 @@ final class ChampionView
 		ChampionView that = (ChampionView) other;
 		return beaten == that.beaten
 			&& here == that.here
+			&& rewardJar == that.rewardJar
 			&& Objects.equals(id, that.id)
 			&& Objects.equals(city, that.city)
 			&& Objects.equals(team, that.team)
@@ -83,6 +98,6 @@ final class ChampionView
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(id, city, team, reward, beaten, here);
+		return Objects.hash(id, city, team, reward, beaten, here, rewardJar);
 	}
 }

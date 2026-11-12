@@ -4,9 +4,12 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -176,5 +179,27 @@ final class FloatingTextOverlay extends Overlay
 		graphics.drawString(text, x + 1, y + 1);
 		graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha));
 		graphics.drawString(text, x, y);
+		drawJar(graphics, notice.jar(), x, y, alpha);
+	}
+
+	/**
+	 * Draws a jar's picture just left of a line's text, fading with it.
+	 *
+	 * @param graphics the canvas
+	 * @param jar the jar the line is about, or null
+	 * @param x the left edge of the text
+	 * @param y the baseline of the text
+	 * @param alpha the line's opacity, from 0 to 255
+	 */
+	private static void drawJar(Graphics2D graphics, JarType jar, int x, int y, int alpha)
+	{
+		BufferedImage image = JarIcons.image(jar);
+		if (image == null)
+			return;
+
+		Composite before = graphics.getComposite();
+		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha / 255f));
+		graphics.drawImage(image, x - image.getWidth() - 2, y - image.getHeight() + 3, null);
+		graphics.setComposite(before);
 	}
 }
