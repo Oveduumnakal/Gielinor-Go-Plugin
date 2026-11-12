@@ -63,7 +63,7 @@ public class GoGameTest
 		assertEquals("chicken", lead().species);
 		assertEquals(3, lead().level());
 		assertEquals(1, (int) game.data().caught.get("chicken"));
-		assertTrue(game.data().jarCount(JarType.BRONZE) < SaveData.STARTING_JARS);
+		assertTrue(game.data().jarCount(JarType.BRONZE) < SaveData.STARTING_JARS + GoGame.STREAK_JARS);
 		assertTrue(game.data().trainerXp > 0);
 		assertTrue(messages.contains("Caught Chicken (Lv 3)!"));
 		assertEquals("creature news floats over the creature", 1, noticeFor("Caught Chicken (Lv 3)!").npcIndex());
@@ -212,7 +212,8 @@ public class GoGameTest
 
 		assertTrue(outcome != CatchOutcome.NO_JARS);
 		assertEquals(0, game.data().jarCount(JarType.CAVE));
-		assertEquals(SaveData.STARTING_JARS, game.data().jarCount(JarType.BRONZE));
+		int streakJars = outcome == CatchOutcome.CAUGHT ? GoGame.STREAK_JARS : 0;
+		assertEquals(SaveData.STARTING_JARS + streakJars, game.data().jarCount(JarType.BRONZE));
 		assertEquals(CatchOutcome.NO_JARS, game.tryCatch(wild(CHICKEN, 2, 1), JarType.CAVE));
 	}
 
@@ -221,7 +222,8 @@ public class GoGameTest
 	{
 		game.addOsrsXp(5000);
 
-		assertFalse(game.takeDirty());
+		assertTrue(game.data().team.isEmpty());
+		assertEquals(0L, game.data().trainerXp);
 	}
 
 	@Test

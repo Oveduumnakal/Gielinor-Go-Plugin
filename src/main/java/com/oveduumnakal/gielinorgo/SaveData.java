@@ -70,6 +70,9 @@ final class SaveData
 	/** Ids of the City Champions the player has beaten. */
 	Set<String> sigils = new LinkedHashSet<>();
 
+	/** Progress on the daily and weekly tasks and the login streak. Null in saves from before tasks existed. */
+	TaskProgress tasks = new TaskProgress();
+
 	/** @return a save for a player who has never played, with the starting jars */
 	static SaveData fresh()
 	{
@@ -93,6 +96,7 @@ final class SaveData
 		eggs = eggs == null ? new ArrayList<>() : new ArrayList<>(eggs);
 		gilded = gilded == null ? new LinkedHashSet<>() : new LinkedHashSet<>(gilded);
 		sigils = sigils == null ? new LinkedHashSet<>() : new LinkedHashSet<>(sigils);
+		tasks = tasks == null ? new TaskProgress() : tasks.sanitized();
 		eggs.removeIf(egg -> egg == null);
 		team.removeIf(creature -> creature == null || creature.species == null);
 		storage.removeIf(creature -> creature == null || creature.species == null);

@@ -28,7 +28,18 @@ class SaveData {
   sigils: Set<String>
   stepProgress: int
   storage: List<Creature>
+  tasks: TaskProgress
   team: List<Creature>
   trainerXp: long
   version: int
+}
+class TaskProgress {
+  daily: int[]
+  dailyPaid: boolean[]
+  day: long
+  lastCatchDay: long
+  streak: int
+  week: long
+  weekly: int
+  weeklyPaid: boolean
 }
