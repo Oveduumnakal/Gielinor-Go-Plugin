@@ -76,6 +76,46 @@ final class AnimationTable
 	}
 
 	/**
+	 * Finds the stand animation for an NPC that may have no row in the table (a variant a game update added). A row
+	 * is always trusted; with no row, the animation the live NPC itself stands in is used, so the model is never left
+	 * in its bind pose.
+	 *
+	 * @param npcId the NPC id
+	 * @param liveIdle the live NPC's own stand animation, or {@link #NONE} when there is no live NPC
+	 * @return the animation id, or {@link #NONE}
+	 */
+	int idle(int npcId, int liveIdle)
+	{
+		return has(npcId) ? idle(npcId) : Math.max(NONE, liveIdle);
+	}
+
+	/**
+	 * Finds the walk animation for an NPC that may have no row in the table, like {@link #idle(int, int)}: a row is
+	 * always trusted; with no row the live NPC's own walk is used, or its stand when it has no walk.
+	 *
+	 * @param npcId the NPC id
+	 * @param liveWalk the live NPC's own walk animation, or {@link #NONE}
+	 * @param liveIdle the live NPC's own stand animation, or {@link #NONE}
+	 * @return the animation id, or {@link #NONE}
+	 */
+	int walk(int npcId, int liveWalk, int liveIdle)
+	{
+		if (has(npcId))
+			return walk(npcId);
+
+		return liveWalk >= 0 ? liveWalk : Math.max(NONE, liveIdle);
+	}
+
+	/**
+	 * @param npcId the NPC id
+	 * @return whether the table has a row for it
+	 */
+	boolean has(int npcId)
+	{
+		return byNpcId.containsKey(npcId);
+	}
+
+	/**
 	 * Finds the animation an NPC plays while walking.
 	 *
 	 * @param npcId the NPC id

@@ -394,7 +394,7 @@ def main():
         if has_second:
             second_now.setdefault(species_name, []).append(second)
     lost = sorted(name for name, seconds in second_now.items() if max(seconds) < 0 and any(
-        previous.get(i, [0] * 6)[5] >= 0 for i, (owner, _) in owners.items() if owner == name))
+        previous.get(i, [-1] * 6)[5] >= 0 for i, (owner, _) in owners.items() if owner == name))
     if lost:
         raise SystemExit("species with a second style would lose their second attack, nothing written: "
                          + ", ".join(lost))

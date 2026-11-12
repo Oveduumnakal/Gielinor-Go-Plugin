@@ -1,0 +1,1216 @@
+Aberrant spectre	2
+Abhorrent spectre	7402
+Abomination	8260
+Abyssal antibody	12372
+Abyssal demon	7241
+Abyssal guardian	2585
+Abyssal leech	2584
+Abyssal Sire	5908
+Abyssal walker	2586
+Acidic Araxyte	13675
+Acidic Bloodveld	9573
+Adala	13824
+Adamant dragon	8030
+Afflicted	1293
+Agile Scarab	11727
+Agile Warrior	13483
+Agrith Naar	911
+Agrith-Na-Na	4880
+Ahrim the Blighted	1672
+Air elemental	1369
+Air wizard	1559
+Akkha	11789
+Akkha's Shadow	11797
+Al Kharid warrior	3292
+Albatross	15224
+Albino bat	1039
+Alchemical Hydra	8615
+Alexis	2623
+Alomone	12092
+Alrik	3676
+Ammonite Crab	7799
+Amoxliatl	13685
+Ancient Custodian	14520
+Ancient feral vyre	15760
+Ancient Guardian	10654
+Ancient Wizard	7309
+Ancient Wyvern	7795
+Ancient Zygomite	7797
+Angry barbarian spirit	5563
+Angry bear	4692
+Angry giant rat	4689
+Angry goblin	4691
+Angry tortugan	15170
+Angry unicorn	4688
+Animated Adamant Armour	2455
+Animated Black Armour	2453
+Animated Bronze Armour	2450
+Animated Iron Armour	2451
+Animated Mithril Armour	2454
+Animated Rune Armour	2456
+Animated spade	6470
+Animated Steel Armour	2452
+Anja	3285
+Ankou	7864
+Apparition	4195
+Aquanite	15497
+Araxxor	13668
+Araxyte	11176
+Arcane Scarab	11726
+Archer	4096
+Archive Guardian	16659
+Arianwyn	8865
+Armadylean guard	6587
+Armoured Foe	7750
+Armoured kraken	15210
+Armoured zombie	14115
+Arrav	14132
+Arrg	643
+Artio	11992
+Arzinian Avatar of Magic	1234
+Arzinian Avatar of Ranging	1231
+Arzinian Avatar of Strength	1228
+Assassin	12062
+Asyn Shade	1284
+Asyn shadow	5632
+Augur Metzli	14318
+Avatar of Creation	10531
+Avatar of Destruction	10532
+Aviansie	3176
+Ba-Ba	11778
+Baboon	11781
+Baboon Brawler	11712
+Baboon Mage	11714
+Baboon Shaman	11715
+Baboon Thrall	11718
+Baboon Thrower	11713
+Baby black dragon	1871
+Baby blue dragon	241
+Baby green dragon	5194
+Baby red dragon	244
+Baby Roc	762
+Baby tanglefoot	5854
+Balance Elemental	13528
+Balfrug Kreeyath	3132
+Bandit	6605
+Bandit champion	738
+Bandosian guard	6588
+Banshee	414
+Barbarian	3055
+Barbarian Warlord	10989
+Bark Blamish Snail	2648
+Barrelchest	600
+Basilisk	417
+Basilisk Knight	9293
+Basilisk Sentinel	9258
+Basilisk Youngling	9282
+Bat	2827
+Battle mage	1611
+Bear Cub	3908
+Bedabin Nomad Fighter	4655
+Bee Swarm	13658
+Berry	4134
+Berserk barbarian spirit	5565
+Big Evil Chicken	15547
+Big frog	478
+Big Snake	2978
+Big Wolf	115
+Billy Goat	1794
+Bird	5240
+Black bear	2839
+Black chinchompa	2912
+Black demon	7874
+Black dragon	7861
+Black Eye Bethel	15025
+Black golem	4742
+Black Guard	6047
+Black Guard Berserker	6052
+Black Heather	301
+Black jaguar	12978
+Black Knight	11953
+Black Knight Titan	4067
+Black unicorn	2849
+Black unicorn Foal	3911
+Blessed giant rat	4534
+Blessed spider	4533
+Blink	16625
+Blood Blamish Snail	2650
+Blood jaguar	13021
+Blood Moon	13011
+Blood Reaver	11293
+Blood spawn	8367
+Blood-starved venator	15770
+Bloodthirst rockslug&	12561
+Bloodthirsty abomination	12572
+Bloodthirsty abyssal demon	12581
+Bloodthirsty banshee	12540
+Bloodthirsty basilisk	12565
+Bloodthirsty Basilisk Sentinel	12566
+Bloodthirsty Bloodveld	12568
+Bloodthirsty choke devil	12575
+Bloodthirsty Cockathrice	12562
+Bloodthirsty Crawler	12539
+Bloodthirsty Drake	12586
+Bloodthirsty gargoyle	12578
+Bloodthirsty hand	12538
+Bloodthirsty Hydra	12588
+Bloodthirsty Infernal pyrelord	12564
+Bloodthirsty Jelly	12570
+Bloodthirsty kurask	12576
+Bloodthirsty Mage	12567
+Bloodthirsty mutated Bloodveld	12569
+Bloodthirsty Nechryarch	12582
+Bloodthirsty Night beast	12580
+Bloodthirsty pyrelord	12563
+Bloodthirsty Repugnant spectre	12574
+Bloodthirsty Shadow Wyrm	12584
+Bloodthirsty smoke devil	12577
+Bloodthirsty spectre	12573
+Bloodthirsty Turoth	12583
+Bloodthirsty twisted banshee	12542
+Bloodthirsty Warped Jelly	12571
+Bloodveld	3138
+Bloodworm	1678
+Bloody Jack	15682
+Blue dagannoth	15166
+Blue dragon	265
+Blue Moon	13013
+Boar	11067
+Boatswain Bill Teak	15678
+Body Golem	10691
+Boris	2613
+Bork	16640
+Borrokar	3939
+Bouncer	1224
+Branda the Fire Queen	12596
+Brassican Mage	7310
+Brawler	1738
+Bree	2208
+Breoca	4107
+Brine rat	4501
+Broddi	3685
+Bronze dragon	7253
+Broodoo victim	6410
+Bruise Blamish Snail	2652
+Brutal black dragon	7275
+Brutal blue dragon	7273
+Brutal green dragon	2918
+Brutal red dragon	7274
+Brutus	15627
+Bryophyta	8195
+Buffalo	13004
+Bull	15625
+Bull shark	15194
+Bunny	3902
+Bush snake	6102
+Butterfly ray	15216
+Callisto	6609
+Calvar'ion	11993
+Camp dweller	1379
+Captain Cotus	15451
+Captain Darvald	15457
+Captain Jack	15684
+Captain Ruban Acer	15683
+Carnivorous chinchompa	2911
+Catablepon	2476
+Cave abomination	7401
+Cave bug	483
+Cave crawler	408
+Cave goblin	6436
+Cave goblin guard	5334
+Cave goblin miner	5330
+Cave horror	1050
+Cave kraken	492
+Cave lizard	7424
+Cave slime	480
+Ceolburg	4111
+Cerberus	5862
+Champion of Scabaras	11482
+Chaos druid	520
+Chaos druid warrior	532
+Chaos dwarf	291
+Chaos Elemental	2054
+Chaos Fanatic	6619
+Chaos Golem	10689
+Chaotic death spawn	6723
+Chasm Crawler	7389
+Chicken	1173
+Chilled jelly	13799
+Chimalli	14362
+Chinchompa	2910
+Choke devil	7404
+Chompy bird	1475
+Chronozon	4987
+Chuck up	15169
+City guard	4373
+Clivet	1206
+Cockathrice	7393
+Cockatrice	419
+Colonel Radick	4406
+Colossal Hydra	10402
+Commander Zilyana	2205
+Confused barbarian	2920
+Confusion beast	4694
+Corporeal Beast	319
+Corpse	16687
+Corrupt Lizardman	8000
+Corrupted Bat	9042
+Corrupted Bear	9046
+Corrupted Dark Beast	9048
+Corrupted Dragon	9047
+Corrupted Hunllef	9035
+Corrupted Rat	9040
+Corrupted Scorpion	9044
+Corrupted Spider	9041
+Corrupted Unicorn	9043
+Corrupted Wolf	9045
+Corsair Traitor	7949
+Count Draynor	3481
+Cow	2790
+Cow calf	2792
+Crab	4819
+Crawling Hand	457
+Crazy archaeologist	6618
+Crimson sanguisphera	12369
+Crocodile	11581
+Cruor	11285
+Crushing hand	7388
+Crypt rat	1679
+Crypt spider	1683
+Crystalline Bat	9028
+Crystalline Bear	9032
+Crystalline Dark Beast	9034
+Crystalline Dragon	9033
+Crystalline Hunllef	9021
+Crystalline Rat	9026
+Crystalline Scorpion	9030
+Crystalline Spider	9027
+Crystalline Unicorn	9029
+Crystalline Wolf	9031
+Cuffs	3279
+Culinaromancer	3400
+Cultist	12918
+Cursed Baboon	11717
+Cuthbert, Lord of Dread	12957
+Cyclops	2137
+Dad	4130
+Daddy's special water	15167
+Dagannoth	7260
+Dagannoth fledgeling	2264
+Dagannoth mother	980
+Dagannoth Prime	2266
+Dagannoth Rex	2267
+Dagannoth spawn	3184
+Dagannoth Supreme	2265
+Dagon'hai Elder	16643
+Dagon'hai Monk	16647
+Damien Leucurte	9561
+Damis	683
+Dark Ankou	7296
+Dark beast	4005
+Dark energy core	320
+Dark warrior	6606
+Dark wizard	2056
+Dave	16626
+Dawn	7852
+Deadly red spider	3021
+Death spawn	10
+Death wing	509
+Defiler	1732
+Delrith	5079
+Demon	142
+Demonic Brutus	15628
+Demonic gorilla	7144
+Deranged archaeologist	7806
+Derwen	7513
+Desert Lizard	460
+Desert Wolf	4649
+Dessourt	4883
+Dessous	3459
+Deviant spectre	7279
+Dharok the Wretched	1673
+Dire bat	15757
+Dire gryphon	14859
+Dire Wolf	3426
+Dire Wolf Alpha	13812
+Disciple of Iban	8997
+Dolphin	15234
+Don't Know What	8439
+Donny the lad	302
+Doom of Mokhaiotl	14707
+Doomion	8995
+Double agent	7312
+Double Decimation Daryl	16627
+Drake	8612
+Dreadborn Araxyte	13680
+Dreadnoth the Jellied	16665
+Drink troll	15164
+Drink troll queen	15175
+Druid	3258
+Drunken man	3263
+Duck	1838
+Duckling	2001
+Duke	5258
+Duke Sucellus	12192
+Dungeon rat	3607
+Dusk	7887
+Dust devil	7249
+Dwarf	292
+Dwarf gang member	1356
+Eadburg	4095
+Eagle ray	15214
+Earth elemental	1366
+Earth warrior	2840
+Earth Warrior Champion	3328
+Earth wizard	1558
+Earthen Nagua	14421
+Eclipse Moon	13012
+Eduard	2618
+Einar	3675
+Elder aquanite	15502
+Elder Chaos druid	6607
+Elder custodian stalker	14704
+Eldric the Ice King	14147
+Elf Archer	5295
+Elf Warrior	5293
+Elidinis' Warden	11761
+Elite Black Knight	13463
+Elite Dark Mage	13469
+Elite Dark Ranger	13467
+Elite Dark Warrior	13465
+Elite Khazard Guard	13531
+Elvarg	817
+Embertailed jerboa	13139
+Emissary Acolyte	13732
+Emissary Archer	14407
+Emissary Ascended	13744
+Emissary Brawler	13775
+Emissary Chosen	13738
+Emissary Conjurer	13777
+Emissary Enforcer	14268
+Enclave guard	4381
+Ennius Tullus	14331
+Enormous Tentacle	5535
+Enraged barbarian spirit	5564
+Enraged Boar	11227
+Ent	6594
+Entrana firebird	4927
+Essyllt	8847
+Evelot	12047
+Evil Chicken	6739
+Evil Creature	1244
+Evil spirit	625
+Experiment	1273
+Experiment No.2	5126
+Ezekiel	16652
+Fareed	3456
+Farmer	3244
+Fear reaper	4693
+Feral Vampyre	5642
+Ferocious barbarian spirit	5566
+Fever spider	626
+Fire elemental	1365
+Fire giant	7251
+Fire Warrior of Lesarkus	3448
+Fire wizard	1556
+Fiyr Shade	1286
+Fiyr Shadow	1285
+Flambeed	4881
+Flaming pyrelord	7394
+Flawed Golem	10695
+Flesh Crawler	2500
+Flight Kilisa	3165
+Flockleader Geerin	3164
+Foreman	1429
+Forester	7238
+Forgotten Soul	10544
+Fortress Guard	4773
+Fox	3901
+Fragment of Seren	8917
+Freidir	3938
+Fremennik warband archer	12814
+Fremennik warband berserker	12816
+Fremennik warband seer	12815
+Fremennik warrior	15458
+Frenzied ice troll female	5825
+Frenzied ice troll grunt	5826
+Frenzied ice troll male	5824
+Frenzied ice troll runt	5823
+Frigatebird	15226
+Frog	8702
+Frogeel	3600
+Frost Crab	13789
+Frost dragon	14922
+Frost Nagua	13728
+Fumus	11283
+Gadderanks	4483
+Galina	2625
+Galvek	8097
+Gang boss	6900
+Gangster	6898
+Gardener	3275
+Gargoyle	1543
+Gelatinnoth Mother	4884
+Gemstone Crab	14779
+General Graardor	2215
+General Khazard	1213
+Georgy	2620
+Ghast	5627
+Ghost	2527
+Ghost guard	6698
+Ghoul	289
+Ghoul Champion	3330
+Giant ant	15437
+Giant bat	2834
+Giant Champion	3329
+Giant crypt rat	1680
+Giant crypt spider	1684
+Giant frog	477
+Giant goblin	12452
+Giant Lobster	4799
+Giant Mole	5779
+Giant mosquito	1041
+Giant rat	2510
+Giant Roc	763
+Giant Rock Crab	2261
+Giant rockslug	7392
+Giant Scarab	797
+Giant Sea Snake	1101
+Giant skeleton	6440
+Giant snail	5630
+Giant spider	2477
+Giant wasp	15438
+Glacies	11286
+Glod	5129
+Glough	7101
+Gnome	5970
+Gnome Archer	6097
+Gnome child	6077
+Gnome Driver	6098
+Gnome guard	6082
+Gnome Mage	6099
+Gnome troop	5966
+Gnome woman	6086
+Goat	1792
+Goblin	3046
+Goblin Champion	3353
+Goblin guard	5369
+Golem	9051
+Golem guard	14125
+Gorad	4367
+Gorak	3141
+Grave scorpion	5372
+Great Olm	7551
+Great white shark	15200
+Greater abyssal demon	7410
+Greater demon	7246
+Greater Nechryael	11240
+Greater Skeleton Hellhound	6614
+Green dragon	7868
+Grey golem	4744
+Grimy Lizard	13029
+Grip	4919
+Grizzly bear	3423
+Grizzly bear cub	3425
+Growler	2207
+Growthling	8194
+Gryphon	14857
+Guard	11945
+Guard Bandit	1027
+Guard dog	114
+Guardian Drake	10400
+Guardian of Armadyl	3445
+Gunthor the brave	299
+Guthan the Infested	1674
+H.A.M. Archer	5157
+H.A.M. Guard	2538
+H.A.M. Mage	5158
+Halla	3678
+Hammerhead shark	15196
+Harpie Bug Swarm	464
+Head	5644
+Head Guard	11093
+Head Menaphite Guard	11529
+Head Thief	4248
+Headless Beast	10506
+Hellhound	7877
+Hengel	3284
+Hermit crab	14853
+Hero	3295
+Hespori	8583
+Highwayman	518
+Hill Giant	2098
+Hobgoblin	2241
+Hobgoblin Champion	3354
+Hole in the wall	475
+Holthion	8996
+Hoop Snake	7802
+Hopeless creature	4695
+Hueycoatl body	14017
+Hueycoatl tail	14014
+Huge spider	134
+Husk	9454
+Hydra	8609
+Hygd	4110
+I DSCIM YOU	15553
+Ice block	13790
+Ice elemental	14151
+Ice giant	7879
+Ice Queen	4922
+Ice spider	3022
+Ice troll	648
+Ice troll female	1876
+Ice troll grunt	1877
+Ice Troll King	5822
+Ice troll male	1875
+Ice troll runt	1874
+Ice warrior	2841
+Ice wolf	647
+Icefiend	3140
+Icelord	852
+Imp	3134
+Imp Champion	3355
+Impaler deer	15759
+Imre	2614
+Infernal Mage	443
+Infernal pyrelord	9465
+Insatiable Bloodveld	7397
+Insatiable mutated Bloodveld	7398
+Invrigar the Necromancer	511
+Iorwerth Archer	8760
+Iorwerth Warrior	3429
+Irina	2622
+Iron dragon	7254
+Irvig Senay	3965
+Ithoi the Navigator	7964
+Jackal	4185
+Jaguar	12976
+Jaguar cub	12977
+Jaguar warrior	12810
+Jail guard	4276
+Jailer	300
+Jake	3863
+Jal-Ak	7693
+Jal-AkRek-Ket	7696
+Jal-AkRek-Mej	7694
+Jal-AkRek-Xil	7695
+Jal-ImKot	7697
+Jal-MejJak	7708
+Jal-MejRah	7692
+Jal-Nib	7691
+Jal-Xil	7698
+Jal-Zek	7699
+JalTok-Jad	7700
+Javelin Colossus	12817
+Jeff	3282
+Jelly	440
+Jennella	3944
+Jhallan	12353
+Jogre	2234
+Jogre Champion	3356
+Jonny the Beard	5213
+Joseph	2616
+Jubbly bird	4863
+Jubster	3604
+Judge of Yama	14180
+Jungle Demon	1443
+Jungle horror	1044
+Jungle spider	3020
+Jungle Wolf	232
+Justiciar Zachariah	5977
+Juvenile custodian stalker	14702
+K'ril Tsutsaroth	3129
+Kalphite Guardian	959
+Kalphite Queen	965
+Kalphite Soldier	957
+Kalphite Worker	955
+Kalrag	8993
+Kamil	3458
+Karamel	4882
+Karil the Tainted	1675
+Kasonde	12262
+Kasonde the Craven	12331
+Kebbit	1494
+Keef	7104
+Kephri	11721
+Ket-Zek	3125
+Ketla the Unworthy	12330
+Khazard commander	4972
+Khazard Guard	1211
+Khazard Ogre	1225
+Khazard Scorpion	1226
+Khazard trooper	4969
+Khazard warlord	7621
+Killerwatt	470
+Kinetic Katara	16629
+King Black Dragon	239
+King kurask	7405
+King Roald	4163
+King Sand Crab	7266
+King Scorpion	3027
+Knight of Ardougne	3297
+Knight of Saradomin	2213
+Knight of Varlamore	13114
+Kob	7106
+Kolodion	1609
+Kraka	928
+Kraken	494
+Kree'arra	3162
+Kroy	9560
+Kruk	6805
+Ksenia	2627
+Kurask	410
+Lanzig	3940
+Large chicken	14510
+Large mosquito	6272
+Lava dragon	6593
+Lava Strykewyrm	15500
+Leech	3233
+Lensa	3943
+Leon d'Cour	3360
+Lesser demon	7248
+Lesser Demon Champion	3357
+Lev	2619
+Liliya	2632
+Lizard	458
+Lizardman	6916
+Lizardman brute	6918
+Lizardman shaman	6766
+Loar Shade	1277
+Loar Shadow	1276
+Lobstrosity	7796
+Locust	11584
+Locust rider	795
+Long-tailed Wyvern	7792
+Lost barbarian	2921
+Lowerniel Drakan	16204
+Lucien	3443
+Lucius	14363
+Lynx	11069
+Lynx Tamer	11071
+Mad Angel	16305
+Maggot King	15742
+Magic axe	2844
+Magic Mark	13663
+Magma strykewyrm	15504
+Malevolent Mage	7396
+Mammoth	6604
+Man	3106
+Maniacal monkey	7118
+Maniacal Monkey Archer	7119
+Manta ray	15220
+Manticore	12818
+Marble gargoyle	7407
+Market Guard	3949
+Mature custodian stalker	14703
+Maxilla beast	16233
+Me	786
+Melzar the Mad	823
+Menaphite Akh	11492
+Menaphite Shadow	11462
+Menaphite Thug	3550
+Mercenary	4657
+Mercenary axeman	13535
+Mercenary Captain	4635
+Mercenary mage	13537
+Milla	2624
+Mind Golem	10693
+Minotaur	2483
+Mirrorback Araxyte	13671
+Mister U.	15679
+Mithril dragon	2919
+Mogre	2592
+Moia	16667
+Molanisk	1
+Monk	2579
+Monk of Zamorak	529
+Monkey	1038
+Monkey Archer	5272
+Monkey Guard	5275
+Monkey Zombie	5282
+Monstrous basilisk	7395
+Moonlight Cockatrice	13030
+Mosquito swarm	6402
+Moss giant	3851
+Moss Guardian	891
+Mosschin	11271
+Mother	8428
+Mountain troll	4143
+Mounted terrorbird gnome	2068
+Mourner	9017
+Mouse	5128
+Mudskipper	4821
+Mugger	13282
+Mummy	720
+Mutant tarn	6477
+Mutated Bloodveld	7276
+Mutated Terrorbird	12464
+Mutated Tortoise	12465
+Mute Jack	15681
+Myre Blamish Snail	2649
+Mysterious Figure	12300
+Nail beast	2948
+Narf	3280
+Narwhal	15202
+Nazastarool	5355
+Nechryael	8
+Nechryarch	7411
+Necromancer	1025
+Newtroost	3605
+Nex	11278
+Nezikchened	3962
+Night beast	7409
+Nikita	2629
+Nikolai	2617
+Nuclear smoke devil	7406
+Nylocas Athanatos	10844
+Nylocas Hagios	8347
+Nylocas Ischyros	8345
+Nylocas Matomenos	10828
+Nylocas Prinkipas	10806
+Nylocas Toxobolos	8346
+Nylocas Vasilias	8354
+Oaky Doak	15677
+Obor	7416
+Ocellus	16677
+Ocelot	14545
+Ocga	4108
+Ochre Blamish Snail	2651
+Ogre	1153
+Ogre chieftain	4362
+Ogre shaman	4383
+Ogress Shaman	7991
+Ogress Warrior	7989
+Oipuis	5259
+Old Jack	15680
+Oomlie bird	2062
+Orca	15204
+Ork	2237
+Oryx	13006
+Osprey	15222
+Othainian	8994
+Otherworldly being	2843
+Ouhai	5261
+Outlaw	4167
+Padulah	5263
+Paladin	3293
+Palmer	3869
+Parasite	9452
+Passionate Supporter	12833
+Pee Hat	927
+Penance Fighter	5747
+Penance Queen	5775
+Penance Ranger	5765
+Penda	4109
+Penguin	2063
+Persten the Deceitful	12333
+Pestilent Bloat	10813
+Pete Kayer	16588
+Phantom Hand	10957
+Phantom Muspah	12082
+Pheasant	5502
+Phosani's Nightmare	9416
+Phrin Shade	1280
+Phrin Shadow	1279
+Pirate	4043
+Pirate captain	15455
+Pirate Guard	4926
+Pit Scorpion	3026
+Plague frog	11586
+Poison Scorpion	3025
+Poison spider	3023
+Poltenip	4758
+Porazdir	7515
+Porcupine	13968
+Possessed pickaxe	7268
+Possessed Priest	4210
+Praying mantis	15431
+Prifddinas guard	6595
+Prince Itzla Arkan	13784
+Pygmy kraken	15206
+Pyrefiend	3139
+Pyrelord	6762
+Queen spawn	5776
+Rabbit	12851
+Radat	4759
+Radiant sanguisphera	12370
+Ragnar	3674
+Ragnvald	3687
+Ram	1262
+Ranalph Devere	3966
+Ranging Ro	13664
+Ranis Drakan	8242
+Rannveig	3681
+Rat	2492
+Ravager	1708
+Reanimated demon spawn	7287
+Red dragon	247
+Redeyes	11272
+Reef snake	15499
+Renegade knight	3517
+Repugnant spectre	7403
+Revenant cyclops	7934
+Revenant dark beast	7938
+Revenant demon	7936
+Revenant dragon	7940
+Revenant goblin	7931
+Revenant hellhound	7935
+Revenant hobgoblin	7933
+Revenant imp	7881
+Revenant knight	7939
+Revenant maledictus	11246
+Revenant ork	7937
+Revenant pyrefiend	7932
+River troll	6737
+Riyl Shade	1282
+Riyl Shadow	1281
+Robert the Strong	8057
+Rock	5945
+Rock Crab	100
+Rock Golem	6730
+Rock lobster	5944
+Rocks	101
+Rockslug	421
+Rocnar	143
+Rogue	6603
+Rooster	1175
+Rowdy Guard	4654
+Rowdy slave	4634
+Rubble	10690
+Rune dragon	8031
+Runite Golem	6600
+Ruptura Araxyte	13673
+Rusty	3281
+Salarin the twisted	304
+San Tojalon	3964
+Sand Crab	5935
+Sand Snake	7903
+Sandy Boulder	7267
+Sandy rocks	5936
+Sanguidae	16223
+Sarachnis	8713
+Saradomin priest	2209
+Saradomin wizard	2955
+Scarab	11697
+Scarab Mage	11508
+Scarab Swarm	4192
+Scarabs	729
+Scarred black demon	12386
+Scarred greater demon	12373
+Scarred hellhound	12374
+Scarred imp	12377
+Scarred lesser demon	12362
+Scion	5918
+Scorpia	6615
+Scorpia's guardian	6617
+Scorpia's offspring	6616
+Scorpion	2479
+Screaming banshee	7390
+Screaming twisted banshee	7391
+Scurrius	7221
+Sea Snake Hatchling	1098
+Sea Snake Young	1097
+Sea troll	4311
+Sea Troll Queen	4315
+Seagull	1339
+Sergeant	11073
+Sergeant Grimspike	2218
+Sergeant Steelwill	2217
+Sergeant Strongstack	2216
+Serpent shaman	12811
+Servant	4104
+Shade	6740
+Shadow	4004
+Shadow Hound	3449
+Shadow Keeper	12248
+Shadow spider	3016
+Shadow warrior	2853
+Shadow Wyrm	10398
+Shaeded Beast	8709
+Shantay Guard	4643
+Shellbane gryphon	15010
+Shifter	1702
+Shipyard worker	5457
+Shockwave Colossus	12819
+Sigmund	5139
+Sir Bedivere	4345
+Sir Carl	8988
+Sir Gawain	4348
+Sir Harry	8989
+Sir Jerro	8987
+Sir Kay	4349
+Sir Lancelot	4344
+Sir Leye	4682
+Sir Lucan	4342
+Sir Mordred	3527
+Sir Palomedes	4343
+Sir Pelleas	4347
+Sir Tristram	4346
+Skeletal miner	3615
+Skeletal Wyvern	468
+Skeleton	82
+Skeleton brute	1538
+Skeleton Champion	3358
+Skeleton fremennik	4497
+Skeleton heavy	1540
+Skeleton Hellhound	5054
+Skeleton hero	1537
+Skeleton Mage	4319
+Skeleton thug	1541
+Skeleton warlord	1539
+Skoblin	11268
+Skogre	872
+Skotizo	7286
+Skraeling	774
+Slagilith	1362
+Slash Bash	882
+Sleepwalker	9446
+Slug Prince	4797
+Small Lizard	463
+Small scarab	14126
+Smoke devil	498
+Snailfeet	11270
+Snake	2845
+Snakeling	2045
+Snothead	11269
+Sofiya	2626
+Sol Heredit	12821
+Soldier	4088
+Soldier Scarab	11724
+Sorebones	561
+Sotetseg	10867
+Soulless	508
+Sourhog	10435
+Sparring partner	16607
+Spawn	5916
+Spawn of Sarachnis	8714
+Speedy Keith	303
+Spider	2478
+Spidine	3602
+Spiked Turoth	10397
+Spindel	11998
+Spindel's Spiderling	12001
+Spined kraken	15208
+Spinner	1712
+Spinolyp	5947
+Spiritual Mage	11292
+Spiritual Ranger	11291
+Spiritual Warrior	11290
+Spitting Scarab	11725
+Spitting Wyvern	7794
+Splatter	1693
+Stag	1845
+Starlight	2206
+Steel dragon	7255
+Stick	926
+Stingray	15218
+Stone Guardian	8065
+Strange Creature	12081
+Stranger	685
+Strangled	12274
+Strangled Bear	12288
+Strangled Boar	12289
+Strangled Lynx	12290
+Strong Warrior	13484
+Strongbones	11273
+Suit of armour	5043
+Sulphur Lizard	8614
+Sulphur Nagua	13033
+Summoned Zombie	69
+Suqah	787
+Surok Magis	13482
+Suspicious water	5946
+Svetlana	2621
+Swamp Crab	8298
+Swamp frog	8578
+Swamp snake	5617
+Swampy log	8299
+Swordchick	3603
+Taloned Wyvern	7793
+Tanglefoot	5848
+Tar Monster	7804
+Target	4764
+Tarik	4757
+Tarn	6476
+Temple Guardian	7620
+Temple Spider	8703
+Tentacle	5643
+Tern	15228
+Terror dog	6473
+Terrorbird	2064
+The Draugen	3922
+The Everlasting	3474
+The Forsaken Assassin	12328
+The Hueycoatl	14009
+The Illusive	3476
+The Inadequacy	3473
+The Jormungand	9290
+The Kendal	1377
+The Leviathan	12214
+The Maiden of Sugadinti	10822
+The Mimic	8633
+The Nightmare	9425
+The rocks	15168
+The Shaikahan	4708
+The Smorks	16641
+The Untouchable	3475
+The Whisperer	12204
+Thermonuclear smoke devil	499
+Thief	7916
+Third Age Mage	8637
+Third Age Ranger	8636
+Third Age Warrior	8635
+Thora	3682
+Thorhild	3677
+Thrantax the Mighty	3518
+Thrower Troll	931
+Thug	525
+Tiger shark	15198
+Tok-Xil	2193
+Tolna	1075
+Torag the Corrupted	1676
+Torcher	1723
+Tormented Demon	13599
+Tormented Soul	8512
+Tormented Warrior	3959
+Tortoise	6076
+Tortured gorilla	7095
+Tortured soul	2999
+Tough Guy	3551
+Tower Archer	6068
+Tower guard	4405
+Trapped Soul	8514
+Tree spirit	1866
+Treus Dayth	3616
+Tribesman	530
+Tribeswoman	11955
+Troll	133
+Troll general	4122
+Troll spectator	4123
+Tstanon Karlak	3130
+Tumeken's Warden	11762
+Turoth	427
+Twig	4133
+Twisted Banshee	7272
+Typhor	9295
+Tyras guard	639
+Tz-Kek	2191
+Tz-Kih	2189
+TzHaar-Hur	2161
+TzHaar-Ket	7679
+TzHaar-Mej	2154
+TzHaar-Xil	2167
+TzKal-Zuk	7706
+TzTok-Jad	3127
+TzTok-Jad-Rek	15557
+Ugthanki	4652
+Ulfric	4500
+Umbra	11284
+Undead binder	16670
+Undead chicken	2993
+Undead cow	2992
+Undead Druid	2145
+Undead Lumberjack	5713
+Undead one	5349
+Undead Zealot	10591
+Ungadulu	3958
+Unicorn	2837
+Unicorn Foal	3910
+Unicow	3601
+Uodai	5262
+Ur-maggot larvae	15743
+Urium Shade	10589
+Urium Shadow	6143
+Uyoro	5260
+Valgerd	3683
+Vampyre Juvenile	4436
+Vampyre Juvinate	5636
+Vampyre kraken	15212
+Vampyre Snail	16344
+Vanstrom Klause	9567
+Vardorvis	12223
+Veiled kraken	15576
+Venator	15765
+Venenatis	6610
+Venenatis' Spiderling	12000
+Vera	2630
+Verac the Defiled	1677
+Verzik Vitur	8374
+Vet'ion	6611
+Vitreous Chilled Jelly	15501
+Vitreous Jelly	7399
+Vitreous Warped Jelly	7400
+Viyeldi	3963
+Void Augmenter	16680
+Void Flare	14179
+Void Rift	16678
+Void Siphon	16679
+Volatile Baboon	11716
+Vorkath	8059
+Vulture	1268
+Vyrewatch	3712
+Vyrewatch Sentinel	9756
+Wall beast	476
+Wallasalki	5938
+Warped Jelly	7277
+Warped Terrorbird	12499
+Warped Tortoise	12490
+Warrior	3950
+Warrior of Murahs	10394
+Watchman	5420
+Water elemental	1370
+Water wizard	1557
+Waterfiend	2916
+Weaponsmaster	14137
+Webbed-winged Crow	16226
+Well-armed Foe	7751
+Werewolf	3136
+Whirlpool	493
+White golem	4743
+White jaguar	12979
+White Knight	1829
+White wolf	108
+Wighted Leech	12335
+Wild dog	112
+Wilson	3865
+Wingman Skree	3163
+Witch's experiment	3996
+Wizard	3257
+Wolf	106
+Woman	3015
+Wormbrain	820
+Wyrd	16212
+Wyrm	8610
+Wyrmling	13031
+Xamphur	10954
+Xarpus	10772
+Xarth	16684
+Xx I DBOW I xX	16628
+Yadviga	2628
+Yak	5816
+Yama	14176
+Yeti	2847
+Yrsa	3679
+Yt-HurKot	7701
+Yt-MejKot	3123
+Yuri	2615
+Zakl'n Gritch	3131
+Zalcano	9050
+Zamorak crafter	7426
+Zamorak mage	7422
+Zamorak ranger	7421
+Zamorak warrior	7419
+Zamorak wizard	2954
+Zebak	11730
+Zemouregal	15237
+Zemouregal Summon	15558
+Zogre	866
+Zoja	2631
+Zombie	54
+Zombie pirate	13492
+Zombie rat	3969
+Zombie swab	619
+Zombies&	3359
+Zombified Spawn	8063
+Zulrah	2042
+Zygomite	1024
