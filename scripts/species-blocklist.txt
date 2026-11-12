@@ -1,0 +1,8 @@
+# Names that gen-species.py must never bundle. One lowercase name per line, # starts a comment.
+# A row is skipped when its cleaned name or cleaned page name matches a line.
+snelmlover500
+durial321
+xx i db0w i xx
+rat boss test npc
+a corpse
+a doubt

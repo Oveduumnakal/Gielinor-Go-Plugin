@@ -10,6 +10,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -164,6 +167,32 @@ public class GameDataTest
 		assertEquals("east-ardougne", table.at(2660, 3300, 0).id());
 		assertNull("upstairs is not the city floor", table.at(3222, 3218, 1));
 		assertNull("the Wilderness has no champion", table.at(3100, 3800, 0));
+	}
+
+	@Test
+	public void theBlocklistIsNotEmpty() throws IOException
+	{
+		assertFalse("scripts/species-blocklist.txt has no names", blockedNames().isEmpty());
+	}
+
+	@Test
+	public void noBlockedSpeciesIsBundled() throws IOException
+	{
+		for (String name : blockedNames())
+			assertNull(name + " is blocked but still bundled", species.find(name));
+	}
+
+	private static List<String> blockedNames() throws IOException
+	{
+		List<String> names = new ArrayList<>();
+		for (String line : Files.readAllLines(Paths.get("scripts", "species-blocklist.txt"), StandardCharsets.UTF_8))
+		{
+			String name = line.split("#", 2)[0].trim();
+			if (!name.isEmpty())
+				names.add(name);
+		}
+
+		return names;
 	}
 
 	private static Reader open(String resource)
