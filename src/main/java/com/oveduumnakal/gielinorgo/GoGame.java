@@ -119,6 +119,7 @@ final class GoGame
 	private EliteTable elite = EliteTable.empty();
 	private EliteRun run;
 	private boolean atGuild;
+	private boolean bankNear;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -319,6 +320,26 @@ final class GoGame
 
 		cityId = id;
 		return true;
+	}
+
+	/**
+	 * Tells the game whether a bank is near the player, so the team may be changed there.
+	 *
+	 * @param near true when a banker, bank booth or bank chest is within {@link BankSpots#NEAR_TILES} tiles
+	 */
+	void setBankNear(boolean near)
+	{
+		bankNear = near;
+	}
+
+	/** @return whether the team may be changed here; otherwise the player is told where to go */
+	private boolean mayChangeTeam()
+	{
+		if (TeamSwapRule.allowed(cityId != null, bankNear))
+			return true;
+
+		tell(TeamSwapRule.REFUSAL, Tone.BAD);
+		return false;
 	}
 
 	/**
@@ -889,6 +910,9 @@ final class GoGame
 		if (eliteBusy())
 			return;
 
+		if (!mayChangeTeam())
+			return;
+
 		if (teamIndex < 0 || teamIndex >= data.team.size())
 			return;
 
@@ -910,6 +934,9 @@ final class GoGame
 	void moveToTeam(int storageIndex)
 	{
 		if (eliteBusy())
+			return;
+
+		if (!mayChangeTeam())
 			return;
 
 		if (storageIndex < 0 || storageIndex >= data.storage.size())

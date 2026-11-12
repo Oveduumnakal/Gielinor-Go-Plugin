@@ -321,6 +321,11 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
   you can challenge. The top of the Log tab shows what is featured today and which event is on.
 
+  You can move a creature between your team and Storage only inside a city (any City Champion's area) or within
+  10 tiles of a banker, a bank booth or a bank chest. Anywhere else the panel says "Go to a city or a bank to change
+  your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
+  your team is full, a creature you receive in a trade, a hatched egg and releasing a stored creature.
+
 ## Links
 
 - [Report a bug](https://github.com/Oveduumnakal/Gielinor-Go-Plugin/issues/new?template=bug_report.yml)
