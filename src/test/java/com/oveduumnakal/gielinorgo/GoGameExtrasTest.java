@@ -29,6 +29,7 @@ public class GoGameExtrasTest
 	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
 
 	private final List<String> messages = new ArrayList<>();
+	private final List<Notice> notices = new ArrayList<>();
 	private long now = 1_000_000L;
 	private GoGame game;
 
@@ -45,7 +46,11 @@ public class GoGameExtrasTest
 			new Champion.Member("Chicken", 4)), JarType.IRON, 3);
 		ChampionTable champions = new ChampionTable(Arrays.asList(lumbridge), table);
 		game = new GoGame(table, evolutions, champions, new Random(5), () -> now,
-			notice -> messages.add(notice.text()));
+			notice ->
+			{
+				messages.add(notice.text());
+				notices.add(notice);
+			});
 	}
 
 	@Test
@@ -229,6 +234,7 @@ public class GoGameExtrasTest
 		assertEquals(xpBefore + 105, lead().xp);
 		assertTrue(messages.contains("Sigil of Lumbridge earned!"));
 		assertTrue(messages.contains("+3 Iron jars (champion)"));
+		assertEquals(JarType.IRON, noticeOf("+3 Iron jars (champion)").jar());
 		ChampionView view = champion();
 		assertTrue(view.beaten());
 		assertEquals("Chicken 2, Imp 3, Chicken 4", view.team());
@@ -265,6 +271,17 @@ public class GoGameExtrasTest
 		assertEquals(0.0, healthOf(1), 0);
 		assertNull("a team with no health cannot challenge", game.challenge("lumbridge"));
 		assertTrue(messages.contains("Your team is too tired"));
+	}
+
+	private Notice noticeOf(String text)
+	{
+		for (Notice notice : notices)
+		{
+			if (notice.text().equals(text))
+				return notice;
+		}
+
+		throw new AssertionError("no notice said: " + text);
 	}
 
 	private Creature lead()

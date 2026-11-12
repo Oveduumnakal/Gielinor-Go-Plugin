@@ -161,6 +161,7 @@ public class GielinorGoPlugin extends Plugin
 	private PortraitService portraits;
 	private FollowerService follower;
 	private CatchEffects effects;
+	private JarFlightOverlay jarFlight;
 	private BattleStage stage;
 	private FriendBattles friends;
 	private FriendTrades trades;
@@ -210,6 +211,8 @@ public class GielinorGoPlugin extends Plugin
 		overlayManager.add(followerTag);
 		effects = new CatchEffects(client);
 		renderCallbackManager.register(effects);
+		jarFlight = new JarFlightOverlay(client);
+		overlayManager.add(jarFlight);
 		stage = new BattleStage(client, follower, animations);
 		renderCallbackManager.register(stage);
 		panel = new GoPanel(panelActions(), portraits);
@@ -233,6 +236,8 @@ public class GielinorGoPlugin extends Plugin
 		renderCallbackManager.unregister(effects);
 		renderCallbackManager.unregister(stage);
 		clientThread.invoke(effects::clear);
+		clientThread.invoke(jarFlight::clear);
+		overlayManager.remove(jarFlight);
 		wsClient.unregisterMessage(GielinorGoPartyMessage.class);
 		overlayManager.remove(wildOverlay);
 		overlayManager.remove(floatingText);
@@ -305,6 +310,7 @@ public class GielinorGoPlugin extends Plugin
 		stage.clear();
 		follower.hide();
 		effects.clear();
+		jarFlight.clear();
 		tracker.clear();
 		candidates.clear();
 		stepCounter.reset();
@@ -409,6 +415,7 @@ public class GielinorGoPlugin extends Plugin
 	public void onClientTick(ClientTick event)
 	{
 		effects.clientTick();
+		jarFlight.clientTick();
 		if (!loaded)
 			return;
 
@@ -998,7 +1005,7 @@ public class GielinorGoPlugin extends Plugin
 		if (outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED)
 			tracker.remove(npcIndex, System.currentTimeMillis());
 
-		showCatch(outcome, npcIndex);
+		showCatch(outcome, npcIndex, jar);
 		refreshPanel();
 	}
 
@@ -1008,8 +1015,9 @@ public class GielinorGoPlugin extends Plugin
 	 *
 	 * @param outcome what the throw led to
 	 * @param npcIndex the game's index for the monster thrown at
+	 * @param jar the jar that was thrown
 	 */
-	private void showCatch(CatchOutcome outcome, int npcIndex)
+	private void showCatch(CatchOutcome outcome, int npcIndex, JarType jar)
 	{
 		boolean thrown = outcome != CatchOutcome.NO_JARS && outcome != CatchOutcome.FULL;
 		if (!thrown)
@@ -1020,7 +1028,10 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		if (effects.throwJar())
+		{
 			effects.react(outcome);
+			jarFlight.start(jar, candidates.get(npcIndex));
+		}
 
 		if (outcome == CatchOutcome.CAUGHT)
 			effects.vanish(candidates.get(npcIndex));
