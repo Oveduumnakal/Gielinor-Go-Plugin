@@ -30,6 +30,12 @@ AQUATIC_WORDS = re.compile(
     r"dagannoth|lobstrosity|leech|squid|octopus|whirlpool|mogre|newt|penguin|seagull|river|troll fisher|"
     r"wave|tempoross|hydra|crocodile|ammonite|pirate|mermaid|merfolk|ray|eels|snail|sea snake|sea troll)\b",
     re.I)
+# A melee species whose wiki attack styles list a breath attack also fights with a second style now and then: magic,
+# on this share of its hits. The wiki lists "Dragonfire" for the dragons and "Icy breath" for the wyverns. The primary
+# style stays as it is, so this adds to the battle sim and does not replace the style.
+BREATH_STYLES = ("dragonfire", "icy breath")
+SECOND_STYLE = "MAGIC"
+SECOND_CHANCE = 0.25
 TRAIT_ORDER = ("FAST", "UNHOLY", "FIERY", "LARGE", "POISONOUS", "SLAYER", "AQUATIC")
 
 
@@ -51,6 +57,14 @@ def style_of(styles):
     if "range" in first or "ranging" in first:
         return "RANGED"
     return "MELEE"
+
+
+def second_style_of(style, row):
+    """Returns (second style, chance of using it per hit), or None when the species has no second style."""
+    listed = " ".join(str(a).lower() for a in as_list(row.get("attack_style")))
+    if style == "MELEE" and any(word in listed for word in BREATH_STYLES):
+        return SECOND_STYLE, SECOND_CHANCE
+    return None
 
 
 def as_list(value):
@@ -109,8 +123,10 @@ def clean_name(name):
 
 
 def record(entry):
-    name, level, style, traits, ids = entry
+    name, level, style, traits, ids, second = entry
     data = {"name": name, "level": level, "style": style}
+    if second:
+        data["secondStyle"], data["secondChance"] = second
     if traits:
         data["traits"] = traits
     if ids:
@@ -148,7 +164,8 @@ def main():
             continue
         key = name.lower()
         if key not in best or level > best[key][1]:
-            best[key] = (name, level, style_of(row.get("attack_style")), traits_of(name, row), ids_of(row))
+            best[key] = (name, level, style_of(row.get("attack_style")), traits_of(name, row), ids_of(row),
+                           second_style_of(style_of(row.get("attack_style")), row))
     entries = sorted(best.values(), key=lambda e: e[0].lower())
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("[\n")

@@ -12,12 +12,16 @@ import java.util.List;
 
 /**
  * Keeps track of the floating lines that are on screen. A line shows for a few seconds and then drops off. Battle
- * lines wait in a queue and come out one per game tick. Knows nothing about drawing, so the timing can be tested.
+ * lines wait in a queue and come out one every {@link #LINE_TICKS} game ticks. Knows nothing about drawing, so the
+ * timing can be tested.
  */
 final class NoticeBoard
 {
 	/** How long a line stays on screen, in milliseconds. */
 	static final long LIFE_MS = 3_500L;
+
+	/** Game ticks between two battle lines. */
+	static final int LINE_TICKS = 3;
 
 	/** Most lines floating over one head at once. */
 	static final int MAX_PER_HEAD = 4;
@@ -54,6 +58,8 @@ final class NoticeBoard
 
 	private final List<Shown> shown = new ArrayList<>();
 	private final Deque<Notice> queued = new ArrayDeque<>();
+	private final List<Notice> held = new ArrayList<>();
+	private int wait;
 
 	/**
 	 * Shows a line straight away. When its head already has {@link #MAX_PER_HEAD} lines, the oldest one goes.
@@ -84,7 +90,7 @@ final class NoticeBoard
 	}
 
 	/**
-	 * Queues lines for playback, one per call to {@link #tick(long)}.
+	 * Queues lines for playback, one every {@link #LINE_TICKS} calls to {@link #tick(long)}.
 	 *
 	 * @param notices the lines, in order
 	 */
@@ -94,22 +100,67 @@ final class NoticeBoard
 	}
 
 	/**
-	 * Shows the next queued line, if there is one. Called once per game tick.
+	 * Adds a battle's lines behind whatever is already waiting. They are held back, in one ordered list, while a
+	 * battle is acted out on screen ({@code staged}) or while an earlier battle's lines are still held, so a second
+	 * battle never jumps ahead of the first. Otherwise they go straight into the queue.
+	 *
+	 * @param notices the lines, in order
+	 * @param staged whether this battle is acted out on screen, so its lines wait for {@link #release()}
+	 */
+	void enqueue(List<Notice> notices, boolean staged)
+	{
+		if (staged || !held.isEmpty())
+			held.addAll(notices);
+		else
+			queue(notices);
+	}
+
+	/** @return whether lines are being held back for a battle that is acted out on screen */
+	boolean holding()
+	{
+		return !held.isEmpty();
+	}
+
+	/** Moves every held line into the queue, in order. */
+	void release()
+	{
+		queue(held);
+		held.clear();
+	}
+
+	/**
+	 * Shows the next queued line when one is due. Called once per game tick. The first line of a queue that arrives
+	 * once the previous one has finished shows at once; the next one {@link #LINE_TICKS} ticks later.
 	 *
 	 * @param nowMs the current wall-clock time in milliseconds
 	 */
 	void tick(long nowMs)
 	{
+		if (queued.isEmpty())
+		{
+			wait = 0;
+			return;
+		}
+
+		if (wait > 0)
+		{
+			wait--;
+			return;
+		}
+
 		Notice next = queued.poll();
-		if (next != null)
-			show(next, nowMs);
+
+		show(next, nowMs);
+		wait = LINE_TICKS - 1;
 	}
 
-	/** Removes every line, shown or queued. */
+	/** Removes every line, shown, queued or held. */
 	void clear()
 	{
 		shown.clear();
 		queued.clear();
+		held.clear();
+		wait = 0;
 	}
 
 	/**

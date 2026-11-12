@@ -39,6 +39,51 @@ final class GoGame
 	/** Most evolutions one creature can go through in a single burst of XP. */
 	private static final int MAX_EVOLUTIONS_AT_ONCE = 5;
 
+	/**
+	 * What open trades hold back. A creature or egg promised in a trade cannot be released or hatched, and the
+	 * room a trade will need is not given to anything else.
+	 */
+	interface TradeLocks
+	{
+		/**
+		 * Reports whether a creature is promised in a trade.
+		 *
+		 * @param creature the creature
+		 * @return true while it cannot be released
+		 */
+		default boolean locked(Creature creature)
+		{
+			return false;
+		}
+
+		/**
+		 * Reports whether an egg is promised in a trade.
+		 *
+		 * @param egg the egg
+		 * @return true while it cannot hatch
+		 */
+		default boolean locked(Egg egg)
+		{
+			return false;
+		}
+
+		/** @return creature slots, in the team and storage together, that open trades will need */
+		default int reservedCreatureSlots()
+		{
+			return 0;
+		}
+
+		/** @return egg slots that open trades will need */
+		default int reservedEggSlots()
+		{
+			return 0;
+		}
+	}
+
+	private static final TradeLocks NO_LOCKS = new TradeLocks()
+	{
+	};
+
 	private final SpeciesTable species;
 	private final EvolutionTable evolutions;
 	private final ChampionTable champions;
@@ -50,6 +95,7 @@ final class GoGame
 	private long xpCarry;
 	private boolean dirty;
 	private String cityId;
+	private TradeLocks tradeLocks = NO_LOCKS;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -195,6 +241,9 @@ final class GoGame
 			boolean wasReady = egg.tilesLeft <= 0;
 			egg.tilesLeft = Math.max(0, egg.tilesLeft - tiles);
 			if (egg.tilesLeft > 0)
+				continue;
+
+			if (tradeLocks.locked(egg))
 				continue;
 
 			if (hatch(egg))
@@ -382,7 +431,7 @@ final class GoGame
 			return CatchOutcome.NO_JARS;
 		}
 
-		if (data.team.size() >= SaveData.TEAM_SIZE && data.storage.size() >= SaveData.STORAGE_SIZE)
+		if (!hasRoomForCreature())
 		{
 			tell("Storage is full", Tone.BAD);
 			return CatchOutcome.FULL;
@@ -522,6 +571,12 @@ final class GoGame
 		if (storageIndex < 0 || storageIndex >= data.storage.size())
 			return;
 
+		if (tradeLocks.locked(data.storage.get(storageIndex)))
+		{
+			tell(nameOf(data.storage.get(storageIndex)) + " is promised in a trade", Tone.BAD);
+			return;
+		}
+
 		Creature released = data.storage.remove(storageIndex);
 		dirty = true;
 		tell("Released " + nameOf(released), Tone.INFO);
@@ -539,6 +594,106 @@ final class GoGame
 
 		data.selectedJar = type.name();
 		dirty = true;
+	}
+
+	/**
+	 * Checks that a creature is still the player's, for a trade that was offered a while ago.
+	 *
+	 * @param creature the creature
+	 * @return true when it is on the team or in storage
+	 */
+	boolean owns(Creature creature)
+	{
+		return data.team.contains(creature) || data.storage.contains(creature);
+	}
+
+	/**
+	 * Checks that an egg is still the player's.
+	 *
+	 * @param egg the egg
+	 * @return true when the player still carries it
+	 */
+	boolean owns(Egg egg)
+	{
+		return data.eggs.contains(egg);
+	}
+
+	/**
+	 * Connects the game to the trades that hold things back.
+	 *
+	 * @param locks the open trades, or null for none
+	 */
+	void tradeLocks(TradeLocks locks)
+	{
+		tradeLocks = locks == null ? NO_LOCKS : locks;
+	}
+
+	/** @return whether the team or the storage can take one more creature, past the room trades will need */
+	boolean hasRoomForCreature()
+	{
+		int free = SaveData.TEAM_SIZE - data.team.size() + SaveData.STORAGE_SIZE - data.storage.size();
+		return free > tradeLocks.reservedCreatureSlots();
+	}
+
+	/** @return whether the player can carry one more egg, past the room trades will need */
+	boolean hasRoomForEgg()
+	{
+		return data.eggs.size() + tradeLocks.reservedEggSlots() < SaveData.MAX_EGGS;
+	}
+
+	/**
+	 * Takes a creature out of the save, for a trade.
+	 *
+	 * @param creature the creature to give away
+	 */
+	void giveAway(Creature creature)
+	{
+		if (data.team.remove(creature) || data.storage.remove(creature))
+			dirty = true;
+	}
+
+	/**
+	 * Takes an egg out of the save, for a trade.
+	 *
+	 * @param egg the egg to give away
+	 */
+	void giveAway(Egg egg)
+	{
+		if (data.eggs.remove(egg))
+			dirty = true;
+	}
+
+	/**
+	 * Adds a creature that came from a trade, to the team when it has room and otherwise to storage. It counts in
+	 * the Creature Log like a catch.
+	 *
+	 * @param creature the creature received
+	 * @return false, changing nothing, when the team and the storage are both full
+	 */
+	boolean receive(Creature creature)
+	{
+		if (!hasRoomForCreature())
+			return false;
+
+		keep(creature);
+		recordOwned(creature);
+		return true;
+	}
+
+	/**
+	 * Adds an egg that came from a trade.
+	 *
+	 * @param egg the egg received
+	 * @return false, changing nothing, when the player already carries {@link SaveData#MAX_EGGS} eggs
+	 */
+	boolean receive(Egg egg)
+	{
+		if (!hasRoomForEgg())
+			return false;
+
+		data.eggs.add(egg);
+		dirty = true;
+		return true;
 	}
 
 	/** @return a copy of everything the side panel shows, safe to hand to the UI thread */
@@ -599,7 +754,7 @@ final class GoGame
 	 */
 	private boolean hatch(Egg egg)
 	{
-		if (data.team.size() >= SaveData.TEAM_SIZE && data.storage.size() >= SaveData.STORAGE_SIZE)
+		if (!hasRoomForCreature())
 			return false;
 
 		List<Species> pool = new ArrayList<>();
@@ -700,7 +855,7 @@ final class GoGame
 			tell("+1 " + drop.label() + " jar (battle win)", Tone.FIND);
 		}
 
-		if (data.eggs.size() >= SaveData.MAX_EGGS || random.nextDouble() >= EGG_DROP_CHANCE)
+		if (!hasRoomForEgg() || random.nextDouble() >= EGG_DROP_CHANCE)
 			return;
 
 		Rarity rarity = entry.species().rarity();

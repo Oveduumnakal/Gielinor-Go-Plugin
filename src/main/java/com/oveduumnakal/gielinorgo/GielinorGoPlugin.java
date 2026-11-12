@@ -39,6 +39,7 @@ import net.runelite.api.Skill;
 import net.runelite.api.WorldType;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.MenuOpened;
@@ -47,9 +48,16 @@ import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.callback.ClientThread;
+import net.runelite.client.callback.RenderCallbackManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.PartyChanged;
 import net.runelite.client.events.RuneScapeProfileChanged;
+import net.runelite.client.party.PartyMember;
+import net.runelite.client.party.PartyService;
+import net.runelite.client.party.WSClient;
+import net.runelite.client.party.events.UserJoin;
+import net.runelite.client.party.events.UserPart;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -61,14 +69,17 @@ import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.Text;
 
 /**
- * Entry point: watches monsters, XP drops and steps in the real game and feeds them to {@link GoGame}. Everything
- * the plugin does stays on this computer. Its menu options are client-side only and send nothing to the game.
+ * Entry point: watches monsters, XP drops and steps in the real game and feeds them to {@link GoGame}. Its menu
+ * options and its follower are client-side only and send nothing to the game. The only things that leave this
+ * computer are creatures and eggs: the team, the eggs carried and whatever is put in a trade, sent through
+ * RuneLite's party service to the people in the player's own party so friends can battle and trade.
  */
 @PluginDescriptor(
 	name = "Gielinor Go",
 	description = "A creature-raising side game: catch wild monsters, train them with your own XP gains, and win"
 		+ " auto-battles while you play",
-	tags = {"creature", "catch", "collect", "battle", "train", "team", "minigame", "fun", "monster"}
+	tags = {"creature", "catch", "collect", "battle", "train", "team", "minigame", "fun", "monster", "follower",
+		"pet", "party"}
 )
 public class GielinorGoPlugin extends Plugin
 {
@@ -85,6 +96,18 @@ public class GielinorGoPlugin extends Plugin
 
 	/** Most battle log lines played back on screen. */
 	private static final int BATTLE_LINES = 6;
+
+	/** Game ticks between two hellos to the party, so a burst of people joining is answered once. */
+	private static final int HELLO_TICKS = 5;
+
+	/** Game ticks between hellos sent just to keep friends' view of the team fresh: five minutes. */
+	private static final int HELLO_REFRESH_TICKS = 500;
+
+	/** Longest name a player can have in the game. */
+	private static final int MAX_NAME_LENGTH = 12;
+
+	/** What a party member is called until the party service knows their name. */
+	private static final String UNNAMED_FRIEND = "your friend";
 
 	@Inject
 	private Client client;
@@ -110,6 +133,15 @@ public class GielinorGoPlugin extends Plugin
 	@Inject
 	private Gson gson;
 
+	@Inject
+	private RenderCallbackManager renderCallbackManager;
+
+	@Inject
+	private PartyService partyService;
+
+	@Inject
+	private WSClient wsClient;
+
 	private final Random random = new Random();
 	private final Map<Integer, NPC> candidates = new HashMap<>();
 	private final Map<Skill, Integer> lastXp = new EnumMap<>(Skill.class);
@@ -124,6 +156,15 @@ public class GielinorGoPlugin extends Plugin
 	private FloatingTextOverlay floatingText;
 	private GoPanel panel;
 	private PortraitService portraits;
+	private FollowerService follower;
+	private CatchEffects effects;
+	private BattleStage stage;
+	private FriendBattles friends;
+	private FriendTrades trades;
+	private final MessageRate partyRate = new MessageRate();
+	private boolean helloDue;
+	private boolean helloAsksBack;
+	private int lastHelloTick;
 	private NavigationButton navButton;
 	private boolean loaded;
 	private boolean unsaved;
@@ -148,12 +189,24 @@ public class GielinorGoPlugin extends Plugin
 		SpeciesTable species = loadSpecies();
 		game = new GoGame(species, loadEvolutions(species), loadChampions(species), random,
 			System::currentTimeMillis, this::announce);
+		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce);
+		trades = new FriendTrades(species, game, random, System::currentTimeMillis, this::sendToParty,
+			this::announce);
+		game.tradeLocks(trades);
+		wsClient.registerMessage(GielinorGoPartyMessage.class);
+		lastHelloTick = -HELLO_TICKS;
 		persistence = new GoPersistence(configManager, gson);
 		wildOverlay = new WildOverlay(this, config, outlineRenderer);
 		floatingText = new FloatingTextOverlay(client, this, noticeBoard);
 		overlayManager.add(wildOverlay);
 		overlayManager.add(floatingText);
 		portraits = new PortraitService(client, clientThread, game::speciesFor);
+		AnimationTable animations = loadAnimations();
+		follower = new FollowerService(client, animations, game::speciesFor);
+		effects = new CatchEffects(client);
+		renderCallbackManager.register(effects);
+		stage = new BattleStage(client, follower, animations);
+		renderCallbackManager.register(stage);
 		panel = new GoPanel(panelActions(), portraits);
 		BufferedImage icon = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
 		navButton = NavigationButton.builder()
@@ -170,6 +223,12 @@ public class GielinorGoPlugin extends Plugin
 	protected void shutDown()
 	{
 		clientThread.invoke(this::saveNow);
+		clientThread.invoke(stage::clear);
+		clientThread.invoke(follower::remove);
+		renderCallbackManager.unregister(effects);
+		renderCallbackManager.unregister(stage);
+		clientThread.invoke(effects::clear);
+		wsClient.unregisterMessage(GielinorGoPartyMessage.class);
 		overlayManager.remove(wildOverlay);
 		overlayManager.remove(floatingText);
 		noticeBoard.clear();
@@ -200,6 +259,15 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
+	 * @param npc a monster
+	 * @return whether a battle is acted out in its place, so it is hidden and must not be outlined
+	 */
+	boolean isStaged(NPC npc)
+	{
+		return stage.isStaged(npc);
+	}
+
+	/**
 	 * Loads the right save whenever the logged-in account changes.
 	 *
 	 * @param event the profile change
@@ -226,6 +294,10 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		saveNow();
+		trades.clear();
+		stage.clear();
+		follower.hide();
+		effects.clear();
 		tracker.clear();
 		candidates.clear();
 		stepCounter.reset();
@@ -262,8 +334,10 @@ public class GielinorGoPlugin extends Plugin
 	public void onNpcDespawned(NpcDespawned event)
 	{
 		int index = event.getNpc().getIndex();
+		effects.forget(event.getNpc());
+		stage.forget(event.getNpc());
 		candidates.remove(index);
-		tracker.remove(index);
+		tracker.leftView(index, System.currentTimeMillis());
 	}
 
 	/**
@@ -298,11 +372,14 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		ticks++;
+		battleScene();
 		noticeBoard.tick(System.currentTimeMillis());
 		portraits.tick();
 		countSteps();
+		updateFollower();
+		greetParty();
 		if (!playable())
-			tracker.clear();
+			tracker.clearWild(System.currentTimeMillis());
 		else if (ticks % REROLL_TICKS == 0)
 			offerRandomCandidate();
 
@@ -313,6 +390,68 @@ public class GielinorGoPlugin extends Plugin
 
 		if (unsaved && ticks % SAVE_TICKS == 0)
 			saveNow();
+	}
+
+	/**
+	 * Moves the follower and the catch effects on a little. Client ticks come 50 times a second, so both are
+	 * smooth.
+	 *
+	 * @param event the client tick
+	 */
+	@Subscribe
+	public void onClientTick(ClientTick event)
+	{
+		effects.clientTick();
+		if (!loaded)
+			return;
+
+		follower.clientTick();
+		stage.clientTick();
+	}
+
+	/**
+	 * Handles a message another Gielinor Go player sent through the party. Party messages arrive on a network
+	 * thread, so the work is handed to the game thread.
+	 *
+	 * @param message the message
+	 */
+	@Subscribe
+	public void onGielinorGoPartyMessage(GielinorGoPartyMessage message)
+	{
+		clientThread.invoke(() -> receiveFromParty(message));
+	}
+
+	/**
+	 * Says hello when someone joins the party, so they learn that this player plays too.
+	 *
+	 * @param event the member who joined
+	 */
+	@Subscribe
+	public void onUserJoin(UserJoin event)
+	{
+		clientThread.invoke(this::queueHello);
+	}
+
+	/**
+	 * Forgets a friend who left the party.
+	 *
+	 * @param event the member who left
+	 */
+	@Subscribe
+	public void onUserPart(UserPart event)
+	{
+		clientThread.invoke(() -> forgetFriend(event.getMemberId()));
+	}
+
+	/**
+	 * Starts over with nobody known when the player joins or leaves a party.
+	 *
+	 * @param event the party change
+	 */
+	@Subscribe
+	public void onPartyChanged(PartyChanged event)
+	{
+		clientThread.invoke(this::forgetParty);
 	}
 
 	/**
@@ -416,6 +555,25 @@ public class GielinorGoPlugin extends Plugin
 		}
 	}
 
+	private AnimationTable loadAnimations()
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(AnimationTable.RESOURCE))
+		{
+			if (in == null)
+				return AnimationTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return AnimationTable.load(gson, reader);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the animation list", e);
+			return AnimationTable.empty();
+		}
+	}
+
 	private void loadSave()
 	{
 		if (configManager.getRSProfileKey() == null)
@@ -423,6 +581,8 @@ public class GielinorGoPlugin extends Plugin
 
 		game.load(persistence.load());
 		loaded = true;
+		helloDue = true;
+		helloAsksBack = true;
 		unsaved = false;
 		tracker.clear();
 		refreshPanel();
@@ -444,8 +604,195 @@ public class GielinorGoPlugin extends Plugin
 	private void refreshPanel()
 	{
 		PanelState state = game.snapshot();
+		FriendsState party = friendsState();
 		GoPanel target = panel;
 		SwingUtilities.invokeLater(() -> target.update(state));
+		SwingUtilities.invokeLater(() -> target.updateFriends(party));
+	}
+
+	/** @return the party members who also play, named as the party service names them */
+	private FriendsState friendsState()
+	{
+		if (!partyService.isInParty())
+			return FriendsState.none();
+
+		Map<Long, String> names = new HashMap<>();
+		for (PartyMember member : partyService.getMembers())
+			names.put(member.getMemberId(), friendName(member));
+
+		List<FriendView> views = new ArrayList<>();
+		for (FriendView view : friends.views(names))
+			views.add(view.withTrade(trades.offerFrom(view.memberId()), trades.waitingOn(view.memberId())));
+
+		return new FriendsState(true, views);
+	}
+
+	/**
+	 * Works out what to call a party member in floating text and on their card.
+	 *
+	 * @param member the party member, or null when they already left
+	 * @return their name in the game without tags, or a stand-in while the party service does not know it
+	 */
+	private static String friendName(PartyMember member)
+	{
+		String raw = member == null ? null : member.getDisplayName();
+		String name = raw == null ? "" : Text.removeTags(raw).trim();
+		if (name.isEmpty() || name.equals("<unknown>"))
+			return UNNAMED_FRIEND;
+
+		return name.length() > MAX_NAME_LENGTH ? name.substring(0, MAX_NAME_LENGTH) : name;
+	}
+
+	private void sendToParty(GielinorGoPartyMessage message)
+	{
+		if (partyService.isInParty())
+			partyService.send(message);
+	}
+
+	private void queueHello()
+	{
+		helloDue = true;
+	}
+
+	/**
+	 * Tells the party this player plays: a few ticks after logging in or after someone joined, and every few
+	 * minutes after that. Also gives up on a challenge nobody answered.
+	 */
+	private void greetParty()
+	{
+		boolean battleExpired = friends.expire();
+		boolean tradeExpired = trades.expire();
+		if (battleExpired || tradeExpired)
+			refreshPanel();
+
+		boolean wanted = friends.takeHelloWanted();
+		boolean traded = trades.takeTraded();
+		if (ticks % HELLO_REFRESH_TICKS == 0 || wanted || traded)
+			helloDue = true;
+
+		if (!helloDue || ticks - lastHelloTick < HELLO_TICKS || !partyService.isInParty())
+			return;
+
+		friends.hello(game.data(), helloAsksBack);
+		helloDue = false;
+		helloAsksBack = false;
+		lastHelloTick = ticks;
+	}
+
+	private void forgetFriend(long memberId)
+	{
+		friends.forget(memberId);
+		trades.forget(memberId);
+		if (loaded)
+			refreshPanel();
+	}
+
+	private void forgetParty()
+	{
+		friends.clear();
+		trades.clear();
+		partyRate.clear();
+		helloDue = true;
+		helloAsksBack = true;
+		if (loaded)
+			refreshPanel();
+	}
+
+	/**
+	 * Acts on a message from another player in the party: notes who plays, and plays out a battle when the
+	 * message starts one.
+	 *
+	 * @param message the message; nothing in it is trusted
+	 */
+	private void receiveFromParty(GielinorGoPartyMessage message)
+	{
+		PartyMember me = partyService.getLocalMember();
+		if (!saveLive() || me == null || message.getMemberId() == me.getMemberId())
+			return;
+
+		if (!partyRate.allow(message.getMemberId(), System.currentTimeMillis()))
+			return;
+
+		String sender = friendName(partyService.getMemberById(message.getMemberId()));
+		heldNotices = new ArrayList<>();
+		try
+		{
+			TeamBattleResult result = friends.receive(message, me.getMemberId(), sender, game.data(),
+				config.friendBattles());
+			boolean changed = friends.takeChanged() | result != null;
+			changed |= trades.receive(message, me.getMemberId(), sender);
+			saveNow();
+			playBack(result == null ? null : result.lines(), Notice.PLAYER);
+			if (changed)
+				refreshPanel();
+		}
+		finally
+		{
+			heldNotices = null;
+		}
+	}
+
+	/**
+	 * Tells whether the player is in the game with a save loaded, so a change to the save will be written. At the
+	 * login screen or while hopping worlds nothing is saved, so no trade may run then.
+	 *
+	 * @return true while logged in (or between two scenes) with the save loaded
+	 */
+	private boolean saveLive()
+	{
+		GameState state = client.getGameState();
+		return loaded && (state == GameState.LOGGED_IN || state == GameState.LOADING);
+	}
+
+	private void challengeFriend(long memberId)
+	{
+		friends.challenge(memberId, friendName(partyService.getMemberById(memberId)), game.data());
+	}
+
+	/**
+	 * Offers a friend a trade the player set up in the panel. What the player picked is matched again against the
+	 * save, because the save may have changed since the panel was drawn; if it no longer matches, nothing is sent.
+	 *
+	 * @param memberId the friend's party member id
+	 * @param give what the player picked to give, as the panel showed it
+	 * @param wantIndex the place of what to ask for in what the friend has shown, or -1 for nothing
+	 * @param wantLabel the label the panel showed at that place
+	 */
+	private void offerTrade(long memberId, TradePick give, int wantIndex, String wantLabel)
+	{
+		SaveData data = game.data();
+		String name = friendName(partyService.getMemberById(memberId));
+		GielinorGoPartyMessage.Item want = null;
+		if (wantIndex >= 0)
+		{
+			want = trades.friendItem(friends.tradeable(memberId), wantIndex, wantLabel);
+			if (want == null)
+			{
+				announce(Notice.player(name + " no longer shows that. Pick again", Tone.BAD));
+				return;
+			}
+		}
+
+		if (!give.matches(game.snapshot()))
+		{
+			announce(Notice.player("What you picked has changed. Pick again", Tone.BAD));
+			return;
+		}
+
+		if (give.from() == Holding.EGG)
+		{
+			trades.offer(memberId, name, data.eggs.get(give.index()), want);
+			return;
+		}
+
+		List<Creature> kept = give.from() == Holding.TEAM ? data.team : data.storage;
+		trades.offer(memberId, name, kept.get(give.index()), want);
+	}
+
+	private void answerTrade(long memberId, boolean accept)
+	{
+		trades.answer(memberId, friendName(partyService.getMemberById(memberId)), accept);
+		saveNow();
 	}
 
 	/**
@@ -486,15 +833,28 @@ public class GielinorGoPlugin extends Plugin
 	private boolean playable()
 	{
 		WorldView view = client.getTopLevelWorldView();
-		if (view == null || view.isInstance())
-			return false;
+		return view != null && !view.isInstance() && !hiddenForPvp();
+	}
 
+	/** @return whether the player is somewhere other players can attack them, with the setting to play there off */
+	private boolean hiddenForPvp()
+	{
 		if (config.enableInPvp())
-			return true;
+			return false;
 
 		Set<WorldType> world = client.getWorldType();
 		boolean pvpWorld = world.contains(WorldType.PVP) || world.contains(WorldType.DEADMAN);
-		return !pvpWorld && client.getVarbitValue(VarbitID.INSIDE_WILDERNESS) == 0;
+		return pvpWorld || client.getVarbitValue(VarbitID.INSIDE_WILDERNESS) != 0;
+	}
+
+	/**
+	 * Tells the follower which creature leads the team and where the player stands. Unlike wild creatures, the
+	 * follower also shows in instances such as the player's house.
+	 */
+	private void updateFollower()
+	{
+		Creature lead = config.showFollower() && !hiddenForPvp() ? game.data().lead() : null;
+		follower.gameTick(lead == null ? null : lead.species, lead != null && lead.gilded);
 	}
 
 	private void offer(NPC npc)
@@ -503,10 +863,14 @@ public class GielinorGoPlugin extends Plugin
 		if (!loaded || species == null || !playable())
 			return;
 
+		long now = System.currentTimeMillis();
+		if (tracker.restore(npc.getIndex(), npc.getId(), now) != null)
+			return;
+
 		WorldPoint point = npc.getWorldLocation();
 		boolean underground = point != null && Terrain.underground(point.getX(), point.getY());
-		WildEntry entry = tracker.offer(npc.getIndex(), species, npc.getCombatLevel(), underground,
-			System.currentTimeMillis(), config.wildChance());
+		WildEntry entry = tracker.offer(npc.getIndex(), npc.getId(), species, npc.getCombatLevel(), underground,
+			now, config.wildChance());
 		if (entry == null)
 			return;
 
@@ -518,11 +882,18 @@ public class GielinorGoPlugin extends Plugin
 
 	private void offerRandomCandidate()
 	{
-		if (candidates.isEmpty())
-			return;
+		long now = System.currentTimeMillis();
+		List<NPC> pool = new ArrayList<>();
+		for (NPC npc : candidates.values())
+		{
+			if (tracker.canRestore(npc.getIndex(), npc.getId(), now))
+				tracker.restore(npc.getIndex(), npc.getId(), now);
+			else if (tracker.mayRoll(npc.getIndex(), npc.getId(), now))
+				pool.add(npc);
+		}
 
-		List<NPC> pool = new ArrayList<>(candidates.values());
-		offer(pool.get(random.nextInt(pool.size())));
+		if (!pool.isEmpty())
+			offer(pool.get(random.nextInt(pool.size())));
 	}
 
 	private void countSteps()
@@ -598,9 +969,32 @@ public class GielinorGoPlugin extends Plugin
 
 		CatchOutcome outcome = game.tryCatch(entry, jar);
 		if (outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED)
-			tracker.remove(npcIndex);
+			tracker.remove(npcIndex, System.currentTimeMillis());
 
+		showCatch(outcome, npcIndex);
 		refreshPanel();
+	}
+
+	/**
+	 * Acts a throw out on screen, when that setting is on: the player throws whenever a jar was really used, and
+	 * a caught creature vanishes and fades back in.
+	 *
+	 * @param outcome what the throw led to
+	 * @param npcIndex the game's index for the monster thrown at
+	 */
+	private void showCatch(CatchOutcome outcome, int npcIndex)
+	{
+		boolean thrown = outcome != CatchOutcome.NO_JARS && outcome != CatchOutcome.FULL;
+		if (!thrown)
+			return;
+
+		stage.forget(candidates.get(npcIndex));
+		if (!config.catchEffects())
+			return;
+
+		effects.throwJar();
+		if (outcome == CatchOutcome.CAUGHT)
+			effects.vanish(candidates.get(npcIndex));
 	}
 
 	private void battle(int npcIndex)
@@ -611,8 +1005,26 @@ public class GielinorGoPlugin extends Plugin
 
 		heldNotices = new ArrayList<>();
 		BattleResult result = game.battle(entry);
-		playBack(result == null ? null : result.summary(BATTLE_LINES), npcIndex);
+		List<BattleLine> lines = result == null ? null : result.summary(BATTLE_LINES);
+		boolean staged = lines != null && config.battleAnimations()
+			&& stage.start(candidates.get(npcIndex), lines, result.won());
+		playBack(lines, npcIndex, staged);
 		refreshPanel();
+	}
+
+	/**
+	 * Moves a battle that is acted out on screen on by one game tick, and lets its text start once the lead creature
+	 * has walked up to the wild one. Called before the floating text moves on, so the first line and the first blow
+	 * come on the same tick. A battle that ends early, or is switched off, lets its text out at once.
+	 */
+	private void battleScene()
+	{
+		if (stage.active() && !config.battleAnimations())
+			stage.clear();
+
+		stage.gameTick();
+		if (noticeBoard.holding() && (stage.fighting() || !stage.active()))
+			noticeBoard.release();
 	}
 
 	private void challenge(String championId)
@@ -630,6 +1042,18 @@ public class GielinorGoPlugin extends Plugin
 	 * @param npcIndex the game's index for the wild creature, or {@link Notice#PLAYER} when there is none
 	 */
 	private void playBack(List<BattleLine> lines, int npcIndex)
+	{
+		playBack(lines, npcIndex, false);
+	}
+
+	/**
+	 * Shows a battle one line per game tick, followed by whatever the game announced while resolving it.
+	 *
+	 * @param lines the battle's lines, or null when no battle started
+	 * @param npcIndex the game's index for the wild creature, or {@link Notice#PLAYER} when there is none
+	 * @param staged whether the battle is acted out on screen, so its lines wait for the lead creature to arrive
+	 */
+	private void playBack(List<BattleLine> lines, int npcIndex, boolean staged)
 	{
 		List<Notice> after = heldNotices;
 		heldNotices = null;
@@ -649,7 +1073,8 @@ public class GielinorGoPlugin extends Plugin
 		}
 
 		queue.addAll(after);
-		noticeBoard.queue(queue);
+		noticeBoard.enqueue(queue, staged);
+
 		if (!config.chatMessages())
 			return;
 
@@ -697,6 +1122,24 @@ public class GielinorGoPlugin extends Plugin
 			{
 				onGameThread(() -> GielinorGoPlugin.this.challenge(championId));
 			}
+
+			@Override
+			public void challengeFriend(long memberId)
+			{
+				onGameThread(() -> GielinorGoPlugin.this.challengeFriend(memberId));
+			}
+
+			@Override
+			public void offerTrade(long memberId, TradePick give, int wantIndex, String wantLabel)
+			{
+				onGameThread(() -> GielinorGoPlugin.this.offerTrade(memberId, give, wantIndex, wantLabel));
+			}
+
+			@Override
+			public void answerTrade(long memberId, boolean accept)
+			{
+				onGameThread(() -> GielinorGoPlugin.this.answerTrade(memberId, accept));
+			}
 		};
 	}
 
@@ -704,7 +1147,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		clientThread.invoke(() ->
 		{
-			if (!loaded)
+			if (!saveLive())
 				return;
 
 			action.run();

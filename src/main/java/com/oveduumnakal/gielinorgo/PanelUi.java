@@ -34,6 +34,12 @@ final class PanelUi
 	 */
 	private static final int HINT_WIDTH = 150;
 
+	/**
+	 * Width the wrapped text of a card is laid out to, in HTML pixels, so it fills the card without running past
+	 * its edge.
+	 */
+	private static final int CARD_TEXT_WIDTH = 140;
+
 	private PanelUi()
 	{
 	}
@@ -78,6 +84,35 @@ final class PanelUi
 		label.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
 		label.setBorder(BorderFactory.createEmptyBorder(6, 8, 2, 8));
 		return label;
+	}
+
+	/**
+	 * Makes a small label for a card whose text wraps instead of running past the card's edge.
+	 *
+	 * @param text the text, shown as written
+	 * @param color the text colour
+	 * @return the label
+	 */
+	static JLabel wrapped(String text, Color color)
+	{
+		JLabel label = new JLabel("<html><div style='width:" + CARD_TEXT_WIDTH + "px'>" + escape(text)
+			+ "</div></html>");
+		label.setFont(FontManager.getRunescapeSmallFont());
+		label.setForeground(color);
+		return label;
+	}
+
+	/**
+	 * Makes text safe to put inside an HTML label, so a name can never be read as markup.
+	 *
+	 * @param text the text
+	 * @return the text with its HTML special characters replaced
+	 */
+	static String escape(String text)
+	{
+		String result = text.replace("&", "&amp;");
+		result = result.replace("<", "&lt;");
+		return result.replace(">", "&gt;");
 	}
 
 	/**

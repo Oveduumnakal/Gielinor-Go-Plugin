@@ -7,7 +7,6 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -23,11 +22,6 @@ import net.runelite.client.ui.FontManager;
 /** One City Champion drawn as a card: city, team, first-win reward, status and a challenge button. */
 final class ChampionCard extends JPanel
 {
-	/**
-	 * Width the wrapped text is laid out to, in HTML pixels. Swing draws an HTML pixel about 1.3 screen pixels
-	 * wide, so this fills the card without running past its edge.
-	 */
-	private static final int TEXT_WIDTH = 140;
 	private static final int STRIPE = 3;
 	private static final Color HERE_COLOR = ColorScheme.PROGRESS_COMPLETE_COLOR;
 
@@ -46,9 +40,8 @@ final class ChampionCard extends JPanel
 		JLabel city = PanelUi.label(view.city(), FontManager.getRunescapeBoldFont(), Color.WHITE);
 		body.add(PanelUi.sides(city, statusLabel(view)));
 		body.add(Box.createVerticalStrut(2));
-		body.add(wrapped(view.team(), FontManager.getRunescapeSmallFont(), ColorScheme.LIGHT_GRAY_COLOR));
-		body.add(wrapped("First win: " + view.reward(), FontManager.getRunescapeSmallFont(),
-			ColorScheme.MEDIUM_GRAY_COLOR));
+		body.add(PanelUi.wrapped(view.team(), ColorScheme.LIGHT_GRAY_COLOR));
+		body.add(PanelUi.wrapped("First win: " + view.reward(), ColorScheme.MEDIUM_GRAY_COLOR));
 		if (view.here())
 		{
 			JButton button = PanelUi.button(view.beaten() ? "Rematch" : "Challenge",
@@ -70,14 +63,6 @@ final class ChampionCard extends JPanel
 		add(body, BorderLayout.CENTER);
 	}
 
-	private static JLabel wrapped(String text, Font font, Color color)
-	{
-		JLabel label = new JLabel("<html><div style='width:" + TEXT_WIDTH + "px'>" + escape(text) + "</div></html>");
-		label.setFont(font);
-		label.setForeground(color);
-		return label;
-	}
-
 	/**
 	 * Makes the short status shown beside the city name.
 	 *
@@ -93,12 +78,5 @@ final class ChampionCard extends JPanel
 			return PanelUi.label("Here", FontManager.getRunescapeSmallFont(), HERE_COLOR);
 
 		return PanelUi.caption("");
-	}
-
-	private static String escape(String text)
-	{
-		String result = text.replace("&", "&amp;");
-		result = result.replace("<", "&lt;");
-		return result.replace(">", "&gt;");
 	}
 }

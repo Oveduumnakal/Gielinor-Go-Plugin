@@ -1,0 +1,446 @@
+/*
+ * Copyright (c) 2026, Oveduumnakal
+ * All rights reserved.
+ */
+package com.oveduumnakal.gielinorgo;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
+import com.google.gson.Gson;
+import org.junit.Before;
+import org.junit.Test;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+/** Plays friend battles between two players whose messages are handed to each other by the test. */
+public class FriendBattlesTest
+{
+	private static final long ANN = 11L;
+	private static final long BOB = 22L;
+	private static final long CAT = 33L;
+	private static final Species IMP = new Species("Imp", 7, CombatType.MELEE);
+	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.MELEE);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
+
+	private final SpeciesTable table = new SpeciesTable(Arrays.asList(IMP, CHICKEN, DRAGON));
+	private final List<GielinorGoPartyMessage> fromAnn = new ArrayList<>();
+	private final List<GielinorGoPartyMessage> fromBob = new ArrayList<>();
+	private final List<String> annTold = new ArrayList<>();
+	private final List<String> bobTold = new ArrayList<>();
+	private final SaveData annData = SaveData.fresh();
+	private final SaveData bobData = SaveData.fresh();
+	private long now = 1_000_000L;
+	private FriendBattles ann;
+	private FriendBattles bob;
+
+	@Before
+	public void setUp()
+	{
+		ann = new FriendBattles(table, new Random(1), () -> now, message -> fromAnn.add(sentBy(message, ANN)),
+			notice -> annTold.add(notice.text()));
+		bob = new FriendBattles(table, new Random(2), () -> now, message -> fromBob.add(sentBy(message, BOB)),
+			notice -> bobTold.add(notice.text()));
+		annData.team.add(new Creature("king black dragon", 60, now));
+		annData.team.add(new Creature("imp", 10, now));
+		bobData.team.add(new Creature("chicken", 5, now));
+		bobData.team.add(new Creature("imp", 12, now));
+	}
+
+	@Test
+	public void aHelloIntroducesAPlayerAndIsOwedOneBack()
+	{
+		ann.hello(annData, false);
+		assertNull(bob.receive(last(fromAnn), BOB, "Ann", bobData, true));
+
+		List<FriendView> friends = bob.views(names());
+		assertEquals(1, friends.size());
+		assertEquals(ANN, friends.get(0).memberId());
+		assertEquals("Ann", friends.get(0).name());
+		assertEquals("King Black Dragon 60, Imp 10", friends.get(0).team());
+		assertTrue(friends.get(0).challengeable());
+		assertFalse(friends.get(0).waiting());
+		assertTrue(bob.takeHelloWanted());
+		assertFalse(bob.takeHelloWanted());
+	}
+
+	@Test
+	public void aSecondHelloIsOnlyAnsweredWhenItAsks()
+	{
+		meet();
+
+		ann.hello(annData, false);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+		assertFalse(bob.takeHelloWanted());
+
+		ann.hello(annData, true);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+		assertTrue(bob.takeHelloWanted());
+	}
+
+	@Test
+	public void aFriendWhoLeftThePartyIsNotListed()
+	{
+		meet();
+
+		assertTrue(bob.views(Collections.emptyMap()).isEmpty());
+		bob.forget(ANN);
+		assertTrue(bob.views(names()).isEmpty());
+	}
+
+	@Test
+	public void bothPlayersSeeTheSameBattleFromTheirOwnSide()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		assertEquals("Challenged Bob!", last(annTold));
+		assertTrue(annWaitsForBob());
+
+		TeamBattleResult bobSaw = bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+		assertNotNull(bobSaw);
+		assertEquals(GielinorGoPartyMessage.ACCEPT, last(fromBob).kind());
+		TeamBattleResult annSaw = ann.receive(last(fromBob), ANN, "Bob", annData, true);
+		assertNotNull(annSaw);
+
+		assertTrue("a level 60 dragon should beat a chicken and an imp", annSaw.won());
+		assertFalse(bobSaw.won());
+		List<String> annRead = texts(annSaw);
+		List<String> bobRead = texts(bobSaw);
+		assertEquals(annRead.size(), bobRead.size());
+		assertEquals("Battle with Bob!", annRead.get(0));
+		assertEquals("Battle with Ann!", bobRead.get(0));
+		assertEquals("Your King Black Dragon beat Bob's Chicken (Lv 5)", annRead.get(1));
+		assertEquals("Your Chicken lost to Ann's King Black Dragon (Lv 60)", bobRead.get(1));
+		assertEquals("You beat Bob!", last(annRead));
+		assertEquals("Ann won this one", last(bobRead));
+		assertFalse(annWaitsForBob());
+	}
+
+	@Test
+	public void bothPlayersSeeTheSameBattleWhenADragonBreathes()
+	{
+		Species green = new Species("Green dragon", 88, CombatType.MELEE).withSecondStyle(CombatType.MAGIC, 0.5);
+		SpeciesTable dragons = new SpeciesTable(Arrays.asList(IMP, CHICKEN, green));
+		annData.team.clear();
+		bobData.team.clear();
+		annData.team.add(new Creature("green dragon", 50, now));
+		bobData.team.add(new Creature("green dragon", 50, now));
+		int annWins = 0;
+
+		for (int seed = 1; seed <= 40; seed++)
+		{
+			fromAnn.clear();
+			fromBob.clear();
+			ann = new FriendBattles(dragons, new Random(seed), () -> now, message -> fromAnn.add(sentBy(message, ANN)),
+				notice -> annTold.add(notice.text()));
+			bob = new FriendBattles(dragons, new Random(seed + 1000), () -> now,
+				message -> fromBob.add(sentBy(message, BOB)), notice -> bobTold.add(notice.text()));
+			meet();
+
+			ann.challenge(BOB, "Bob", annData);
+			TeamBattleResult bobSaw = bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+			TeamBattleResult annSaw = ann.receive(last(fromBob), ANN, "Bob", annData, true);
+
+			assertNotNull(bobSaw);
+			assertNotNull(annSaw);
+			assertEquals("seed " + seed, annSaw.won(), !bobSaw.won());
+			assertEquals("seed " + seed, annSaw.lines().size(), bobSaw.lines().size());
+			List<BattleLine> annLines = annSaw.lines();
+			List<BattleLine> bobLines = bobSaw.lines();
+			String annLine = annLines.get(1).text();
+			String bobLine = bobLines.get(1).text();
+			String annVerdict = annSaw.won() ? "beat" : "lost to";
+			String bobVerdict = annSaw.won() ? "lost to" : "beat";
+
+			assertEquals("Your Green dragon " + annVerdict + " Bob's Green dragon (Lv 50)", annLine);
+			assertEquals("Your Green dragon " + bobVerdict + " Ann's Green dragon (Lv 50)", bobLine);
+			annWins += annSaw.won() ? 1 : 0;
+		}
+
+		assertTrue("equal dragons should each win some of 40 battles, Ann won " + annWins,
+			annWins > 0 && annWins < 40);
+	}
+
+	@Test
+	public void evenTeamsStillAgreeOnTheWinner()
+	{
+		annData.team.clear();
+		bobData.team.clear();
+		for (int i = 0; i < SaveData.TEAM_SIZE; i++)
+		{
+			annData.team.add(new Creature("imp", 20 + i, now));
+			bobData.team.add(new Creature("imp", 25 - i, now));
+		}
+
+		meet();
+		for (int round = 0; round < 20; round++)
+		{
+			now += FriendBattles.REST_MS;
+			ann.challenge(BOB, "Bob", annData);
+			TeamBattleResult bobSaw = bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+			TeamBattleResult annSaw = ann.receive(last(fromBob), ANN, "Bob", annData, true);
+
+			assertNotEquals("round " + round, annSaw.won(), bobSaw.won());
+			assertEquals("round " + round, texts(annSaw).size(), texts(bobSaw).size());
+		}
+	}
+
+	@Test
+	public void aFriendBattleChangesNothingInTheSave()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+		ann.receive(last(fromBob), ANN, "Bob", annData, true);
+
+		assertEquals(0, annData.battlesWon);
+		assertEquals(0, bobData.battlesWon);
+		assertEquals(1.0, bobData.team.get(0).hpFraction, 0.0);
+		assertEquals(0, annData.trainerXp);
+	}
+
+	@Test
+	public void aPlayerWhoDoesNotTakeBattlesDeclines()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+
+		assertNull(bob.receive(last(fromAnn), BOB, "Ann", bobData, false));
+		assertEquals(GielinorGoPartyMessage.DECLINE, last(fromBob).kind());
+		assertNull(ann.receive(last(fromBob), ANN, "Bob", annData, true));
+		assertEquals("Bob is not battling right now", last(annTold));
+		assertFalse(annWaitsForBob());
+	}
+
+	@Test
+	public void aSecondChallengeRightAfterABattleIsDeclined()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+		ann.receive(last(fromBob), ANN, "Bob", annData, true);
+
+		now += FriendBattles.REST_MS - 1;
+		ann.challenge(BOB, "Bob", annData);
+		assertNull(bob.receive(last(fromAnn), BOB, "Ann", bobData, true));
+		assertEquals(GielinorGoPartyMessage.DECLINE, last(fromBob).kind());
+	}
+
+	@Test
+	public void aChallengeMeantForSomeoneElseIsIgnored()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		int sentBefore = fromBob.size();
+
+		assertNull(bob.receive(last(fromAnn), CAT, "Ann", bobData, true));
+		assertEquals(sentBefore, fromBob.size());
+	}
+
+	@Test
+	public void aPlayersOwnMessageIsIgnored()
+	{
+		ann.hello(annData, true);
+
+		assertNull(ann.receive(last(fromAnn), ANN, "Ann", annData, true));
+		assertTrue(ann.views(names()).isEmpty());
+		assertFalse(ann.takeHelloWanted());
+	}
+
+	@Test
+	public void anAnswerNobodyAskedForStartsNoBattle()
+	{
+		meet();
+		GielinorGoPartyMessage forged = sentBy(new GielinorGoPartyMessage(GielinorGoPartyMessage.ACCEPT, ANN, 5, 5, 1,
+			new String[]{"imp"}, new int[]{99}), BOB);
+
+		assertNull(ann.receive(forged, ANN, "Bob", annData, true));
+	}
+
+	@Test
+	public void anAnswerFromTheWrongPlayerStartsNoBattle()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		GielinorGoPartyMessage challenge = last(fromAnn);
+		GielinorGoPartyMessage forged = sentBy(new GielinorGoPartyMessage(GielinorGoPartyMessage.ACCEPT, ANN,
+			challenge.battle(), 5, 1, new String[]{"imp"}, new int[]{99}), CAT);
+
+		assertNull(ann.receive(forged, ANN, "Cat", annData, true));
+		assertTrue("the real answer must still count", annWaitsForBob());
+	}
+
+	@Test
+	public void aTeamThatMakesNoSenseIsTurnedAway()
+	{
+		assertNull(bob.receive(challengeWith(new String[]{"imp"}, new int[]{100}), BOB, "Ann", bobData, true));
+		assertNull(bob.receive(challengeWith(new String[]{"imp"}, new int[]{0}), BOB, "Ann", bobData, true));
+		assertNull(bob.receive(challengeWith(new String[]{"dragon of doom"}, new int[]{5}), BOB, "Ann", bobData, true));
+		assertNull(bob.receive(challengeWith(new String[]{"imp", "imp"}, new int[]{5}), BOB, "Ann", bobData, true));
+		assertNull(bob.receive(challengeWith(new String[]{null}, new int[]{5}), BOB, "Ann", bobData, true));
+		assertNull(bob.receive(challengeWith(null, null), BOB, "Ann", bobData, true));
+		assertNull(bob.receive(challengeWith(new String[0], new int[0]), BOB, "Ann", bobData, true));
+		String[] tooMany = new String[SaveData.TEAM_SIZE + 1];
+		Arrays.fill(tooMany, "imp");
+		assertNull(bob.receive(challengeWith(tooMany, new int[SaveData.TEAM_SIZE + 1]), BOB, "Ann", bobData, true));
+
+		assertTrue("nothing may be sent back for a message that makes no sense", fromBob.isEmpty());
+		assertTrue(bob.views(names()).isEmpty());
+	}
+
+	@Test
+	public void aMessageWithNoKindIsIgnored()
+	{
+		GielinorGoPartyMessage empty = sentBy(new GielinorGoPartyMessage(), ANN);
+
+		assertNull(bob.receive(empty, BOB, "Ann", bobData, true));
+		assertNull(bob.receive(sentBy(new GielinorGoPartyMessage("DANCE", BOB, 0, 0, 1, null, null), ANN), BOB, "Ann",
+			bobData, true));
+	}
+
+	@Test
+	public void aChallengeNeedsATeamOnBothSides()
+	{
+		meet();
+		SaveData nobody = SaveData.fresh();
+		ann.challenge(BOB, "Bob", nobody);
+		assertEquals("Catch a creature first", last(annTold));
+
+		ann.challenge(CAT, "Cat", annData);
+		assertEquals("Cat has no team to battle", last(annTold));
+	}
+
+	@Test
+	public void onlyOneChallengeWaitsAtATime()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		int sent = fromAnn.size();
+		ann.challenge(BOB, "Bob", annData);
+
+		assertEquals(sent, fromAnn.size());
+		assertEquals("Still waiting for an answer", last(annTold));
+	}
+
+	@Test
+	public void aChallengeNobodyAnswersRunsOut()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		GielinorGoPartyMessage challenge = last(fromAnn);
+		assertFalse(ann.expire());
+
+		now += FriendBattles.CHALLENGE_TIMEOUT_MS + 1;
+		assertTrue(ann.expire());
+		assertEquals("Your challenge got no answer", last(annTold));
+		assertFalse(ann.expire());
+
+		bob.receive(challenge, BOB, "Ann", bobData, true);
+		assertNull("an answer that comes too late starts no battle", ann.receive(last(fromBob), ANN, "Bob", annData,
+			true));
+	}
+
+	@Test
+	public void aCreatureOfAnUnknownSpeciesIsLeftOutOfTheTeamSent()
+	{
+		annData.team.add(0, new Creature("creature from a newer version", 50, now));
+		ann.hello(annData, false);
+
+		String[] sent = last(fromAnn).species();
+		assertEquals(2, sent.length);
+		assertEquals("king black dragon", sent[0]);
+	}
+
+	@Test
+	public void aMessageSurvivesTheTripThroughTheParty()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		ann.hello(annData, true);
+		Gson gson = new Gson();
+		GielinorGoPartyMessage hello = last(fromAnn);
+		GielinorGoPartyMessage challenge = fromAnn.get(fromAnn.size() - 2);
+
+		String wire = gson.toJson(hello);
+		GielinorGoPartyMessage arrived = gson.fromJson(wire, GielinorGoPartyMessage.class);
+		assertFalse("the member id is filled in by the party service, never sent", wire.contains("memberId"));
+		assertEquals(GielinorGoPartyMessage.HELLO, arrived.kind());
+		assertTrue(arrived.askBack());
+		assertEquals(1, arrived.trainer());
+		assertArrayEquals(hello.species(), arrived.species());
+		assertArrayEquals(hello.levels(), arrived.levels());
+
+		GielinorGoPartyMessage copy = gson.fromJson(gson.toJson(challenge), GielinorGoPartyMessage.class);
+		assertEquals(BOB, copy.to());
+		assertEquals(challenge.battle(), copy.battle());
+		assertEquals(challenge.seed(), copy.seed());
+	}
+
+	/** Lets the two players learn of each other, as two hellos through the party would. */
+	private void meet()
+	{
+		ann.hello(annData, false);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+		bob.hello(bobData, false);
+		ann.receive(last(fromBob), ANN, "Bob", annData, true);
+		ann.takeHelloWanted();
+	}
+
+	private boolean annWaitsForBob()
+	{
+		List<FriendView> friends = ann.views(names());
+		return friends.get(0).waiting();
+	}
+
+	private static BattleLine.Kind mirrored(BattleLine.Kind kind)
+	{
+		if (kind == BattleLine.Kind.LEAD_HIT)
+			return BattleLine.Kind.FOE_HIT;
+
+		return kind == BattleLine.Kind.FOE_HIT ? BattleLine.Kind.LEAD_HIT : kind;
+	}
+
+	private static List<String> texts(TeamBattleResult result)
+	{
+		List<String> texts = new ArrayList<>();
+		for (BattleLine line : result.lines())
+			texts.add(line.text());
+
+		return texts;
+	}
+
+	private GielinorGoPartyMessage challengeWith(String[] species, int[] levels)
+	{
+		return sentBy(new GielinorGoPartyMessage(GielinorGoPartyMessage.CHALLENGE, BOB, 1, 2, 3, species, levels), ANN);
+	}
+
+	private static GielinorGoPartyMessage sentBy(GielinorGoPartyMessage message, long memberId)
+	{
+		message.setMemberId(memberId);
+		return message;
+	}
+
+	private static Map<Long, String> names()
+	{
+		Map<Long, String> names = new HashMap<>();
+		names.put(ANN, "Ann");
+		names.put(BOB, "Bob");
+		return names;
+	}
+
+	private static <T> T last(List<T> list)
+	{
+		return list.get(list.size() - 1);
+	}
+}

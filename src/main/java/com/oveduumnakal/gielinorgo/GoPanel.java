@@ -30,8 +30,8 @@ import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 
 /**
  * The Gielinor Go side panel: a short header with the trainer's progress and the jar to throw, and four tabs for
- * the team, the storage, the Creature Log and the City Champions. It only draws {@link PanelState} snapshots and
- * reports clicks to {@link PanelActions}.
+ * the team, the storage, the Creature Log and battles against friends and City Champions. It only draws
+ * {@link PanelState} and {@link FriendsState} snapshots and reports clicks to {@link PanelActions}.
  */
 final class GoPanel extends PluginPanel
 {
@@ -101,6 +101,7 @@ final class GoPanel extends PluginPanel
 	private final ChampionsTab championsTab;
 	private List<JarChoice> shownJars = new ArrayList<>();
 	private boolean fillingJars;
+	private PanelState latest;
 
 	GoPanel(PanelActions actions, PortraitSource portraits)
 	{
@@ -116,7 +117,7 @@ final class GoPanel extends PluginPanel
 		teamTab = new TeamTab(actions, portraits);
 		storageTab = new StorageTab(actions);
 		logTab = new LogTab();
-		championsTab = new ChampionsTab(actions);
+		championsTab = new ChampionsTab(actions, this::openTrade);
 
 		add(buildHeader(), BorderLayout.NORTH);
 		add(buildTabs(), BorderLayout.CENTER);
@@ -129,6 +130,7 @@ final class GoPanel extends PluginPanel
 	 */
 	void update(PanelState state)
 	{
+		latest = state;
 		trainerLabel.setText("Trainer Lv " + state.trainerLevel());
 		trainerBar.set(state.trainerProgress(), ColorScheme.BRAND_ORANGE);
 		trainerBar.setToolTipText(Math.round(state.trainerProgress() * 100) + "% to the next trainer level");
@@ -141,6 +143,27 @@ final class GoPanel extends PluginPanel
 		storageTab.update(state.storage());
 		logTab.update(state);
 		championsTab.update(state.champions());
+	}
+
+	/**
+	 * Redraws the friends on the Battle tab, unless nothing about the party changed.
+	 *
+	 * @param state the party and the friends in it
+	 */
+	void updateFriends(FriendsState state)
+	{
+		championsTab.updateFriends(state);
+	}
+
+	/**
+	 * Opens the window that asks what to offer a friend.
+	 *
+	 * @param friend the friend whose Trade button was clicked
+	 */
+	private void openTrade(FriendView friend)
+	{
+		if (latest != null)
+			TradeDialog.ask(this, latest, friend, actions);
 	}
 
 	private JPanel buildHeader()
@@ -242,9 +265,9 @@ final class GoPanel extends PluginPanel
 		MaterialTab team = new MaterialTab("Team", group, teamTab);
 		MaterialTab storage = new MaterialTab("Storage", group, storageTab);
 		MaterialTab log = new MaterialTab("Log", group, logTab);
-		MaterialTab cities = new MaterialTab("Cities", group, championsTab);
+		MaterialTab battle = new MaterialTab("Battle", group, championsTab);
 		group.setBorder(new EmptyBorder(2, 0, 4, 0));
-		for (MaterialTab tab : new MaterialTab[] {team, storage, log, cities})
+		for (MaterialTab tab : new MaterialTab[] {team, storage, log, battle})
 		{
 			tab.setFont(FontManager.getRunescapeSmallFont());
 			group.addTab(tab);

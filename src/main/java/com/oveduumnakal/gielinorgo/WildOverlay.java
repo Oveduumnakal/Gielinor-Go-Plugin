@@ -47,8 +47,10 @@ final class WildOverlay extends Overlay
 				continue;
 
 			Color outline = entry.gilded() ? GILDED_COLOR : config.outlineColor();
-			outlineRenderer.drawOutline(npc, OUTLINE_WIDTH, outline, OUTLINE_FEATHER);
-			String tag = (entry.gilded() ? "Gilded Lv " : "Wild Lv ") + entry.level();
+			if (!plugin.isStaged(npc))
+				outlineRenderer.drawOutline(npc, OUTLINE_WIDTH, outline, OUTLINE_FEATHER);
+
+			String tag = (entry.gilded() ? "Gilded " : "") + entry.species().name() + " Lv " + entry.level();
 			Point location = npc.getCanvasTextLocation(graphics, tag, npc.getLogicalHeight() + TAG_HEIGHT_OFFSET);
 			Rarity rarity = entry.species().rarity();
 			if (location != null)

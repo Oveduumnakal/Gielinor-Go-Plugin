@@ -1,0 +1,181 @@
+/*
+ * Copyright (c) 2026, Oveduumnakal
+ * All rights reserved.
+ */
+package com.oveduumnakal.gielinorgo;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+/** Checks who acts on which game tick of an acted-out battle. */
+public class BattleTimelineTest
+{
+	private static final double CLOSE = 0.0001;
+
+	private static final List<BattleTimeline.Beat> TWO_HITS = Arrays.asList(
+		BattleTimeline.Beat.LEAD_ATTACKS, BattleTimeline.Beat.FOE_ATTACKS, BattleTimeline.Beat.FINISH);
+
+	@Test
+	public void linesBecomeBeatsInOrder()
+	{
+		List<BattleLine> lines = Arrays.asList(
+			line(BattleLine.Kind.OPENING),
+			line(BattleLine.Kind.LEAD_HIT),
+			line(BattleLine.Kind.FOE_HIT),
+			line(BattleLine.Kind.OTHER),
+			line(BattleLine.Kind.CLOSING));
+
+		assertEquals(Arrays.asList(BattleTimeline.Beat.FACE_OFF, BattleTimeline.Beat.LEAD_ATTACKS,
+			BattleTimeline.Beat.FOE_ATTACKS, BattleTimeline.Beat.FINISH), BattleTimeline.beatsOf(lines));
+	}
+
+	@Test
+	public void aBreathLineBecomesASpecialBeat()
+	{
+		List<BattleLine> lines = Arrays.asList(
+			new BattleLine("x", Tone.GOOD, false, BattleLine.Kind.LEAD_HIT, true),
+			new BattleLine("x", Tone.BAD, true, BattleLine.Kind.FOE_HIT, true),
+			line(BattleLine.Kind.FOE_HIT),
+			line(BattleLine.Kind.CLOSING));
+
+		assertEquals(Arrays.asList(BattleTimeline.Beat.LEAD_SPECIAL, BattleTimeline.Beat.FOE_SPECIAL,
+			BattleTimeline.Beat.FOE_ATTACKS, BattleTimeline.Beat.FINISH), BattleTimeline.beatsOf(lines));
+	}
+
+	@Test
+	public void aRealBattleEndsWithTheResult()
+	{
+		Combatant mine = new Combatant(new Species("Cow", 2, CombatType.MELEE), 5, 1.0);
+		Combatant foe = new Combatant(new Species("Goblin", 13, CombatType.MELEE), 5, 1.0);
+
+		BattleResult result = BattleSim.fight(mine, foe, new Random(7));
+		List<BattleTimeline.Beat> beats = BattleTimeline.beatsOf(result.lines());
+
+		assertEquals(BattleTimeline.Beat.FACE_OFF, beats.get(0));
+		assertEquals(BattleTimeline.Beat.FINISH, beats.get(beats.size() - 1));
+		assertEquals(result.lines().size(), beats.size());
+	}
+
+	@Test
+	public void aMissingFinishIsAdded()
+	{
+		BattleTimeline timeline = new BattleTimeline(Collections.singletonList(BattleTimeline.Beat.LEAD_ATTACKS),
+			true);
+
+		assertEquals(Arrays.asList(BattleTimeline.Beat.LEAD_ATTACKS, BattleTimeline.Beat.FINISH), timeline.beats());
+		assertEquals(Collections.singletonList(BattleTimeline.Beat.FINISH),
+			new BattleTimeline(Collections.emptyList(), true).beats());
+	}
+
+	@Test
+	public void nothingHappensWhileTheLeadWalks()
+	{
+		BattleTimeline timeline = new BattleTimeline(TWO_HITS, true);
+
+		for (int tick = 1; tick < BattleTimeline.MAX_WALK_TICKS; tick++)
+		{
+			assertNull(timeline.tick(false));
+			assertEquals(BattleTimeline.Phase.WALKING, timeline.phase());
+			assertFalse(timeline.fightStarted());
+		}
+	}
+
+	@Test
+	public void theFirstBlowComesOnTheTickTheLeadArrives()
+	{
+		BattleTimeline timeline = new BattleTimeline(TWO_HITS, true);
+		timeline.tick(false);
+		timeline.tick(false);
+
+		assertEquals(BattleTimeline.Beat.LEAD_ATTACKS, timeline.tick(true));
+		assertTrue(timeline.fightStarted());
+		assertEquals(BattleTimeline.Phase.FIGHTING, timeline.phase());
+	}
+
+	@Test
+	public void aLeadThatNeverArrivesIsGivenUpOn()
+	{
+		BattleTimeline timeline = new BattleTimeline(TWO_HITS, true);
+		for (int tick = 1; tick < BattleTimeline.MAX_WALK_TICKS; tick++)
+			timeline.tick(false);
+
+		assertEquals(BattleTimeline.Beat.LEAD_ATTACKS, timeline.tick(false));
+	}
+
+	@Test
+	public void beatsComeBeatTicksApart()
+	{
+		BattleTimeline timeline = new BattleTimeline(TWO_HITS, true);
+
+		assertEquals(BattleTimeline.Beat.LEAD_ATTACKS, timeline.tick(true));
+		assertEquals(BattleTimeline.Beat.FOE_ATTACKS, afterPause(timeline));
+		assertEquals(BattleTimeline.Phase.FIGHTING, timeline.phase());
+		assertEquals(BattleTimeline.Beat.FINISH, afterPause(timeline));
+		assertEquals(BattleTimeline.Phase.DOWN, timeline.phase());
+	}
+
+	private static BattleTimeline.Beat afterPause(BattleTimeline timeline)
+	{
+		for (int tick = 1; tick < BattleTimeline.BEAT_TICKS; tick++)
+			assertNull(timeline.tick(true));
+
+		return timeline.tick(true);
+	}
+
+	@Test
+	public void theLoserStaysDownThenEverythingIsOver()
+	{
+		BattleTimeline timeline = new BattleTimeline(TWO_HITS, false);
+		timeline.tick(true);
+		afterPause(timeline);
+		afterPause(timeline);
+
+		for (int tick = 1; tick < BattleTimeline.HOLD_TICKS; tick++)
+		{
+			assertNull(timeline.tick(true));
+			assertEquals(BattleTimeline.Phase.DOWN, timeline.phase());
+		}
+
+		assertNull(timeline.tick(true));
+		assertEquals(BattleTimeline.Phase.DONE, timeline.phase());
+		assertNull(timeline.tick(true));
+		assertEquals(BattleTimeline.Phase.DONE, timeline.phase());
+	}
+
+	@Test
+	public void theLoserIsTheLeadOnlyWhenTheLeadLost()
+	{
+		assertTrue(new BattleTimeline(TWO_HITS, false).leadLost());
+		assertFalse(new BattleTimeline(TWO_HITS, true).leadLost());
+	}
+
+	@Test
+	public void aLungeGoesOutAndBackAndEndsAtRest()
+	{
+		assertEquals(0.0, BattleTimeline.lunge(0, 0.4), CLOSE);
+		assertEquals(0.4, BattleTimeline.lunge(BattleTimeline.LUNGE_TICKS / 2, 0.4), CLOSE);
+		assertEquals(0.0, BattleTimeline.lunge(BattleTimeline.LUNGE_TICKS, 0.4), CLOSE);
+		assertEquals(0.0, BattleTimeline.lunge(BattleTimeline.LUNGE_TICKS + 50, 0.4), CLOSE);
+		assertEquals(0.0, BattleTimeline.lunge(-1, 0.4), CLOSE);
+	}
+
+	@Test
+	public void aRecoilGoesTheOtherWay()
+	{
+		assertTrue(BattleTimeline.lunge(BattleTimeline.LUNGE_TICKS / 2, -0.15) < 0);
+	}
+
+	private static BattleLine line(BattleLine.Kind kind)
+	{
+		return new BattleLine("x", Tone.INFO, false, kind);
+	}
+}

@@ -5,35 +5,60 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import net.runelite.client.ui.ColorScheme;
 
-/** The Cities tab: one {@link ChampionCard} per City Champion, rebuilt only when the champions change. */
+/**
+ * The Battle tab: the friends who can be battled, then one {@link ChampionCard} per City Champion. Each part is
+ * rebuilt only when what it shows changes.
+ */
 final class ChampionsTab extends JPanel
 {
 	private static final String EMPTY_TEXT = "No City Champions are available.";
 
 	private final PanelActions actions;
-	private final JPanel stack;
+	private final FriendsSection friends;
+	private final JPanel stack = new JPanel();
 	private final JLabel header;
 	private List<ChampionView> shown;
 
-	ChampionsTab(PanelActions actions)
+	ChampionsTab(PanelActions actions, Consumer<FriendView> trader)
 	{
 		super(new BorderLayout());
 		this.actions = actions;
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
+		friends = new FriendsSection(actions, trader);
 		header = PanelUi.caption("");
-		header.setBorder(new EmptyBorder(6, 8, 6, 8));
-		add(header, BorderLayout.NORTH);
+		header.setBorder(new EmptyBorder(10, 8, 6, 8));
+		stack.setLayout(new BoxLayout(stack, BoxLayout.Y_AXIS));
+		stack.setOpaque(false);
 		PanelColumn column = new PanelColumn();
-		stack = column.stack();
+		for (JComponent part : new JComponent[] {friends, header, stack})
+		{
+			part.setAlignmentX(Component.LEFT_ALIGNMENT);
+			column.stack().add(part);
+		}
+
 		add(PanelUi.scroll(column), BorderLayout.CENTER);
+	}
+
+	/**
+	 * Shows the friends in the player's party, unless they equal the ones already shown.
+	 *
+	 * @param state the party and the friends in it
+	 */
+	void updateFriends(FriendsState state)
+	{
+		friends.update(state);
 	}
 
 	/**
@@ -50,7 +75,7 @@ final class ChampionsTab extends JPanel
 				beaten++;
 		}
 
-		header.setText("SIGILS  " + beaten + " / " + champions.size());
+		header.setText("CITY CHAMPIONS  " + beaten + " / " + champions.size() + " sigils");
 		if (champions.equals(shown))
 			return;
 

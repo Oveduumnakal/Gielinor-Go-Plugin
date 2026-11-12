@@ -16,6 +16,8 @@ final class Species
 	private String name;
 	private int level;
 	private CombatType style;
+	private CombatType secondStyle;
+	private double secondChance;
 	private List<Trait> traits;
 	private int[] ids;
 
@@ -51,6 +53,23 @@ final class Species
 	}
 
 	/**
+	 * The style this species uses for some of its hits, besides its main one: a dragon bites in melee and now and
+	 * then breathes fire, which is magic.
+	 *
+	 * @return the second style, or null when the species fights in one style only
+	 */
+	CombatType secondStyle()
+	{
+		return secondStyle == null || secondStyle == style() ? null : secondStyle;
+	}
+
+	/** @return the chance, from 0 to 1, that one hit is of the second style; 0 when there is no second style */
+	double secondChance()
+	{
+		return secondStyle() == null ? 0.0 : Math.max(0.0, Math.min(1.0, secondChance));
+	}
+
+	/**
 	 * Everything a specialty jar can be good at for this species.
 	 *
 	 * @return the traits from the species list plus the one for its combat style, in a set the caller may change
@@ -68,6 +87,20 @@ final class Species
 		}
 
 		return all;
+	}
+
+	/**
+	 * Gives the species a second style, for tests and for building species in code.
+	 *
+	 * @param second the second style
+	 * @param chance the chance, from 0 to 1, that one hit is of the second style
+	 * @return this species
+	 */
+	Species withSecondStyle(CombatType second, double chance)
+	{
+		this.secondStyle = second;
+		this.secondChance = chance;
+		return this;
 	}
 
 	/** @return the NPC ids the game uses for this species, for drawing its portrait; empty when none are known */
