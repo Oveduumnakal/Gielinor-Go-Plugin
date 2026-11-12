@@ -341,6 +341,9 @@ final class LogTab extends JPanel
 
 			String tip = "Lv " + entry.speciesLevel() + " · " + entry.type().label() + " · "
 				+ entry.rarity().label();
+			if (entry.retired())
+				tip += " · quest only, no longer catchable, not in the total";
+
 			if (entry.gilded())
 				return tip + " · gilded owned";
 
@@ -379,7 +382,7 @@ final class LogTab extends JPanel
 			{
 				name.setText(star + entry.name());
 				name.setForeground(entry.rarity().color());
-				right.setText("×" + entry.caughtCount());
+				right.setText((entry.retired() ? "quest only " : "") + "×" + entry.caughtCount());
 				right.setForeground(entry.gilded() ? PanelUi.GOLD : ColorScheme.LIGHT_GRAY_COLOR);
 			}
 			else if (entry.seen())

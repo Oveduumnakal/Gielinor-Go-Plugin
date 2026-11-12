@@ -1166,13 +1166,14 @@ final class GoGame
 			.withGoals(milestoneTable.progress(data), eliteView());
 	}
 
-	/** @return how many caught species the species list still knows, so removed species do not inflate the total */
+	/** @return how many caught species count toward the Log: known ones that are not quest-only */
 	private int knownCaughtSpecies()
 	{
 		int known = 0;
 		for (String key : data.caught.keySet())
 		{
-			if (species.find(key) != null)
+			Species found = species.find(key);
+			if (found != null && !found.questOnly())
 				known++;
 		}
 
@@ -1225,7 +1226,7 @@ final class GoGame
 			return false;
 
 		List<Species> pool = new ArrayList<>();
-		for (Species candidate : species.all())
+		for (Species candidate : species.catchable())
 		{
 			if (candidate.rarity() == egg.rarityTier())
 				pool.add(candidate);
@@ -2068,8 +2069,12 @@ final class GoGame
 		for (Species entry : species.all())
 		{
 			Integer count = data.caught.get(entry.key());
+			if (entry.questOnly() && (count == null || count < 1))
+				continue;
+
 			entries.add(new LogEntry(entry.name(), entry.level(), entry.rarity(), entry.style(),
-				count == null ? 0 : count, data.seen.contains(entry.key()), data.gilded.contains(entry.key())));
+				count == null ? 0 : count, data.seen.contains(entry.key()), data.gilded.contains(entry.key()),
+				entry.questOnly()));
 		}
 
 		log = Collections.unmodifiableList(entries);

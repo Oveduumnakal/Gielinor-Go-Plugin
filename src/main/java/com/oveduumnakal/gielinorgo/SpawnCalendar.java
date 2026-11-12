@@ -97,7 +97,7 @@ final class SpawnCalendar
 		for (Rarity rarity : Rarity.values())
 			byRarity.put(rarity, new ArrayList<>());
 
-		for (Species species : table.all())
+		for (Species species : table.catchable())
 			byRarity.get(species.rarity()).add(species);
 
 		for (List<Species> list : byRarity.values())

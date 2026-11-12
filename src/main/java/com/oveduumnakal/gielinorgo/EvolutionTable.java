@@ -69,7 +69,8 @@ final class EvolutionTable
 	private final Map<String, Step> byFrom = new HashMap<>();
 
 	/**
-	 * Builds the table, leaving out any link whose species the game does not know.
+	 * Builds the table, leaving out any link whose species the game does not know and any link that ends in a
+	 * quest-only species (a link from one stays, for creatures already owned).
 	 *
 	 * @param steps the links from the data file
 	 * @param species every catchable species
@@ -79,6 +80,9 @@ final class EvolutionTable
 		for (Step step : steps)
 		{
 			if (step == null || species.find(step.from) == null || species.find(step.to) == null)
+				continue;
+
+			if (species.find(step.to).questOnly())
 				continue;
 
 			byFrom.putIfAbsent(Species.keyFor(step.from), step);

@@ -20,6 +20,7 @@ final class Species
 	private double secondChance;
 	private List<Trait> traits;
 	private int[] ids;
+	private boolean quest;
 
 	/** Used by Gson. */
 	Species()
@@ -100,6 +101,29 @@ final class Species
 	{
 		this.secondStyle = second;
 		this.secondChance = chance;
+		return this;
+	}
+
+	/**
+	 * Tells whether this species only exists during a quest. Such a species is still a species: a creature of it that
+	 * the player already owns draws, fights, evolves and trades as before. It never turns wild, hatches, is featured
+	 * or evolved into, and it does not count toward the Creature Log.
+	 *
+	 * @return true when the species can no longer be met in the open world once every quest is done
+	 */
+	boolean questOnly()
+	{
+		return quest;
+	}
+
+	/**
+	 * Marks the species as quest-only, for tests and for building species in code.
+	 *
+	 * @return this species
+	 */
+	Species asQuestOnly()
+	{
+		this.quest = true;
 		return this;
 	}
 

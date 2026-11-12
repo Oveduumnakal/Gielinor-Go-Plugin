@@ -3,6 +3,12 @@
 
 Run from the repo root: python3 scripts/gen-species.py [dump.tar.gz]
 
+Quest monsters (issue #50): a species whose every wiki row sits on a page of Category:Quest_monsters (read through the
+MediaWiki API, list=categorymembers) gets "quest": true. scripts/species-quest-add.txt lists names to flag although the
+wiki does not, scripts/species-quest-keep.txt names to keep catchable although it does. The flagged names are written
+to src/test/resources/quest-species.txt so they can be reviewed. A flagged species stays in species.json, so a creature
+already owned keeps its species, but it never turns wild and does not count toward the Creature Log.
+
 The wiki lists the NPC ids of only some of the NPCs that carry a monster's name (the Goblin page lists 43 of about 150;
 the small Monkey Guard is missing). A wild monster is matched to its species by NAME, so any NPC with the name and a
 combat level can turn wild. When the optional dump (the abextm/osrs-cache release gen-animations.py reads) is given,
@@ -20,6 +26,10 @@ import urllib.request
 API = "https://oldschool.runescape.wiki/api.php"
 OUT = "src/main/resources/com/oveduumnakal/gielinorgo/species.json"
 BLOCKLIST = "scripts/species-blocklist.txt"
+QUEST_ADD = "scripts/species-quest-add.txt"
+QUEST_KEEP = "scripts/species-quest-keep.txt"
+QUEST_LIST = "src/test/resources/quest-species.txt"
+QUEST_CATEGORY = "Category:Quest_monsters"
 UA = "species-data-script/1.0"
 PAGE = 500
 QUERY = ("bucket('infobox_monster').select('page_name','name','combat_level','attack_style','attribute',"
@@ -55,6 +65,27 @@ def fetch(offset):
     req = urllib.request.Request(API + "?" + params, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=60) as resp:
         return json.load(resp).get("bucket", [])
+
+
+def quest_pages():
+    """Returns the lowercase titles of the pages in the wiki's quest monster category."""
+    titles = set()
+    params = {"action": "query", "list": "categorymembers", "cmtitle": QUEST_CATEGORY, "cmlimit": 500,
+              "cmnamespace": 0, "format": "json"}
+    while True:
+        req = urllib.request.Request(API + "?" + urllib.parse.urlencode(params), headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            data = json.load(resp)
+        for member in data["query"]["categorymembers"]:
+            titles.add(page_key(member["title"]))
+        if "continue" not in data:
+            return titles
+        params.update(data["continue"])
+        time.sleep(1)
+
+
+def page_key(title):
+    return re.sub(r"\s+", " ", (title or "").replace("_", " ")).strip().lower()
 
 
 def style_of(styles):
@@ -143,7 +174,7 @@ def clean_name(name):
 
 
 def record(entry):
-    name, level, style, traits, ids, second = entry
+    name, level, style, traits, ids, second = entry[:6]
     data = {"name": name, "level": level, "style": style}
     if second:
         data["secondStyle"], data["secondChance"] = second
@@ -151,6 +182,8 @@ def record(entry):
         data["traits"] = traits
     if ids:
         data["ids"] = ids
+    if len(entry) > 6 and entry[6]:
+        data["quest"] = True
     return data
 
 
@@ -172,16 +205,30 @@ def dump_ids(path):
     return {name: sorted(ids) for name, ids in found.items()}
 
 
-def load_blocklist():
-    """Returns the lowercase names listed in the blocklist file, skipping blank lines and # comments."""
-    with open(BLOCKLIST, encoding="utf-8") as f:
+def load_blocklist(path=BLOCKLIST):
+    """Returns the lowercase names listed in the file, skipping blank lines and # comments."""
+    with open(path, encoding="utf-8") as f:
         lines = [line.split("#")[0].strip().lower() for line in f]
     return {line for line in lines if line}
+
+
+def is_quest(key, row_pages, quest_titles, quest_add, quest_keep):
+    """True when the wiki puts every row of the species in the quest category, or the add file names it."""
+    if key in quest_keep:
+        return False
+    if key in quest_add:
+        return True
+    pages = row_pages.get(key, set())
+    return bool(pages) and pages <= quest_titles
 
 
 def main():
     blocked_names = load_blocklist()
     blocked = set()
+    quest_titles = quest_pages()
+    quest_add = load_blocklist(QUEST_ADD)
+    quest_keep = load_blocklist(QUEST_KEEP)
+    row_pages = {}
     rows = []
     offset = 0
     while True:
@@ -213,6 +260,7 @@ def main():
         if not name or level < 1 or any(c in name for c in "[]{}<>|()"):
             continue
         key = name.lower()
+        row_pages.setdefault(key, set()).add(page_key(row.get("page_name")))
         row_ids = ids_of(row)
         if key not in best or level > best[key][1]:
             kept = best[key][4] if key in best else []
@@ -221,6 +269,7 @@ def main():
         else:
             best[key] = best[key][:4] + (merge_ids(best[key][4], row_ids),) + best[key][5:]
     entries = sorted(best.values(), key=lambda e: e[0].lower())
+    entries = [e + (is_quest(e[0].lower(), row_pages, quest_titles, quest_add, quest_keep),) for e in entries]
     if len(sys.argv) > 1:
         extra = dump_ids(sys.argv[1])
         entries = [e[:4] + (merge_ids(e[4], extra.get(e[0].lower(), [])),) + e[5:] for e in entries]
@@ -229,6 +278,11 @@ def main():
         f.write("[\n")
         f.write(",\n".join(json.dumps(record(e), separators=(",", ":"), ensure_ascii=False) for e in entries))
         f.write("\n]\n")
+    quest = [e[0] for e in entries if e[6]]
+    with open(QUEST_LIST, "w", encoding="utf-8") as f:
+        f.write("# Species flagged quest-only by gen-species.py (see scripts/species-quest-*.txt). Generated.\n")
+        f.write("".join(name + "\n" for name in quest))
+    print("quest species:", len(quest))
     print("species:", len(entries))
     for s in ("MELEE", "RANGED", "MAGIC"):
         print(s, sum(1 for e in entries if e[2] == s))

@@ -5,6 +5,8 @@ Run from the repository root, after gen-species.py:
 
     python3 scripts/gen-families.py
 
+A species flagged "quest" (met only during a quest, issue #50) is never a member: a family must be completable.
+
 Each family is picked from species.json by a name pattern (with a pattern for names to leave out) and carries an id,
 a label, the specialty jar paid for completing it, and the species keys. It reads only the local species.json, so it
 needs no network, and its output is the same on every run. It aborts without writing when a family has fewer than
@@ -47,6 +49,8 @@ def main():
         members = []
         for row in species:
             name = row["name"]
+            if row.get("quest"):
+                continue
             if not re.search(include, name, re.I):
                 continue
             if exclude and re.search(exclude, name, re.I):
