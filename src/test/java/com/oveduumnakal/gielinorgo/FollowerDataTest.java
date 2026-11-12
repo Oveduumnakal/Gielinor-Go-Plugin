@@ -249,22 +249,27 @@ public class FollowerDataTest
 	}
 
 	@Test
-	public void aCaughtCreatureIsOutOfSightForFiveSecondsThenFadesIn()
+	public void aCaughtCreatureIsInSightUntilTheJarLandsThenOutOfSightForFiveSecondsThenFadesIn()
 	{
-		assertEquals(CatchEffects.HIDDEN, CatchEffects.shadeAt(1));
-		assertEquals(CatchEffects.HIDDEN, CatchEffects.shadeAt(CatchEffects.HIDDEN_TICKS));
-		assertEquals(0, CatchEffects.shadeAt(CatchEffects.HIDDEN_TICKS + 1));
+		int land = CatchScene.LAND_TICK;
+		assertEquals(CatchEffects.VISIBLE, CatchEffects.shadeAt(0));
+		assertEquals(CatchEffects.VISIBLE, CatchEffects.shadeAt(land - 1));
+		assertEquals(CatchEffects.HIDDEN, CatchEffects.shadeAt(land));
+		assertEquals(CatchEffects.HIDDEN, CatchEffects.shadeAt(land + CatchEffects.HIDDEN_TICKS));
+		assertEquals(0, CatchEffects.shadeAt(land + CatchEffects.HIDDEN_TICKS + 1));
 		assertEquals(CatchEffects.FADE_STEPS - 1,
-			CatchEffects.shadeAt(CatchEffects.HIDDEN_TICKS + CatchEffects.FADE_TICKS));
-		assertEquals(CatchEffects.DONE, CatchEffects.shadeAt(CatchEffects.HIDDEN_TICKS + CatchEffects.FADE_TICKS + 1));
+			CatchEffects.shadeAt(land + CatchEffects.HIDDEN_TICKS + CatchEffects.FADE_TICKS));
+		assertEquals(CatchEffects.DONE,
+			CatchEffects.shadeAt(land + CatchEffects.HIDDEN_TICKS + CatchEffects.FADE_TICKS + 1));
 		assertEquals("five seconds at 50 client ticks a second", 250, CatchEffects.HIDDEN_TICKS);
 	}
 
 	@Test
 	public void theFadeNeverStepsBackwards()
 	{
-		int last = CatchEffects.HIDDEN;
-		for (int age = 1; age <= CatchEffects.HIDDEN_TICKS + CatchEffects.FADE_TICKS; age++)
+		int last = CatchEffects.VISIBLE;
+		int end = CatchScene.LAND_TICK + CatchEffects.HIDDEN_TICKS + CatchEffects.FADE_TICKS;
+		for (int age = 0; age <= end; age++)
 		{
 			int shade = CatchEffects.shadeAt(age);
 			assertTrue("age " + age, shade >= last && shade < CatchEffects.FADE_STEPS);
