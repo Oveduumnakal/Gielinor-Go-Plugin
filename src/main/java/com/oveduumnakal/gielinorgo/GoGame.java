@@ -119,6 +119,7 @@ final class GoGame
 	private EliteTable elite = EliteTable.empty();
 	private EliteRun run;
 	private boolean atGuild;
+	private boolean bankNear;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -250,7 +251,7 @@ final class GoGame
 		{
 			data.addJars(jar, 1);
 			dirty = true;
-			tell("+1 " + jar.label() + " jar (" + skillName(skill) + ")", Tone.FIND, jar);
+			tell(foundJars(jar, 1, skillName(skill)), Tone.FIND, jar);
 		}
 
 		rollSkillItems(skill, gained);
@@ -273,7 +274,7 @@ final class GoGame
 		{
 			data.stepProgress -= TILES_PER_JAR;
 			data.addJars(JarType.BRONZE, 1);
-			tell("+1 Bronze jar (walking)", Tone.FIND, JarType.BRONZE);
+			tell(foundJars(JarType.BRONZE, 1, null), Tone.FIND, JarType.BRONZE);
 		}
 
 		walking = true;
@@ -319,6 +320,26 @@ final class GoGame
 
 		cityId = id;
 		return true;
+	}
+
+	/**
+	 * Tells the game whether a bank is near the player, so the team may be changed there.
+	 *
+	 * @param near true when a banker, bank booth or bank chest is within {@link BankSpots#NEAR_TILES} tiles
+	 */
+	void setBankNear(boolean near)
+	{
+		bankNear = near;
+	}
+
+	/** @return whether the team may be changed here; otherwise the player is told where to go */
+	private boolean mayChangeTeam()
+	{
+		if (TeamSwapRule.allowed(cityId != null, bankNear))
+			return true;
+
+		tell(TeamSwapRule.REFUSAL, Tone.BAD);
+		return false;
 	}
 
 	/**
@@ -400,7 +421,7 @@ final class GoGame
 	{
 		data.addJars(JarType.BRONZE, JARS_PER_LEVEL_UP);
 		dirty = true;
-		tell("+" + JARS_PER_LEVEL_UP + " Bronze jars (level up)", Tone.FIND, JarType.BRONZE);
+		tell(foundJars(JarType.BRONZE, JARS_PER_LEVEL_UP, "level up"), Tone.FIND, JarType.BRONZE);
 	}
 
 	/**
@@ -912,6 +933,9 @@ final class GoGame
 		if (eliteBusy())
 			return;
 
+		if (!mayChangeTeam())
+			return;
+
 		if (teamIndex < 0 || teamIndex >= data.team.size())
 			return;
 
@@ -933,6 +957,9 @@ final class GoGame
 	void moveToTeam(int storageIndex)
 	{
 		if (eliteBusy())
+			return;
+
+		if (!mayChangeTeam())
 			return;
 
 		if (storageIndex < 0 || storageIndex >= data.storage.size())
@@ -1260,7 +1287,7 @@ final class GoGame
 
 		tell("Sigil of " + champion.city() + " earned!", Tone.FIND);
 		data.addJars(champion.rewardJar(), champion.rewardJars());
-		tell("+" + champion.rewardJars() + " " + champion.rewardJar().label() + " jars (champion)", Tone.FIND,
+		tell(foundJars(champion.rewardJar(), champion.rewardJars(), "champion"), Tone.FIND,
 			champion.rewardJar());
 		addTrainerXp(50L + 10L * champion.topLevel());
 		giveItems(ItemType.LARGE_SALVE, ItemRules.CHAMPION_LARGE_SALVES, "champion");
@@ -1742,7 +1769,7 @@ final class GoGame
 		{
 			JarType drop = randomUnlockedJar();
 			data.addJars(drop, 1);
-			tell("+1 " + drop.label() + " jar (battle win)", Tone.FIND, drop);
+			tell(foundJars(drop, 1, "battle win"), Tone.FIND, drop);
 		}
 
 		double eggChance = entry.roaming() ? ROAMING_EGG_CHANCE : EGG_DROP_CHANCE;
@@ -1928,6 +1955,20 @@ final class GoGame
 	private void tell(String text, Tone tone)
 	{
 		notices.accept(Notice.player(text, tone));
+	}
+
+	/**
+	 * Words a jar find: {@code Found a Bronze jar} or {@code Found 3 Bronze jars}, with an optional short source.
+	 *
+	 * @param jar the jar found
+	 * @param count how many
+	 * @param source what gave them, shown in brackets when it tells the player something, or null
+	 * @return the line
+	 */
+	static String foundJars(JarType jar, int count, String source)
+	{
+		String what = count == 1 ? "a " + jar.label() + " jar" : count + " " + jar.label() + " jars";
+		return "Found " + what + (source == null ? "" : " (" + source + ")");
 	}
 
 	/**

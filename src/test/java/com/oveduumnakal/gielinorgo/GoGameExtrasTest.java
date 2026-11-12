@@ -364,8 +364,8 @@ public class GoGameExtrasTest
 		assertEquals(3, game.data().jarCount(JarType.IRON));
 		assertEquals(xpBefore + 105, lead().xp);
 		assertTrue(messages.contains("Sigil of Lumbridge earned!"));
-		assertTrue(messages.contains("+3 Iron jars (champion)"));
-		assertEquals(JarType.IRON, noticeOf("+3 Iron jars (champion)").jar());
+		assertTrue(messages.contains("Found 3 Iron jars (champion)"));
+		assertEquals(JarType.IRON, noticeOf("Found 3 Iron jars (champion)").jar());
 		ChampionView view = champion();
 		assertTrue(view.beaten());
 		assertEquals("Chicken 2, Imp 3, Chicken 4", view.team());

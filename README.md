@@ -35,7 +35,7 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 
 - **Earn jars by playing**
 
-  You start with 10 Bronze jars. Walking earns more, every level-up in the real game gives three, and battle wins
+  You start with 10 Bronze jars. Walking earns more ("Found a Bronze jar"), every level-up in the real game gives three, and battle wins
   can drop better ones as your trainer level grows.
 
 - **Find specialty jars while skilling**
@@ -44,7 +44,7 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   creatures you meet underground, Agility finds Swift jars for fast attackers, Prayer finds Blessed jars for
   undead and demons, and so on for almost every skill. When you own one that suits the creature in front of
   you, it shows up as its own **Catch** option with its odds. Every jar has its own small picture, in the jar list on
-  the panel, on the champion cards and beside the "+1 ... jar" lines that float over your head.
+  the panel, on the champion cards and beside the "Found a ... jar" lines that float over your head.
 
 - **Healing items**
 
@@ -83,7 +83,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   weaker in each. A temperament is either Steady, which changes nothing, or gives 10% more of one stat and 10% less
   of another: Brave (attack up, defence down), Reckless, Fierce, Guarded, Stubborn, Hardy, Stout, Hasty and Nimble.
   The four rolls add up to a rating: Weak, Average, Strong or Exceptional. The card shows the temperament beside the
-  style and the rating on the right, and hovering shows the numbers (`Health +3 · Attack -1 · Defence 0 · Speed +5`).
+  style and the rating on the right, and hovering explains them: the temperament with its effect (`Nimble: +10% Speed, -10% Health`) and each
+  stat's roll with the net percentage it really gets from roll and temperament together (`Speed -4 (+3%)`).
   Average creatures show no rating word, and a rated lead shows its rating in place of "Lead". Catching a rated
   creature adds a line with its rating. The faster creature strikes first in a battle; with equal speed the higher
   level goes first, and then it is a coin toss. Wild creatures fight at average until you catch them. Creatures
@@ -95,8 +96,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Right-click a creature in Team or Storage and choose **Rename...** to give it a name of 1 to 12 letters, numbers,
   spaces or hyphens. The nickname shows on its card (hover the card for the species), in Storage, in battle
   lines and in level-up and evolution lines, and a creature keeps it when it evolves. Leave the box empty to go
-  back to the species name. With **Show lead's nickname** on (the default), your lead's nickname floats above it
-  as it follows you. Nicknames stay on your computer: friends never see them, and a creature you trade away
+  back to the species name. With **Show lead's name** on (the default), your lead's name (its nickname, or its species name
+  without one) floats above it at half opacity as it follows you. Nicknames stay on your computer: friends never see them, and a creature you trade away
   arrives without one.
 
 - **Battles that play themselves**
@@ -106,7 +107,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   team is down. Creatures below a quarter of their health sit out, so when the lead is too tired the first rested
   creature opens. A win pays once and the creature that lands the last blow gets the creature XP. Each hit floats over the creature's
   head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. Melee beats Ranged, Ranged beats Magic, and Magic beats
-  Melee. A creature that loses to you is easier to catch. Dragons and wyverns bite in melee but about one hit in
+  Melee. A creature's card tooltip reminds you of its style's match-up. There is no opening line: the fight goes
+  straight from the face-off to the first blow. A creature that loses to you is easier to catch. Dragons and wyverns bite in melee but about one hit in
   four is a fire or ice breath, which counts as Magic for that hit and says so ("Green dragon breathes fire for 12").
 
   With **Battle animations** on (the default), your lead walks up to the wild creature and they face each other
@@ -321,6 +323,11 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   creatures you have stored, and a Creature Log of every species in the game so you can see what you have caught,
   what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
   you can challenge. The top of the Log tab shows what is featured today and which event is on.
+
+  You can move a creature between your team and Storage only inside a city (any City Champion's area) or within
+  10 tiles of a banker, a bank booth or a bank chest. Anywhere else the panel says "Go to a city or a bank to change
+  your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
+  your team is full, a creature you receive in a trade, a hatched egg and releasing a stored creature.
 
 ## Links
 

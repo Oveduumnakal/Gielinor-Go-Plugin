@@ -124,6 +124,30 @@ final class BattleResult
 		if (switches() > 0)
 			return WildScript.of(this).lines();
 
+		return cut(lines, maxLines);
+	}
+
+	/**
+	 * The battle cut down for showing to the player. The opening line is kept first so a scene can still open with
+	 * its face-off, but it is not counted: it is never shown as text, so it must not take a slot a real line needs.
+	 * A battle in which a creature stepped in is cut down duel by duel, as {@link #summary(int)} does.
+	 *
+	 * @param maxLines the most lines to return that are shown as text, at least 2
+	 * @return every line when they fit, otherwise the start and the end of the shown lines, after the opening
+	 */
+	List<BattleLine> playbackSummary(int maxLines)
+	{
+		if (switches() > 0 || lines.isEmpty() || lines.get(0).kind() != BattleLine.Kind.OPENING)
+			return summary(maxLines);
+
+		List<BattleLine> kept = new ArrayList<>();
+		kept.add(lines.get(0));
+		kept.addAll(cut(lines.subList(1, lines.size()), maxLines));
+		return kept;
+	}
+
+	private static List<BattleLine> cut(List<BattleLine> lines, int maxLines)
+	{
 		int limit = Math.max(2, maxLines);
 		if (lines.size() <= limit)
 			return lines;
