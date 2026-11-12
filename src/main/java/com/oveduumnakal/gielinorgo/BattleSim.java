@@ -5,12 +5,14 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 /**
- * Resolves a battle between two creatures in one go. Given the same fighters and the same random seed it always
- * produces the same result, so battles can be tested exactly.
+ * Resolves a battle between creatures in one go, as a loop over {@link BattleState} that always attacks, and holds the
+ * rules of a single attack. Given the same fighters and the same random seed it always produces the same result, so
+ * battles can be tested exactly.
  */
 final class BattleSim
 {
@@ -42,10 +44,14 @@ final class BattleSim
 	{
 		List<BattleLine> log = new ArrayList<>();
 		log.add(opening(mine, foe));
-		int turns = duel(mine, foe, random, log, true);
-		boolean won = ahead(mine, foe);
+		BattleState state = new BattleState(Collections.singletonList(mine), Collections.singletonList(foe), random,
+			BattleState.Mode.SINGLE);
+		while (state.ended() == null)
+			log.addAll(state.step(BattleChoice.attack()).lines());
+
+		boolean won = state.ended() == TurnResult.Status.WON;
 		log.add(closing(mine, foe, won));
-		return new BattleResult(won, log, mine.hpFraction(), turns);
+		return new BattleResult(won, log, mine.hpFraction(), state.totalAttacks());
 	}
 
 	/**
@@ -61,37 +67,19 @@ final class BattleSim
 	{
 		List<BattleLine> log = new ArrayList<>();
 		List<Duel> duels = new ArrayList<>();
-		int myIndex = 0;
-		int theirIndex = 0;
-		while (myIndex < mine.size() && theirIndex < theirs.size())
+		BattleState state = new BattleState(mine, theirs, random, BattleState.Mode.TEAM);
+		while (state.ended() == null)
 		{
-			Combatant fighter = mine.get(myIndex);
-			Combatant foe = theirs.get(theirIndex);
-			List<BattleLine> hits = new ArrayList<>();
-			boolean won = duelWon(fighter, foe, random, hits, true);
-			BattleLine out;
-			if (won)
-			{
-				foe.knockOut();
-				out = new BattleLine(fighter.name() + " beat " + foe.name() + " (Lv " + foe.level() + ")",
-					Tone.GOOD, true);
-			}
-			else
-			{
-				fighter.knockOut();
-				out = new BattleLine(fighter.name() + " lost to " + foe.name() + " (Lv " + foe.level() + ")",
-					Tone.BAD, true);
-			}
+			TurnResult turn = state.step(state.needsSwitch() ? BattleChoice.switchTo(state.firstAlive())
+				: BattleChoice.attack());
+			if (turn.duel() == null)
+				continue;
 
-			log.add(out);
-			duels.add(new Duel(fighter, myIndex, foe, theirIndex, hits, out, won));
-			if (won)
-				theirIndex++;
-			else
-				myIndex++;
+			duels.add(turn.duel());
+			log.add(turn.duel().knockOut());
 		}
 
-		return new TeamBattleResult(theirIndex >= theirs.size(), log, duels);
+		return new TeamBattleResult(state.ended() == TurnResult.Status.WON, log, duels);
 	}
 
 	/**
@@ -122,39 +110,16 @@ final class BattleSim
 	static boolean duelWon(Combatant first, Combatant second, Random random, List<BattleLine> hits,
 		boolean firstIsMine)
 	{
-		duel(first, second, random, hits, firstIsMine);
-		return ahead(first, second);
-	}
-
-	/**
-	 * Trades blows until one side is out of health or the turn limit is reached.
-	 *
-	 * @param mine the player's creature
-	 * @param foe the opposing creature
-	 * @param random the source of damage spread and of the first move on a level tie
-	 * @param log receives one line per attack, or null to keep no lines
-	 * @param mineIsMine whether the first creature is the player's, for the wording of the lines
-	 * @return how many attacks were made
-	 */
-	private static int duel(Combatant mine, Combatant foe, Random random, List<BattleLine> log, boolean mineIsMine)
-	{
-		boolean myTurn = movesFirst(mine, foe, random);
-		int turns = 0;
-		while (!mine.fainted() && !foe.fainted() && turns < MAX_TURNS)
+		BattleState state = new BattleState(Collections.singletonList(first), Collections.singletonList(second),
+			random, BattleState.Mode.duel(firstIsMine));
+		while (state.ended() == null)
 		{
-			Combatant attacker = myTurn ? mine : foe;
-			Combatant defender = myTurn ? foe : mine;
-			CombatType style = attacker.rollStyle(random);
-			int damage = damage(attacker, style, defender, random);
-			defender.hit(damage);
-			if (log != null)
-				log.add(strike(attacker, defender, damage, myTurn == mineIsMine, style));
-
-			myTurn = !myTurn;
-			turns++;
+			TurnResult turn = state.step(BattleChoice.attack());
+			if (hits != null)
+				hits.addAll(turn.hits());
 		}
 
-		return turns;
+		return state.ended() == TurnResult.Status.WON;
 	}
 
 	/**
@@ -167,7 +132,7 @@ final class BattleSim
 	 * @param random the source of the coin toss
 	 * @return true when the player's creature attacks first
 	 */
-	private static boolean movesFirst(Combatant mine, Combatant foe, Random random)
+	static boolean movesFirst(Combatant mine, Combatant foe, Random random)
 	{
 		if (mine.speed() != foe.speed())
 			return mine.speed() > foe.speed();
@@ -183,7 +148,7 @@ final class BattleSim
 	 * @return true when the foe is out of health, or when neither is and the player's creature has kept at least
 	 *     as large a share of its health
 	 */
-	private static boolean ahead(Combatant mine, Combatant foe)
+	static boolean ahead(Combatant mine, Combatant foe)
 	{
 		return foe.fainted() || (!mine.fainted() && mine.hpFraction() >= foe.hpFraction());
 	}
@@ -224,7 +189,7 @@ final class BattleSim
 	 * @param foe the wild creature
 	 * @return the opening line, with a note when one style beats the other
 	 */
-	private static BattleLine opening(Combatant mine, Combatant foe)
+	static BattleLine opening(Combatant mine, Combatant foe)
 	{
 		String line = "Your " + mine.name() + " (Lv " + mine.level() + ") attacks!";
 		double multiplier = mine.type().multiplierAgainst(foe.type());
@@ -250,7 +215,7 @@ final class BattleSim
 	 *     a fire breath
 	 * @return the line, over the wild creature for the player's hits and over the player for hits taken
 	 */
-	private static BattleLine strike(Combatant attacker, Combatant defender, int damage, boolean mine,
+	static BattleLine strike(Combatant attacker, Combatant defender, int damage, boolean mine,
 		CombatType style)
 	{
 		boolean special = style != attacker.type();
@@ -281,7 +246,33 @@ final class BattleSim
 		return name.contains("wyvern");
 	}
 
-	private static BattleLine closing(Combatant mine, Combatant foe, boolean won)
+	/**
+	 * The line that tells how a pairing of a team battle ended.
+	 *
+	 * @param fighter the player's creature of the pairing
+	 * @param opponent the opposing creature of the pairing
+	 * @param won whether the player's creature won
+	 * @return the line, shown over the player
+	 */
+	static BattleLine knockOutLine(Combatant fighter, Combatant opponent, boolean won)
+	{
+		if (won)
+			return new BattleLine(fighter.name() + " beat " + opponent.name() + " (Lv " + opponent.level() + ")",
+				Tone.GOOD, true);
+
+		return new BattleLine(fighter.name() + " lost to " + opponent.name() + " (Lv " + opponent.level() + ")",
+			Tone.BAD, true);
+	}
+
+	/**
+	 * The line that ends a fight against a wild creature.
+	 *
+	 * @param mine the player's creature
+	 * @param foe the wild creature
+	 * @param won whether the player's creature won
+	 * @return the closing line
+	 */
+	static BattleLine closing(Combatant mine, Combatant foe, boolean won)
 	{
 		if (won)
 			return new BattleLine("Your " + mine.name() + " won!", Tone.GOOD, false, BattleLine.Kind.CLOSING);

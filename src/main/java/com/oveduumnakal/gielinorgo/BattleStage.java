@@ -83,6 +83,7 @@ final class BattleStage implements RenderCallback, StageAnchors
 	private boolean risen;
 	private int wantedFacing = NO_FACING;
 	private boolean turningAway;
+	private boolean switched;
 	private double runFromX;
 	private double runFromY;
 	private double runDirX;
@@ -151,6 +152,24 @@ final class BattleStage implements RenderCallback, StageAnchors
 	 */
 	boolean start(NPC wild, List<BattleLine> lines, boolean leadWon)
 	{
+		return start(wild, lines, leadWon, false);
+	}
+
+	/**
+	 * Starts acting out a battle the player steers. It is fed turn by turn ({@link #append}) and waits between turns
+	 * ({@link #waiting()}). The same things stop it from starting as for {@link #start}.
+	 *
+	 * @param wild the wild monster
+	 * @param lines the lines known so far, usually the opening line
+	 * @return true when the battle is on stage
+	 */
+	boolean startOpen(NPC wild, List<BattleLine> lines)
+	{
+		return start(wild, lines, false, true);
+	}
+
+	private boolean start(NPC wild, List<BattleLine> lines, boolean leadWon, boolean open)
+	{
 		WorldView view = client.getTopLevelWorldView();
 		if (timeline != null || wild == null || view == null || client.getGameState() != GameState.LOGGED_IN)
 			return false;
@@ -192,7 +211,8 @@ final class BattleStage implements RenderCallback, StageAnchors
 			foeTiles = Math.max(1, (int) Math.round(parts.size() * WILD_SIZE));
 			foeHeight = (int) Math.round(FollowerService.heightOf(parts.data()) * shrunk(parts.heightScale())
 				/ NpcModels.NORMAL_SCALE);
-			timeline = new BattleTimeline(BattleTimeline.stepsOf(lines), leadWon);
+			timeline = open ? BattleTimeline.open(BattleTimeline.stepsOf(lines))
+				: new BattleTimeline(BattleTimeline.stepsOf(lines), leadWon);
 			acting.release();
 			fades = new BattleFades(true);
 			place(view);
@@ -317,6 +337,72 @@ final class BattleStage implements RenderCallback, StageAnchors
 	{
 		if (gone == npc)
 			finish();
+	}
+
+	/**
+	 * Adds the next turn of a battle the player steers: its blows, and the lead creature falling when another one of
+	 * the team must step in.
+	 *
+	 * @param turn the turn
+	 */
+	void append(TurnResult turn)
+	{
+		BattleTimeline current = timeline;
+		if (current == null)
+			return;
+
+		List<BattleTimeline.Step> steps = new ArrayList<>(BattleTimeline.stepsOf(turn.hits()));
+		if (turn.mineFainted() && turn.status() == TurnResult.Status.NEEDS_SWITCH)
+			steps.add(new BattleTimeline.Step(BattleTimeline.Beat.LEAD_FELL, null));
+
+		current.append(steps);
+	}
+
+	/**
+	 * Gives a battle the player steers its end: what is left plays, and then the loser goes down.
+	 *
+	 * @param leadWon whether the player's creature won
+	 */
+	void finishWith(boolean leadWon)
+	{
+		if (timeline != null)
+			timeline.finishWith(leadWon);
+	}
+
+	/** @return whether a battle the player steers has played everything it was given and waits for a choice */
+	boolean waiting()
+	{
+		return timeline != null && timeline.waiting() && catching == null && fades != null && !fades.ending();
+	}
+
+	/**
+	 * Shows another creature of the team as the lead, for a switch. The lead's own name tag is hidden while another
+	 * is shown, and {@code finish} gives the lead back.
+	 *
+	 * @param entered the creature that steps in
+	 */
+	void showLead(Combatant entered)
+	{
+		if (timeline == null)
+			return;
+
+		try
+		{
+			acting.settle();
+			follower.showAs(entered.speciesKey(), entered.isGilded());
+			switched = true;
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not show the creature that stepped in", e);
+		}
+	}
+
+	/** Ends a battle the player steers because the player ran: the stand-in fades out and the lead walks back. */
+	void runAway()
+	{
+		if (timeline != null && fades != null && !fades.ending())
+			beginEnd();
 	}
 
 	/**
@@ -715,12 +801,26 @@ final class BattleStage implements RenderCallback, StageAnchors
 		turningAway = false;
 		foeSpot = null;
 		acting.release();
+		boolean giveBack = switched;
+		switched = false;
 		npc = null;
 		standIn = null;
 		fades = null;
 		errandOpen = false;
 		if (body != null)
 			release(body);
+
+		if (giveBack)
+		{
+			try
+			{
+				follower.showAs(null, false);
+			}
+			catch (RuntimeException | AssertionError e)
+			{
+				log.debug("Gielinor Go: could not give the lead back", e);
+			}
+		}
 
 		if (!sendBack)
 			return;

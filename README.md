@@ -115,6 +115,39 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   the copy gets up and runs off fading out, and it is no longer wild. A jar thrown while it still fights is played
   on the copy the same way.
 
+- **Choose your own moves**
+
+  Turn on **Choose battle actions** in the settings (it is off by default, and then every battle plays itself as
+  described above, with your lead alone). A battle with a wild creature or a City Champion then waits for you each
+  turn, and the battle box appears at the top of the side panel, above the tabs, with both creatures' health, a
+  countdown bar and four buttons:
+
+  - **Attack**: your creature attacks, then the other one does (or the other way round: the faster creature is
+    first, and a level tie is a coin toss).
+  - **Switch**: pick any other creature of your team that can still fight. It costs your turn, so the other creature
+    attacks the one that steps in. When your creature faints you must pick the next one, and that switch is free.
+    The battle is lost when your whole team is down. Only creatures rested to a quarter of their health or more
+    take part.
+  - **Catch** (wild creatures only): throws the jar chosen in the header. The chance grows with the health the
+    creature has lost, from the normal chance at full health up to 1.5 times it near zero (the right-click menu shows
+    the odds). A jar that does not hold costs your turn and the creature attacks; a catch or a creature that runs off
+    ends the battle with the usual catch scene.
+  - **Run**: ends the battle. Nothing is won and that creature cannot be battled again. Logging out, hopping, walking
+    more than 15 tiles away or the monster going away counts as running.
+
+  Choose nothing for 10 seconds (set **Seconds per turn** from 5 to 30) and your creature attacks by itself, or steps
+  in the next creature after a faint. A small prompt on the game screen shows whose turn it is, the time left and both
+  health values, and you can set **Attack**, **Switch**, **Catch** and **Run** hotkeys (none are set by default, so no
+  key is taken from chat or dialogue, and they work only while a choice is open). The Switch hotkey steps in the first
+  creature that can fight; use the panel button to pick one.
+
+  Every blow and every switch ("Go, Bob!", "Bob comes back", "You ran away") floats as it happens, with no summary.
+  With **Battle animations** on, the scene waits for you between turns: the lead and the wild creature (or the two
+  teams in a champion battle) stand ready, a creature that steps in takes the lead's place and one that faints lies
+  down and is replaced. With it off, the same battle is played with floating text only. Winning pays the same as an
+  automatic win (XP for the creature that won, jar and egg drops, the champion's sigil, tasks), and a beaten wild
+  creature lies knocked out and can be caught at the x2.0 odds. Friend battles always play themselves.
+
 - **Creatures evolve**
 
   Many creatures grow into a stronger relative when they reach a certain level: an Imp becomes a Lesser demon,

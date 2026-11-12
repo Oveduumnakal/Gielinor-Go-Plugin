@@ -50,9 +50,11 @@ import net.runelite.api.gameval.VarbitID;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.callback.RenderCallbackManager;
 import net.runelite.client.config.ConfigManager;
+import net.runelite.client.config.Keybind;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.PartyChanged;
 import net.runelite.client.events.RuneScapeProfileChanged;
+import net.runelite.client.input.KeyManager;
 import net.runelite.client.party.PartyMember;
 import net.runelite.client.party.PartyService;
 import net.runelite.client.party.WSClient;
@@ -137,6 +139,9 @@ public class GielinorGoPlugin extends Plugin
 	private RenderCallbackManager renderCallbackManager;
 
 	@Inject
+	private KeyManager keyManager;
+
+	@Inject
 	private PartyService partyService;
 
 	@Inject
@@ -166,6 +171,14 @@ public class GielinorGoPlugin extends Plugin
 	private JarFlightOverlay jarFlight;
 	private BattleStage stage;
 	private ArenaStage arena;
+	private BattleDirector director;
+	private BattlePromptOverlay promptOverlay;
+	private BattleHotkeys hotkeys;
+	private volatile boolean choiceOpen;
+	private int steerNpc = Notice.PLAYER;
+	private WorldPoint steerHome;
+	private List<Notice> pendingLines = new ArrayList<>();
+	private int pendingTicks;
 	private FriendBattles friends;
 	private FriendTrades trades;
 	private final MessageRate partyRate = new MessageRate();
@@ -221,6 +234,12 @@ public class GielinorGoPlugin extends Plugin
 		stage = new BattleStage(client, follower, animations);
 		renderCallbackManager.register(stage);
 		arena = new ArenaStage(client, follower, animations, game::speciesFor);
+		director = new BattleDirector(game, config::turnSeconds, battleListener());
+		promptOverlay = new BattlePromptOverlay();
+		overlayManager.add(promptOverlay);
+		hotkeys = new BattleHotkeys(config::attackKey, config::switchKey, config::catchKey, config::runKey,
+			() -> choiceOpen, this::hotkeyPressed);
+		keyManager.registerKeyListener(hotkeys);
 		panel = new GoPanel(panelActions(), portraits);
 		BufferedImage icon = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
 		navButton = NavigationButton.builder()
@@ -236,6 +255,10 @@ public class GielinorGoPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
+		keyManager.unregisterKeyListener(hotkeys);
+		overlayManager.remove(promptOverlay);
+		choiceOpen = false;
+		clientThread.invoke(director::end);
 		clientThread.invoke(this::saveNow);
 		clientThread.invoke(stage::clear);
 		clientThread.invoke(arena::clear);
@@ -335,6 +358,10 @@ public class GielinorGoPlugin extends Plugin
 		if (state != GameState.LOGIN_SCREEN && state != GameState.HOPPING)
 			return;
 
+		director.end();
+		choiceOpen = false;
+		promptOverlay.show(Collections.emptyList());
+		pendingLines.clear();
 		saveNow();
 		trades.clear();
 		stage.clear();
@@ -416,6 +443,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		ticks++;
+		steering();
 		battleScene();
 		noticeBoard.tick(System.currentTimeMillis());
 		portraits.tick();
@@ -631,6 +659,7 @@ public class GielinorGoPlugin extends Plugin
 		if (configManager.getRSProfileKey() == null)
 			return;
 
+		director.end();
 		game.load(persistence.load());
 		loaded = true;
 		helloDue = true;
@@ -655,7 +684,7 @@ public class GielinorGoPlugin extends Plugin
 
 	private void refreshPanel()
 	{
-		PanelState state = game.snapshot();
+		PanelState state = game.snapshot().withBattle(director.view());
 		FriendsState party = friendsState();
 		GoPanel target = panel;
 		SwingUtilities.invokeLater(() -> target.update(state));
@@ -994,7 +1023,7 @@ public class GielinorGoPlugin extends Plugin
 			addCatchOption(entry, target, specialty);
 
 		addCatchOption(entry, target, standard);
-		if (!withBattle || entry.battled())
+		if (!withBattle || entry.battled() || director.active())
 			return;
 
 		client.getMenu()
@@ -1018,8 +1047,10 @@ public class GielinorGoPlugin extends Plugin
 		String odds = " - no jars";
 		if (jar != null)
 		{
-			double chance = CatchRules.chance(jar, entry.combatLevel(), entry.weakened(), entry.traits(),
-				stage.knockedOut(candidates.get(index)));
+			double chance = inBattleWith(entry)
+				? CatchRules.inBattle(jar, entry.combatLevel(), entry.traits(), foeHealthLeft())
+				: CatchRules.chance(jar, entry.combatLevel(), entry.weakened(), entry.traits(),
+					stage.knockedOut(candidates.get(index)));
 			odds = " - " + jar.label() + " jar " + percent(chance);
 		}
 
@@ -1041,6 +1072,12 @@ public class GielinorGoPlugin extends Plugin
 		WildEntry entry = tracker.get(npcIndex);
 		if (entry == null)
 			return;
+
+		if (inBattleWith(entry))
+		{
+			chooseBattle(BattleChoice.catching(jar));
+			return;
+		}
 
 		CatchOutcome outcome = game.tryCatch(entry, jar, stage.knockedOut(candidates.get(npcIndex)));
 		if (outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED)
@@ -1092,6 +1129,15 @@ public class GielinorGoPlugin extends Plugin
 		if (entry == null)
 			return;
 
+		if (director.active())
+			return;
+
+		if (config.chooseBattleActions())
+		{
+			startSteeredBattle(npcIndex, entry);
+			return;
+		}
+
 		heldNotices = new ArrayList<>();
 		BattleResult result = game.battle(entry);
 		List<BattleLine> lines = result == null ? null : result.summary(BATTLE_LINES);
@@ -1115,6 +1161,12 @@ public class GielinorGoPlugin extends Plugin
 			arena.clear();
 
 		stage.gameTick();
+		if (pendingTicks > 0 && --pendingTicks == 0)
+		{
+			noticeBoard.queue(pendingLines);
+			pendingLines = new ArrayList<>();
+		}
+
 		long now = System.currentTimeMillis();
 		for (Notice line : arena.gameTick())
 		{
@@ -1128,6 +1180,15 @@ public class GielinorGoPlugin extends Plugin
 
 	private void challenge(String championId)
 	{
+		if (director.active())
+			return;
+
+		if (config.chooseBattleActions())
+		{
+			startSteeredChallenge(championId);
+			return;
+		}
+
 		heldNotices = new ArrayList<>();
 		playTeamBattle(game.challenge(championId), true);
 	}
@@ -1223,6 +1284,342 @@ public class GielinorGoPlugin extends Plugin
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", notice.text(), null);
 	}
 
+	/**
+	 * @param entry a wild creature
+	 * @return whether it is the one the player is fighting in a battle they steer
+	 */
+	private boolean inBattleWith(WildEntry entry)
+	{
+		BattleSession battle = director.session();
+		return battle != null && battle.wild() && battle.entry() == entry;
+	}
+
+	/** @return the share of full health the creature in the battle the player steers has left */
+	private double foeHealthLeft()
+	{
+		BattleState state = director.session().state();
+		Combatant foe = state.foe();
+		return foe.hpFraction();
+	}
+
+	/**
+	 * Starts a battle with a wild creature that waits for the player's choice each turn. With "Battle animations" on
+	 * the lead walks up to it and the turns are acted out; otherwise the battle is played in text.
+	 *
+	 * @param npcIndex the game's index for the monster
+	 * @param entry the wild creature
+	 */
+	private void startSteeredBattle(int npcIndex, WildEntry entry)
+	{
+		heldNotices = new ArrayList<>();
+		BattleSession battle = game.startBattle(entry);
+		if (battle == null)
+		{
+			playBack(null, npcIndex, false);
+			refreshPanel();
+			return;
+		}
+
+		List<BattleLine> opening = Collections.singletonList(battle.opening());
+		boolean staged = config.battleAnimations() && !arena.active() && !stage.active()
+			&& stage.startOpen(candidates.get(npcIndex), opening);
+		steerNpc = npcIndex;
+		steerHome = null;
+		director.begin(battle, staged ? new WildScene(stage) : null);
+		playBack(opening, npcIndex, staged);
+		refreshPanel();
+	}
+
+	/**
+	 * Starts a battle with a City Champion that waits for the player's choice each turn.
+	 *
+	 * @param championId the champion's id
+	 */
+	private void startSteeredChallenge(String championId)
+	{
+		heldNotices = new ArrayList<>();
+		BattleSession battle = game.startChallenge(championId);
+		if (battle == null)
+		{
+			playBack(null, Notice.PLAYER, false);
+			refreshPanel();
+			return;
+		}
+
+		BattleState state = battle.state();
+		Combatant first = state.mine();
+		List<Creature> fighters = battle.fighters();
+		boolean leadFirst = fighters.get(0) == game.data().lead();
+		boolean staged = config.battleAnimations() && !stage.active()
+			&& arena.startOpen(state.foe().speciesKey(), first.speciesKey(), first.isGilded(), leadFirst);
+		Player player = client.getLocalPlayer();
+		steerNpc = Notice.PLAYER;
+		steerHome = player == null ? null : player.getWorldLocation();
+		director.begin(battle, staged ? new ArenaScene(arena) : null);
+		playBack(Collections.singletonList(battle.opening()), Notice.PLAYER, false);
+		refreshPanel();
+	}
+
+	/**
+	 * Plays the player's choice in the battle that waits, if one does. Called on the game thread.
+	 *
+	 * @param choice what the player chose
+	 */
+	private void chooseBattle(BattleChoice choice)
+	{
+		if (!director.promptOpen())
+			return;
+
+		heldNotices = new ArrayList<>();
+		director.choose(choice);
+		flushHeld();
+		refreshPanel();
+	}
+
+	/** Shows whatever the game announced while a turn was played and nobody took, so no line is lost. */
+	private void flushHeld()
+	{
+		List<Notice> left = heldNotices;
+		heldNotices = null;
+		if (left != null)
+			left.forEach(this::announce);
+	}
+
+	/**
+	 * Carries a hotkey to the game thread as the choice it stands for. The Switch key steps in the first creature
+	 * that can fight.
+	 *
+	 * @param kind which key was pressed
+	 */
+	private void hotkeyPressed(BattleChoice.Kind kind)
+	{
+		clientThread.invoke(() ->
+		{
+			BattleSession battle = director.session();
+			if (battle == null || !director.promptOpen())
+				return;
+
+			BattleState state = battle.state();
+			if (kind == BattleChoice.Kind.SWITCH)
+			{
+				List<Integer> targets = state.switchTargets();
+				if (!targets.isEmpty())
+					chooseBattle(BattleChoice.switchTo(targets.get(0)));
+
+				return;
+			}
+
+			if (state.needsSwitch())
+				return;
+
+			if (kind == BattleChoice.Kind.ATTACK)
+				chooseBattle(BattleChoice.attack());
+			else if (kind == BattleChoice.Kind.CATCH && battle.wild())
+				chooseBattle(BattleChoice.catching(null));
+			else if (kind == BattleChoice.Kind.RUN)
+				chooseBattle(BattleChoice.run());
+		});
+	}
+
+	/**
+	 * Moves a battle the player steers on by one game tick: opens the choice when the scene is ready, counts the
+	 * time, plays the creature's own attack when it is up, and ends the battle as running when the player left it.
+	 * The panel is redrawn every tick while a choice is open so the countdown moves.
+	 */
+	private void steering()
+	{
+		if (!director.active())
+		{
+			if (choiceOpen)
+			{
+				choiceOpen = false;
+				promptOverlay.show(Collections.emptyList());
+				refreshPanel();
+			}
+
+			return;
+		}
+
+		heldNotices = new ArrayList<>();
+		director.gameTick(steerForfeits());
+		flushHeld();
+		boolean open = director.promptOpen();
+		choiceOpen = open;
+		promptOverlay.show(open ? promptLines() : Collections.emptyList());
+		if (open || !director.active())
+			refreshPanel();
+	}
+
+	private List<String> promptLines()
+	{
+		BattleView view = director.view();
+		if (view == null)
+			return Collections.emptyList();
+
+		String hotkeyText = BattlePrompt.hotkeys(keyText(config.attackKey()), keyText(config.switchKey()),
+			keyText(config.catchKey()), keyText(config.runKey()), view.canCatch(), view.forcedSwitch());
+		return BattlePrompt.lines(view, hotkeyText);
+	}
+
+	private static String keyText(Keybind key)
+	{
+		return key == null || Keybind.NOT_SET.equals(key) ? null : key.toString();
+	}
+
+	/** @return whether the player left the battle they steer: logged out, walked away, or the creature is gone */
+	private boolean steerForfeits()
+	{
+		Player player = client.getLocalPlayer();
+		WorldPoint here = player == null ? null : player.getWorldLocation();
+		boolean loggedIn = client.getGameState() == GameState.LOGGED_IN && here != null;
+		boolean inView = true;
+		WorldPoint there = steerHome;
+		if (steerNpc != Notice.PLAYER)
+		{
+			NPC npc = candidates.get(steerNpc);
+			inView = npc != null && tracker.get(steerNpc) != null;
+			there = npc == null ? null : npc.getWorldLocation();
+		}
+
+		if (here == null || there == null)
+			return !loggedIn || !inView;
+
+		return TurnClock.forfeits(loggedIn, inView, here.getX() - there.getX(), here.getY() - there.getY());
+	}
+
+	/** @return what hears a steered battle and shows it */
+	private BattleDirector.Listener battleListener()
+	{
+		return new BattleDirector.Listener()
+		{
+			@Override
+			public void turn(BattleSession session, TurnResult turn, List<BattleLine> closing, boolean hasScene)
+			{
+				showTurn(session, turn, closing, hasScene);
+			}
+
+			@Override
+			public void jarThrown(BattleSession session, JarType jar, CatchOutcome outcome)
+			{
+				showBattleThrow(session, jar, outcome);
+			}
+		};
+	}
+
+	/**
+	 * Acts out a jar thrown in the middle of a battle. A catch, or a creature that runs off, ends the battle, so it
+	 * goes to the usual catch effects, which also end the scene. A jar that does not hold plays the throw and the
+	 * battle goes on.
+	 *
+	 * @param session the battle
+	 * @param jar the jar thrown
+	 * @param outcome what it did
+	 */
+	private void showBattleThrow(BattleSession session, JarType jar, CatchOutcome outcome)
+	{
+		int npcIndex = session.entry().npcIndex();
+		if (outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED)
+		{
+			tracker.remove(npcIndex, System.currentTimeMillis());
+			showCatch(outcome, npcIndex, jar);
+			return;
+		}
+
+		NPC target = candidates.get(npcIndex);
+		if (outcome != CatchOutcome.BROKE_FREE || target == null || !config.catchEffects() || !effects.throwJar())
+			return;
+
+		effects.react(outcome);
+		jarFlight.start(jar, target, stage.isStaged(target) ? stage : null);
+	}
+
+	/**
+	 * Shows the lines of one turn of a battle the player steers, followed by whatever the game announced while
+	 * playing it. When the scene acts the battle out, blows and the result float as they land, and anything about
+	 * who steps in floats at once; against a champion the scene shows the blows itself and the verdict waits for it
+	 * to end.
+	 *
+	 * @param session the battle
+	 * @param turn the turn
+	 * @param closing the lines that close the battle, when this turn ended it
+	 * @param hasScene whether a scene acts the battle out
+	 */
+	private void showTurn(BattleSession session, TurnResult turn, List<BattleLine> closing, boolean hasScene)
+	{
+		List<Notice> after = heldNotices == null ? new ArrayList<>() : heldNotices;
+		heldNotices = null;
+		if (!config.showResults() || !turn.turnUsed())
+		{
+			after.forEach(this::announce);
+			return;
+		}
+
+		int npcIndex = steerNpc;
+		boolean wild = session.wild();
+		List<Notice> now = new ArrayList<>();
+		List<Notice> timed = new ArrayList<>();
+		for (BattleLine line : turn.lines())
+		{
+			boolean blow = line.kind() == BattleLine.Kind.LEAD_HIT || line.kind() == BattleLine.Kind.FOE_HIT;
+			Duel duel = turn.duel();
+			boolean knockOut = duel != null && duel.knockOut() == line;
+			if (hasScene && !wild && (blow || knockOut))
+				continue;
+
+			Notice notice = noticeOf(line, npcIndex, hasScene);
+			if (hasScene && wild && blow)
+				timed.add(notice);
+			else if (hasScene)
+				now.add(notice);
+			else
+				timed.add(notice);
+		}
+
+		long stamp = System.currentTimeMillis();
+		now.forEach(notice -> noticeBoard.show(notice, stamp));
+		List<Notice> result = new ArrayList<>();
+		for (BattleLine line : closing)
+			result.add(noticeOf(line, npcIndex, hasScene));
+
+		result.addAll(after);
+		if (!hasScene)
+		{
+			timed.addAll(result);
+			noticeBoard.enqueue(timed, false);
+		}
+		else if (wild)
+		{
+			timed.addAll(result);
+			pendingLines.addAll(timed);
+			pendingTicks = Math.max(pendingTicks, 2);
+		}
+		else
+		{
+			noticeBoard.enqueue(result, true);
+		}
+
+		if (config.chatMessages())
+		{
+			for (Notice notice : after)
+				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", notice.text(), null);
+		}
+	}
+
+	private static Notice noticeOf(BattleLine line, int npcIndex, boolean staged)
+	{
+		if (npcIndex == Notice.PLAYER)
+			return staged ? TeamScript.noticeOf(line) : Notice.player(line.text(), line.tone());
+
+		if (staged && line.overPlayer())
+			return Notice.stageLead(line.text(), line.tone());
+
+		if (staged)
+			return Notice.stageFoe(npcIndex, line.text(), line.tone());
+
+		return line.overPlayer() ? Notice.player(line.text(), line.tone())
+			: Notice.creature(npcIndex, line.text(), line.tone());
+	}
+
 	/** @return the panel's actions, each carried over to the game thread and followed by a panel refresh */
 	private PanelActions panelActions()
 	{
@@ -1262,6 +1659,12 @@ public class GielinorGoPlugin extends Plugin
 			public void selectJar(JarType type)
 			{
 				onGameThread(() -> game.selectJar(type));
+			}
+
+			@Override
+			public void battleChoice(BattleChoice choice)
+			{
+				onGameThread(() -> chooseBattle(choice));
 			}
 
 			@Override
