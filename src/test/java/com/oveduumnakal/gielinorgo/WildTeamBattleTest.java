@@ -264,4 +264,26 @@ public class WildTeamBattleTest
 		assertTrue(shown <= 2 * TeamScript.TEAM_HIT_BEATS);
 		assertTrue(shown <= blows);
 	}
+
+	@Test
+	public void aBattleWithASwitchIsPlayedBackAsItsScriptWithTheHiddenOpeningFirst()
+	{
+		BattleResult result = leadLosesSecondWins();
+		assertTrue(result.switches() > 0);
+
+		List<BattleLine> shown = result.playbackSummary(6);
+
+		WildScript script = WildScript.of(result);
+		assertEquals(script.lines().size(), shown.size());
+		assertEquals(BattleLine.Kind.OPENING, shown.get(0).kind());
+		long openings = shown.stream().filter(line -> line.kind() == BattleLine.Kind.OPENING).count();
+		assertEquals(1, openings);
+		List<BattleLine> scripted = script.lines();
+		for (int i = 0; i < shown.size(); i++)
+		{
+			BattleLine wanted = scripted.get(i);
+			BattleLine got = shown.get(i);
+			assertEquals(wanted.text(), got.text());
+		}
+	}
 }
