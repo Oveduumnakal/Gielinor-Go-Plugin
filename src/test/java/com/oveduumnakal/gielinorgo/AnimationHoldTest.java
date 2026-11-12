@@ -58,7 +58,7 @@ public class AnimationHoldTest
 	public void theGhostRestartsAnAnimationWhoseLastFrameHasLengthZero()
 	{
 		AnimationController controller = new AnimationController(mock(Client.class), animation(2, 0));
-		controller.setOnFinished(NpcGhost::restart);
+		controller.setOnFinished(CreatureBody::restart);
 
 		controller.tick(5);
 

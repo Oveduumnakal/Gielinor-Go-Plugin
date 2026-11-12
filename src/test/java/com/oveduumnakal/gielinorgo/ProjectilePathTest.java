@@ -76,4 +76,21 @@ public class ProjectilePathTest
 		assertEquals(2.0, way[0], CLOSE);
 		assertEquals(4.0, way[1], CLOSE);
 	}
+
+	@Test
+	public void withGroundHeightsTheFlightGoesFromBodyToBody()
+	{
+		ProjectilePath raised = new ProjectilePath(0, 0, 50, -300, 4, 0, 50, 0);
+
+		assertTrue(raised.hasGround());
+		assertEquals(-300 - 50, raised.z(ProjectilePath.LAUNCH_TICK), CLOSE);
+		assertEquals(0 - 50, raised.z(TurnMotion.IMPACT_TICK), CLOSE);
+		assertFalse(path.hasGround());
+	}
+
+	@Test
+	public void aFlightWithOneGroundUnknownFollowsTheTerrain()
+	{
+		assertFalse(new ProjectilePath(0, 0, 50, Double.NaN, 4, 0, 50, 0).hasGround());
+	}
 }

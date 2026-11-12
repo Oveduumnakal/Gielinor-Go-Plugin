@@ -5,30 +5,36 @@
 package com.oveduumnakal.gielinorgo;
 
 /**
- * One line the game wants to tell the player, and whose head it belongs over: a wild creature's, for news about
- * that creature, or the player's own, for things the player found, earned or cannot do.
+ * One line the game wants to tell the player, and what it floats over: a wild creature's body, for news about
+ * that creature, or the player's own head, for things the player found, earned or cannot do.
  */
 final class Notice
 {
-	/** The {@link #npcIndex()} of a notice that belongs over the player's head. */
+	/** The {@link #wildId()} of a notice that belongs over the player's head. */
 	static final int PLAYER = -1;
 
 	private final String text;
 	private final Tone tone;
-	private final int npcIndex;
+	private final int wildId;
 	private final Anchor anchor;
 	private final JarType jar;
 	private final ItemType item;
 
-	/** Where a notice floats: over a head as usual, or over a body that is acted out on a battle stage. */
+	/** Where a notice floats: over the player's head, over a wild creature's body, or over a body on a stage. */
 	enum Anchor
 	{
-		/** Over the monster {@link #npcIndex()} names, or over the player when that is {@link #PLAYER}. */
+		/** Over the player's head. */
 		HEAD,
 
 		/**
-		 * Over the stand-in of the wild creature on stage, or the opposing creature of a team battle on stage; falls
-		 * back to the monster, or to the player when the notice has no monster.
+		 * Over the body of the wild creature {@link #wildId()} names; falls back to the player's head while that
+		 * body has no place on screen.
+		 */
+		WILD,
+
+		/**
+		 * Over the wild creature's body in a battle on stage, or the opposing creature of a team battle on stage;
+		 * falls back to the player's head when no body is drawn.
 		 */
 		STAGE_FOE,
 
@@ -36,16 +42,16 @@ final class Notice
 		STAGE_LEAD
 	}
 
-	private Notice(String text, Tone tone, int npcIndex, Anchor anchor, JarType jar)
+	private Notice(String text, Tone tone, int wildId, Anchor anchor, JarType jar)
 	{
-		this(text, tone, npcIndex, anchor, jar, null);
+		this(text, tone, wildId, anchor, jar, null);
 	}
 
-	private Notice(String text, Tone tone, int npcIndex, Anchor anchor, JarType jar, ItemType item)
+	private Notice(String text, Tone tone, int wildId, Anchor anchor, JarType jar, ItemType item)
 	{
 		this.text = text;
 		this.tone = tone;
-		this.npcIndex = npcIndex;
+		this.wildId = wildId;
 		this.anchor = anchor;
 		this.jar = jar;
 		this.item = item;
@@ -91,30 +97,30 @@ final class Notice
 	}
 
 	/**
-	 * Makes a notice shown over a monster's head.
+	 * Makes a notice shown over a wild creature's body.
 	 *
-	 * @param npcIndex the game's index for the monster
+	 * @param wildId the wild creature's id
 	 * @param text the line
 	 * @param tone its mood
 	 * @return the notice
 	 */
-	static Notice creature(int npcIndex, String text, Tone tone)
+	static Notice creature(int wildId, String text, Tone tone)
 	{
-		return new Notice(text, tone, npcIndex, Anchor.HEAD, null);
+		return new Notice(text, tone, wildId, Anchor.WILD, null);
 	}
 
 	/**
-	 * Makes a notice about a wild creature whose battle is on stage. It floats over the creature's stand-in; once
-	 * no stage shows it, it floats over the monster, as {@link #creature(int, String, Tone)} would.
+	 * Makes a notice about a wild creature whose battle is on stage. It floats over the creature's body, as
+	 * {@link #creature(int, String, Tone)} would.
 	 *
-	 * @param npcIndex the game's index for the monster, kept for the fallback
+	 * @param wildId the wild creature's id
 	 * @param text the line
 	 * @param tone its mood
 	 * @return the notice
 	 */
-	static Notice stageFoe(int npcIndex, String text, Tone tone)
+	static Notice stageFoe(int wildId, String text, Tone tone)
 	{
-		return new Notice(text, tone, npcIndex, Anchor.STAGE_FOE, null);
+		return new Notice(text, tone, wildId, Anchor.STAGE_FOE, null);
 	}
 
 	/**
@@ -167,19 +173,19 @@ final class Notice
 		return item;
 	}
 
-	/** @return the game's index for the monster this floats over, or {@link #PLAYER} */
-	int npcIndex()
+	/** @return the id of the wild creature this floats over, or {@link #PLAYER} */
+	int wildId()
 	{
-		return npcIndex;
+		return wildId;
 	}
 
-	/** @return whether this floats over the player's head */
+	/** @return whether this is about no wild creature, so it floats over the player's head */
 	boolean overPlayer()
 	{
-		return npcIndex == PLAYER;
+		return wildId == PLAYER;
 	}
 
-	/** @return where this floats: over a head, or over a body on a battle stage */
+	/** @return where this floats: over the player, over a wild body, or over a body on a battle stage */
 	Anchor anchor()
 	{
 		return anchor;
@@ -191,6 +197,6 @@ final class Notice
 	 */
 	boolean sameAnchor(Notice other)
 	{
-		return anchor == other.anchor && npcIndex == other.npcIndex;
+		return anchor == other.anchor && wildId == other.wildId;
 	}
 }

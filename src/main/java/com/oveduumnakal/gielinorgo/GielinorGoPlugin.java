@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -47,7 +46,6 @@ import net.runelite.api.events.GameObjectDespawned;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
-import net.runelite.api.events.MenuOpened;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.StatChanged;
@@ -94,6 +92,9 @@ public class GielinorGoPlugin extends Plugin
 
 	/** Game ticks between extra chances for a monster already in view to turn wild. */
 	private static final int REROLL_TICKS = 25;
+
+	/** Farthest from the player, in tiles, a monster may be and still turn wild: its creature would leave beyond. */
+	private static final int SPAWN_RANGE = WildLife.LEAVE_TILES - 5;
 
 	/** Game ticks between side panel refreshes while nothing changes, so resting health still creeps up. */
 	private static final int PANEL_TICKS = 5;
@@ -165,6 +166,7 @@ public class GielinorGoPlugin extends Plugin
 	private GoGame game;
 	private GoPersistence persistence;
 	private WildOverlay wildOverlay;
+	private WildBodies bodies;
 	private final NoticeBoard noticeBoard = new NoticeBoard();
 	private List<Notice> heldNotices;
 	private FloatingTextOverlay floatingText;
@@ -182,7 +184,7 @@ public class GielinorGoPlugin extends Plugin
 	private BattlePromptOverlay promptOverlay;
 	private BattleHotkeys hotkeys;
 	private volatile boolean choiceOpen;
-	private int steerNpc = Notice.PLAYER;
+	private int steerWild = Notice.PLAYER;
 	private WorldPoint steerHome;
 	private List<Notice> pendingLines = new ArrayList<>();
 	private int pendingTicks;
@@ -229,21 +231,20 @@ public class GielinorGoPlugin extends Plugin
 		wsClient.registerMessage(GielinorGoPartyMessage.class);
 		lastHelloTick = -HELLO_TICKS;
 		persistence = new GoPersistence(configManager, gson);
-		wildOverlay = new WildOverlay(this, config, outlineRenderer);
-		floatingText = new FloatingTextOverlay(client, this, noticeBoard, this::stageSpot);
+		AnimationTable animations = loadAnimations();
+		bodies = new WildBodies(client, animations, random);
+		wildOverlay = new WildOverlay(client, bodies, config, outlineRenderer);
+		floatingText = new FloatingTextOverlay(client, noticeBoard, this::spotFor);
 		overlayManager.add(wildOverlay);
 		overlayManager.add(floatingText);
 		portraits = new PortraitService(client, clientThread, game::speciesFor);
-		AnimationTable animations = loadAnimations();
 		follower = new FollowerService(client, animations, game::speciesFor);
 		followerTag = new FollowerTagOverlay(client, follower, () -> follower.showingAs() ? null : leadTag);
 		overlayManager.add(followerTag);
-		effects = new CatchEffects(client, animations, config::catchEffects);
-		renderCallbackManager.register(effects);
+		effects = new CatchEffects(client, config::catchEffects);
 		jarFlight = new JarFlightOverlay(client);
 		overlayManager.add(jarFlight);
-		stage = new BattleStage(client, follower, animations);
-		renderCallbackManager.register(stage);
+		stage = new BattleStage(client, follower, System::currentTimeMillis);
 		arena = new ArenaStage(client, follower, animations, game::speciesFor);
 		director = new BattleDirector(game, config::turnSeconds, battleListener());
 		promptOverlay = new BattlePromptOverlay();
@@ -273,9 +274,8 @@ public class GielinorGoPlugin extends Plugin
 		clientThread.invoke(this::saveNow);
 		clientThread.invoke(stage::clear);
 		clientThread.invoke(arena::clear);
+		clientThread.invoke(bodies::clear);
 		clientThread.invoke(follower::remove);
-		renderCallbackManager.unregister(effects);
-		renderCallbackManager.unregister(stage);
 		clientThread.invoke(effects::clear);
 		clientThread.invoke(jarFlight::clear);
 		overlayManager.remove(jarFlight);
@@ -294,41 +294,22 @@ public class GielinorGoPlugin extends Plugin
 		stepCounter.reset();
 	}
 
-	/** @return the monsters that are wild right now */
-	Collection<WildEntry> wildCreatures()
-	{
-		return tracker.all();
-	}
-
 	/**
-	 * Finds a tracked monster.
+	 * Finds where a notice floats when it is not over the player's head: over a wild creature's body, or over a body
+	 * of a battle that is acted out on screen, whichever stage is playing. Called from the render thread.
 	 *
-	 * @param npcIndex the game's index for the monster
-	 * @return the monster, or null when it is no longer in view
+	 * @param notice the notice
+	 * @return the place of its body, or null when none is drawn and it floats over the player
 	 */
-	NPC npcFor(int npcIndex)
+	private StageAnchors.Spot spotFor(Notice notice)
 	{
-		return candidates.get(npcIndex);
-	}
+		Notice.Anchor anchor = notice.anchor();
+		if (anchor == Notice.Anchor.HEAD)
+			return null;
 
-	/**
-	 * @param npc a monster
-	 * @return whether a battle is acted out in its place, so it is hidden and must not be outlined
-	 */
-	boolean isStaged(NPC npc)
-	{
-		return stage.isStaged(npc);
-	}
+		if (anchor == Notice.Anchor.WILD || (anchor == Notice.Anchor.STAGE_FOE && !notice.overPlayer()))
+			return bodies.spotOf(notice.wildId());
 
-	/**
-	 * Finds where a battle that is acted out on screen has a body, whichever stage is playing. Called from the render
-	 * thread.
-	 *
-	 * @param anchor which body
-	 * @return its place, or null when no stage has it
-	 */
-	private StageAnchors.Spot stageSpot(Notice.Anchor anchor)
-	{
 		BattleStage wild = stage;
 		StageAnchors.Spot spot = wild == null ? null : wild.spotOf(anchor);
 		ArenaStage team = arena;
@@ -360,7 +341,7 @@ public class GielinorGoPlugin extends Plugin
 
 		if (state == GameState.LOADING)
 		{
-			effects.sceneLoading();
+			bodies.sceneLoading();
 			stage.clear();
 			arena.clear();
 			follower.sceneLoading();
@@ -381,6 +362,7 @@ public class GielinorGoPlugin extends Plugin
 		follower.hide();
 		effects.clear();
 		jarFlight.clear();
+		bodies.clear();
 		tracker.clear();
 		bankSpots.clear();
 		game.setBankNear(false);
@@ -511,8 +493,6 @@ public class GielinorGoPlugin extends Plugin
 	public void onNpcDespawned(NpcDespawned event)
 	{
 		int index = event.getNpc().getIndex();
-		effects.forget(event.getNpc());
-		stage.forget(event.getNpc());
 		candidates.remove(index);
 		tracker.leftView(index, System.currentTimeMillis());
 	}
@@ -556,10 +536,16 @@ public class GielinorGoPlugin extends Plugin
 		countSteps();
 		updateFollower();
 		greetParty();
+		wildTick();
 		if (!playable())
+		{
+			bodies.clear();
 			tracker.clearWild(System.currentTimeMillis());
+		}
 		else if (ticks % REROLL_TICKS == 0)
+		{
 			offerRandomCandidate();
+		}
 
 		boolean changed = game.takeDirty();
 		unsaved |= changed;
@@ -584,6 +570,8 @@ public class GielinorGoPlugin extends Plugin
 		if (!loaded)
 			return;
 
+		bodies.clientTick(System.currentTimeMillis());
+		wildMenu();
 		follower.clientTick();
 		stage.clientTick();
 		arena.clientTick();
@@ -635,32 +623,50 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
-	 * Adds the Catch and Battle options to the right-click menu of a wild monster, and the Catch options to the menu
-	 * of a battle's stand-in while the mouse is over it. All are client-side entries.
-	 *
-	 * @param event the menu that just opened
+	 * Moves the wild creatures' lives on by one game tick, and lets go of the ones whose bodies are over.
 	 */
-	@Subscribe
-	public void onMenuOpened(MenuOpened event)
+	private void wildTick()
 	{
-		if (!loaded || tracker.all().isEmpty())
-			return;
-
-		Set<Integer> wildInMenu = new LinkedHashSet<>();
-		for (MenuEntry entry : event.getMenuEntries())
+		long now = System.currentTimeMillis();
+		for (int wildId : bodies.gameTick(now))
 		{
-			NPC npc = entry.getNpc();
-			if (npc != null && tracker.get(npc.getIndex()) != null)
-				wildInMenu.add(npc.getIndex());
+			tracker.remove(wildId);
+			stage.forget(wildId);
 		}
+	}
 
-		int standIn = stage.stagedIndex();
-		boolean overStandIn = standIn >= 0 && tracker.get(standIn) != null && stage.mouseOverStandIn();
-		for (int index : wildInMenu)
-			addWildOptions(tracker.get(index), true);
+	/**
+	 * Adds the Catch and Battle entries to the menu while the mouse is over a wild creature's body, with the one
+	 * the player most likely wants on top, so a plain click does that and the right-click menu offers the rest. The
+	 * entries are client-side only and nothing is sent to the game. They are added only while the mouse is over the
+	 * game view (the menu then has a "Walk here"), never over an interface, and never while the menu is open. A click
+	 * on the body therefore never walks the player to the tile behind it.
+	 */
+	private void wildMenu()
+	{
+		try
+		{
+			if (bodies.isEmpty() || client.isMenuOpen() || client.getMouseCanvasPosition() == null)
+				return;
 
-		if (overStandIn && !wildInMenu.contains(standIn))
-			addWildOptions(tracker.get(standIn), false);
+			MenuEntry[] present = client.getMenu().getMenuEntries();
+			boolean overScene = false;
+			for (MenuEntry entry : present)
+			{
+				if (entry.getType() == MenuAction.RUNELITE && WildMenu.isOurs(entry.getOption()))
+					return;
+
+				overScene |= entry.getType() == MenuAction.WALK;
+			}
+
+			WildBody hit = overScene ? bodies.under(client.getMouseCanvasPosition()) : null;
+			if (hit != null && tracker.get(hit.entry().wildId()) != null)
+				addWildOptions(hit.entry());
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not add the wild creature's menu entries", e);
+		}
 	}
 
 	private void startOnClientThread()
@@ -1171,13 +1177,10 @@ public class GielinorGoPlugin extends Plugin
 	private void offer(NPC npc)
 	{
 		Species species = speciesOf(npc);
-		if (!loaded || species == null || !playable())
+		if (!loaded || species == null || !playable() || !nearPlayer(npc))
 			return;
 
 		long now = System.currentTimeMillis();
-		if (tracker.restore(npc.getIndex(), npc.getId(), now) != null)
-			return;
-
 		WorldPoint point = npc.getWorldLocation();
 		boolean underground = point != null && Terrain.underground(point.getX(), point.getY());
 		boolean events = config.spawnEvents();
@@ -1187,10 +1190,32 @@ public class GielinorGoPlugin extends Plugin
 		if (entry == null)
 			return;
 
+		if (bodies.spawn(entry, npc, now) == null)
+		{
+			tracker.withdraw(entry);
+			return;
+		}
+
 		game.markSeen(entry);
 		String kind = entry.gilded() ? "A gilded " : entry.roaming() ? "A roaming " : "A wild ";
-		announce(Notice.creature(entry.npcIndex(), kind + species.name() + " appeared!",
+		announce(Notice.creature(entry.wildId(), kind + species.name() + " appeared!",
 			entry.gilded() || entry.roaming() ? Tone.FIND : Tone.INFO));
+	}
+
+	/**
+	 * Tells whether a monster is close enough to the player for a wild creature to appear beside it: a creature that
+	 * would leave at once for being too far away never appears.
+	 *
+	 * @param npc the monster
+	 * @return whether it is on the player's plane and within {@link #SPAWN_RANGE} tiles
+	 */
+	private boolean nearPlayer(NPC npc)
+	{
+		Player player = client.getLocalPlayer();
+		WorldPoint here = player == null ? null : player.getWorldLocation();
+		WorldPoint there = npc.getWorldLocation();
+		return here != null && there != null && here.getPlane() == there.getPlane()
+			&& here.distanceTo2D(there) <= SPAWN_RANGE;
 	}
 
 	private void offerRandomCandidate()
@@ -1199,9 +1224,7 @@ public class GielinorGoPlugin extends Plugin
 		List<NPC> pool = new ArrayList<>();
 		for (NPC npc : candidates.values())
 		{
-			if (tracker.canRestore(npc.getIndex(), npc.getId(), now))
-				tracker.restore(npc.getIndex(), npc.getId(), now);
-			else if (tracker.mayRoll(npc.getIndex(), npc.getId(), now))
+			if (tracker.mayRoll(npc.getIndex(), npc.getId(), now) && nearPlayer(npc))
 				pool.add(npc);
 		}
 
@@ -1224,27 +1247,35 @@ public class GielinorGoPlugin extends Plugin
 		game.setBankNear(bankSpots.near(point.getX(), point.getY(), point.getPlane()));
 	}
 
-	private void addWildOptions(WildEntry entry, boolean withBattle)
+	private void addWildOptions(WildEntry entry)
 	{
 		Species species = entry.species();
 		Rarity rarity = species.rarity();
 		String name = ColorUtil.wrapWithColorTag(species.name(), rarity.color());
 		String target = entry.prefix() + name + " (Lv " + entry.level() + ")";
-		int index = entry.npcIndex();
-		JarType standard = game.jarToThrow();
-		for (JarType specialty : game.matchingSpecialtyJars(entry))
-			addCatchOption(entry, target, specialty);
+		int wildId = entry.wildId();
+		WildBody body = bodies.get(wildId);
+		boolean withBattle = !entry.battled() && !director.active() && body != null && !body.life().leaving();
+		List<WildMenu.Item> items = WildMenu.topFirst(game.jarToThrow(), game.matchingSpecialtyJars(entry),
+			withBattle, WildMenu.leftClickCatches(knockedOut(wildId)));
+		for (int i = items.size() - 1; i >= 0; i--)
+		{
+			WildMenu.Item item = items.get(i);
+			if (item.isCatch())
+				addCatchOption(entry, target, item.jar());
+			else
+				addBattleOption(wildId, target);
+		}
+	}
 
-		addCatchOption(entry, target, standard);
-		if (!withBattle || entry.battled() || director.active())
-			return;
-
+	private void addBattleOption(int wildId, String target)
+	{
 		client.getMenu()
-			.createMenuEntry(1)
-			.setOption("Battle")
+			.createMenuEntry(-1)
+			.setOption(WildMenu.BATTLE)
 			.setTarget(target)
 			.setType(MenuAction.RUNELITE)
-			.onClick(clicked -> battle(index));
+			.onClick(clicked -> battle(wildId));
 	}
 
 	/**
@@ -1256,23 +1287,32 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void addCatchOption(WildEntry entry, String target, JarType jar)
 	{
-		int index = entry.npcIndex();
+		int wildId = entry.wildId();
 		String odds = " - no jars";
 		if (jar != null)
 		{
 			double chance = inBattleWith(entry)
 				? CatchRules.inBattle(jar, entry.combatLevel(), entry.traits(), foeHealthLeft())
-				: CatchRules.chance(jar, entry.combatLevel(), entry.weakened(), entry.traits(),
-					stage.knockedOut(candidates.get(index)));
+				: CatchRules.chance(jar, entry.combatLevel(), entry.weakened(), entry.traits(), knockedOut(wildId));
 			odds = " - " + jar.label() + " jar " + percent(chance);
 		}
 
 		client.getMenu()
-			.createMenuEntry(1)
-			.setOption("Catch")
+			.createMenuEntry(-1)
+			.setOption(WildMenu.CATCH)
 			.setTarget(target + odds)
 			.setType(MenuAction.RUNELITE)
-			.onClick(clicked -> throwJar(index, jar));
+			.onClick(clicked -> throwJar(wildId, jar));
+	}
+
+	/**
+	 * @param wildId the wild creature's id
+	 * @return whether it lies knocked out after losing a battle, which makes it easier to catch
+	 */
+	private boolean knockedOut(int wildId)
+	{
+		WildBody body = bodies.get(wildId);
+		return body != null && body.life().knockedOut();
 	}
 
 	private static String percent(double chance)
@@ -1280,9 +1320,9 @@ public class GielinorGoPlugin extends Plugin
 		return Math.round(chance * 100) + "%";
 	}
 
-	private void throwJar(int npcIndex, JarType jar)
+	private void throwJar(int wildId, JarType jar)
 	{
-		WildEntry entry = tracker.get(npcIndex);
+		WildEntry entry = tracker.get(wildId);
 		if (entry == null)
 			return;
 
@@ -1292,77 +1332,84 @@ public class GielinorGoPlugin extends Plugin
 			return;
 		}
 
-		CatchOutcome outcome = game.tryCatch(entry, jar, stage.knockedOut(candidates.get(npcIndex)));
+		CatchOutcome outcome = game.tryCatch(entry, jar, knockedOut(wildId));
 		if (outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED)
-			tracker.remove(npcIndex, System.currentTimeMillis());
+			tracker.remove(wildId);
 
-		showCatch(outcome, npcIndex, jar);
+		showCatch(outcome, wildId, jar);
 		refreshPanel();
 	}
 
 	/**
 	 * Acts a throw out on screen, when that setting is on: the player throws whenever a jar was really used and
-	 * then reacts to the result, and the creature reacts when the jar lands: a caught one shrinks into the jar and
-	 * fades back in later, one that breaks free attacks, one that flees runs off and fades back in. A creature whose
-	 * battle is on stage reacts through its stand-in instead, and the battle scene stays until that is over.
+	 * then reacts to the result, and the creature's body reacts when the jar lands: a caught one shrinks into the
+	 * jar, one that breaks free attacks and stands again, one that flees runs off fading out. With the setting off a
+	 * caught or fled creature simply disappears.
 	 *
 	 * @param outcome what the throw led to
-	 * @param npcIndex the game's index for the monster thrown at
+	 * @param wildId the wild creature's id
 	 * @param jar the jar that was thrown
 	 */
-	private void showCatch(CatchOutcome outcome, int npcIndex, JarType jar)
+	private void showCatch(CatchOutcome outcome, int wildId, JarType jar)
 	{
 		boolean thrown = outcome != CatchOutcome.NO_JARS && outcome != CatchOutcome.FULL;
 		if (!thrown)
 			return;
 
-		NPC target = candidates.get(npcIndex);
-		boolean onStage = config.catchEffects() && stage.beginCatch(target, outcome);
-		if (!onStage)
-			stage.forget(target);
-
-		if (!config.catchEffects())
-			return;
-
-		if (effects.throwJar())
+		WildBody body = bodies.get(wildId);
+		boolean played = config.catchEffects() && body != null && body.beginCatch(outcome);
+		if (config.catchEffects() && effects.throwJar())
 		{
 			effects.react(outcome);
-			jarFlight.start(jar, target, onStage ? stage : null);
+			jarFlight.start(jar, () -> bodies.spotOf(wildId));
 		}
 
-		if (!onStage)
-			effects.play(outcome, target);
-		else if (StageCatch.leavesHidden(outcome))
-			effects.playHidden(outcome, target);
+		boolean gone = outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED;
+		if (gone && !played)
+		{
+			bodies.remove(wildId, System.currentTimeMillis());
+			stage.forget(wildId);
+		}
 	}
 
-	private void battle(int npcIndex)
+	private void battle(int wildId)
 	{
-		WildEntry entry = tracker.get(npcIndex);
-		if (entry == null)
-			return;
-
-		if (director.active())
+		WildEntry entry = tracker.get(wildId);
+		WildBody body = bodies.get(wildId);
+		if (entry == null || body == null || body.life().leaving() || director.active())
 			return;
 
 		if (config.chooseBattleActions())
 		{
-			startSteeredBattle(npcIndex, entry);
+			startSteeredBattle(wildId, entry);
 			return;
 		}
 
 		heldNotices = new ArrayList<>();
 		BattleResult result = game.battle(entry);
 		List<BattleLine> lines = result == null ? null : result.playbackSummary(BATTLE_LINES);
-		boolean staged;
-		if (result != null && result.switches() > 0)
-			staged = stageTeamBattle(npcIndex, result, lines);
-		else
-			staged = lines != null && config.battleAnimations()
-				&& !arena.active() && stage.start(candidates.get(npcIndex), lines, result.won());
+		boolean staged = false;
+		if (result != null && config.battleAnimations() && !arena.active() && !stage.active())
+		{
+			staged = result.switches() > 0 ? stageTeamBattle(body, result, lines)
+				: stage.start(body, lines, result.won());
+			noteUnreachable(wildId, body);
+		}
 
-		playBack(lines, npcIndex, staged);
+		playBack(lines, wildId, staged);
 		refreshPanel();
+	}
+
+	/**
+	 * Says once for a wild creature that a battle with it is shown as text because the lead has no way to get to it.
+	 *
+	 * @param wildId the wild creature's id
+	 * @param body its body
+	 */
+	private void noteUnreachable(int wildId, WildBody body)
+	{
+		if (stage.takeUnreachable() && body.noteUnreachable())
+			announce(Notice.creature(wildId, "Can't reach it, so the battle is shown as text", Tone.INFO));
 	}
 
 	/**
@@ -1370,15 +1417,14 @@ public class GielinorGoPlugin extends Plugin
 	 * steers uses: the face-off, then every beat at once ({@link WildScript}), then the end. The real lead is shown
 	 * again when the scene ends.
 	 *
-	 * @param npcIndex the game's index for the monster
+	 * @param body the wild creature's body
 	 * @param result the battle
 	 * @param lines the lines of the battle, as {@link WildScript} cut them
 	 * @return whether the battle is on stage, so its text waits for the scene
 	 */
-	private boolean stageTeamBattle(int npcIndex, BattleResult result, List<BattleLine> lines)
+	private boolean stageTeamBattle(WildBody body, BattleResult result, List<BattleLine> lines)
 	{
-		if (!config.battleAnimations() || arena.active() || stage.active()
-			|| !stage.startOpen(candidates.get(npcIndex), lines.subList(0, 1)))
+		if (!stage.startOpen(body, lines.subList(0, 1)))
 			return false;
 
 		stage.playScript(WildScript.of(result), result.won(), result.opener(), result.leadOpened());
@@ -1515,21 +1561,21 @@ public class GielinorGoPlugin extends Plugin
 	 * rewards never float up before the hits that earned them.
 	 *
 	 * @param lines the battle's lines, or null when no battle started
-	 * @param npcIndex the game's index for the wild creature, or {@link Notice#PLAYER} when there is none
+	 * @param wildId the wild creature's id, or {@link Notice#PLAYER} when there is none
 	 */
-	private void playBack(List<BattleLine> lines, int npcIndex)
+	private void playBack(List<BattleLine> lines, int wildId)
 	{
-		playBack(lines, npcIndex, false);
+		playBack(lines, wildId, false);
 	}
 
 	/**
 	 * Shows a battle one line per game tick, followed by whatever the game announced while resolving it.
 	 *
 	 * @param lines the battle's lines, or null when no battle started
-	 * @param npcIndex the game's index for the wild creature, or {@link Notice#PLAYER} when there is none
+	 * @param wildId the wild creature's id, or {@link Notice#PLAYER} when there is none
 	 * @param staged whether the battle is acted out on screen, so its lines wait for the lead creature to arrive
 	 */
-	private void playBack(List<BattleLine> lines, int npcIndex, boolean staged)
+	private void playBack(List<BattleLine> lines, int wildId, boolean staged)
 	{
 		List<Notice> after = heldNotices;
 		heldNotices = null;
@@ -1545,14 +1591,14 @@ public class GielinorGoPlugin extends Plugin
 			if (line.kind() == BattleLine.Kind.OPENING)
 				continue;
 
-			if (staged && npcIndex != Notice.PLAYER && line.overPlayer())
+			if (staged && wildId != Notice.PLAYER && line.overPlayer())
 				queue.add(Notice.stageLead(line.text(), line.tone()));
-			else if (staged && npcIndex != Notice.PLAYER)
-				queue.add(Notice.stageFoe(npcIndex, line.text(), line.tone()));
-			else if (line.overPlayer() || npcIndex == Notice.PLAYER)
+			else if (staged && wildId != Notice.PLAYER)
+				queue.add(Notice.stageFoe(wildId, line.text(), line.tone()));
+			else if (line.overPlayer() || wildId == Notice.PLAYER)
 				queue.add(Notice.player(line.text(), line.tone()));
 			else
-				queue.add(Notice.creature(npcIndex, line.text(), line.tone()));
+				queue.add(Notice.creature(wildId, line.text(), line.tone()));
 		}
 
 		queue.addAll(after);
@@ -1587,27 +1633,31 @@ public class GielinorGoPlugin extends Plugin
 	 * Starts a battle with a wild creature that waits for the player's choice each turn. With "Battle animations" on
 	 * the lead walks up to it and the turns are acted out; otherwise the battle is played in text.
 	 *
-	 * @param npcIndex the game's index for the monster
+	 * @param wildId the wild creature's id
 	 * @param entry the wild creature
 	 */
-	private void startSteeredBattle(int npcIndex, WildEntry entry)
+	private void startSteeredBattle(int wildId, WildEntry entry)
 	{
 		heldNotices = new ArrayList<>();
 		BattleSession battle = game.startBattle(entry);
 		if (battle == null)
 		{
-			playBack(null, npcIndex, false);
+			playBack(null, wildId, false);
 			refreshPanel();
 			return;
 		}
 
 		List<BattleLine> opening = Collections.singletonList(battle.opening());
-		boolean staged = config.battleAnimations() && !arena.active() && !stage.active()
-			&& stage.startOpen(candidates.get(npcIndex), opening);
-		steerNpc = npcIndex;
+		steerWild = wildId;
 		steerHome = null;
+		WildBody body = bodies.get(wildId);
+		boolean staged = body != null && config.battleAnimations() && !arena.active() && !stage.active()
+			&& stage.startOpen(body, opening);
+		if (body != null)
+			noteUnreachable(wildId, body);
+
 		director.begin(battle, staged ? new WildScene(stage) : null);
-		playBack(opening, npcIndex, staged);
+		playBack(opening, wildId, staged);
 		refreshPanel();
 	}
 
@@ -1635,7 +1685,7 @@ public class GielinorGoPlugin extends Plugin
 			&& arena.startOpen(state.foe().speciesKey(), first.speciesKey(), first.isGilded(), first.npcId(),
 				leadFirst);
 		Player player = client.getLocalPlayer();
-		steerNpc = Notice.PLAYER;
+		steerWild = Notice.PLAYER;
 		steerHome = player == null ? null : player.getWorldLocation();
 		director.begin(battle, staged ? new ArenaScene(arena) : null);
 		playBack(Collections.singletonList(battle.opening()), Notice.PLAYER, false);
@@ -1756,11 +1806,12 @@ public class GielinorGoPlugin extends Plugin
 		boolean loggedIn = client.getGameState() == GameState.LOGGED_IN && here != null;
 		boolean inView = true;
 		WorldPoint there = steerHome;
-		if (steerNpc != Notice.PLAYER)
+		if (steerWild != Notice.PLAYER)
 		{
-			NPC npc = candidates.get(steerNpc);
-			inView = npc != null && tracker.get(steerNpc) != null;
-			there = npc == null ? null : npc.getWorldLocation();
+			WildBody body = bodies.get(steerWild);
+			inView = body != null && !body.life().leaving() && tracker.get(steerWild) != null;
+			there = body == null ? null
+				: new WorldPoint((int) Math.round(body.x()), (int) Math.round(body.y()), body.plane());
 		}
 
 		if (here == null || there == null)
@@ -1799,20 +1850,19 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void showBattleThrow(BattleSession session, JarType jar, CatchOutcome outcome)
 	{
-		int npcIndex = session.entry().npcIndex();
+		int wildId = session.entry().wildId();
 		if (outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED)
 		{
-			tracker.remove(npcIndex, System.currentTimeMillis());
-			showCatch(outcome, npcIndex, jar);
+			tracker.remove(wildId);
+			showCatch(outcome, wildId, jar);
 			return;
 		}
 
-		NPC target = candidates.get(npcIndex);
-		if (outcome != CatchOutcome.BROKE_FREE || target == null || !config.catchEffects() || !effects.throwJar())
+		if (outcome != CatchOutcome.BROKE_FREE || !config.catchEffects() || !effects.throwJar())
 			return;
 
 		effects.react(outcome);
-		jarFlight.start(jar, target, stage.isStaged(target) ? stage : null);
+		jarFlight.start(jar, () -> bodies.spotOf(wildId));
 	}
 
 	/**
@@ -1836,7 +1886,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 		}
 
-		int npcIndex = steerNpc;
+		int wildId = steerWild;
 		boolean wild = session.wild();
 		List<Notice> now = new ArrayList<>();
 		List<Notice> timed = new ArrayList<>();
@@ -1848,7 +1898,7 @@ public class GielinorGoPlugin extends Plugin
 			if (hasScene && !wild && (blow || knockOut))
 				continue;
 
-			Notice notice = noticeOf(line, npcIndex, hasScene);
+			Notice notice = noticeOf(line, wildId, hasScene);
 			if (hasScene && wild && blow)
 				timed.add(notice);
 			else if (hasScene)
@@ -1861,7 +1911,7 @@ public class GielinorGoPlugin extends Plugin
 		now.forEach(notice -> noticeBoard.show(notice, stamp));
 		List<Notice> result = new ArrayList<>();
 		for (BattleLine line : closing)
-			result.add(noticeOf(line, npcIndex, hasScene));
+			result.add(noticeOf(line, wildId, hasScene));
 
 		result.addAll(after);
 		if (!hasScene)
@@ -1887,19 +1937,19 @@ public class GielinorGoPlugin extends Plugin
 		}
 	}
 
-	private static Notice noticeOf(BattleLine line, int npcIndex, boolean staged)
+	private static Notice noticeOf(BattleLine line, int wildId, boolean staged)
 	{
-		if (npcIndex == Notice.PLAYER)
+		if (wildId == Notice.PLAYER)
 			return staged ? TeamScript.noticeOf(line) : Notice.player(line.text(), line.tone());
 
 		if (staged && line.overPlayer())
 			return Notice.stageLead(line.text(), line.tone());
 
 		if (staged)
-			return Notice.stageFoe(npcIndex, line.text(), line.tone());
+			return Notice.stageFoe(wildId, line.text(), line.tone());
 
 		return line.overPlayer() ? Notice.player(line.text(), line.tone())
-			: Notice.creature(npcIndex, line.text(), line.tone());
+			: Notice.creature(wildId, line.text(), line.tone());
 	}
 
 	/** @return the panel's actions, each carried over to the game thread and followed by a panel refresh */

@@ -7,10 +7,10 @@ package com.oveduumnakal.gielinorgo;
 import java.util.Collections;
 import java.util.Set;
 
-/** A monster in view that is currently catchable. */
+/** A wild creature that is currently catchable. It has its own body on screen and is not tied to any monster. */
 final class WildEntry
 {
-	private final int npcIndex;
+	private final int wildId;
 	private final Species species;
 	private final int level;
 	private final int combatLevel;
@@ -21,44 +21,44 @@ final class WildEntry
 	private boolean weakened;
 	private int npcId;
 
-	WildEntry(int npcIndex, Species species, int level, int combatLevel)
+	WildEntry(int wildId, Species species, int level, int combatLevel)
 	{
-		this(npcIndex, species, level, combatLevel, false);
+		this(wildId, species, level, combatLevel, false);
 	}
 
 	/**
 	 * Creates a wild creature.
 	 *
-	 * @param npcIndex the game's index for the monster
+	 * @param wildId the creature's own id, from the tracker's counter
 	 * @param species the species
 	 * @param level the creature level it would be caught at
 	 * @param combatLevel the monster's combat level in the game
 	 * @param underground whether it was met underground, which gives it the {@link Trait#CAVE} trait
 	 */
-	WildEntry(int npcIndex, Species species, int level, int combatLevel, boolean underground)
+	WildEntry(int wildId, Species species, int level, int combatLevel, boolean underground)
 	{
-		this(npcIndex, species, level, combatLevel, underground, false);
+		this(wildId, species, level, combatLevel, underground, false);
 	}
 
 	/**
 	 * Creates a wild creature that may be gilded.
 	 *
-	 * @param npcIndex the game's index for the monster
+	 * @param wildId the creature's own id, from the tracker's counter
 	 * @param species the species
 	 * @param level the creature level it would be caught at
 	 * @param combatLevel the monster's combat level in the game
 	 * @param underground whether it was met underground, which gives it the {@link Trait#CAVE} trait
 	 * @param gilded whether it is a rare gilded creature
 	 */
-	WildEntry(int npcIndex, Species species, int level, int combatLevel, boolean underground, boolean gilded)
+	WildEntry(int wildId, Species species, int level, int combatLevel, boolean underground, boolean gilded)
 	{
-		this(npcIndex, species, level, combatLevel, underground, gilded, false);
+		this(wildId, species, level, combatLevel, underground, gilded, false);
 	}
 
 	/**
 	 * Creates a wild creature that may be gilded and may be a roaming one.
 	 *
-	 * @param npcIndex the game's index for the monster
+	 * @param wildId the creature's own id, from the tracker's counter
 	 * @param species the species
 	 * @param level the creature level it would be caught at, already raised for a roaming one
 	 * @param combatLevel the monster's combat level in the game
@@ -66,12 +66,12 @@ final class WildEntry
 	 * @param gilded whether it is a rare gilded creature
 	 * @param roaming whether it is a stronger roaming creature that drops a better egg
 	 */
-	WildEntry(int npcIndex, Species species, int level, int combatLevel, boolean underground, boolean gilded,
+	WildEntry(int wildId, Species species, int level, int combatLevel, boolean underground, boolean gilded,
 		boolean roaming)
 	{
 		this.gilded = gilded;
 		this.roaming = roaming;
-		this.npcIndex = npcIndex;
+		this.wildId = wildId;
 		this.species = species;
 		this.level = level;
 		this.combatLevel = combatLevel;
@@ -83,7 +83,7 @@ final class WildEntry
 	}
 
 	/**
-	 * Notes which NPC this entry is, so a creature caught from it looks like it.
+	 * Notes which NPC this entry looks like, so its body and a creature caught from it are drawn as it.
 	 *
 	 * @param id the monster's NPC id
 	 * @return this entry
@@ -100,10 +100,10 @@ final class WildEntry
 		return npcId;
 	}
 
-	/** @return the game's index for the monster this entry belongs to */
-	int npcIndex()
+	/** @return the creature's own id; no two wild creatures share one, and it is not a monster's index */
+	int wildId()
 	{
-		return npcIndex;
+		return wildId;
 	}
 
 	/** @return the species */

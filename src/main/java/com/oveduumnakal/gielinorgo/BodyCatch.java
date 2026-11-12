@@ -5,14 +5,14 @@
 package com.oveduumnakal.gielinorgo;
 
 /**
- * What the stand-in of a battle that is on stage does when a jar is thrown at it, counted in client ticks (20 ms
- * each) from the throw. It reuses the timing of {@link TargetScript}, with two differences that come from the
- * stand-in being a body that may be lying knocked out: a lying creature does not get up to flinch (it stays down
- * until its second act), and one that breaks free or flees gets up first. A caught creature shrinks to nothing and
- * the stage is cut off without its fade; one that flees fades out and the stage is cut off; one that breaks free
- * attacks and the stage then ends with its normal fade. Holds no RuneLite types, so it can be tested tick by tick.
+ * What the body of a wild creature does when a jar is thrown at it, counted in client ticks (20 ms each) from the
+ * throw. It reuses the timing of {@link TargetScript}, with two differences that come from the body possibly lying
+ * knocked out: a lying creature does not get up to flinch (it stays down until its second act), and one that breaks
+ * free or flees gets up first. A caught creature shrinks to nothing and its body is removed; one that flees fades out
+ * and its body is removed; one that breaks free attacks and then stands again. Holds no RuneLite types, so it can be
+ * tested tick by tick.
  */
-final class StageCatch
+final class BodyCatch
 {
 	private final CatchOutcome outcome;
 	private final boolean lying;
@@ -22,16 +22,16 @@ final class StageCatch
 	 * Starts the scene at the throw.
 	 *
 	 * @param outcome what the throw led to
-	 * @param lying whether the stand-in lies knocked out at the throw
+	 * @param lying whether the body lies knocked out at the throw
 	 */
-	StageCatch(CatchOutcome outcome, boolean lying)
+	BodyCatch(CatchOutcome outcome, boolean lying)
 	{
 		this.outcome = outcome;
 		this.lying = lying;
 	}
 
 	/**
-	 * Tells whether a result is played on the stand-in at all.
+	 * Tells whether a result is played on the body at all.
 	 *
 	 * @param outcome what the throw led to
 	 * @return false for a result that throws nothing
@@ -42,12 +42,11 @@ final class StageCatch
 	}
 
 	/**
-	 * Tells whether the real monster must stay hidden after the stage is cut off: a caught creature for its five
-	 * seconds and then the fade back in, a creature that fled until it fades back in. One that broke free is shown
-	 * by the stage's own fade.
+	 * Tells whether the creature is gone for good when the scene ends: a caught creature has shrunk away and one
+	 * that fled has run off. One that broke free is still there.
 	 *
 	 * @param outcome what the throw led to
-	 * @return whether {@link CatchEffects} hides and fades the real monster back after the landing
+	 * @return whether the body is removed at the end of the scene
 	 */
 	static boolean leavesHidden(CatchOutcome outcome)
 	{
@@ -72,7 +71,7 @@ final class StageCatch
 		return outcome;
 	}
 
-	/** @return whether the stand-in lay knocked out at the throw */
+	/** @return whether the body lay knocked out at the throw */
 	boolean startedLying()
 	{
 		return lying;
@@ -90,7 +89,7 @@ final class StageCatch
 	}
 
 	/**
-	 * Tells whether a lying stand-in gets up on this tick.
+	 * Tells whether a lying body gets up on this tick.
 	 *
 	 * @return true when its second act starts, it was lying and it breaks free or flees
 	 */
@@ -99,37 +98,37 @@ final class StageCatch
 		return lying && age == TargetScript.ACT_TICK && TargetScript.turnOf(outcome) != TargetScript.Turn.NONE;
 	}
 
-	/** @return how the stand-in turns on this tick, or none: it turns when its second act starts */
+	/** @return how the body turns on this tick, or none: it turns when its second act starts */
 	TargetScript.Turn turn()
 	{
 		return age == TargetScript.ACT_TICK ? TargetScript.turnOf(outcome) : TargetScript.Turn.NONE;
 	}
 
-	/** @return how big the stand-in is drawn, from 1 down to 0; only a caught creature shrinks */
+	/** @return how big the body is drawn, from 1 down to 0; only a caught creature shrinks */
 	double size()
 	{
 		return TargetScript.size(outcome, age);
 	}
 
-	/** @return how solid the stand-in is, from 1 down to 0; only a fleeing creature fades */
+	/** @return how solid the body is, from 1 down to 0; only a fleeing creature fades */
 	double opacity()
 	{
 		return TargetScript.opacity(outcome, age);
 	}
 
-	/** @return how far the stand-in has run, in tiles; only a fleeing creature runs */
+	/** @return how far the body has run, in tiles; only a fleeing creature runs */
 	double runTiles()
 	{
 		return TargetScript.runTiles(outcome, age);
 	}
 
 	/**
-	 * Tells whether the stage must be cut off now, with no fade, because the stand-in is already gone: a caught
-	 * creature has shrunk to nothing, a fled one has faded out.
+	 * Tells whether the body must be removed now, because it is already gone: a caught creature has shrunk to
+	 * nothing, a fled one has faded out.
 	 *
 	 * @return true from the end of the script for a caught or a fled creature
 	 */
-	boolean cutsStage()
+	boolean removesBody()
 	{
 		return leavesHidden(outcome) && age >= TargetScript.end(outcome);
 	}
@@ -139,7 +138,7 @@ final class StageCatch
 	 *
 	 * @return true on the tick a creature that broke free is done
 	 */
-	boolean fadesStage()
+	boolean standsAgain()
 	{
 		return outcome == CatchOutcome.BROKE_FREE && age == TargetScript.end(outcome);
 	}

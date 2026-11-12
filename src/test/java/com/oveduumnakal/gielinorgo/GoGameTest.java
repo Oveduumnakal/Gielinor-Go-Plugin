@@ -67,7 +67,7 @@ public class GoGameTest
 		assertTrue(game.data().jarCount(JarType.BRONZE) < SaveData.STARTING_JARS + GoGame.STREAK_JARS);
 		assertTrue(game.data().trainerXp > 0);
 		assertTrue(messages.contains("Caught Chicken (Lv 3)!"));
-		assertEquals("creature news floats over the creature", 1, noticeFor("Caught Chicken (Lv 3)!").npcIndex());
+		assertEquals("creature news floats over the creature", 1, noticeFor("Caught Chicken (Lv 3)!").wildId());
 		assertTrue(game.takeDirty());
 		assertFalse(game.takeDirty());
 	}

@@ -10,9 +10,11 @@ import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,9 +31,9 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 
 /**
- * Draws the game's news as text floating over heads: over a wild creature for news about that creature, and over
- * the player for things the player found, earned or cannot do. While a battle is acted out on screen, battle lines
- * float over the stand-in and the lead creature instead. Each line drifts upward and fades out.
+ * Draws the game's news as text floating over bodies: over a wild creature's body for news about that creature, and
+ * over the player's head for things the player found, earned or cannot do. While a battle is acted out on screen,
+ * battle lines float over the fighters' bodies. Each line drifts upward and fades out.
  */
 final class FloatingTextOverlay extends Overlay
 {
@@ -42,24 +44,21 @@ final class FloatingTextOverlay extends Overlay
 	private static final double FADE_FROM_AGE = 0.75;
 
 	private final Client client;
-	private final GielinorGoPlugin plugin;
 	private final NoticeBoard board;
-	private final StageAnchors stages;
+	private final Function<Notice, StageAnchors.Spot> bodies;
 
 	/**
 	 * Creates the overlay.
 	 *
 	 * @param client the game client
-	 * @param plugin finds the monsters lines are about
 	 * @param board the lines on screen
-	 * @param stages where the bodies of a battle on stage stand, asked before any head
+	 * @param bodies finds where the body a line is about is drawn, or null to float over the player's head
 	 */
-	FloatingTextOverlay(Client client, GielinorGoPlugin plugin, NoticeBoard board, StageAnchors stages)
+	FloatingTextOverlay(Client client, NoticeBoard board, Function<Notice, StageAnchors.Spot> bodies)
 	{
 		this.client = client;
-		this.plugin = plugin;
 		this.board = board;
-		this.stages = stages;
+		this.bodies = bodies;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -93,11 +92,12 @@ final class FloatingTextOverlay extends Overlay
 			NoticeBoard.Shown line = lines.get(i);
 			Notice notice = line.notice();
 			StageAnchors.Spot spot = spotFor(notice);
-			Actor head = spot == null ? headFor(notice) : null;
+			Actor head = spot == null ? client.getLocalPlayer() : null;
 			if (spot == null && head == null)
 				continue;
 
-			int row = stacked.merge(spot == null ? head : notice.anchor(), 1, Integer::sum);
+			Object place = spot == null ? head : Arrays.asList(notice.anchor(), notice.wildId());
+			int row = stacked.merge(place, 1, Integer::sum);
 			Point anchor = spot == null ? head.getCanvasTextLocation(graphics, notice.text(),
 				head.getLogicalHeight() + HEAD_OFFSET) : stageLocation(graphics, spot, notice.text());
 			draw(graphics, anchor, line, row, now);
@@ -105,10 +105,10 @@ final class FloatingTextOverlay extends Overlay
 	}
 
 	/**
-	 * Finds the battle stage's place for a notice, if it has one.
+	 * Finds the place of the body a notice is about, if it has one.
 	 *
 	 * @param notice the notice
-	 * @return where its body stands on the stage, or null to float over a head as usual
+	 * @return where its body is drawn, or null to float over the player's head
 	 */
 	private StageAnchors.Spot spotFor(Notice notice)
 	{
@@ -117,13 +117,13 @@ final class FloatingTextOverlay extends Overlay
 
 		try
 		{
-			StageAnchors.Spot spot = stages.spotOf(notice.anchor());
+			StageAnchors.Spot spot = bodies.apply(notice);
 			WorldView view = client.getTopLevelWorldView();
 			return spot != null && view != null && spot.plane() == view.getPlane() ? spot : null;
 		}
 		catch (RuntimeException | AssertionError e)
 		{
-			log.debug("Gielinor Go: could not find the battle stage's place for a line", e);
+			log.debug("Gielinor Go: could not find the body a line is about", e);
 			return null;
 		}
 	}
@@ -140,18 +140,6 @@ final class FloatingTextOverlay extends Overlay
 	{
 		LocalPoint ground = spot.point();
 		return Perspective.getCanvasTextLocation(client, graphics, ground, text, spot.height() + HEAD_OFFSET);
-	}
-
-	/**
-	 * Finds whose head a notice floats over.
-	 *
-	 * @param notice the notice
-	 * @return the monster it is about while that monster is in view, otherwise the player; null when logged out
-	 */
-	private Actor headFor(Notice notice)
-	{
-		Actor monster = notice.overPlayer() ? null : plugin.npcFor(notice.npcIndex());
-		return monster != null ? monster : client.getLocalPlayer();
 	}
 
 	/**
