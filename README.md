@@ -93,9 +93,13 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Melee. A creature that loses to you is easier to catch. Dragons and wyverns bite in melee but about one hit in
   four is a fire or ice breath, which counts as Magic for that hit and says so ("Green dragon breathes fire for 12").
 
-  With **Battle animations** on (the default), your lead walks up to the wild creature and they face each other.
-  Each hit plays as an attack by one and a flinch by the other, one every 3 game ticks like the floating text, and the
-  loser lies down for a few seconds before getting up. Your lead then walks back to you. The wild creature is
+  With **Battle animations** on (the default), your lead walks up to the wild creature and they face each other
+  two tiles apart (one tile when the far spot is blocked). Each hit plays as an attack by one and a flinch by the
+  other, one every 3 game ticks, and the flinch and the floating line come at the same moment of the turn for every
+  attack. A Melee attacker steps up, strikes and steps back. A Ranged or Magic attacker stays where it is and an
+  arrow or a bolt crosses the gap; a dragon steps in to bite but stays put to breathe fire, and a wyvern breathes ice.
+  The arrow, bolt and breath are drawn on your own screen only, they are not real game projectiles, so other plugins
+  do not see them. The loser lies down for a few seconds before getting up. Your lead then walks back to you. The wild creature is
   hidden for the battle: within 1 game tick it fades into a solid copy of itself, drawn at 75% size, that stands in
   its place and fights; a faint (90% see-through) ghost of it fades in over 3 game ticks whenever the real monster
   walks off its tile, and at the end the copy fades back into the real monster over 3 game ticks. Only you see any

@@ -75,57 +75,117 @@ final class BattleTimeline
 		FINISH
 	}
 
-	private final List<Beat> beats;
+	/** One beat of the fight, with how the attack of that beat is made. */
+	static final class Step
+	{
+		private final Beat beat;
+		private final CombatType style;
+		private final ProjectileLook look;
+
+		/**
+		 * Describes a step with no projectile.
+		 *
+		 * @param beat what happens
+		 * @param style the style of the attack, or null when the beat is not an attack
+		 */
+		Step(Beat beat, CombatType style)
+		{
+			this(beat, style, null);
+		}
+
+		/**
+		 * Describes a step.
+		 *
+		 * @param beat what happens
+		 * @param style the style of the attack, or null when the beat is not an attack
+		 * @param look what the projectile looks like, or null when the attack has none
+		 */
+		Step(Beat beat, CombatType style, ProjectileLook look)
+		{
+			this.beat = beat;
+			this.style = style;
+			this.look = look;
+		}
+
+		/** @return what happens */
+		Beat beat()
+		{
+			return beat;
+		}
+
+		/** @return the style of the attack, or null when the beat is not an attack */
+		CombatType style()
+		{
+			return style;
+		}
+
+		/** @return what the projectile looks like, or null when the attack is made by stepping in */
+		ProjectileLook look()
+		{
+			return look;
+		}
+
+		/** @return whether the attacker steps up to the target: a melee attack, or a beat with no style given */
+		boolean melee()
+		{
+			return style == null || style == CombatType.MELEE;
+		}
+	}
+
+	private final List<Step> steps;
 	private final boolean leadWon;
 	private Phase phase = Phase.WALKING;
 	private int walked;
 	private int next;
 	private int held;
 	private int wait;
+	private int sinceFirst = -1;
 
 	/**
 	 * Plans a battle.
 	 *
-	 * @param beats what happens on each game tick of the fight, in order; a missing {@link Beat#FINISH} is added
+	 * @param steps what happens on each beat of the fight, in order; a missing {@link Beat#FINISH} is added
 	 * @param leadWon whether the player's creature won, so the other one is the loser when it is false
 	 */
-	BattleTimeline(List<Beat> beats, boolean leadWon)
+	BattleTimeline(List<Step> steps, boolean leadWon)
 	{
-		this.beats = new ArrayList<>(beats);
-		if (this.beats.isEmpty() || this.beats.get(this.beats.size() - 1) != Beat.FINISH)
-			this.beats.add(Beat.FINISH);
+		this.steps = new ArrayList<>(steps);
+		if (this.steps.isEmpty() || this.steps.get(this.steps.size() - 1).beat() != Beat.FINISH)
+			this.steps.add(new Step(Beat.FINISH, null));
 
 		this.leadWon = leadWon;
 	}
 
 	/**
-	 * Turns battle lines into beats. The opening line is a beat where nobody strikes ({@link Beat#FACE_OFF}), so text
-	 * and blows stay one to one; a line that is only text makes no beat.
+	 * Turns battle lines into steps. The opening line is a beat where nobody strikes ({@link Beat#FACE_OFF}), so text
+	 * and blows stay one to one; a line that is only text makes no step. A hit keeps the style it was rolled in.
 	 *
 	 * @param lines the lines of the battle, in order
-	 * @return one beat per line that is something to see
+	 * @return one step per line that is something to see
 	 */
-	static List<Beat> beatsOf(List<BattleLine> lines)
+	static List<Step> stepsOf(List<BattleLine> lines)
 	{
-		List<Beat> beats = new ArrayList<>();
+		List<Step> steps = new ArrayList<>();
 		for (BattleLine line : lines)
 		{
 			switch (line.kind())
 			{
 				case OPENING:
-					beats.add(Beat.FACE_OFF);
+					steps.add(new Step(Beat.FACE_OFF, null));
 					break;
 
 				case LEAD_HIT:
-					beats.add(line.special() ? Beat.LEAD_SPECIAL : Beat.LEAD_ATTACKS);
+					steps.add(new Step(line.special() ? Beat.LEAD_SPECIAL : Beat.LEAD_ATTACKS, line.style(),
+						ProjectileLook.of(line.style(), line.special(), line.icy())));
 					break;
 
 				case FOE_HIT:
-					beats.add(line.special() ? Beat.FOE_SPECIAL : Beat.FOE_ATTACKS);
+					steps.add(new Step(line.special() ? Beat.FOE_SPECIAL : Beat.FOE_ATTACKS, line.style(),
+						ProjectileLook.of(line.style(), line.special(), line.icy())));
 					break;
 
 				case CLOSING:
-					beats.add(Beat.FINISH);
+					steps.add(new Step(Beat.FINISH, null));
 					break;
 
 				default:
@@ -133,7 +193,7 @@ final class BattleTimeline
 			}
 		}
 
-		return beats;
+		return steps;
 	}
 
 	/**
@@ -142,8 +202,11 @@ final class BattleTimeline
 	 * @param arrived whether the lead has reached its place beside the other creature
 	 * @return what happens on this tick of the fight, or null when nothing does (still walking, or already down)
 	 */
-	Beat tick(boolean arrived)
+	Step tick(boolean arrived)
 	{
+		if (sinceFirst >= 0)
+			sinceFirst++;
+
 		if (phase == Phase.WALKING)
 		{
 			walked++;
@@ -162,14 +225,17 @@ final class BattleTimeline
 			}
 
 			wait = BEAT_TICKS - 1;
-			Beat beat = beats.get(next++);
-			if (beat == Beat.FINISH)
+			Step step = steps.get(next++);
+			if (sinceFirst < 0)
+				sinceFirst = 0;
+
+			if (step.beat() == Beat.FINISH)
 			{
 				phase = Phase.DOWN;
 				held = 0;
 			}
 
-			return beat;
+			return step;
 		}
 
 		if (phase == Phase.DOWN && ++held >= holdTicks())
@@ -188,6 +254,17 @@ final class BattleTimeline
 	boolean knockedOut()
 	{
 		return leadWon && phase == Phase.DOWN;
+	}
+
+	/**
+	 * Tells whether the battle lines may start showing: from one game tick after the first beat, so each line
+	 * appears as its blow lands ({@link TurnMotion#IMPACT_TICK} client ticks, one game tick, after its beat starts).
+	 *
+	 * @return true from one game tick after the first beat
+	 */
+	boolean linesDue()
+	{
+		return sinceFirst >= 1;
 	}
 
 	/** @return the stage the battle is at */
@@ -224,9 +301,9 @@ final class BattleTimeline
 		return tiles * Math.sin(Math.PI * age / LUNGE_TICKS);
 	}
 
-	/** @return the beats, for tests and logging */
-	List<Beat> beats()
+	/** @return the steps, for tests and logging */
+	List<Step> steps()
 	{
-		return Collections.unmodifiableList(beats);
+		return Collections.unmodifiableList(steps);
 	}
 }

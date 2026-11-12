@@ -1092,7 +1092,7 @@ public class GielinorGoPlugin extends Plugin
 			stage.clear();
 
 		stage.gameTick();
-		if (noticeBoard.holding() && (stage.fighting() || !stage.active()))
+		if (noticeBoard.holding() && (stage.linesDue() || !stage.active()))
 			noticeBoard.release();
 	}
 

@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /** Checks that battles are repeatable, always finish, and respect the type triangle. */
@@ -190,6 +191,53 @@ public class BattleSimTest
 			if (line.special())
 				assertTrue(line.text(), line.text().startsWith("Spitting Wyvern breathes ice for "));
 		}
+	}
+
+	@Test
+	public void hitLinesCarryTheStyleTheyWereRolledIn()
+	{
+		boolean sawBite = false;
+		boolean sawBreath = false;
+		for (int seed = 0; seed < 40; seed++)
+		{
+			for (BattleLine line : fight(FIRE_DRAGON, 40, GOBLIN, 70, seed).lines())
+			{
+				if (line.kind() != BattleLine.Kind.LEAD_HIT && line.kind() != BattleLine.Kind.FOE_HIT)
+				{
+					assertNull(line.style());
+					continue;
+				}
+
+				assertEquals(line.text(), line.special() ? CombatType.MAGIC : CombatType.MELEE, line.style());
+				sawBite |= !line.special();
+				sawBreath |= line.special();
+			}
+		}
+
+		assertTrue(sawBite);
+		assertTrue(sawBreath);
+	}
+
+	@Test
+	public void plainFightersCarryTheirOwnStyleAndAWyvernBreathIsIcy()
+	{
+		for (BattleLine line : fight(ARCHER, 40, WIZARD, 40, 5).lines())
+		{
+			if (line.kind() == BattleLine.Kind.LEAD_HIT)
+				assertEquals(CombatType.RANGED, line.style());
+
+			if (line.kind() == BattleLine.Kind.FOE_HIT)
+				assertEquals(CombatType.MAGIC, line.style());
+		}
+
+		for (BattleLine line : fight(ICE_WYVERN, 40, GOBLIN, 70, 1).lines())
+		{
+			if (line.special())
+				assertTrue(line.icy());
+		}
+
+		for (BattleLine line : fight(SURE_BREATH, 40, GOBLIN, 70, 1).lines())
+			assertFalse(line.icy());
 	}
 
 	@Test

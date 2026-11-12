@@ -15,7 +15,8 @@ import net.runelite.api.RuneLiteObject;
  * A creature drawn as an object in the scene: the lead creature beside the player, or the stand-in for a wild
  * creature during a battle. It loops a base animation (standing or walking) and can act out one move of a battle
  * on top of it: attack, get hit, or go down. A move with no animation of its own is faked with a short lunge or
- * recoil, or by laying the model on the ground. Every method must be called on the game thread.
+ * recoil, or by laying the model on the ground. A melee attacker can also step up to its target, strike and step
+ * back ({@link #meleeTurn(double, Act)}, timed by {@link TurnMotion}). Every method must be called on the game thread.
  */
 final class CreatureBody extends RuneLiteObject
 {
@@ -66,6 +67,14 @@ final class CreatureBody extends RuneLiteObject
 	private int playing = AnimationTable.NONE;
 	private int lungeAge = BattleTimeline.LUNGE_TICKS;
 	private double lungeTiles;
+	private int turnAge = TurnMotion.TURN_TICKS;
+	private double turnDistance;
+	private Act turnAct = Act.ATTACK;
+	private boolean turnWalking;
+	private boolean turnStruck;
+	private int restBase = AnimationTable.NONE;
+	private double settleFrom;
+	private int settleAge = TurnMotion.SETTLE_TICKS;
 
 	private CreatureBody(Client client, AnimationTable animations, int npcId, ModelData source, Model still,
 		Model posable, int widthScale, int heightScale)
@@ -189,6 +198,20 @@ final class CreatureBody extends RuneLiteObject
 	 */
 	void setBase(int animationId)
 	{
+		if (turnAge < TurnMotion.TURN_TICKS)
+		{
+			restBase = animationId;
+			if (!turnWalking)
+				applyBase(animationId);
+
+			return;
+		}
+
+		applyBase(animationId);
+	}
+
+	private void applyBase(int animationId)
+	{
 		base = animationId;
 		if (mode != Mode.LOOP)
 			return;
@@ -210,16 +233,12 @@ final class CreatureBody extends RuneLiteObject
 	{
 		lying = false;
 		lungeAge = BattleTimeline.LUNGE_TICKS;
+		cancelTurn();
 		switch (act)
 		{
 			case ATTACK:
-				if (!pose(animations.attack(npcId), Mode.ONCE))
-					lunge(BattleTimeline.LUNGE_TILES);
-
-				break;
-
 			case SPECIAL:
-				if (!pose(animations.secondAttack(npcId), Mode.ONCE) && !pose(animations.attack(npcId), Mode.ONCE))
+				if (!attackPose(act))
 					lunge(BattleTimeline.LUNGE_TILES);
 
 				break;
@@ -238,9 +257,92 @@ final class CreatureBody extends RuneLiteObject
 		}
 	}
 
+	/**
+	 * Steps up to the target, strikes and steps back, as {@link TurnMotion} times it: it walks along the way it
+	 * faces, its attack animation starts at {@link TurnMotion#strikeTick()}, and it is back on its spot when
+	 * {@link TurnMotion#TURN_TICKS} client ticks are up. It keeps facing the target all the way, so on the way back
+	 * it backs away. The walk is shown with the creature's walking animation, and a creature with no attack
+	 * animation simply walks in and out. {@link #push()} gives the distance while the turn runs.
+	 *
+	 * @param distance how far it steps, in tiles
+	 * @param act the attack: {@link Act#ATTACK}, or {@link Act#SPECIAL} for its second attack
+	 */
+	void meleeTurn(double distance, Act act)
+	{
+		cancelTurn();
+		lying = false;
+		lungeAge = BattleTimeline.LUNGE_TICKS;
+		restBase = base;
+		turnDistance = distance;
+		turnAct = act;
+		turnStruck = false;
+		turnAge = 0;
+	}
+
+	/** @return whether a melee turn is running: the body is stepping up, striking or stepping back */
+	boolean turning()
+	{
+		return turnAge < TurnMotion.TURN_TICKS;
+	}
+
+	/**
+	 * Cuts a melee turn short, for a catch thrown mid-turn: the body does not freeze where it is, it eases back to
+	 * its own spot over {@link TurnMotion#SETTLE_TICKS} client ticks. Does nothing when no turn is running.
+	 */
+	void endTurn()
+	{
+		if (!turning())
+			return;
+
+		double from = push();
+		cancelTurn();
+		settleFrom = from;
+		settleAge = 0;
+	}
+
+	/** Forgets the melee turn at once, and the walk that came with it. */
+	private void cancelTurn()
+	{
+		if (turnWalking)
+			base = restBase;
+
+		turnWalking = false;
+		turnAge = TurnMotion.TURN_TICKS;
+		settleAge = TurnMotion.SETTLE_TICKS;
+	}
+
+	private boolean attackPose(Act act)
+	{
+		if (act == Act.SPECIAL && pose(animations.secondAttack(npcId), Mode.ONCE))
+			return true;
+
+		return pose(animations.attack(npcId), Mode.ONCE);
+	}
+
+	/**
+	 * Moves a melee turn on by one client tick: switches between walking and standing, and starts the strike.
+	 */
+	private void advanceTurn()
+	{
+		turnAge++;
+		boolean walking = turnAge < TurnMotion.TURN_TICKS && TurnMotion.walking(turnAge);
+		if (walking != turnWalking)
+		{
+			turnWalking = walking;
+			applyBase(walking ? animations.walk(npcId) : restBase);
+		}
+
+		if (!turnStruck && turnAge >= TurnMotion.strikeTick())
+		{
+			turnStruck = true;
+			attackPose(turnAct);
+		}
+	}
+
 	/** Gets up after being defeated, or stops whatever move is playing, and goes back to the base animation. */
 	void recover()
 	{
+		cancelTurn();
 		lying = false;
 		lungeAge = BattleTimeline.LUNGE_TICKS;
 		mode = Mode.LOOP;
@@ -248,16 +350,31 @@ final class CreatureBody extends RuneLiteObject
 		controller.setAnimation(animation(base));
 	}
 
-	/** Moves the lunge or recoil on by one client tick. */
+	/** Moves the lunge, recoil or melee turn on by one client tick. */
 	void clientTick()
 	{
 		if (lungeAge < BattleTimeline.LUNGE_TICKS)
 			lungeAge++;
+
+		if (settleAge < TurnMotion.SETTLE_TICKS)
+			settleAge++;
+
+		if (turning())
+			advanceTurn();
 	}
 
-	/** @return how far the body is pushed along the way it faces right now, in tiles; negative is backward */
+	/**
+	 * @return how far the body is pushed along the way it faces right now, in tiles; negative is backward. While a
+	 *     melee turn runs it is the step in and out, after a cut-off turn the way back to its spot, else the lunge
+	 */
 	double push()
 	{
+		if (turning())
+			return TurnMotion.offset(turnAge, turnDistance);
+
+		if (settleAge < TurnMotion.SETTLE_TICKS)
+			return TurnMotion.settle(settleFrom, settleAge);
+
 		return BattleTimeline.lunge(lungeAge, lungeTiles);
 	}
 
