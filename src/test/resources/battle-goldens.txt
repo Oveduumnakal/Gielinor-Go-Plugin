@@ -1,0 +1,1501 @@
+== plain 0
+won=true turns=7 hpLeft=0.88 hp 88.0 0.0
+Your Wizard (Lv 21) attacks! | INFO false OPENING false null false
+-19 (47/66) | GOOD false LEAD_HIT false MAGIC false
+Wizard -3 (97/100) | BAD true FOE_HIT false MAGIC false
+-19 (28/66) | GOOD false LEAD_HIT false MAGIC false
+Wizard -5 (92/100) | BAD true FOE_HIT false MAGIC false
+-18 (10/66) | GOOD false LEAD_HIT false MAGIC false
+Wizard -4 (88/100) | BAD true FOE_HIT false MAGIC false
+-17 (0/66) | GOOD false LEAD_HIT false MAGIC false
+Your Wizard won! | GOOD false CLOSING false null false
+== plain 1
+won=false turns=1 hpLeft=0.0 hp 0.0 142.0
+Your Wizard (Lv 2) attacks! | INFO false OPENING false null false
+Wizard -34 (0/28) | BAD true FOE_HIT false MAGIC false
+Your Wizard lost to the Wizard. | BAD false CLOSING false null false
+== plain 2
+won=false turns=1 hpLeft=0.0 hp 0.0 731.0
+Your Wizard (Lv 31) attacks! Magic beats Melee! | GOOD false OPENING false null false
+Wizard -141 (0/138) | BAD true FOE_HIT false MELEE false
+Your Wizard lost to the King Black Dragon. | BAD false CLOSING false null false
+== plain 3
+won=true turns=9 hpLeft=0.7023809523809523 hp 177.0 0.0
+Your Wizard (Lv 61) attacks! | INFO false OPENING false null false
+-45 (150/195) | GOOD false LEAD_HIT false MAGIC false
+Wizard -14 (238/252) | BAD true FOE_HIT false MAGIC false
+-32 (118/195) | GOOD false LEAD_HIT false MAGIC false
+Wizard -24 (214/252) | BAD true FOE_HIT false MAGIC false
+-35 (83/195) | GOOD false LEAD_HIT false MAGIC false
+Wizard -23 (191/252) | BAD true FOE_HIT false MAGIC false
+-46 (37/195) | GOOD false LEAD_HIT false MAGIC false
+Wizard -14 (177/252) | BAD true FOE_HIT false MAGIC false
+-46 (0/195) | GOOD false LEAD_HIT false MAGIC false
+Your Wizard won! | GOOD false CLOSING false null false
+== plain 4
+won=true turns=3 hpLeft=0.9891304347826086 hp 91.0 0.0
+Your Wizard (Lv 19) attacks! Magic beats Melee! | GOOD false OPENING false null false
+-27 (3/30) | GOOD false LEAD_HIT false MAGIC false
+Wizard -1 (91/92) | BAD true FOE_HIT false MELEE false
+-29 (0/30) | GOOD false LEAD_HIT false MAGIC false
+Your Wizard won! | GOOD false CLOSING false null false
+== plain 5
+won=true turns=7 hpLeft=0.8601398601398601 hp 246.0 0.0
+Your Wizard (Lv 70) attacks! Magic beats Melee! | GOOD false OPENING false null false
+-71 (165/236) | GOOD false LEAD_HIT false MAGIC false
+Wizard -9 (277/286) | BAD true FOE_HIT false MELEE false
+-65 (100/236) | GOOD false LEAD_HIT false MAGIC false
+Wizard -14 (263/286) | BAD true FOE_HIT false MELEE false
+-64 (36/236) | GOOD false LEAD_HIT false MAGIC false
+Wizard -17 (246/286) | BAD true FOE_HIT false MELEE false
+-59 (0/236) | GOOD false LEAD_HIT false MAGIC false
+Your Wizard won! | GOOD false CLOSING false null false
+== plain 6
+won=true turns=12 hpLeft=0.35795454545454547 hp 63.0 0.0
+Your Wizard (Lv 41) attacks! Magic beats Melee! | GOOD false OPENING false null false
+Wizard -22 (154/176) | BAD true FOE_HIT false MELEE false
+-34 (161/195) | GOOD false LEAD_HIT false MAGIC false
+Wizard -22 (132/176) | BAD true FOE_HIT false MELEE false
+-26 (135/195) | GOOD false LEAD_HIT false MAGIC false
+Wizard -17 (115/176) | BAD true FOE_HIT false MELEE false
+-35 (100/195) | GOOD false LEAD_HIT false MAGIC false
+Wizard -20 (95/176) | BAD true FOE_HIT false MELEE false
+-39 (61/195) | GOOD false LEAD_HIT false MAGIC false
+Wizard -13 (82/176) | BAD true FOE_HIT false MELEE false
+-40 (21/195) | GOOD false LEAD_HIT false MAGIC false
+Wizard -19 (63/176) | BAD true FOE_HIT false MELEE false
+-34 (0/195) | GOOD false LEAD_HIT false MAGIC false
+Your Wizard won! | GOOD false CLOSING false null false
+== plain 7
+won=true turns=11 hpLeft=0.39344262295081966 hp 96.0 0.0
+Your Wizard (Lv 59) attacks! Magic beats Melee! | GOOD false OPENING false null false
+-53 (214/267) | GOOD false LEAD_HIT false MAGIC false
+Wizard -30 (214/244) | BAD true FOE_HIT false MELEE false
+-44 (170/267) | GOOD false LEAD_HIT false MAGIC false
+Wizard -32 (182/244) | BAD true FOE_HIT false MELEE false
+-53 (117/267) | GOOD false LEAD_HIT false MAGIC false
+Wizard -23 (159/244) | BAD true FOE_HIT false MELEE false
+-39 (78/267) | GOOD false LEAD_HIT false MAGIC false
+Wizard -31 (128/244) | BAD true FOE_HIT false MELEE false
+-38 (40/267) | GOOD false LEAD_HIT false MAGIC false
+Wizard -32 (96/244) | BAD true FOE_HIT false MELEE false
+-51 (0/267) | GOOD false LEAD_HIT false MAGIC false
+Your Wizard won! | GOOD false CLOSING false null false
+== plain 8
+won=true turns=1 hpLeft=1.0 hp 229.0 0.0
+Your Wizard (Lv 55) attacks! Ranged beats Magic. | BAD false OPENING false null false
+-45 (0/28) | GOOD false LEAD_HIT false MAGIC false
+Your Wizard won! | GOOD false CLOSING false null false
+== plain 9
+won=true turns=9 hpLeft=0.6273291925465838 hp 101.0 0.0
+Your Wizard (Lv 37) attacks! Ranged beats Magic. | BAD false OPENING false null false
+-22 (82/104) | GOOD false LEAD_HIT false MAGIC false
+Wizard -17 (144/161) | BAD true FOE_HIT false RANGED false
+-23 (59/104) | GOOD false LEAD_HIT false MAGIC false
+Wizard -15 (129/161) | BAD true FOE_HIT false RANGED false
+-24 (35/104) | GOOD false LEAD_HIT false MAGIC false
+Wizard -13 (116/161) | BAD true FOE_HIT false RANGED false
+-21 (14/104) | GOOD false LEAD_HIT false MAGIC false
+Wizard -15 (101/161) | BAD true FOE_HIT false RANGED false
+-20 (0/104) | GOOD false LEAD_HIT false MAGIC false
+Your Wizard won! | GOOD false CLOSING false null false
+== dragon is mine 0
+won=true turns=10 hpLeft=0.5520361990950227 hp 122.0 0.0
+Your Green dragon (Lv 30) attacks! | INFO false OPENING false null false
+Green dragon -22 (199/221) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 52 (120/172) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -20 (179/221) | BAD true FOE_HIT false MELEE false
+-33 (87/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -18 (161/221) | BAD true FOE_HIT false MELEE false
+-42 (45/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -25 (136/221) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 42 (3/172) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -14 (122/221) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 50 (0/172) | GOOD false LEAD_HIT true MAGIC false
+Your Green dragon won! | GOOD false CLOSING false null false
+== dragon is theirs 0
+won=false turns=10 hpLeft=0.0 hp 0.0 154.0
+Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
+-25 (229/254) | GOOD false LEAD_HIT false MAGIC false
+Wizard -31 (122/153) | BAD true FOE_HIT false MELEE false
+-15 (214/254) | GOOD false LEAD_HIT false MAGIC false
+Wizard -30 (92/153) | BAD true FOE_HIT false MELEE false
+-22 (192/254) | GOOD false LEAD_HIT false MAGIC false
+Wizard -26 (66/153) | BAD true FOE_HIT false MELEE false
+-15 (177/254) | GOOD false LEAD_HIT false MAGIC false
+Green dragon breathes fire for 44 (22/153) | BAD true FOE_HIT true MAGIC false
+-23 (154/254) | GOOD false LEAD_HIT false MAGIC false
+Green dragon breathes fire for 37 (0/153) | BAD true FOE_HIT true MAGIC false
+Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
+== dragon is mine 1
+won=true turns=8 hpLeft=0.6882591093117408 hp 170.0 0.0
+Your Green dragon (Lv 34) attacks! | INFO false OPENING false null false
+Green dragon -19 (228/247) | BAD true FOE_HIT false MELEE false
+-37 (135/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -14 (214/247) | BAD true FOE_HIT false MELEE false
+-33 (102/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -22 (192/247) | BAD true FOE_HIT false MELEE false
+-51 (51/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -22 (170/247) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 54 (0/172) | GOOD false LEAD_HIT true MAGIC false
+Your Green dragon won! | GOOD false CLOSING false null false
+== dragon is theirs 1
+won=false turns=7 hpLeft=0.0 hp 0.0 209.0
+Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
+Wizard -33 (120/153) | BAD true FOE_HIT false MELEE false
+-15 (246/261) | GOOD false LEAD_HIT false MAGIC false
+Green dragon breathes fire for 57 (63/153) | BAD true FOE_HIT true MAGIC false
+-12 (234/261) | GOOD false LEAD_HIT false MAGIC false
+Wizard -41 (22/153) | BAD true FOE_HIT false MELEE false
+-25 (209/261) | GOOD false LEAD_HIT false MAGIC false
+Wizard -33 (0/153) | BAD true FOE_HIT false MELEE false
+Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
+== dragon is mine 2
+won=true turns=6 hpLeft=0.8394160583941606 hp 230.0 0.0
+Your Green dragon (Lv 38) attacks! | INFO false OPENING false null false
+Green dragon -16 (258/274) | BAD true FOE_HIT false MELEE false
+-49 (123/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -19 (239/274) | BAD true FOE_HIT false MELEE false
+-60 (63/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -9 (230/274) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 73 (0/172) | GOOD false LEAD_HIT true MAGIC false
+Your Green dragon won! | GOOD false CLOSING false null false
+== dragon is theirs 2
+won=false turns=7 hpLeft=0.0 hp 0.0 203.0
+Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
+Wizard -43 (110/153) | BAD true FOE_HIT false MELEE false
+-18 (250/268) | GOOD false LEAD_HIT false MAGIC false
+Wizard -42 (68/153) | BAD true FOE_HIT false MELEE false
+-25 (225/268) | GOOD false LEAD_HIT false MAGIC false
+Green dragon breathes fire for 41 (27/153) | BAD true FOE_HIT true MAGIC false
+-22 (203/268) | GOOD false LEAD_HIT false MAGIC false
+Wizard -29 (0/153) | BAD true FOE_HIT false MELEE false
+Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
+== dragon is mine 3
+won=true turns=7 hpLeft=0.8903654485049833 hp 268.0 0.0
+Your Green dragon (Lv 42) attacks! | INFO false OPENING false null false
+-46 (126/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -5 (296/301) | BAD true FOE_HIT false MELEE false
+-49 (77/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -13 (283/301) | BAD true FOE_HIT false MELEE false
+-45 (32/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -15 (268/301) | BAD true FOE_HIT false MELEE false
+-48 (0/172) | GOOD false LEAD_HIT false MELEE false
+Your Green dragon won! | GOOD false CLOSING false null false
+== dragon is theirs 3
+won=false turns=9 hpLeft=0.0 hp 0.0 198.0
+Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
+Wizard -31 (122/153) | BAD true FOE_HIT false MELEE false
+-11 (263/274) | GOOD false LEAD_HIT false MAGIC false
+Wizard -33 (89/153) | BAD true FOE_HIT false MELEE false
+-20 (243/274) | GOOD false LEAD_HIT false MAGIC false
+Wizard -30 (59/153) | BAD true FOE_HIT false MELEE false
+-22 (221/274) | GOOD false LEAD_HIT false MAGIC false
+Wizard -32 (27/153) | BAD true FOE_HIT false MELEE false
+-23 (198/274) | GOOD false LEAD_HIT false MAGIC false
+Wizard -38 (0/153) | BAD true FOE_HIT false MELEE false
+Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
+== dragon is mine 4
+won=true turns=5 hpLeft=0.9573170731707317 hp 314.0 0.0
+Your Green dragon (Lv 46) attacks! | INFO false OPENING false null false
+-73 (99/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -13 (315/328) | BAD true FOE_HIT false MELEE false
+-52 (47/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -1 (314/328) | BAD true FOE_HIT false MELEE false
+-70 (0/172) | GOOD false LEAD_HIT false MELEE false
+Your Green dragon won! | GOOD false CLOSING false null false
+== dragon is theirs 4
+won=false turns=7 hpLeft=0.0 hp 0.0 236.0
+Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
+Wizard -46 (107/153) | BAD true FOE_HIT false MELEE false
+-23 (258/281) | GOOD false LEAD_HIT false MAGIC false
+Wizard -31 (76/153) | BAD true FOE_HIT false MELEE false
+-10 (248/281) | GOOD false LEAD_HIT false MAGIC false
+Wizard -44 (32/153) | BAD true FOE_HIT false MELEE false
+-12 (236/281) | GOOD false LEAD_HIT false MAGIC false
+Wizard -43 (0/153) | BAD true FOE_HIT false MELEE false
+Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
+== dragon is mine 5
+won=true turns=5 hpLeft=0.9690140845070423 hp 344.0 0.0
+Your Green dragon (Lv 50) attacks! | INFO false OPENING false null false
+-59 (113/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -4 (351/355) | BAD true FOE_HIT false MELEE false
+-68 (45/172) | GOOD false LEAD_HIT false MELEE false
+Green dragon -7 (344/355) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 100 (0/172) | GOOD false LEAD_HIT true MAGIC false
+Your Green dragon won! | GOOD false CLOSING false null false
+== dragon is theirs 5
+won=false turns=7 hpLeft=0.0 hp 0.0 241.0
+Your Wizard (Lv 35) attacks! Magic beats Melee! | GOOD false OPENING false null false
+Wizard -33 (120/153) | BAD true FOE_HIT false MELEE false
+-16 (272/288) | GOOD false LEAD_HIT false MAGIC false
+Wizard -39 (81/153) | BAD true FOE_HIT false MELEE false
+-19 (253/288) | GOOD false LEAD_HIT false MAGIC false
+Green dragon breathes fire for 60 (21/153) | BAD true FOE_HIT true MAGIC false
+-12 (241/288) | GOOD false LEAD_HIT false MAGIC false
+Wizard -47 (0/153) | BAD true FOE_HIT false MELEE false
+Your Wizard lost to the Green dragon. | BAD false CLOSING false null false
+== wyvern 0
+won=true turns=6 hpLeft=0.983132530120482 hp 408.0 0.0
+Your Spitting Wyvern (Lv 50) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Spitting Wyvern -4 (411/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern breathes ice for 61 (168/229) | GOOD false LEAD_HIT true MAGIC true
+Spitting Wyvern -2 (409/415) | BAD true FOE_HIT false RANGED false
+-97 (71/229) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern -1 (408/415) | BAD true FOE_HIT false RANGED false
+-119 (0/229) | GOOD false LEAD_HIT false MELEE false
+Your Spitting Wyvern won! | GOOD false CLOSING false null false
+== two dragons 0
+won=false turns=10 hpLeft=0.0 hp 0.0 168.0
+Your Green dragon (Lv 45) attacks! | INFO false OPENING false null false
+-42 (333/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern breathes ice for 69 (252/321) | BAD true FOE_HIT true MAGIC true
+-34 (299/375) | GOOD false LEAD_HIT false MELEE false
+Green dragon -73 (179/321) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 50 (249/375) | GOOD false LEAD_HIT true MAGIC false
+Spitting Wyvern breathes ice for 78 (101/321) | BAD true FOE_HIT true MAGIC true
+-28 (221/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern breathes ice for 85 (16/321) | BAD true FOE_HIT true MAGIC true
+Green dragon breathes fire for 53 (168/375) | GOOD false LEAD_HIT true MAGIC false
+Spitting Wyvern breathes ice for 99 (0/321) | BAD true FOE_HIT true MAGIC true
+Your Green dragon lost to the Spitting Wyvern. | BAD false CLOSING false null false
+== wyvern 1
+won=true turns=6 hpLeft=0.9710843373493976 hp 403.0 0.0
+Your Spitting Wyvern (Lv 50) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Spitting Wyvern -4 (411/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern breathes ice for 50 (179/229) | GOOD false LEAD_HIT true MAGIC true
+Spitting Wyvern -1 (410/415) | BAD true FOE_HIT false RANGED false
+-85 (94/229) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern -7 (403/415) | BAD true FOE_HIT false RANGED false
+-121 (0/229) | GOOD false LEAD_HIT false MELEE false
+Your Spitting Wyvern won! | GOOD false CLOSING false null false
+== two dragons 1
+won=false turns=10 hpLeft=0.0 hp 0.0 111.0
+Your Green dragon (Lv 45) attacks! | INFO false OPENING false null false
+Green dragon breathes fire for 57 (318/375) | GOOD false LEAD_HIT true MAGIC false
+Spitting Wyvern breathes ice for 88 (233/321) | BAD true FOE_HIT true MAGIC true
+-31 (287/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern breathes ice for 84 (149/321) | BAD true FOE_HIT true MAGIC true
+-39 (248/375) | GOOD false LEAD_HIT false MELEE false
+Green dragon -49 (100/321) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 70 (178/375) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -61 (39/321) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 67 (111/375) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -70 (0/321) | BAD true FOE_HIT false MELEE false
+Your Green dragon lost to the Spitting Wyvern. | BAD false CLOSING false null false
+== wyvern 2
+won=true turns=6 hpLeft=0.9686746987951808 hp 402.0 0.0
+Your Spitting Wyvern (Lv 50) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Spitting Wyvern -4 (411/415) | BAD true FOE_HIT false RANGED false
+-104 (125/229) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern -8 (403/415) | BAD true FOE_HIT false RANGED false
+-123 (2/229) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern -1 (402/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern breathes ice for 63 (0/229) | GOOD false LEAD_HIT true MAGIC true
+Your Spitting Wyvern won! | GOOD false CLOSING false null false
+== two dragons 2
+won=false turns=12 hpLeft=0.0 hp 0.0 80.0
+Your Green dragon (Lv 45) attacks! | INFO false OPENING false null false
+Green dragon breathes fire for 45 (330/375) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -46 (275/321) | BAD true FOE_HIT false MELEE false
+-38 (292/375) | GOOD false LEAD_HIT false MELEE false
+Green dragon -69 (206/321) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 61 (231/375) | GOOD false LEAD_HIT true MAGIC false
+Spitting Wyvern breathes ice for 93 (113/321) | BAD true FOE_HIT true MAGIC true
+Green dragon breathes fire for 53 (178/375) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -60 (53/321) | BAD true FOE_HIT false MELEE false
+-36 (142/375) | GOOD false LEAD_HIT false MELEE false
+Green dragon -50 (3/321) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 62 (80/375) | GOOD false LEAD_HIT true MAGIC false
+Spitting Wyvern breathes ice for 88 (0/321) | BAD true FOE_HIT true MAGIC true
+Your Green dragon lost to the Spitting Wyvern. | BAD false CLOSING false null false
+== wyvern 3
+won=true turns=8 hpLeft=0.9493975903614458 hp 394.0 0.0
+Your Spitting Wyvern (Lv 50) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Spitting Wyvern -4 (411/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern breathes ice for 46 (183/229) | GOOD false LEAD_HIT true MAGIC true
+Spitting Wyvern -5 (406/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern breathes ice for 61 (122/229) | GOOD false LEAD_HIT true MAGIC true
+Spitting Wyvern -5 (401/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern breathes ice for 65 (57/229) | GOOD false LEAD_HIT true MAGIC true
+Spitting Wyvern -7 (394/415) | BAD true FOE_HIT false RANGED false
+Spitting Wyvern breathes ice for 67 (0/229) | GOOD false LEAD_HIT true MAGIC true
+Your Spitting Wyvern won! | GOOD false CLOSING false null false
+== two dragons 3
+won=false turns=10 hpLeft=0.0 hp 0.0 126.0
+Your Green dragon (Lv 45) attacks! | INFO false OPENING false null false
+-47 (328/375) | GOOD false LEAD_HIT false MELEE false
+Green dragon -61 (260/321) | BAD true FOE_HIT false MELEE false
+-36 (292/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern breathes ice for 79 (181/321) | BAD true FOE_HIT true MAGIC true
+Green dragon breathes fire for 70 (222/375) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -61 (120/321) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 49 (173/375) | GOOD false LEAD_HIT true MAGIC false
+Spitting Wyvern breathes ice for 84 (36/321) | BAD true FOE_HIT true MAGIC true
+-47 (126/375) | GOOD false LEAD_HIT false MELEE false
+Spitting Wyvern breathes ice for 67 (0/321) | BAD true FOE_HIT true MAGIC true
+Your Green dragon lost to the Spitting Wyvern. | BAD false CLOSING false null false
+== same species same level 0
+won=true turns=15 hpLeft=0.13541666666666666 hp 13.0 0.0
+Your Goblin (Lv 20) attacks! | INFO false OPENING false null false
+-15 (81/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -14 (82/96) | BAD true FOE_HIT false MELEE false
+-12 (69/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (72/96) | BAD true FOE_HIT false MELEE false
+-15 (54/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (61/96) | BAD true FOE_HIT false MELEE false
+-14 (40/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -16 (45/96) | BAD true FOE_HIT false MELEE false
+-10 (30/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (34/96) | BAD true FOE_HIT false MELEE false
+-12 (18/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (22/96) | BAD true FOE_HIT false MELEE false
+-14 (4/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -9 (13/96) | BAD true FOE_HIT false MELEE false
+-9 (0/96) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same level other species 0
+won=true turns=9 hpLeft=0.6695652173913044 hp 77.0 0.0
+Your Goblin (Lv 25) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-26 (89/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (105/115) | BAD true FOE_HIT false RANGED false
+-21 (68/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -7 (98/115) | BAD true FOE_HIT false RANGED false
+-26 (42/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -8 (90/115) | BAD true FOE_HIT false RANGED false
+-24 (18/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -13 (77/115) | BAD true FOE_HIT false RANGED false
+-18 (0/115) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same species same level 1
+won=true turns=15 hpLeft=0.07291666666666667 hp 7.0 0.0
+Your Goblin (Lv 20) attacks! | INFO false OPENING false null false
+-10 (86/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (84/96) | BAD true FOE_HIT false MELEE false
+-10 (76/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -14 (70/96) | BAD true FOE_HIT false MELEE false
+-15 (61/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (60/96) | BAD true FOE_HIT false MELEE false
+-11 (50/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -13 (47/96) | BAD true FOE_HIT false MELEE false
+-16 (34/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -13 (34/96) | BAD true FOE_HIT false MELEE false
+-16 (18/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (23/96) | BAD true FOE_HIT false MELEE false
+-12 (6/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -16 (7/96) | BAD true FOE_HIT false MELEE false
+-13 (0/96) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same level other species 1
+won=true turns=11 hpLeft=0.591304347826087 hp 68.0 0.0
+Your Goblin (Lv 25) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-18 (97/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -9 (106/115) | BAD true FOE_HIT false RANGED false
+-18 (79/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (95/115) | BAD true FOE_HIT false RANGED false
+-25 (54/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -7 (88/115) | BAD true FOE_HIT false RANGED false
+-19 (35/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (78/115) | BAD true FOE_HIT false RANGED false
+-27 (8/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (68/115) | BAD true FOE_HIT false RANGED false
+-27 (0/115) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same species same level 2
+won=true turns=15 hpLeft=0.10416666666666667 hp 10.0 0.0
+Your Goblin (Lv 20) attacks! | INFO false OPENING false null false
+-12 (84/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -9 (87/96) | BAD true FOE_HIT false MELEE false
+-16 (68/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (77/96) | BAD true FOE_HIT false MELEE false
+-16 (52/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -13 (64/96) | BAD true FOE_HIT false MELEE false
+-13 (39/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (49/96) | BAD true FOE_HIT false MELEE false
+-11 (28/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -13 (36/96) | BAD true FOE_HIT false MELEE false
+-10 (18/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (21/96) | BAD true FOE_HIT false MELEE false
+-12 (6/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (10/96) | BAD true FOE_HIT false MELEE false
+-16 (0/96) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same level other species 2
+won=true turns=9 hpLeft=0.7130434782608696 hp 82.0 0.0
+Your Goblin (Lv 25) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-21 (94/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -6 (109/115) | BAD true FOE_HIT false RANGED false
+-27 (67/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -6 (103/115) | BAD true FOE_HIT false RANGED false
+-27 (40/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -9 (94/115) | BAD true FOE_HIT false RANGED false
+-23 (17/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (82/115) | BAD true FOE_HIT false RANGED false
+-20 (0/115) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same species same level 3
+won=true turns=15 hpLeft=0.03125 hp 3.0 0.0
+Your Goblin (Lv 20) attacks! | INFO false OPENING false null false
+-13 (83/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (81/96) | BAD true FOE_HIT false MELEE false
+-14 (69/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -14 (67/96) | BAD true FOE_HIT false MELEE false
+-16 (53/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (55/96) | BAD true FOE_HIT false MELEE false
+-10 (43/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (43/96) | BAD true FOE_HIT false MELEE false
+-10 (33/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -16 (27/96) | BAD true FOE_HIT false MELEE false
+-15 (18/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -14 (13/96) | BAD true FOE_HIT false MELEE false
+-10 (8/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (3/96) | BAD true FOE_HIT false MELEE false
+-13 (0/96) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same level other species 3
+won=true turns=11 hpLeft=0.5478260869565217 hp 63.0 0.0
+Your Goblin (Lv 25) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-23 (92/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (103/115) | BAD true FOE_HIT false RANGED false
+-24 (68/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (93/115) | BAD true FOE_HIT false RANGED false
+-27 (41/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -9 (84/115) | BAD true FOE_HIT false RANGED false
+-18 (23/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -9 (75/115) | BAD true FOE_HIT false RANGED false
+-19 (4/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (63/115) | BAD true FOE_HIT false RANGED false
+-25 (0/115) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same species same level 4
+won=true turns=13 hpLeft=0.1875 hp 18.0 0.0
+Your Goblin (Lv 20) attacks! | INFO false OPENING false null false
+-16 (80/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (81/96) | BAD true FOE_HIT false MELEE false
+-11 (69/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (70/96) | BAD true FOE_HIT false MELEE false
+-13 (56/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -16 (54/96) | BAD true FOE_HIT false MELEE false
+-15 (41/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (43/96) | BAD true FOE_HIT false MELEE false
+-14 (27/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (31/96) | BAD true FOE_HIT false MELEE false
+-15 (12/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -13 (18/96) | BAD true FOE_HIT false MELEE false
+-12 (0/96) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same level other species 4
+won=true turns=9 hpLeft=0.6521739130434783 hp 75.0 0.0
+Your Goblin (Lv 25) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-27 (88/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (103/115) | BAD true FOE_HIT false RANGED false
+-20 (68/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -8 (95/115) | BAD true FOE_HIT false RANGED false
+-23 (45/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (83/115) | BAD true FOE_HIT false RANGED false
+-26 (19/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -8 (75/115) | BAD true FOE_HIT false RANGED false
+-24 (0/115) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same species same level 5
+won=false turns=14 hpLeft=0.0 hp 0.0 10.0
+Your Goblin (Lv 20) attacks! | INFO false OPENING false null false
+-11 (85/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -14 (82/96) | BAD true FOE_HIT false MELEE false
+-16 (69/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (67/96) | BAD true FOE_HIT false MELEE false
+-12 (57/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (52/96) | BAD true FOE_HIT false MELEE false
+-12 (45/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (37/96) | BAD true FOE_HIT false MELEE false
+-13 (32/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (22/96) | BAD true FOE_HIT false MELEE false
+-12 (20/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (10/96) | BAD true FOE_HIT false MELEE false
+-10 (10/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (0/96) | BAD true FOE_HIT false MELEE false
+Your Goblin lost to the Goblin. | BAD false CLOSING false null false
+== same level other species 5
+won=true turns=11 hpLeft=0.5130434782608696 hp 59.0 0.0
+Your Goblin (Lv 25) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-19 (96/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (105/115) | BAD true FOE_HIT false RANGED false
+-28 (68/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (93/115) | BAD true FOE_HIT false RANGED false
+-22 (46/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (82/115) | BAD true FOE_HIT false RANGED false
+-21 (25/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (70/115) | BAD true FOE_HIT false RANGED false
+-22 (3/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (59/115) | BAD true FOE_HIT false RANGED false
+-21 (0/115) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same species same level 6
+won=true turns=15 hpLeft=0.08333333333333333 hp 8.0 0.0
+Your Goblin (Lv 20) attacks! | INFO false OPENING false null false
+-12 (84/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (85/96) | BAD true FOE_HIT false MELEE false
+-15 (69/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (74/96) | BAD true FOE_HIT false MELEE false
+-14 (55/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (64/96) | BAD true FOE_HIT false MELEE false
+-14 (41/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (54/96) | BAD true FOE_HIT false MELEE false
+-15 (26/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (39/96) | BAD true FOE_HIT false MELEE false
+-13 (13/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -16 (23/96) | BAD true FOE_HIT false MELEE false
+-10 (3/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (8/96) | BAD true FOE_HIT false MELEE false
+-10 (0/96) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same level other species 6
+won=true turns=9 hpLeft=0.7391304347826086 hp 85.0 0.0
+Your Goblin (Lv 25) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-21 (94/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -8 (107/115) | BAD true FOE_HIT false RANGED false
+-26 (68/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -8 (99/115) | BAD true FOE_HIT false RANGED false
+-24 (44/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -7 (92/115) | BAD true FOE_HIT false RANGED false
+-25 (19/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -7 (85/115) | BAD true FOE_HIT false RANGED false
+-26 (0/115) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same species same level 7
+won=true turns=15 hpLeft=0.03125 hp 3.0 0.0
+Your Goblin (Lv 20) attacks! | INFO false OPENING false null false
+-14 (82/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -9 (87/96) | BAD true FOE_HIT false MELEE false
+-13 (69/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (72/96) | BAD true FOE_HIT false MELEE false
+-13 (56/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -16 (56/96) | BAD true FOE_HIT false MELEE false
+-11 (45/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -14 (42/96) | BAD true FOE_HIT false MELEE false
+-14 (31/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (32/96) | BAD true FOE_HIT false MELEE false
+-10 (21/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -15 (17/96) | BAD true FOE_HIT false MELEE false
+-14 (7/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -14 (3/96) | BAD true FOE_HIT false MELEE false
+-14 (0/96) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== same level other species 7
+won=true turns=9 hpLeft=0.6434782608695652 hp 74.0 0.0
+Your Goblin (Lv 25) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-24 (91/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -6 (109/115) | BAD true FOE_HIT false RANGED false
+-23 (68/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (98/115) | BAD true FOE_HIT false RANGED false
+-24 (44/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -13 (85/115) | BAD true FOE_HIT false RANGED false
+-20 (24/115) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (74/115) | BAD true FOE_HIT false RANGED false
+-25 (0/115) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== faster but lower level
+won=false turns=12 hpLeft=0.0 hp 0.0 27.0
+Your Goblin (Lv 18) attacks! | INFO false OPENING false null false
+-13 (83/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -18 (70/88) | BAD true FOE_HIT false MELEE false
+-14 (69/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -16 (54/88) | BAD true FOE_HIT false MELEE false
+-8 (61/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (42/88) | BAD true FOE_HIT false MELEE false
+-12 (49/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -17 (25/88) | BAD true FOE_HIT false MELEE false
+-9 (40/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -18 (7/88) | BAD true FOE_HIT false MELEE false
+-13 (27/96) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (0/88) | BAD true FOE_HIT false MELEE false
+Your Goblin lost to the Goblin. | BAD false CLOSING false null false
+== rolled against plain
+won=true turns=8 hpLeft=0.667741935483871 hp 207.0 0.0
+Your King Black Dragon (Lv 30) attacks! Magic beats Melee. | BAD false OPENING false null false
+King Black Dragon -25 (285/310) | BAD true FOE_HIT false MAGIC false
+-55 (132/187) | GOOD false LEAD_HIT false MELEE false
+King Black Dragon -26 (259/310) | BAD true FOE_HIT false MAGIC false
+-51 (81/187) | GOOD false LEAD_HIT false MELEE false
+King Black Dragon -29 (230/310) | BAD true FOE_HIT false MAGIC false
+-47 (34/187) | GOOD false LEAD_HIT false MELEE false
+King Black Dragon -23 (207/310) | BAD true FOE_HIT false MAGIC false
+-51 (0/187) | GOOD false LEAD_HIT false MELEE false
+Your King Black Dragon won! | GOOD false CLOSING false null false
+== turn limit 0
+won=true turns=50 hpLeft=0.16666666666666666 hp 5.0 5.0
+Your Mage (Lv 2) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Mage breathes fire for 1 (29/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (29/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (28/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (28/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (27/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (27/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (26/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (26/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (25/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (25/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (24/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (24/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (23/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (23/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (22/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (22/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (21/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (21/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (20/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (20/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (19/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (19/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (18/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (18/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (17/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (17/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (16/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (16/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (15/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (15/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (14/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (14/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (13/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (13/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (12/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (12/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (11/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (11/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (10/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (10/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (9/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (9/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (8/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (8/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (7/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (7/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (6/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (6/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (5/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (5/30) | BAD true FOE_HIT false RANGED false
+Your Mage won! | GOOD false CLOSING false null false
+== turn limit 1
+won=true turns=50 hpLeft=0.16666666666666666 hp 5.0 5.0
+Your Mage (Lv 2) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Mage breathes fire for 1 (29/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (29/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (28/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (28/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (27/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (27/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (26/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (26/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (25/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (25/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (24/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (24/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (23/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (23/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (22/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (22/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (21/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (21/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (20/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (20/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (19/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (19/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (18/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (18/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (17/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (17/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (16/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (16/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (15/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (15/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (14/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (14/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (13/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (13/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (12/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (12/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (11/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (11/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (10/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (10/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (9/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (9/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (8/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (8/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (7/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (7/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (6/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (6/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (5/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (5/30) | BAD true FOE_HIT false RANGED false
+Your Mage won! | GOOD false CLOSING false null false
+== turn limit 2
+won=true turns=50 hpLeft=0.16666666666666666 hp 5.0 5.0
+Your Mage (Lv 2) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Mage breathes fire for 1 (29/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (29/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (28/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (28/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (27/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (27/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (26/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (26/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (25/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (25/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (24/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (24/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (23/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (23/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (22/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (22/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (21/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (21/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (20/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (20/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (19/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (19/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (18/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (18/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (17/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (17/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (16/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (16/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (15/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (15/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (14/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (14/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (13/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (13/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (12/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (12/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (11/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (11/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (10/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (10/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (9/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (9/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (8/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (8/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (7/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (7/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (6/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (6/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (5/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (5/30) | BAD true FOE_HIT false RANGED false
+Your Mage won! | GOOD false CLOSING false null false
+== turn limit 3
+won=true turns=50 hpLeft=0.16666666666666666 hp 5.0 5.0
+Your Mage (Lv 2) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Mage breathes fire for 1 (29/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (29/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (28/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (28/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (27/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (27/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (26/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (26/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (25/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (25/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (24/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (24/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (23/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (23/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (22/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (22/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (21/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (21/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (20/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (20/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (19/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (19/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (18/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (18/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (17/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (17/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (16/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (16/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (15/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (15/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (14/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (14/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (13/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (13/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (12/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (12/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (11/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (11/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (10/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (10/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (9/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (9/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (8/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (8/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (7/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (7/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (6/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (6/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (5/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (5/30) | BAD true FOE_HIT false RANGED false
+Your Mage won! | GOOD false CLOSING false null false
+== turn limit 4
+won=true turns=50 hpLeft=0.16666666666666666 hp 5.0 5.0
+Your Mage (Lv 2) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Mage breathes fire for 1 (29/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (29/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (28/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (28/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (27/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (27/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (26/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (26/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (25/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (25/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (24/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (24/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (23/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (23/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (22/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (22/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (21/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (21/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (20/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (20/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (19/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (19/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (18/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (18/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (17/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (17/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (16/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (16/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (15/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (15/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (14/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (14/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (13/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (13/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (12/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (12/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (11/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (11/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (10/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (10/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (9/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (9/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (8/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (8/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (7/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (7/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (6/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (6/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (5/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (5/30) | BAD true FOE_HIT false RANGED false
+Your Mage won! | GOOD false CLOSING false null false
+== turn limit 5
+won=true turns=50 hpLeft=0.16666666666666666 hp 5.0 5.0
+Your Mage (Lv 2) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+Mage breathes fire for 1 (29/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (29/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (28/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (28/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (27/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (27/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (26/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (26/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (25/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (25/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (24/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (24/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (23/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (23/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (22/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (22/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (21/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (21/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (20/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (20/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (19/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (19/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (18/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (18/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (17/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (17/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (16/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (16/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (15/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (15/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (14/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (14/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (13/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (13/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (12/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (12/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (11/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (11/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (10/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (10/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (9/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (9/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (8/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (8/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (7/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (7/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (6/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (6/30) | BAD true FOE_HIT false RANGED false
+Mage breathes fire for 1 (5/30) | GOOD false LEAD_HIT true MAGIC false
+Mage -1 (5/30) | BAD true FOE_HIT false RANGED false
+Your Mage won! | GOOD false CLOSING false null false
+== tired start 0
+won=false turns=8 hpLeft=0.0 hp 0.0 9.0
+Your Goblin (Lv 30) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-31 (95/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -8 (33/134) | BAD true FOE_HIT false RANGED false
+-30 (65/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -10 (23/134) | BAD true FOE_HIT false RANGED false
+-29 (36/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -9 (14/134) | BAD true FOE_HIT false RANGED false
+-27 (9/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -14 (0/134) | BAD true FOE_HIT false RANGED false
+Your Goblin lost to the Archer. | BAD false CLOSING false null false
+== tired start 1
+won=true turns=9 hpLeft=0.12388059701492539 hp 16.6 0.0
+Your Goblin (Lv 30) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-31 (95/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -9 (45/134) | BAD true FOE_HIT false RANGED false
+-24 (71/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -9 (36/134) | BAD true FOE_HIT false RANGED false
+-34 (37/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -6 (30/134) | BAD true FOE_HIT false RANGED false
+-34 (3/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -13 (17/134) | BAD true FOE_HIT false RANGED false
+-34 (0/126) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== tired start 2
+won=true turns=9 hpLeft=0.1417910447761194 hp 19.0 0.0
+Your Goblin (Lv 30) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-31 (95/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -13 (54/134) | BAD true FOE_HIT false RANGED false
+-28 (67/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -14 (40/134) | BAD true FOE_HIT false RANGED false
+-33 (34/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -14 (26/134) | BAD true FOE_HIT false RANGED false
+-25 (9/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -7 (19/134) | BAD true FOE_HIT false RANGED false
+-31 (0/126) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== tired start 3
+won=true turns=9 hpLeft=0.3313432835820896 hp 44.400000000000006 0.0
+Your Goblin (Lv 30) attacks! Melee beats Ranged! | GOOD false OPENING false null false
+-31 (95/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -7 (74/134) | BAD true FOE_HIT false RANGED false
+-22 (73/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -12 (62/134) | BAD true FOE_HIT false RANGED false
+-25 (48/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -11 (51/134) | BAD true FOE_HIT false RANGED false
+-32 (16/126) | GOOD false LEAD_HIT false MELEE false
+Goblin -6 (45/134) | BAD true FOE_HIT false RANGED false
+-32 (0/126) | GOOD false LEAD_HIT false MELEE false
+Your Goblin won! | GOOD false CLOSING false null false
+== team 0
+won=true mine 0.0 0.0 37.89999999999998 104.0 theirs 0.0 0.0 0.0
+Gob lost to Archer (Lv 20) | BAD true OTHER false null false
+Green dragon beat Archer (Lv 20) | GOOD true OTHER false null false
+Green dragon beat Wizard (Lv 25) | GOOD true OTHER false null false
+Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
+Spitting Wyvern beat Green dragon (Lv 45) | GOOD true OTHER false null false
+duel 0 0 false goblin archer false
+  Gob -12 (61/73) | BAD true FOE_HIT false RANGED false
+  Gob -10 (29/73) | BAD true FOE_HIT false RANGED false
+  Gob -9 (0/73) | BAD true FOE_HIT false RANGED false
+  out Gob lost to Archer (Lv 20) | BAD true OTHER false null false
+duel 1 0 true green dragon archer false
+  Green dragon breathes fire for 48 (0/96) | GOOD false LEAD_HIT true MAGIC false
+  out Green dragon beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 1 1 true green dragon wizard false
+  -38 (77/115) | GOOD false LEAD_HIT false MELEE false
+  -50 (27/115) | GOOD false LEAD_HIT false MELEE false
+  -49 (0/115) | GOOD false LEAD_HIT false MELEE false
+  out Green dragon beat Wizard (Lv 25) | GOOD true OTHER false null false
+duel 1 2 false green dragon green dragon false
+  Green dragon -56 (161/258) | BAD true FOE_HIT false MELEE false
+  Green dragon -53 (69/258) | BAD true FOE_HIT false MELEE false
+  Green dragon -59 (0/258) | BAD true FOE_HIT false MELEE false
+  out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
+duel 2 2 true spitting wyvern green dragon false
+  Spitting Wyvern -55 (125/257) | BAD true FOE_HIT false MELEE false
+  -34 (34/321) | GOOD false LEAD_HIT false MELEE false
+  -38 (0/321) | GOOD false LEAD_HIT false MELEE false
+  out Spitting Wyvern beat Green dragon (Lv 45) | GOOD true OTHER false null false
+== team 1
+won=false mine 0.0 0.0 0.0 0.0 theirs 0.0 0.0 38.0 319.0
+Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+Gob lost to Wizard (Lv 26) | BAD true OTHER false null false
+Green dragon beat Wizard (Lv 26) | GOOD true OTHER false null false
+Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
+Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
+Wizard lost to Green dragon (Lv 45) | BAD true OTHER false null false
+duel 0 0 true goblin archer false
+  Gob -11 (77/88) | BAD true FOE_HIT false RANGED false
+  Gob -12 (45/88) | BAD true FOE_HIT false RANGED false
+  -15 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 0 1 false goblin wizard false
+  Gob -25 (0/88) | BAD true FOE_HIT false MAGIC false
+  out Gob lost to Wizard (Lv 26) | BAD true OTHER false null false
+duel 1 1 true green dragon wizard false
+  -42 (77/119) | GOOD false LEAD_HIT false MELEE false
+  -43 (34/119) | GOOD false LEAD_HIT false MELEE false
+  Green dragon breathes fire for 70 (0/119) | GOOD false LEAD_HIT true MAGIC false
+  out Green dragon beat Wizard (Lv 26) | GOOD true OTHER false null false
+duel 1 2 false green dragon green dragon false
+  Green dragon -34 (208/277) | BAD true FOE_HIT false MELEE false
+  Green dragon breathes fire for 69 (74/277) | BAD true FOE_HIT true MAGIC false
+  Green dragon breathes fire for 62 (0/277) | BAD true FOE_HIT true MAGIC false
+  out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
+duel 2 2 false spitting wyvern green dragon false
+  Green dragon breathes fire for 69 (117/265) | BAD true FOE_HIT true MAGIC false
+  Green dragon breathes fire for 74 (43/265) | BAD true FOE_HIT true MAGIC false
+  Spitting Wyvern -63 (0/265) | BAD true FOE_HIT false MELEE false
+  out Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
+duel 3 2 false wizard green dragon false
+  Green dragon breathes fire for 63 (60/123) | BAD true FOE_HIT true MAGIC false
+  -3 (38/321) | GOOD false LEAD_HIT false MAGIC false
+  Green dragon breathes fire for 65 (0/123) | BAD true FOE_HIT true MAGIC false
+  out Wizard lost to Green dragon (Lv 45) | BAD true OTHER false null false
+== team 2
+won=true mine 0.0 0.0 87.1 142.0 theirs 0.0 0.0 0.0
+Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+Gob lost to Wizard (Lv 27) | BAD true OTHER false null false
+Green dragon beat Wizard (Lv 27) | GOOD true OTHER false null false
+Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
+Spitting Wyvern beat Green dragon (Lv 45) | GOOD true OTHER false null false
+duel 0 0 true goblin archer false
+  -24 (72/96) | GOOD false LEAD_HIT false MELEE false
+  -25 (26/96) | GOOD false LEAD_HIT false MELEE false
+  -24 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 0 1 false goblin wizard false
+  Gob -32 (37/104) | BAD true FOE_HIT false MAGIC false
+  Gob -29 (8/104) | BAD true FOE_HIT false MAGIC false
+  Gob -22 (0/104) | BAD true FOE_HIT false MAGIC false
+  out Gob lost to Wizard (Lv 27) | BAD true OTHER false null false
+duel 1 1 true green dragon wizard false
+  -50 (60/123) | GOOD false LEAD_HIT false MELEE false
+  -53 (7/123) | GOOD false LEAD_HIT false MELEE false
+  -60 (0/123) | GOOD false LEAD_HIT false MELEE false
+  out Green dragon beat Wizard (Lv 27) | GOOD true OTHER false null false
+duel 1 2 false green dragon green dragon false
+  Green dragon breathes fire for 53 (205/296) | BAD true FOE_HIT true MAGIC false
+  Green dragon -51 (108/296) | BAD true FOE_HIT false MELEE false
+  Green dragon breathes fire for 53 (0/296) | BAD true FOE_HIT true MAGIC false
+  out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
+duel 2 2 true spitting wyvern green dragon false
+  Green dragon breathes fire for 59 (133/273) | BAD true FOE_HIT true MAGIC false
+  Spitting Wyvern -45 (88/273) | BAD true FOE_HIT false MELEE false
+  -39 (0/321) | GOOD false LEAD_HIT false MELEE false
+  out Spitting Wyvern beat Green dragon (Lv 45) | GOOD true OTHER false null false
+== team 3
+won=false mine 0.0 0.0 0.0 0.0 theirs 0.0 0.0 0.0 100.0
+Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+Gob lost to Wizard (Lv 28) | BAD true OTHER false null false
+Green dragon beat Wizard (Lv 28) | GOOD true OTHER false null false
+Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+Green dragon lost to King Black Dragon (Lv 31) | BAD true OTHER false null false
+Spitting Wyvern lost to King Black Dragon (Lv 31) | BAD true OTHER false null false
+Wizard lost to King Black Dragon (Lv 31) | BAD true OTHER false null false
+duel 0 0 true goblin archer false
+  -29 (67/96) | GOOD false LEAD_HIT false MELEE false
+  Gob -7 (109/119) | BAD true FOE_HIT false RANGED false
+  -30 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 0 1 false goblin wizard false
+  Gob -21 (81/119) | BAD true FOE_HIT false MAGIC false
+  -7 (107/126) | GOOD false LEAD_HIT false MELEE false
+  Gob -27 (0/119) | BAD true FOE_HIT false MAGIC false
+  out Gob lost to Wizard (Lv 28) | BAD true OTHER false null false
+duel 1 1 true green dragon wizard false
+  -49 (45/126) | GOOD false LEAD_HIT false MELEE false
+  Green dragon -2 (282/315) | BAD true FOE_HIT false MAGIC false
+  Green dragon breathes fire for 73 (0/126) | GOOD false LEAD_HIT true MAGIC false
+  out Green dragon beat Wizard (Lv 28) | GOOD true OTHER false null false
+duel 1 2 true green dragon green dragon false
+  -48 (273/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon -37 (141/315) | BAD true FOE_HIT false MELEE false
+  -54 (0/321) | GOOD false LEAD_HIT false MELEE false
+  out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+duel 1 3 false green dragon king black dragon false
+  -49 (291/340) | GOOD false LEAD_HIT false MELEE false
+  Green dragon -41 (0/315) | BAD true FOE_HIT false MELEE false
+  out Green dragon lost to King Black Dragon (Lv 31) | BAD true OTHER false null false
+duel 2 3 false spitting wyvern king black dragon false
+  -25 (266/340) | GOOD false LEAD_HIT false MELEE false
+  Spitting Wyvern breathes ice for 41 (190/340) | GOOD false LEAD_HIT true MAGIC true
+  Spitting Wyvern -60 (0/281) | BAD true FOE_HIT false MELEE false
+  out Spitting Wyvern lost to King Black Dragon (Lv 31) | BAD true OTHER false null false
+duel 3 3 false wizard king black dragon false
+  -21 (140/340) | GOOD false LEAD_HIT false MAGIC false
+  -14 (116/340) | GOOD false LEAD_HIT false MAGIC false
+  Wizard -52 (0/161) | BAD true FOE_HIT false MELEE false
+  out Wizard lost to King Black Dragon (Lv 31) | BAD true OTHER false null false
+== team 4
+won=true mine 0.0 96.69999999999999 201.6 180.0 theirs 0.0 0.0 0.0
+Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+Gob lost to Wizard (Lv 29) | BAD true OTHER false null false
+Green dragon beat Wizard (Lv 29) | GOOD true OTHER false null false
+Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+duel 0 0 true goblin archer false
+  -34 (62/96) | GOOD false LEAD_HIT false MELEE false
+  -37 (25/96) | GOOD false LEAD_HIT false MELEE false
+  -26 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 0 1 false goblin wizard false
+  -8 (122/130) | GOOD false LEAD_HIT false MELEE false
+  Gob -29 (45/134) | BAD true FOE_HIT false MAGIC false
+  Gob -30 (0/134) | BAD true FOE_HIT false MAGIC false
+  out Gob lost to Wizard (Lv 29) | BAD true OTHER false null false
+duel 1 1 true green dragon wizard false
+  Green dragon breathes fire for 75 (0/130) | GOOD false LEAD_HIT true MAGIC false
+  out Green dragon beat Wizard (Lv 29) | GOOD true OTHER false null false
+duel 1 2 true green dragon green dragon false
+  -54 (267/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon breathes fire for 78 (121/321) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon breathes fire for 77 (0/321) | GOOD false LEAD_HIT true MAGIC false
+  out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+== team 5
+won=true mine 0.0 0.0 0.0 144.0 theirs 0.0 0.0 0.0 0.0
+Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+Gob lost to Wizard (Lv 30) | BAD true OTHER false null false
+Green dragon beat Wizard (Lv 30) | GOOD true OTHER false null false
+Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+Green dragon lost to King Black Dragon (Lv 33) | BAD true OTHER false null false
+Spitting Wyvern lost to King Black Dragon (Lv 33) | BAD true OTHER false null false
+Wizard beat King Black Dragon (Lv 33) | GOOD true OTHER false null false
+duel 0 0 true goblin archer false
+  -38 (58/96) | GOOD false LEAD_HIT false MELEE false
+  -35 (23/96) | GOOD false LEAD_HIT false MELEE false
+  -35 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 0 1 false goblin wizard false
+  -16 (118/134) | GOOD false LEAD_HIT false MELEE false
+  -12 (72/134) | GOOD false LEAD_HIT false MELEE false
+  Gob -30 (0/149) | BAD true FOE_HIT false MAGIC false
+  out Gob lost to Wizard (Lv 30) | BAD true OTHER false null false
+duel 1 1 true green dragon wizard false
+  Green dragon breathes fire for 77 (0/134) | GOOD false LEAD_HIT true MAGIC false
+  out Green dragon beat Wizard (Lv 30) | GOOD true OTHER false null false
+duel 1 2 true green dragon green dragon false
+  -65 (256/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon breathes fire for 84 (108/321) | GOOD false LEAD_HIT true MAGIC false
+  -67 (0/321) | GOOD false LEAD_HIT false MELEE false
+  out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+duel 1 3 false green dragon king black dragon false
+  -66 (294/360) | GOOD false LEAD_HIT false MELEE false
+  Green dragon -60 (40/352) | BAD true FOE_HIT false MELEE false
+  Green dragon -56 (0/352) | BAD true FOE_HIT false MELEE false
+  out Green dragon lost to King Black Dragon (Lv 33) | BAD true OTHER false null false
+duel 2 3 false spitting wyvern king black dragon false
+  -36 (113/360) | GOOD false LEAD_HIT false MELEE false
+  -28 (44/360) | GOOD false LEAD_HIT false MELEE false
+  Spitting Wyvern -60 (0/296) | BAD true FOE_HIT false MELEE false
+  out Spitting Wyvern lost to King Black Dragon (Lv 33) | BAD true OTHER false null false
+duel 3 3 true wizard king black dragon false
+  -15 (4/360) | GOOD false LEAD_HIT false MAGIC false
+  Wizard -55 (144/199) | BAD true FOE_HIT false MELEE false
+  -21 (0/360) | GOOD false LEAD_HIT false MAGIC false
+  out Wizard beat King Black Dragon (Lv 33) | GOOD true OTHER false null false
+== team 6
+won=true mine 0.0 182.90000000000003 212.79999999999998 218.0 theirs 0.0 0.0 0.0
+Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+Gob beat Wizard (Lv 31) | GOOD true OTHER false null false
+Gob lost to Green dragon (Lv 45) | BAD true OTHER false null false
+Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+duel 0 0 true goblin archer false
+  -44 (52/96) | GOOD false LEAD_HIT false MELEE false
+  -45 (7/96) | GOOD false LEAD_HIT false MELEE false
+  -38 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 0 1 true goblin wizard false
+  -19 (119/138) | GOOD false LEAD_HIT false MELEE false
+  Gob -23 (75/165) | BAD true FOE_HIT false MAGIC false
+  -17 (0/138) | GOOD false LEAD_HIT false MELEE false
+  out Gob beat Wizard (Lv 31) | GOOD true OTHER false null false
+duel 0 2 false goblin green dragon false
+  Green dragon breathes fire for 70 (0/165) | BAD true FOE_HIT true MAGIC false
+  out Gob lost to Green dragon (Lv 45) | BAD true OTHER false null false
+duel 1 2 true green dragon green dragon false
+  Green dragon breathes fire for 89 (232/321) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon breathes fire for 102 (70/321) | GOOD false LEAD_HIT true MAGIC false
+  -72 (0/321) | GOOD false LEAD_HIT false MELEE false
+  out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+== team 7
+won=true mine 0.0 10.0 218.39999999999998 237.0 theirs 0.0 0.0 0.0 0.0
+Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+Gob beat Wizard (Lv 32) | GOOD true OTHER false null false
+Gob lost to Green dragon (Lv 45) | BAD true OTHER false null false
+Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+Green dragon beat King Black Dragon (Lv 35) | GOOD true OTHER false null false
+duel 0 0 true goblin archer false
+  -49 (47/96) | GOOD false LEAD_HIT false MELEE false
+  -43 (4/96) | GOOD false LEAD_HIT false MELEE false
+  -49 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 0 1 true goblin wizard false
+  -18 (124/142) | GOOD false LEAD_HIT false MELEE false
+  Gob -24 (93/180) | BAD true FOE_HIT false MAGIC false
+  -23 (0/142) | GOOD false LEAD_HIT false MELEE false
+  out Gob beat Wizard (Lv 32) | GOOD true OTHER false null false
+duel 0 2 false goblin green dragon false
+  Green dragon breathes fire for 78 (0/180) | BAD true FOE_HIT true MAGIC false
+  out Gob lost to Green dragon (Lv 45) | BAD true OTHER false null false
+duel 1 2 true green dragon green dragon false
+  -63 (258/321) | GOOD false LEAD_HIT false MELEE false
+  Green dragon -30 (284/390) | BAD true FOE_HIT false MELEE false
+  -80 (0/321) | GOOD false LEAD_HIT false MELEE false
+  out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
+duel 1 3 true green dragon king black dragon false
+  -55 (326/381) | GOOD false LEAD_HIT false MELEE false
+  Green dragon -42 (111/390) | BAD true FOE_HIT false MELEE false
+  -58 (0/381) | GOOD false LEAD_HIT false MELEE false
+  out Green dragon beat King Black Dragon (Lv 35) | GOOD true OTHER false null false
+== team with a turn limit 0
+won=true mine 0.0 4.0 theirs 0.0 0.0
+Mage beat Archer (Lv 2) | GOOD true OTHER false null false
+Mage lost to Goblin (Lv 12) | BAD true OTHER false null false
+Goblin beat Goblin (Lv 12) | GOOD true OTHER false null false
+duel 0 0 true tank mage tank archer false
+  Mage breathes fire for 1 (29/30) | GOOD false LEAD_HIT true MAGIC false
+  Mage -1 (17/30) | BAD true FOE_HIT false RANGED false
+  Mage -1 (5/30) | BAD true FOE_HIT false RANGED false
+  out Mage beat Archer (Lv 2) | GOOD true OTHER false null false
+duel 0 1 false tank mage goblin false
+  Mage -12 (0/30) | BAD true FOE_HIT false MELEE false
+  out Mage lost to Goblin (Lv 12) | BAD true OTHER false null false
+duel 1 1 true goblin goblin false
+  Goblin -10 (56/66) | BAD true FOE_HIT false MELEE false
+  Goblin -7 (26/66) | BAD true FOE_HIT false MELEE false
+  -10 (0/66) | GOOD false LEAD_HIT false MELEE false
+  out Goblin beat Goblin (Lv 12) | GOOD true OTHER false null false
+== team with a turn limit 1
+won=true mine 0.0 21.0 theirs 0.0 0.0
+Mage beat Archer (Lv 2) | GOOD true OTHER false null false
+Mage lost to Goblin (Lv 12) | BAD true OTHER false null false
+Goblin beat Goblin (Lv 12) | GOOD true OTHER false null false
+duel 0 0 true tank mage tank archer false
+  Mage breathes fire for 1 (29/30) | GOOD false LEAD_HIT true MAGIC false
+  Mage -1 (17/30) | BAD true FOE_HIT false RANGED false
+  Mage -1 (5/30) | BAD true FOE_HIT false RANGED false
+  out Mage beat Archer (Lv 2) | GOOD true OTHER false null false
+duel 0 1 false tank mage goblin false
+  Mage -15 (0/30) | BAD true FOE_HIT false MELEE false
+  out Mage lost to Goblin (Lv 12) | BAD true OTHER false null false
+duel 1 1 true goblin goblin false
+  -10 (56/66) | GOOD false LEAD_HIT false MELEE false
+  -10 (28/66) | GOOD false LEAD_HIT false MELEE false
+  -10 (0/66) | GOOD false LEAD_HIT false MELEE false
+  out Goblin beat Goblin (Lv 12) | GOOD true OTHER false null false
+== team with a turn limit 2
+won=false mine 0.0 0.0 theirs 0.0 3.0
+Mage beat Archer (Lv 2) | GOOD true OTHER false null false
+Mage lost to Goblin (Lv 12) | BAD true OTHER false null false
+Goblin lost to Goblin (Lv 12) | BAD true OTHER false null false
+duel 0 0 true tank mage tank archer false
+  Mage breathes fire for 1 (29/30) | GOOD false LEAD_HIT true MAGIC false
+  Mage -1 (17/30) | BAD true FOE_HIT false RANGED false
+  Mage -1 (5/30) | BAD true FOE_HIT false RANGED false
+  out Mage beat Archer (Lv 2) | GOOD true OTHER false null false
+duel 0 1 false tank mage goblin false
+  Mage -13 (0/30) | BAD true FOE_HIT false MELEE false
+  out Mage lost to Goblin (Lv 12) | BAD true OTHER false null false
+duel 1 1 false goblin goblin false
+  -9 (57/66) | GOOD false LEAD_HIT false MELEE false
+  -10 (25/66) | GOOD false LEAD_HIT false MELEE false
+  Goblin -8 (0/66) | BAD true FOE_HIT false MELEE false
+  out Goblin lost to Goblin (Lv 12) | BAD true OTHER false null false
+== team of equals 0
+won=true mine 0.0 69.0 theirs 0.0 0.0
+Goblin beat Goblin (Lv 20) | GOOD true OTHER false null false
+Goblin lost to Archer (Lv 20) | BAD true OTHER false null false
+Goblin beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 0 0 true goblin goblin false
+  -15 (81/96) | GOOD false LEAD_HIT false MELEE false
+  Goblin -16 (45/96) | BAD true FOE_HIT false MELEE false
+  -9 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Goblin beat Goblin (Lv 20) | GOOD true OTHER false null false
+duel 0 1 false goblin archer false
+  -15 (81/96) | GOOD false LEAD_HIT false MELEE false
+  -18 (63/96) | GOOD false LEAD_HIT false MELEE false
+  Goblin -10 (0/96) | BAD true FOE_HIT false RANGED false
+  out Goblin lost to Archer (Lv 20) | BAD true OTHER false null false
+duel 1 1 true goblin archer false
+  -21 (42/96) | GOOD false LEAD_HIT false MELEE false
+  Goblin -9 (77/96) | BAD true FOE_HIT false RANGED false
+  -21 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Goblin beat Archer (Lv 20) | GOOD true OTHER false null false
+== team of equals 1
+won=true mine 0.0 86.0 theirs 0.0 0.0
+Goblin beat Goblin (Lv 20) | GOOD true OTHER false null false
+Goblin lost to Archer (Lv 20) | BAD true OTHER false null false
+Goblin beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 0 0 true goblin goblin false
+  -10 (86/96) | GOOD false LEAD_HIT false MELEE false
+  Goblin -13 (47/96) | BAD true FOE_HIT false MELEE false
+  -13 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Goblin beat Goblin (Lv 20) | GOOD true OTHER false null false
+duel 0 1 false goblin archer false
+  -20 (76/96) | GOOD false LEAD_HIT false MELEE false
+  -18 (58/96) | GOOD false LEAD_HIT false MELEE false
+  Goblin -6 (0/96) | BAD true FOE_HIT false RANGED false
+  out Goblin lost to Archer (Lv 20) | BAD true OTHER false null false
+duel 1 1 true goblin archer false
+  -19 (39/96) | GOOD false LEAD_HIT false MELEE false
+  -22 (17/96) | GOOD false LEAD_HIT false MELEE false
+  -21 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Goblin beat Archer (Lv 20) | GOOD true OTHER false null false
+== team of equals 2
+won=true mine 0.0 69.0 theirs 0.0 0.0
+Goblin beat Goblin (Lv 20) | GOOD true OTHER false null false
+Goblin lost to Archer (Lv 20) | BAD true OTHER false null false
+Goblin beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 0 0 true goblin goblin false
+  -12 (84/96) | GOOD false LEAD_HIT false MELEE false
+  Goblin -15 (49/96) | BAD true FOE_HIT false MELEE false
+  -16 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Goblin beat Goblin (Lv 20) | GOOD true OTHER false null false
+duel 0 1 false goblin archer false
+  -23 (73/96) | GOOD false LEAD_HIT false MELEE false
+  -19 (54/96) | GOOD false LEAD_HIT false MELEE false
+  Goblin -6 (0/96) | BAD true FOE_HIT false RANGED false
+  out Goblin lost to Archer (Lv 20) | BAD true OTHER false null false
+duel 1 1 true goblin archer false
+  -16 (38/96) | GOOD false LEAD_HIT false MELEE false
+  Goblin -9 (78/96) | BAD true FOE_HIT false RANGED false
+  -15 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Goblin beat Archer (Lv 20) | GOOD true OTHER false null false
+== team of equals 3
+won=true mine 0.0 57.0 theirs 0.0 0.0
+Goblin beat Goblin (Lv 20) | GOOD true OTHER false null false
+Goblin lost to Archer (Lv 20) | BAD true OTHER false null false
+Goblin beat Archer (Lv 20) | GOOD true OTHER false null false
+duel 0 0 true goblin goblin false
+  -13 (83/96) | GOOD false LEAD_HIT false MELEE false
+  Goblin -12 (43/96) | BAD true FOE_HIT false MELEE false
+  -13 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Goblin beat Goblin (Lv 20) | GOOD true OTHER false null false
+duel 0 1 false goblin archer false
+  -19 (77/96) | GOOD false LEAD_HIT false MELEE false
+  Goblin -6 (0/96) | BAD true FOE_HIT false RANGED false
+  out Goblin lost to Archer (Lv 20) | BAD true OTHER false null false
+duel 1 1 true goblin archer false
+  Goblin -8 (88/96) | BAD true FOE_HIT false RANGED false
+  -16 (25/96) | GOOD false LEAD_HIT false MELEE false
+  -18 (0/96) | GOOD false LEAD_HIT false MELEE false
+  out Goblin beat Archer (Lv 20) | GOOD true OTHER false null false
+== duel 0 mine
+first won=true hp 217.0 0.0
+Green dragon -19 (269/288) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 72 (115/187) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -16 (253/288) | BAD true FOE_HIT false MELEE false
+-47 (68/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -14 (239/288) | BAD true FOE_HIT false MELEE false
+-59 (9/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -22 (217/288) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 58 (0/187) | GOOD false LEAD_HIT true MAGIC false
+== duel 0 theirs
+first won=true hp 217.0 0.0
+-19 (269/288) | GOOD false LEAD_HIT false MELEE false
+Green dragon breathes fire for 72 (115/187) | BAD true FOE_HIT true MAGIC false
+-16 (253/288) | GOOD false LEAD_HIT false MELEE false
+Goblin -47 (68/187) | BAD true FOE_HIT false MELEE false
+-14 (239/288) | GOOD false LEAD_HIT false MELEE false
+Goblin -59 (9/187) | BAD true FOE_HIT false MELEE false
+-22 (217/288) | GOOD false LEAD_HIT false MELEE false
+Green dragon breathes fire for 58 (0/187) | BAD true FOE_HIT true MAGIC false
+== duel 1 mine
+first won=true hp 220.0 0.0
+Green dragon -18 (276/294) | BAD true FOE_HIT false MELEE false
+-46 (141/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -13 (263/294) | BAD true FOE_HIT false MELEE false
+-42 (99/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -22 (241/294) | BAD true FOE_HIT false MELEE false
+-62 (37/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -21 (220/294) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 67 (0/187) | GOOD false LEAD_HIT true MAGIC false
+== duel 1 theirs
+first won=true hp 220.0 0.0
+-18 (276/294) | GOOD false LEAD_HIT false MELEE false
+Goblin -46 (141/187) | BAD true FOE_HIT false MELEE false
+-13 (263/294) | GOOD false LEAD_HIT false MELEE false
+Goblin -42 (99/187) | BAD true FOE_HIT false MELEE false
+-22 (241/294) | GOOD false LEAD_HIT false MELEE false
+Goblin -62 (37/187) | BAD true FOE_HIT false MELEE false
+-21 (220/294) | GOOD false LEAD_HIT false MELEE false
+Green dragon breathes fire for 67 (0/187) | BAD true FOE_HIT true MAGIC false
+== duel 2 mine
+first won=true hp 251.0 0.0
+Green dragon -18 (283/301) | BAD true FOE_HIT false MELEE false
+-53 (134/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -21 (262/301) | BAD true FOE_HIT false MELEE false
+-64 (70/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -11 (251/301) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 79 (0/187) | GOOD false LEAD_HIT true MAGIC false
+== duel 2 theirs
+first won=true hp 251.0 0.0
+-18 (283/301) | GOOD false LEAD_HIT false MELEE false
+Goblin -53 (134/187) | BAD true FOE_HIT false MELEE false
+-21 (262/301) | GOOD false LEAD_HIT false MELEE false
+Goblin -64 (70/187) | BAD true FOE_HIT false MELEE false
+-11 (251/301) | GOOD false LEAD_HIT false MELEE false
+Green dragon breathes fire for 79 (0/187) | BAD true FOE_HIT true MAGIC false
+== duel 3 mine
+first won=true hp 256.0 0.0
+Green dragon -17 (291/308) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 62 (125/187) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -17 (274/308) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 79 (46/187) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -18 (256/308) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 84 (0/187) | GOOD false LEAD_HIT true MAGIC false
+== duel 3 theirs
+first won=true hp 256.0 0.0
+-17 (291/308) | GOOD false LEAD_HIT false MELEE false
+Green dragon breathes fire for 62 (125/187) | BAD true FOE_HIT true MAGIC false
+-17 (274/308) | GOOD false LEAD_HIT false MELEE false
+Green dragon breathes fire for 79 (46/187) | BAD true FOE_HIT true MAGIC false
+-18 (256/308) | GOOD false LEAD_HIT false MELEE false
+Green dragon breathes fire for 84 (0/187) | BAD true FOE_HIT true MAGIC false
+== duel 4 mine
+first won=true hp 287.0 0.0
+-65 (122/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -9 (305/314) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 77 (45/187) | GOOD false LEAD_HIT true MAGIC false
+Green dragon -18 (287/314) | BAD true FOE_HIT false MELEE false
+-52 (0/187) | GOOD false LEAD_HIT false MELEE false
+== duel 4 theirs
+first won=true hp 287.0 0.0
+Goblin -65 (122/187) | BAD true FOE_HIT false MELEE false
+-9 (305/314) | GOOD false LEAD_HIT false MELEE false
+Green dragon breathes fire for 77 (45/187) | BAD true FOE_HIT true MAGIC false
+-18 (287/314) | GOOD false LEAD_HIT false MELEE false
+Goblin -52 (0/187) | BAD true FOE_HIT false MELEE false
+== duel 5 mine
+first won=true hp 294.0 0.0
+-49 (138/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -12 (309/321) | BAD true FOE_HIT false MELEE false
+-57 (81/187) | GOOD false LEAD_HIT false MELEE false
+Green dragon -15 (294/321) | BAD true FOE_HIT false MELEE false
+Green dragon breathes fire for 86 (0/187) | GOOD false LEAD_HIT true MAGIC false
+== duel 5 theirs
+first won=true hp 294.0 0.0
+Goblin -49 (138/187) | BAD true FOE_HIT false MELEE false
+-12 (309/321) | GOOD false LEAD_HIT false MELEE false
+Goblin -57 (81/187) | BAD true FOE_HIT false MELEE false
+-15 (294/321) | GOOD false LEAD_HIT false MELEE false
+Green dragon breathes fire for 86 (0/187) | BAD true FOE_HIT true MAGIC false
+== duel without lines 0
+first won=true hp 19.0 0.0
+== duel without lines 1
+first won=true hp 11.0 0.0
+== duel without lines 2
+first won=true hp 15.0 0.0
+== duel without lines 3
+first won=true hp 6.0 0.0
