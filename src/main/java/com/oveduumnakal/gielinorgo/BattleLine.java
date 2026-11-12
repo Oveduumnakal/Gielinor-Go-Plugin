@@ -31,6 +31,8 @@ final class BattleLine
 	private final boolean overPlayer;
 	private final Kind kind;
 	private final boolean special;
+	private final CombatType style;
+	private final boolean icy;
 
 	BattleLine(String text, Tone tone, boolean overPlayer)
 	{
@@ -53,6 +55,25 @@ final class BattleLine
 	 */
 	BattleLine(String text, Tone tone, boolean overPlayer, Kind kind, boolean special)
 	{
+		this(text, tone, overPlayer, kind, special, null, false);
+	}
+
+	/**
+	 * Builds a line for a hit, with the style it was made in.
+	 *
+	 * @param text the line
+	 * @param tone the mood, from the player's side
+	 * @param overPlayer whether the line is about the player's creature
+	 * @param kind what the line is
+	 * @param special whether the attack was the attacker's second kind, such as a dragon's fire breath
+	 * @param style the style of the attack, or null for a line that is not a hit
+	 * @param icy whether a breath is icy, as a wyvern's is; false for anything that is not a breath
+	 */
+	BattleLine(String text, Tone tone, boolean overPlayer, Kind kind, boolean special, CombatType style,
+		boolean icy)
+	{
+		this.style = style;
+		this.icy = icy;
 		this.special = special;
 		this.text = text;
 		this.tone = tone;
@@ -64,6 +85,18 @@ final class BattleLine
 	boolean special()
 	{
 		return special;
+	}
+
+	/** @return the style the attack was made in, or null for a line that is not a hit */
+	CombatType style()
+	{
+		return style;
+	}
+
+	/** @return true when the attack was an icy breath, so it is shown with the icy projectile */
+	boolean icy()
+	{
+		return icy;
 	}
 
 	/** @return what the line is, {@link Kind#OTHER} when it is only text */

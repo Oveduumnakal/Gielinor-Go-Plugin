@@ -120,7 +120,7 @@ final class BattleSim
 			int damage = damage(attacker, style, defender, random);
 			defender.hit(damage);
 			if (log != null)
-				log.add(strike(attacker, defender, damage, myTurn, style != attacker.type()));
+				log.add(strike(attacker, defender, damage, myTurn, style));
 
 			myTurn = !myTurn;
 			turns++;
@@ -218,27 +218,39 @@ final class BattleSim
 	 * @param defender the creature that was hit
 	 * @param damage the health removed
 	 * @param mine whether the player's creature made the attack
-	 * @param special whether the attack was of the attacker's second style, which reads as a fire breath
+	 * @param style the style the attack was made in, already rolled; a style other than the attacker's own reads as
+	 *     a fire breath
 	 * @return the line, over the wild creature for the player's hits and over the player for hits taken
 	 */
 	private static BattleLine strike(Combatant attacker, Combatant defender, int damage, boolean mine,
-		boolean special)
+		CombatType style)
 	{
+		boolean special = style != attacker.type();
+		boolean icy = special && icy(attacker);
 		String health = " (" + (int) Math.ceil(defender.hp()) + "/" + defender.maxHp() + ")";
 		if (mine)
 		{
 			String text = special ? breath(attacker) + damage + health : "-" + damage + health;
-			return new BattleLine(text, Tone.GOOD, false, BattleLine.Kind.LEAD_HIT, special);
+			return new BattleLine(text, Tone.GOOD, false, BattleLine.Kind.LEAD_HIT, special, style, icy);
 		}
 
 		String text = special ? breath(attacker) + damage + health : defender.name() + " -" + damage + health;
-		return new BattleLine(text, Tone.BAD, true, BattleLine.Kind.FOE_HIT, special);
+		return new BattleLine(text, Tone.BAD, true, BattleLine.Kind.FOE_HIT, special, style, icy);
 	}
 
 	private static String breath(Combatant attacker)
 	{
-		String name = attacker.name();
-		return name + (name.toLowerCase().contains("wyvern") ? BREATHES_ICE : BREATHES);
+		return attacker.name() + (icy(attacker) ? BREATHES_ICE : BREATHES);
+	}
+
+	/**
+	 * @param attacker the creature that breathes
+	 * @return whether its breath is icy: wyverns breathe ice, everything else fire
+	 */
+	private static boolean icy(Combatant attacker)
+	{
+		String name = attacker.name().toLowerCase();
+		return name.contains("wyvern");
 	}
 
 	private static BattleLine closing(Combatant mine, Combatant foe, boolean won)

@@ -17,6 +17,7 @@ final class Notice
 	private final Tone tone;
 	private final int npcIndex;
 	private final Anchor anchor;
+	private final JarType jar;
 
 	/** Where a notice floats: over a head as usual, or over a body that is acted out on a battle stage. */
 	enum Anchor
@@ -31,12 +32,13 @@ final class Notice
 		STAGE_LEAD
 	}
 
-	private Notice(String text, Tone tone, int npcIndex, Anchor anchor)
+	private Notice(String text, Tone tone, int npcIndex, Anchor anchor, JarType jar)
 	{
 		this.text = text;
 		this.tone = tone;
 		this.npcIndex = npcIndex;
 		this.anchor = anchor;
+		this.jar = jar;
 	}
 
 	/**
@@ -48,7 +50,20 @@ final class Notice
 	 */
 	static Notice player(String text, Tone tone)
 	{
-		return new Notice(text, tone, PLAYER, Anchor.HEAD);
+		return new Notice(text, tone, PLAYER, Anchor.HEAD, null);
+	}
+
+	/**
+	 * Makes a notice about a jar the player found, shown over the player's head with the jar's picture beside it.
+	 *
+	 * @param text the line
+	 * @param tone its mood
+	 * @param jar the jar the line is about
+	 * @return the notice
+	 */
+	static Notice player(String text, Tone tone, JarType jar)
+	{
+		return new Notice(text, tone, PLAYER, Anchor.HEAD, jar);
 	}
 
 	/**
@@ -61,7 +76,7 @@ final class Notice
 	 */
 	static Notice creature(int npcIndex, String text, Tone tone)
 	{
-		return new Notice(text, tone, npcIndex, Anchor.HEAD);
+		return new Notice(text, tone, npcIndex, Anchor.HEAD, null);
 	}
 
 	/**
@@ -75,7 +90,7 @@ final class Notice
 	 */
 	static Notice stageFoe(int npcIndex, String text, Tone tone)
 	{
-		return new Notice(text, tone, npcIndex, Anchor.STAGE_FOE);
+		return new Notice(text, tone, npcIndex, Anchor.STAGE_FOE, null);
 	}
 
 	/**
@@ -88,7 +103,7 @@ final class Notice
 	 */
 	static Notice stageLead(String text, Tone tone)
 	{
-		return new Notice(text, tone, PLAYER, Anchor.STAGE_LEAD);
+		return new Notice(text, tone, PLAYER, Anchor.STAGE_LEAD, null);
 	}
 
 	/** @return the line */
@@ -101,6 +116,12 @@ final class Notice
 	Tone tone()
 	{
 		return tone;
+	}
+
+	/** @return the jar this line is about, whose picture is drawn beside it, or null */
+	JarType jar()
+	{
+		return jar;
 	}
 
 	/** @return the game's index for the monster this floats over, or {@link #PLAYER} */

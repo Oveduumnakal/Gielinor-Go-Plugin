@@ -41,7 +41,17 @@ final class ChampionCard extends JPanel
 		body.add(PanelUi.sides(city, statusLabel(view)));
 		body.add(Box.createVerticalStrut(2));
 		body.add(PanelUi.wrapped(view.team(), ColorScheme.LIGHT_GRAY_COLOR));
-		body.add(PanelUi.wrapped("First win: " + view.reward(), ColorScheme.MEDIUM_GRAY_COLOR));
+		JLabel reward = PanelUi.label("First win: " + view.reward(), FontManager.getRunescapeSmallFont(),
+			ColorScheme.MEDIUM_GRAY_COLOR);
+		if (view.rewardJar() != null)
+		{
+			reward.setIcon(JarIcons.swing(view.rewardJar()));
+			reward.setIconTextGap(4);
+			reward.setHorizontalTextPosition(JLabel.RIGHT);
+			reward.setHorizontalAlignment(JLabel.LEFT);
+		}
+
+		body.add(reward);
 		if (view.here())
 		{
 			JButton button = PanelUi.button(view.beaten() ? "Rematch" : "Challenge",

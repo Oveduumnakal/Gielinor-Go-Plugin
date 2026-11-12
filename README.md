@@ -25,8 +25,11 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 - **See the catch happen**
 
   Your character makes a throwing motion when you throw a jar, then cheers for a catch, stamps when the
-  creature breaks free and cries when it runs away (skipped if you moved or started something else). A creature you
-  catch vanishes as the jar lands, for five seconds, before fading back in. Only you see this: the real monster never goes anywhere. A monster that is in a
+  creature breaks free and cries when it runs away (skipped if you moved or started something else). The jar you threw
+  flies in an arc from your hand to the creature. The creature reacts when the jar lands: a creature you catch
+  flinches, shrinks into the jar and stays gone for five seconds before fading back in; one that breaks free turns
+  to you and attacks; one that runs away turns and runs off, fading out, and fades back in where it really is.
+  Only you see this: the real monster never goes anywhere, a copy acts in its place. A monster that is in a
   fight with anyone is never hidden, and one that starts fighting while hidden comes straight back. You can switch it
   off in the settings.
 
@@ -40,7 +43,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Training a skill can turn up a jar that is much better on one kind of creature. Mining finds Cave jars for
   creatures you meet underground, Agility finds Swift jars for fast attackers, Prayer finds Blessed jars for
   undead and demons, and so on for almost every skill. When you own one that suits the creature in front of
-  you, it shows up as its own **Catch** option with its odds.
+  you, it shows up as its own **Catch** option with its odds. Every jar has its own small picture, in the jar list on
+  the panel, on the champion cards and beside the "+1 ... jar" lines that float over your head.
 
 - **Everything shows where it happens**
 
@@ -89,9 +93,13 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Melee. A creature that loses to you is easier to catch. Dragons and wyverns bite in melee but about one hit in
   four is a fire or ice breath, which counts as Magic for that hit and says so ("Green dragon breathes fire for 12").
 
-  With **Battle animations** on (the default), your lead walks up to the wild creature and they face each other.
-  Each hit plays as an attack by one and a flinch by the other, one every 3 game ticks like the floating text, and the
-  loser lies down for a few seconds before getting up. Your lead then walks back to you. The wild creature is
+  With **Battle animations** on (the default), your lead walks up to the wild creature and they face each other
+  two tiles apart (one tile when the far spot is blocked). Each hit plays as an attack by one and a flinch by the
+  other, one every 3 game ticks, and the flinch and the floating line come at the same moment of the turn for every
+  attack. A Melee attacker steps up, strikes and steps back. A Ranged or Magic attacker stays where it is and an
+  arrow or a bolt crosses the gap; a dragon steps in to bite but stays put to breathe fire, and a wyvern breathes ice.
+  The arrow, bolt and breath are drawn on your own screen only, they are not real game projectiles, so other plugins
+  do not see them. The loser lies down for a few seconds before getting up. Your lead then walks back to you. The wild creature is
   hidden for the battle: within 1 game tick it fades into a solid copy of itself, drawn at 75% size, that stands in
   its place and fights; a faint (90% see-through) ghost of it fades in over 3 game ticks whenever the real monster
   walks off its tile, and at the end the copy fades back into the real monster over 3 game ticks. Only you see any
@@ -102,8 +110,10 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   **Catch a knocked-out creature.** When your lead wins, the wild creature lies knocked out for about 10 seconds.
   Right-click the lying copy to get the same **Catch** options as the real monster (you can also do this while it
   fights). A knocked-out creature is twice as easy to catch (x2.0); once it is back up it is x1.5 as before. Caught:
-  the catch plays out as usual. Broke free: it gets up and the scene ends. Ran away: the scene ends and it is no
-  longer wild.
+  the jar flies to the lying copy, which shrinks into it (it does not get up to flinch), and the real monster
+  fades back in after five seconds. Broke free: the copy gets up, turns to you, attacks and the scene ends. Ran away:
+  the copy gets up and runs off fading out, and it is no longer wild. A jar thrown while it still fights is played
+  on the copy the same way.
 
 - **Creatures evolve**
 

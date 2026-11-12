@@ -17,6 +17,7 @@ import net.runelite.api.GameState;
 import net.runelite.api.Model;
 import net.runelite.api.NPC;
 import net.runelite.api.Perspective;
+import net.runelite.api.Player;
 import net.runelite.api.Point;
 import net.runelite.api.Renderable;
 import net.runelite.api.WorldView;
@@ -28,7 +29,11 @@ import net.runelite.client.callback.RenderCallback;
  * Acts out a battle between the lead creature and a wild one on the player's own screen. The real monster cannot be
  * moved or animated by a plugin, so it is kept from being drawn and a copy of it stands on its tile instead; the
  * copy turns to face the lead creature, attacks, reacts to hits and goes down. The lead walks up to it first, and
- * walks back afterwards. The real monster is hidden, and an {@link NpcGhost} (built from a private copy of its
+ * walks back afterwards.
+ * They start {@link TurnMotion#GAP_TILES} tiles apart ({@link TurnMotion#NEAR_GAP_TILES} when that spot is blocked).
+ * A melee attacker steps up, strikes and steps back; a ranged or magic attacker stays put and a
+ * {@link BattleProjectile} crosses the gap; the blow lands at the same moment of the turn for every style
+ * ({@link TurnMotion}). The real monster is hidden, and an {@link NpcGhost} (built from a private copy of its
  * model) mirrors its place, facing and animation at full size. Everything fades, as {@link BattleFades} plans: at the
  * start the ghost fades from solid while the stand-in fades in, over {@link BattleFades#START_FADE_CLIENT_TICKS}
  * client ticks (1 game tick); during the fight the ghost rests at 0 on the tile the battle started on and at 10%
@@ -47,14 +52,17 @@ final class BattleStage implements RenderCallback, StageAnchors
 	/** Scene units in one tile. */
 	private static final int TILE = 128;
 
-	/** How far from the wild creature's edge the lead stands, in tiles. */
-	private static final double GAP = 0.75;
-
 	/**
 	 * Share of the real monster's size the fighting stand-in is drawn at. The owner asked for three quarters on
 	 * 2026-11-11. The see-through ghost stays at full size because it mirrors the real monster.
 	 */
 	static final double WILD_SIZE = 0.75;
+
+	/** Share of a body's height a projectile leaves from and lands at. */
+	private static final double SHOT_HEIGHT = 0.6;
+
+	/** The value of {@code wantedFacing} while a catch has not asked the stand-in to turn anywhere. */
+	private static final int NO_FACING = -1;
 
 	private final Client client;
 	private final FollowerService follower;
@@ -72,7 +80,21 @@ final class BattleStage implements RenderCallback, StageAnchors
 	private int facing;
 	private int foeHeight;
 	private int foeTiles = 1;
+	private double gap = TurnMotion.GAP_TILES;
+	private final ProjectileModels projectileModels;
+	private BattleProjectile projectile;
+	private int turnAge = TurnMotion.TURN_TICKS;
+	private boolean impactPending;
+	private boolean impactOnLead;
 	private volatile Spot foeSpot;
+	private StageCatch catching;
+	private boolean risen;
+	private int wantedFacing = NO_FACING;
+	private boolean turningAway;
+	private double runFromX;
+	private double runFromY;
+	private double runDirX;
+	private double runDirY;
 
 	/**
 	 * Creates the stage with nothing playing.
@@ -86,6 +108,7 @@ final class BattleStage implements RenderCallback, StageAnchors
 		this.client = client;
 		this.follower = follower;
 		this.animations = animations;
+		this.projectileModels = new ProjectileModels(client);
 	}
 
 	/**
@@ -96,7 +119,7 @@ final class BattleStage implements RenderCallback, StageAnchors
 	 * @param wild the wild monster
 	 * @param lines the battle's lines, in the order they are shown
 	 * @param leadWon whether the player's creature won
-	 * @return true when the battle is on stage, so the caller should hold its text until {@link #fighting()}
+	 * @return true when the battle is on stage, so the caller should hold its text until {@link #linesDue()}
 	 */
 	boolean start(NPC wild, List<BattleLine> lines, boolean leadWon)
 	{
@@ -141,7 +164,9 @@ final class BattleStage implements RenderCallback, StageAnchors
 			foeTiles = Math.max(1, (int) Math.round(parts.size() * WILD_SIZE));
 			foeHeight = (int) Math.round(FollowerService.heightOf(parts.data()) * shrunk(parts.heightScale())
 				/ NpcModels.NORMAL_SCALE);
-			timeline = new BattleTimeline(BattleTimeline.beatsOf(lines), leadWon);
+			timeline = new BattleTimeline(BattleTimeline.stepsOf(lines), leadWon);
+			turnAge = TurnMotion.TURN_TICKS;
+			impactPending = false;
 			fades = new BattleFades(true);
 			place(view);
 			startGhost(wild);
@@ -165,10 +190,13 @@ final class BattleStage implements RenderCallback, StageAnchors
 		return timeline != null;
 	}
 
-	/** @return whether the lead has arrived and the battle lines are being played */
-	boolean fighting()
+	/**
+	 * @return whether the battle lines may start showing: one game tick after the first beat, so each line appears
+	 *     as its blow lands
+	 */
+	boolean linesDue()
 	{
-		return timeline != null && timeline.fightStarted();
+		return timeline != null && timeline.linesDue();
 	}
 
 	/**
@@ -199,15 +227,15 @@ final class BattleStage implements RenderCallback, StageAnchors
 			return;
 		}
 
-		if (fades.ending())
+		if (fades.ending() || catching != null)
 			return;
 
-		BattleTimeline.Beat beat = timeline.tick(follower.errandArrived());
+		BattleTimeline.Step step = timeline.tick(follower.errandArrived());
 		if (timeline.fightStarted() && !follower.errandArrived())
 			follower.arriveNow();
 
-		if (beat != null)
-			play(beat);
+		if (step != null)
+			play(step);
 
 		if (timeline.phase() == BattleTimeline.Phase.DONE)
 			beginEnd();
@@ -236,11 +264,17 @@ final class BattleStage implements RenderCallback, StageAnchors
 		if (view == null || client.getGameState() != GameState.LOGGED_IN)
 			return;
 
+		if (catching != null && stepCatch())
+			return;
+
 		standIn.clientTick();
+		advanceTurn(view);
 		fades.tick(home != null && home.equals(npc.getWorldLocation()));
-		standIn.setOpacity(fades.standInOpacity());
+		standIn.setOpacity(catching == null ? fades.standInOpacity()
+			: Math.min(fades.standInOpacity(), catching.opacity()));
 		mirrorGhost();
-		int wanted = FollowerPath.angle(follower.x() - centerX, follower.y() - centerY);
+		int wanted = wantedFacing != NO_FACING ? wantedFacing
+			: FollowerPath.angle(follower.x() - centerX, follower.y() - centerY);
 		facing = FollowerPath.turnToward(facing, wanted);
 		place(view);
 		if (fades.finished())
@@ -266,7 +300,7 @@ final class BattleStage implements RenderCallback, StageAnchors
 	boolean knockedOut(NPC other)
 	{
 		return other != null && other == npc && timeline != null && timeline.knockedOut()
-			&& fades != null && !fades.ending();
+			&& fades != null && !fades.ending() && !risen;
 	}
 
 	/** @return the game's index of the monster whose stand-in is on stage, or -1 when no battle is on stage */
@@ -329,6 +363,113 @@ final class BattleStage implements RenderCallback, StageAnchors
 	}
 
 	/**
+	 * Tells the stage that a jar was thrown at the monster on stage: the battle beats stop, the stand-in keeps its
+	 * pose (it stays lying if it is knocked out), the lead stays where it is and the real monster stays hidden, and
+	 * from the landing the stand-in acts the result out ({@link StageCatch}). A throw while a catch is already in
+	 * the air starts the new result from the throw. Nothing starts when the monster is not the one on stage or the
+	 * stage is already fading out, and the caller then ends the stage as it did before.
+	 *
+	 * @param target the monster that was thrown at
+	 * @param outcome what the throw led to
+	 * @return true when the catch is played on the stand-in, so the stage must not be ended
+	 */
+	boolean beginCatch(NPC target, CatchOutcome outcome)
+	{
+		if (!isStaged(target) || timeline == null || fades == null || fades.ending() || standIn == null
+			|| !StageCatch.plays(outcome))
+			return false;
+
+		boolean lying = timeline.knockedOut() && !risen;
+		settleTurn();
+		catching = new StageCatch(outcome, lying);
+		wantedFacing = NO_FACING;
+		turningAway = false;
+		return true;
+	}
+
+	/**
+	 * Plays one client tick of the catch on the stand-in: the flinch, the getting up, the turn, the size, the run
+	 * and the end. Called from {@link #move()} while a catch is on stage.
+	 *
+	 * @return true when the stage was ended and nothing more may be done this tick
+	 */
+	private boolean stepCatch()
+	{
+		StageCatch scene = catching;
+		scene.tick();
+		if (scene.getsUp())
+		{
+			standIn.recover();
+			risen = true;
+		}
+
+		TargetScript.Step step = scene.step();
+		if (step == TargetScript.Step.HIT)
+			standIn.act(CreatureBody.Act.HIT);
+		else if (step == TargetScript.Step.ATTACK)
+			standIn.act(CreatureBody.Act.ATTACK);
+
+		if (scene.turn() != TargetScript.Turn.NONE)
+			startCatchTurn(scene.turn());
+
+		standIn.setSize(scene.size());
+		if (turningAway)
+		{
+			double run = scene.runTiles();
+			centerX = runFromX + runDirX * run;
+			centerY = runFromY + runDirY * run;
+		}
+
+		if (scene.cutsStage())
+		{
+			finish();
+			return true;
+		}
+
+		if (scene.fadesStage())
+			beginEnd();
+
+		return false;
+	}
+
+	/**
+	 * Works out which way the stand-in turns for its second act: to the player, or away from the player and running
+	 * that way.
+	 *
+	 * @param turn the turn, not none
+	 */
+	private void startCatchTurn(TargetScript.Turn turn)
+	{
+		Player player = client.getLocalPlayer();
+		WorldView view = client.getTopLevelWorldView();
+		LocalPoint from = player == null || view == null ? null : player.getLocalLocation();
+		double dx = from == null ? 0 : centerX - (from.getX() / (double) TILE - 0.5 + view.getBaseX());
+		double dy = from == null ? 0 : centerY - (from.getY() / (double) TILE - 0.5 + view.getBaseY());
+		double length = Math.hypot(dx, dy);
+		if (length < 0.01)
+		{
+			double turned = facing * 2 * Math.PI / FollowerPath.FULL_TURN;
+			dx = -Math.sin(turned);
+			dy = -Math.cos(turned);
+			length = 1;
+		}
+
+		runDirX = dx / length;
+		runDirY = dy / length;
+		runFromX = centerX;
+		runFromY = centerY;
+		if (turn == TargetScript.Turn.TO_PLAYER)
+		{
+			wantedFacing = FollowerPath.angle(-runDirX, -runDirY);
+			return;
+		}
+
+		wantedFacing = FollowerPath.angle(runDirX, runDirY);
+		turningAway = true;
+		standIn.setBase(animations.walk(standIn.npcId()));
+	}
+
+	/**
 	 * @param other a monster
 	 * @return whether it is the one on stage, so it is hidden and a stand-in is drawn in its place
 	 */
@@ -383,22 +524,32 @@ final class BattleStage implements RenderCallback, StageAnchors
 
 	/**
 	 * Works out where the lead should stand to face the monster: on the line from the monster to where the lead is
-	 * now, just outside the monster's edge.
+	 * now, {@link TurnMotion#GAP_TILES} tiles outside the monster's edge, or {@link TurnMotion#NEAR_GAP_TILES} when
+	 * the tile of that spot is blocked. The gap that worked is kept for the steps of melee attackers.
 	 *
 	 * @param x the monster's middle, world x in tiles
 	 * @param y the monster's middle, world y in tiles
 	 * @param size how many tiles wide the stand-in is, after shrinking
-	 * @return whether the lead set off
+	 * @return whether the lead set off; false when neither spot is free
 	 */
 	private boolean sendLead(double x, double y, double size)
 	{
 		double dx = follower.x() - x;
 		double dy = follower.y() - y;
 		double length = Math.hypot(dx, dy);
-		double reach = size / 2.0 + GAP;
-		double toX = length < 0.01 ? x : x + dx / length * reach;
-		double toY = length < 0.01 ? y - reach : y + dy / length * reach;
-		return follower.beginErrand(toX, toY, x, y);
+		for (double tryGap : new double[]{TurnMotion.GAP_TILES, TurnMotion.NEAR_GAP_TILES})
+		{
+			double reach = size / 2.0 + tryGap;
+			double toX = length < 0.01 ? x : x + dx / length * reach;
+			double toY = length < 0.01 ? y - reach : y + dy / length * reach;
+			if (follower.spotFree(toX, toY) && follower.beginErrand(toX, toY, x, y))
+			{
+				gap = tryGap;
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -471,31 +622,28 @@ final class BattleStage implements RenderCallback, StageAnchors
 		ghost = null;
 	}
 
-	private void play(BattleTimeline.Beat beat)
+	private void play(BattleTimeline.Step step)
 	{
-		switch (beat)
+		landBlow();
+		switch (step.beat())
 		{
 			case FACE_OFF:
 				break;
 
 			case LEAD_ATTACKS:
-				follower.act(CreatureBody.Act.ATTACK);
-				standIn.act(CreatureBody.Act.HIT);
+				leadStrikes(step, CreatureBody.Act.ATTACK);
 				break;
 
 			case FOE_ATTACKS:
-				standIn.act(CreatureBody.Act.ATTACK);
-				follower.act(CreatureBody.Act.HIT);
+				foeStrikes(step, CreatureBody.Act.ATTACK);
 				break;
 
 			case LEAD_SPECIAL:
-				follower.act(CreatureBody.Act.SPECIAL);
-				standIn.act(CreatureBody.Act.HIT);
+				leadStrikes(step, CreatureBody.Act.SPECIAL);
 				break;
 
 			case FOE_SPECIAL:
-				standIn.act(CreatureBody.Act.SPECIAL);
-				follower.act(CreatureBody.Act.HIT);
+				foeStrikes(step, CreatureBody.Act.SPECIAL);
 				break;
 
 			default:
@@ -505,6 +653,149 @@ final class BattleStage implements RenderCallback, StageAnchors
 					standIn.act(CreatureBody.Act.DEFEATED);
 
 				break;
+		}
+	}
+
+	/**
+	 * The lead attacks: a melee attacker steps up to the stand-in, any other stays put and shoots. The stand-in
+	 * reacts when the blow lands ({@link #advanceTurn(WorldView)}).
+	 *
+	 * @param step the step
+	 * @param act the lead's attack
+	 */
+	private void leadStrikes(BattleTimeline.Step step, CreatureBody.Act act)
+	{
+		if (step.melee())
+			follower.meleeTurn(gap - TurnMotion.CONTACT_TILES, act);
+		else
+			follower.act(act);
+
+		beginTurn(step, false);
+	}
+
+	/**
+	 * The wild creature's stand-in attacks, the same way. The lead reacts when the blow lands.
+	 *
+	 * @param step the step
+	 * @param act the stand-in's attack
+	 */
+	private void foeStrikes(BattleTimeline.Step step, CreatureBody.Act act)
+	{
+		if (step.melee())
+			standIn.meleeTurn(gap - TurnMotion.CONTACT_TILES, act);
+		else
+			standIn.act(act);
+
+		beginTurn(step, true);
+	}
+
+	/**
+	 * Starts counting a turn and, for a shot, sends the projectile on its way.
+	 *
+	 * @param step the step
+	 * @param leadIsHit whether the lead is the one that is hit
+	 */
+	private void beginTurn(BattleTimeline.Step step, boolean leadIsHit)
+	{
+		turnAge = 0;
+		impactPending = true;
+		impactOnLead = leadIsHit;
+		if (step.melee() || step.look() == null)
+			return;
+
+		try
+		{
+			ProjectilePath route = leadIsHit
+				? new ProjectilePath(centerX, centerY, foeHeight * SHOT_HEIGHT, follower.x(), follower.y(),
+					follower.tagHeight() * SHOT_HEIGHT)
+				: new ProjectilePath(follower.x(), follower.y(), follower.tagHeight() * SHOT_HEIGHT, centerX,
+					centerY, foeHeight * SHOT_HEIGHT);
+			if (projectile == null)
+				projectile = new BattleProjectile(client, projectileModels);
+
+			projectile.launch(step.look(), route);
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not launch a projectile", e);
+			dropProjectile();
+		}
+	}
+
+	/**
+	 * Moves the turn on by one client tick: the blow lands at {@link TurnMotion#IMPACT_TICK}, and a projectile that
+	 * is in the air is placed. A failure costs the projectile, not the battle.
+	 *
+	 * @param view the top level world view
+	 */
+	private void advanceTurn(WorldView view)
+	{
+		if (turnAge >= TurnMotion.TURN_TICKS)
+			return;
+
+		turnAge++;
+		if (impactPending && turnAge >= TurnMotion.IMPACT_TICK)
+			landBlow();
+
+		if (projectile == null)
+			return;
+
+		try
+		{
+			projectile.place(turnAge, view, plane);
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not move the projectile", e);
+			dropProjectile();
+		}
+	}
+
+	/** Makes the target of the turn react, if the blow has not landed yet, and takes the projectile away. */
+	private void landBlow()
+	{
+		if (!impactPending)
+			return;
+
+		impactPending = false;
+		if (impactOnLead)
+			follower.act(CreatureBody.Act.HIT);
+		else
+			standIn.act(CreatureBody.Act.HIT);
+
+		if (projectile != null)
+			projectile.hide();
+	}
+
+	/**
+	 * Ends a turn that a catch cuts short: no blow lands, the projectile goes, and the stand-in eases back to its
+	 * own spot if it was stepping up, so the catch's flinch, shrink or run starts from where it is drawn.
+	 */
+	private void settleTurn()
+	{
+		impactPending = false;
+		turnAge = TurnMotion.TURN_TICKS;
+		if (projectile != null)
+			projectile.hide();
+
+		standIn.endTurn();
+	}
+
+	/** Takes the projectile away for good: after a failure, it is not tried again in this battle. */
+	private void dropProjectile()
+	{
+		BattleProjectile gone = projectile;
+		projectile = null;
+		if (gone == null)
+			return;
+
+		try
+		{
+			gone.remove();
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not remove the projectile", e);
 		}
 	}
 
@@ -567,7 +858,14 @@ final class BattleStage implements RenderCallback, StageAnchors
 		CreatureBody body = standIn;
 		boolean sendBack = timeline != null && errandOpen;
 		timeline = null;
+		catching = null;
+		risen = false;
+		wantedFacing = NO_FACING;
+		turningAway = false;
 		foeSpot = null;
+		impactPending = false;
+		turnAge = TurnMotion.TURN_TICKS;
+		dropProjectile();
 		npc = null;
 		standIn = null;
 		fades = null;

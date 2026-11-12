@@ -323,6 +323,33 @@ final class FollowerService
 			body.act(act);
 	}
 
+	/**
+	 * Has the lead creature step up to its target, strike and step back ({@link CreatureBody#meleeTurn}).
+	 *
+	 * @param distance how far it steps, in tiles
+	 * @param act the attack
+	 */
+	void meleeTurn(double distance, CreatureBody.Act act)
+	{
+		if (body != null)
+			body.meleeTurn(distance, act);
+	}
+
+	/**
+	 * Tells whether a spot on the ground is free to stand on, by the same check that picks the tile the lead walks
+	 * back to ({@link #endErrand()}).
+	 *
+	 * @param tileX world x of the spot, in tiles
+	 * @param tileY world y of the spot, in tiles
+	 * @return true when the tile the spot is on is not blocked
+	 */
+	boolean spotFree(double tileX, double tileY)
+	{
+		Player player = client.getLocalPlayer();
+		WorldView view = player == null ? null : player.getWorldView();
+		return view != null && free(view, path.plane(), (int) Math.round(tileX), (int) Math.round(tileY));
+	}
+
 	/** Ends an errand: the lead gets up if it was down, and walks back to the player. */
 	void endErrand()
 	{

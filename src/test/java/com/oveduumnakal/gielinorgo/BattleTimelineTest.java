@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,8 +22,9 @@ public class BattleTimelineTest
 {
 	private static final double CLOSE = 0.0001;
 
-	private static final List<BattleTimeline.Beat> TWO_HITS = Arrays.asList(
-		BattleTimeline.Beat.LEAD_ATTACKS, BattleTimeline.Beat.FOE_ATTACKS, BattleTimeline.Beat.FINISH);
+	private static final List<BattleTimeline.Step> TWO_HITS = Arrays.asList(
+		step(BattleTimeline.Beat.LEAD_ATTACKS), step(BattleTimeline.Beat.FOE_ATTACKS),
+		step(BattleTimeline.Beat.FINISH));
 
 	@Test
 	public void linesBecomeBeatsInOrder()
@@ -35,7 +37,7 @@ public class BattleTimelineTest
 			line(BattleLine.Kind.CLOSING));
 
 		assertEquals(Arrays.asList(BattleTimeline.Beat.FACE_OFF, BattleTimeline.Beat.LEAD_ATTACKS,
-			BattleTimeline.Beat.FOE_ATTACKS, BattleTimeline.Beat.FINISH), BattleTimeline.beatsOf(lines));
+			BattleTimeline.Beat.FOE_ATTACKS, BattleTimeline.Beat.FINISH), beatsOf(BattleTimeline.stepsOf(lines)));
 	}
 
 	@Test
@@ -48,7 +50,7 @@ public class BattleTimelineTest
 			line(BattleLine.Kind.CLOSING));
 
 		assertEquals(Arrays.asList(BattleTimeline.Beat.LEAD_SPECIAL, BattleTimeline.Beat.FOE_SPECIAL,
-			BattleTimeline.Beat.FOE_ATTACKS, BattleTimeline.Beat.FINISH), BattleTimeline.beatsOf(lines));
+			BattleTimeline.Beat.FOE_ATTACKS, BattleTimeline.Beat.FINISH), beatsOf(BattleTimeline.stepsOf(lines)));
 	}
 
 	@Test
@@ -58,22 +60,23 @@ public class BattleTimelineTest
 		Combatant foe = new Combatant(new Species("Goblin", 13, CombatType.MELEE), 5, 1.0);
 
 		BattleResult result = BattleSim.fight(mine, foe, new Random(7));
-		List<BattleTimeline.Beat> beats = BattleTimeline.beatsOf(result.lines());
+		List<BattleTimeline.Step> steps = BattleTimeline.stepsOf(result.lines());
 
-		assertEquals(BattleTimeline.Beat.FACE_OFF, beats.get(0));
-		assertEquals(BattleTimeline.Beat.FINISH, beats.get(beats.size() - 1));
-		assertEquals(result.lines().size(), beats.size());
+		assertEquals(BattleTimeline.Beat.FACE_OFF, steps.get(0).beat());
+		assertEquals(BattleTimeline.Beat.FINISH, steps.get(steps.size() - 1).beat());
+		assertEquals(result.lines().size(), steps.size());
 	}
 
 	@Test
 	public void aMissingFinishIsAdded()
 	{
-		BattleTimeline timeline = new BattleTimeline(Collections.singletonList(BattleTimeline.Beat.LEAD_ATTACKS),
+		BattleTimeline timeline = new BattleTimeline(Collections.singletonList(step(BattleTimeline.Beat.LEAD_ATTACKS)),
 			true);
 
-		assertEquals(Arrays.asList(BattleTimeline.Beat.LEAD_ATTACKS, BattleTimeline.Beat.FINISH), timeline.beats());
+		assertEquals(Arrays.asList(BattleTimeline.Beat.LEAD_ATTACKS, BattleTimeline.Beat.FINISH),
+			beatsOf(timeline.steps()));
 		assertEquals(Collections.singletonList(BattleTimeline.Beat.FINISH),
-			new BattleTimeline(Collections.emptyList(), true).beats());
+			beatsOf(new BattleTimeline(Collections.emptyList(), true).steps()));
 	}
 
 	@Test
@@ -96,7 +99,7 @@ public class BattleTimelineTest
 		timeline.tick(false);
 		timeline.tick(false);
 
-		assertEquals(BattleTimeline.Beat.LEAD_ATTACKS, timeline.tick(true));
+		assertEquals(BattleTimeline.Beat.LEAD_ATTACKS, beatOf(timeline.tick(true)));
 		assertTrue(timeline.fightStarted());
 		assertEquals(BattleTimeline.Phase.FIGHTING, timeline.phase());
 	}
@@ -108,7 +111,7 @@ public class BattleTimelineTest
 		for (int tick = 1; tick < BattleTimeline.MAX_WALK_TICKS; tick++)
 			timeline.tick(false);
 
-		assertEquals(BattleTimeline.Beat.LEAD_ATTACKS, timeline.tick(false));
+		assertEquals(BattleTimeline.Beat.LEAD_ATTACKS, beatOf(timeline.tick(false)));
 	}
 
 	@Test
@@ -116,14 +119,14 @@ public class BattleTimelineTest
 	{
 		BattleTimeline timeline = new BattleTimeline(TWO_HITS, true);
 
-		assertEquals(BattleTimeline.Beat.LEAD_ATTACKS, timeline.tick(true));
-		assertEquals(BattleTimeline.Beat.FOE_ATTACKS, afterPause(timeline));
+		assertEquals(BattleTimeline.Beat.LEAD_ATTACKS, beatOf(timeline.tick(true)));
+		assertEquals(BattleTimeline.Beat.FOE_ATTACKS, beatOf(afterPause(timeline)));
 		assertEquals(BattleTimeline.Phase.FIGHTING, timeline.phase());
-		assertEquals(BattleTimeline.Beat.FINISH, afterPause(timeline));
+		assertEquals(BattleTimeline.Beat.FINISH, beatOf(afterPause(timeline)));
 		assertEquals(BattleTimeline.Phase.DOWN, timeline.phase());
 	}
 
-	private static BattleTimeline.Beat afterPause(BattleTimeline timeline)
+	private static BattleTimeline.Step afterPause(BattleTimeline timeline)
 	{
 		for (int tick = 1; tick < BattleTimeline.BEAT_TICKS; tick++)
 			assertNull(timeline.tick(true));
@@ -193,6 +196,46 @@ public class BattleTimelineTest
 	}
 
 	@Test
+	public void stepsKeepTheStyleAndTheLook()
+	{
+		List<BattleLine> lines = Arrays.asList(
+			new BattleLine("x", Tone.GOOD, false, BattleLine.Kind.LEAD_HIT, false, CombatType.RANGED, false),
+			new BattleLine("x", Tone.BAD, true, BattleLine.Kind.FOE_HIT, true, CombatType.MAGIC, true),
+			new BattleLine("x", Tone.BAD, true, BattleLine.Kind.FOE_HIT, false, CombatType.MELEE, false),
+			line(BattleLine.Kind.CLOSING));
+
+		List<BattleTimeline.Step> steps = BattleTimeline.stepsOf(lines);
+
+		assertEquals(CombatType.RANGED, steps.get(0).style());
+		assertEquals(ProjectileLook.ARROW, steps.get(0).look());
+		assertFalse(steps.get(0).melee());
+		assertEquals(CombatType.MAGIC, steps.get(1).style());
+		assertEquals(ProjectileLook.ICE, steps.get(1).look());
+		assertEquals(CombatType.MELEE, steps.get(2).style());
+		assertNull(steps.get(2).look());
+		assertTrue(steps.get(2).melee());
+		assertNull(steps.get(3).style());
+	}
+
+	@Test
+	public void theLinesAreDueOneGameTickAfterTheFirstBeat()
+	{
+		BattleTimeline timeline = new BattleTimeline(TWO_HITS, true);
+		assertFalse(timeline.linesDue());
+		timeline.tick(false);
+		assertFalse(timeline.linesDue());
+
+		timeline.tick(true);
+		assertTrue(timeline.fightStarted());
+		assertFalse(timeline.linesDue());
+
+		timeline.tick(true);
+		assertTrue(timeline.linesDue());
+		timeline.tick(true);
+		assertTrue(timeline.linesDue());
+	}
+
+	@Test
 	public void theLoserIsTheLeadOnlyWhenTheLeadLost()
 	{
 		assertTrue(new BattleTimeline(TWO_HITS, false).leadLost());
@@ -213,6 +256,25 @@ public class BattleTimelineTest
 	public void aRecoilGoesTheOtherWay()
 	{
 		assertTrue(BattleTimeline.lunge(BattleTimeline.LUNGE_TICKS / 2, -0.15) < 0);
+	}
+
+	private static BattleTimeline.Step step(BattleTimeline.Beat beat)
+	{
+		return new BattleTimeline.Step(beat, null);
+	}
+
+	private static BattleTimeline.Beat beatOf(BattleTimeline.Step step)
+	{
+		return step == null ? null : step.beat();
+	}
+
+	private static List<BattleTimeline.Beat> beatsOf(List<BattleTimeline.Step> steps)
+	{
+		List<BattleTimeline.Beat> beats = new ArrayList<>();
+		for (BattleTimeline.Step step : steps)
+			beats.add(step.beat());
+
+		return beats;
 	}
 
 	private static BattleLine line(BattleLine.Kind kind)
