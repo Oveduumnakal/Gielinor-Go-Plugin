@@ -35,7 +35,7 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 
 - **Earn jars by playing**
 
-  You start with 10 Bronze jars. Walking earns more, every level-up in the real game gives three, and battle wins
+  You start with 10 Bronze jars. Walking earns more ("Found a Bronze jar"), every level-up in the real game gives three, and battle wins
   can drop better ones as your trainer level grows.
 
 - **Find specialty jars while skilling**
@@ -44,7 +44,7 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   creatures you meet underground, Agility finds Swift jars for fast attackers, Prayer finds Blessed jars for
   undead and demons, and so on for almost every skill. When you own one that suits the creature in front of
   you, it shows up as its own **Catch** option with its odds. Every jar has its own small picture, in the jar list on
-  the panel, on the champion cards and beside the "+1 ... jar" lines that float over your head.
+  the panel, on the champion cards and beside the "Found a ... jar" lines that float over your head.
 
 - **Healing items**
 

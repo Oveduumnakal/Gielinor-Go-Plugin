@@ -20,7 +20,7 @@ public class NoticeBoardTest
 	public void aLineShowsThenExpires()
 	{
 		NoticeBoard board = new NoticeBoard();
-		board.show(Notice.player("+1 Bronze jar (walking)", Tone.FIND), 1_000);
+		board.show(Notice.player("Found a Bronze jar", Tone.FIND), 1_000);
 
 		assertEquals(1, board.visible(1_000).size());
 		assertEquals(1, board.visible(1_000 + NoticeBoard.LIFE_MS - 1).size());
