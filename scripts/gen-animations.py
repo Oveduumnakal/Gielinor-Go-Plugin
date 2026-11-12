@@ -24,10 +24,10 @@ Ranged humanoids on the player skeleton do not all shoot a bow. HUMAN_RANGED_WEA
 (from the species name and the OSRS wiki: Karil's crossbow, the thrown books, chinchompas and bottles of poison):
 a crossbow user gets `human_crossbow`, a thrower `human_throw`, everyone else keeps `human_bow`.
 
-A species with a second style (`secondStyle` in species.json: the dragons and wyverns that breathe, see
-gen-species.py) also gets a second attack, the last column: the breath animation. It is looked up by skeleton in
+A species whose move pool teaches a move of the SECOND slot (moves.json, written by gen-moves.py: the dragons and
+wyverns that breathe) also gets a second attack, the last column: the breath animation. It is looked up by skeleton in
 SECOND_ATTACKS, so a dragon on the dragon skeleton gets `dragon_firebreath_all_attack` while its attack stays the
-melee bite. This is an animation only; the battle sim rolls the second style (see BattleSim).
+melee bite. This is an animation only; the battle plays it when the creature uses a SECOND slot move.
 
 Some creatures have their idle and walk on a skeleton their combat sequences do not use (a wyrm walks submerged).
 SIBLING_SKELETON_FAMILIES lists the families whose attack may use the skeleton of the family's `_ready` sequence.
@@ -40,11 +40,11 @@ walking animation, or its skeleton must be unknown. The file has one `sequenceId
 file = frameId & 0xFFFF in the cache's animation index) and taking the first two bytes of that file, with the
 RuneLite cache library. The dump does not carry frames, so this step needs a copy of the game cache.
 
-Run from the repo root, after gen-species.py:
+Run from the repo root, after gen-species.py and gen-moves.py:
     python3 scripts/gen-animations.py dump.tar.gz skeletons.txt
 
 Both files are required. The run aborts, writing nothing, when the sequence names or skeletons parse empty, or when
-a species with a second style would lose a second attack the current file has.
+a species with a breath move would lose a second attack the current file has.
 """
 import bisect
 import json
@@ -54,6 +54,7 @@ import tarfile
 
 SPECIES = "src/main/resources/com/oveduumnakal/gielinorgo/species.json"
 OUT = "src/main/resources/com/oveduumnakal/gielinorgo/animations.json"
+MOVES = "src/main/resources/com/oveduumnakal/gielinorgo/moves.json"
 NPC_DEF = re.compile(r"(?:^|/)npc_defs/(\d+)\.json$")
 SEQUENCE_DEF = re.compile(r"(?:^|/)sequences/(\d+)\.json$")
 SEQUENCE_NAME = re.compile(r"(?:^|/)gamevals/7/(\d+)(?:\.json)?$")
@@ -104,7 +105,7 @@ HUMAN_RANGED_WEAPONS = [
     (re.compile(r"^Ranging Ro$"), "human_throw", "wiki: attacks by throwing black chinchompas"),
     (re.compile(r"^The Forsaken Assassin$"), "human_throw", "wiki: throws bottles of poison"),
 ]
-# The second attack of a species with a second style, by name. The one on the NPC's own skeleton is used.
+# The second attack of a species with a breath move, by name. The one on the NPC's own skeleton is used.
 SECOND_ATTACKS = ["dragon_firebreath_all_attack", "fossil_npc_wyvern_flight_breath", "ds2_vorkath_ranged"]
 # Families that walk on another skeleton than the one of their ready and combat sequences.
 SIBLING_SKELETON_FAMILIES = {"wyrm": "wyrm_ready"}
@@ -276,7 +277,7 @@ class Sequences:
         return wanted | {skeleton} if skeleton >= 0 else wanted
 
     def second_attack(self, definition):
-        """The breath animation of a species with a second style, from the skeleton the NPC walks on, or -1."""
+        """The breath animation of a species with a breath move, from the skeleton the NPC walks on, or -1."""
         wanted = self.own_skeletons(definition)
         if not self.skeletons:
             raise SystemExit("the skeletons file is empty, nothing to match a second attack against")
@@ -304,16 +305,29 @@ class Sequences:
         return -1
 
 
+def breathers():
+    """The lowercase names of the species that learn a move of the SECOND slot (a breath), from moves.json."""
+    with open(MOVES, encoding="utf-8") as f:
+        table = json.load(f)
+    second = {m["id"] for m in table["moves"] if m.get("slot") == "SECOND"}
+    pools = {name for name, pool in table["pools"].items() if any(move in second for move, _ in pool["learns"])}
+    names = {key for key, pool in table["species"].items() if pool in pools}
+    if not names:
+        raise SystemExit("moves.json has no species with a breath move; run gen-moves.py first, nothing written")
+    return names
+
+
 def wanted_ids(defs):
     """The NPC ids of every species plus the ids those turn into (varbit and varp transforms).
 
     A species' own ids are claimed before any transform child, so a child never takes an id another species lists.
     Returns (styles, species, owners): styles maps each NPC id to its species' style (the first species wins for an
     id two species share), species is the list of (name, style, ids) of the species that have ids, and owners maps
-    each NPC id to (species name, whether the species has a second style).
+    each NPC id to (species name, whether the species has a breath move).
     """
     with open(SPECIES, encoding="utf-8") as f:
         entries = json.load(f)
+    breathing = breathers()
     styles = {}
     owners = {}
     species = []
@@ -330,11 +344,11 @@ def wanted_ids(defs):
     for entry, style, own, _ in expanded:
         for npc_id in own:
             styles.setdefault(npc_id, style)
-            owners.setdefault(npc_id, (entry["name"], "secondStyle" in entry))
+            owners.setdefault(npc_id, (entry["name"], entry["name"].lower() in breathing))
     for entry, style, _, ids in expanded:
         for npc_id in ids:
             styles.setdefault(npc_id, style)
-            owners.setdefault(npc_id, (entry["name"], "secondStyle" in entry))
+            owners.setdefault(npc_id, (entry["name"], entry["name"].lower() in breathing))
         if ids:
             species.append((entry["name"], style, ids))
     return styles, species, owners
@@ -396,7 +410,7 @@ def main():
     lost = sorted(name for name, seconds in second_now.items() if max(seconds) < 0 and any(
         previous.get(i, [-1] * 6)[5] >= 0 for i, (owner, _) in owners.items() if owner == name))
     if lost:
-        raise SystemExit("species with a second style would lose their second attack, nothing written: "
+        raise SystemExit("species with a breath move would lose their second attack, nothing written: "
                          + ", ".join(lost))
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("{\n" + ",\n".join(rows) + "\n}\n")

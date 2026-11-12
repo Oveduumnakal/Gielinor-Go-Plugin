@@ -6,7 +6,10 @@ package com.oveduumnakal.gielinorgo;
 
 import java.util.Objects;
 
-/** What the player does on one turn of a battle: attack, switch creature, throw a jar, run, or (later) use an item. */
+/**
+ * What the player does on one turn of a battle: attack (with a move), switch creature, throw a jar, run, or (later)
+ * use an item.
+ */
 final class BattleChoice
 {
 	/** The kinds of choice. */
@@ -28,25 +31,38 @@ final class BattleChoice
 		ITEM
 	}
 
-	private static final BattleChoice ATTACK = new BattleChoice(Kind.ATTACK, -1, null);
-	private static final BattleChoice RUN = new BattleChoice(Kind.RUN, -1, null);
-	private static final BattleChoice ITEM = new BattleChoice(Kind.ITEM, -1, null);
+	private static final BattleChoice ATTACK = new BattleChoice(Kind.ATTACK, -1, null, -1);
+	private static final BattleChoice RUN = new BattleChoice(Kind.RUN, -1, null, -1);
+	private static final BattleChoice ITEM = new BattleChoice(Kind.ITEM, -1, null, -1);
 
 	private final Kind kind;
 	private final int teamIndex;
 	private final JarType jar;
+	private final int moveIndex;
 
-	private BattleChoice(Kind kind, int teamIndex, JarType jar)
+	private BattleChoice(Kind kind, int teamIndex, JarType jar, int moveIndex)
 	{
 		this.kind = kind;
 		this.teamIndex = teamIndex;
 		this.jar = jar;
+		this.moveIndex = moveIndex;
 	}
 
-	/** @return the choice to attack */
+	/** @return the choice to attack and let the creature pick its own move, as an automatic battle does */
 	static BattleChoice attack()
 	{
 		return ATTACK;
+	}
+
+	/**
+	 * Makes the choice to attack with one of the creature's moves.
+	 *
+	 * @param moveIndex the place of the move in the creature's moves, from 0
+	 * @return the choice
+	 */
+	static BattleChoice attack(int moveIndex)
+	{
+		return new BattleChoice(Kind.ATTACK, -1, null, moveIndex);
 	}
 
 	/** @return the choice to run away */
@@ -69,7 +85,7 @@ final class BattleChoice
 	 */
 	static BattleChoice switchTo(int teamIndex)
 	{
-		return new BattleChoice(Kind.SWITCH, teamIndex, null);
+		return new BattleChoice(Kind.SWITCH, teamIndex, null, -1);
 	}
 
 	/**
@@ -80,7 +96,7 @@ final class BattleChoice
 	 */
 	static BattleChoice catching(JarType jar)
 	{
-		return new BattleChoice(Kind.CATCH, -1, jar);
+		return new BattleChoice(Kind.CATCH, -1, jar, -1);
 	}
 
 	/** @return which kind of choice this is */
@@ -93,6 +109,12 @@ final class BattleChoice
 	int teamIndex()
 	{
 		return teamIndex;
+	}
+
+	/** @return the place of the move to use, or -1 when the creature picks its own or the choice is not an attack */
+	int moveIndex()
+	{
+		return moveIndex;
 	}
 
 	/** @return the jar to throw, or null when the game picks or the choice is not a catch */
@@ -108,18 +130,19 @@ final class BattleChoice
 			return false;
 
 		BattleChoice that = (BattleChoice) other;
-		return kind == that.kind && teamIndex == that.teamIndex && jar == that.jar;
+		return kind == that.kind && teamIndex == that.teamIndex && jar == that.jar && moveIndex == that.moveIndex;
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(kind, teamIndex, jar);
+		return Objects.hash(kind, teamIndex, jar, moveIndex);
 	}
 
 	@Override
 	public String toString()
 	{
-		return kind + (teamIndex >= 0 ? "(" + teamIndex + ")" : "") + (jar != null ? "(" + jar + ")" : "");
+		return kind + (teamIndex >= 0 ? "(" + teamIndex + ")" : "") + (jar != null ? "(" + jar + ")" : "")
+			+ (moveIndex >= 0 ? "[move " + moveIndex + "]" : "");
 	}
 }

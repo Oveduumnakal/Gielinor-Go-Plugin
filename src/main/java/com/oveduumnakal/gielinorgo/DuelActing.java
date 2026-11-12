@@ -101,6 +101,7 @@ final class DuelActing
 	private BattleProjectile projectile;
 	private int turnAge = TurnMotion.TURN_TICKS;
 	private boolean impactPending;
+	private boolean impactMissed;
 	private boolean impactOnLead;
 
 	/**
@@ -221,7 +222,8 @@ final class DuelActing
 	}
 
 	/**
-	 * Starts counting a turn and, for a shot, sends the projectile on its way.
+	 * Starts counting a turn and, for a shot, sends the projectile on its way. A miss is acted out like a hit, but the
+	 * target does not react.
 	 *
 	 * @param step the step
 	 * @param leadIsHit whether the lead is the one that is hit
@@ -230,6 +232,7 @@ final class DuelActing
 	{
 		turnAge = 0;
 		impactPending = true;
+		impactMissed = step.missed();
 		impactOnLead = leadIsHit;
 		if (step.melee() || step.look() == null)
 			return;
@@ -282,20 +285,27 @@ final class DuelActing
 		}
 	}
 
-	/** Makes the target of the turn react, if the blow has not landed yet, and takes the projectile away. */
+	/** Makes the target of the turn react, unless the attack missed, and takes the projectile away. */
 	private void landBlow()
 	{
 		if (!impactPending)
 			return;
 
 		impactPending = false;
+		if (!impactMissed)
+			reactToHit();
+
+		if (projectile != null)
+			projectile.hide();
+	}
+
+	/** Makes the target of the turn flinch. A miss never calls this. */
+	private void reactToHit()
+	{
 		if (impactOnLead)
 			lead.act(CreatureBody.Act.HIT);
 		else
 			foe.act(CreatureBody.Act.HIT);
-
-		if (projectile != null)
-			projectile.hide();
 	}
 
 	/** Ends a turn that is cut short: no blow lands and the projectile goes. */

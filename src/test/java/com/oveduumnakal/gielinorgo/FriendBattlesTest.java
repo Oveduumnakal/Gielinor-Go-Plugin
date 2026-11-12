@@ -190,7 +190,7 @@ public class FriendBattlesTest
 	@Test
 	public void bothPlayersSeeTheSameBattleWhenADragonBreathes()
 	{
-		Species green = new Species("Green dragon", 88, CombatType.MELEE).withSecondStyle(CombatType.MAGIC, 0.5);
+		Species green = new Species("Green dragon", 88, CombatType.MELEE);
 		SpeciesTable dragons = new SpeciesTable(Arrays.asList(IMP, CHICKEN, green));
 		annData.team.clear();
 		bobData.team.clear();

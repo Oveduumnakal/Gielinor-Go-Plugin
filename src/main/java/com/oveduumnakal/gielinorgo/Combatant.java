@@ -4,7 +4,9 @@
  */
 package com.oveduumnakal.gielinorgo;
 
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /** One side of a battle: a species at a level, with the stats that follow from the two. */
 final class Combatant
@@ -12,8 +14,6 @@ final class Combatant
 	private final String name;
 	private final String speciesKey;
 	private final CombatType type;
-	private final CombatType secondStyle;
-	private final double secondChance;
 	private final int level;
 	private final int maxHp;
 	private final int attack;
@@ -23,6 +23,7 @@ final class Combatant
 	private boolean gilded;
 	private final Species species;
 	private int npcId;
+	private List<Move> moves;
 
 	/**
 	 * Builds a fighter.
@@ -78,8 +79,7 @@ final class Combatant
 		this.species = species;
 		this.speciesKey = species.key();
 		this.type = species.style();
-		this.secondStyle = species.secondStyle();
-		this.secondChance = species.secondChance();
+		this.moves = Collections.singletonList(Move.basic(species.style()));
 		this.level = level;
 		this.maxHp = (int) Math.round((20 + 2.0 * level + tier * level / 2.0) * rolls.factor(Stat.HEALTH));
 		this.attack = (int) Math.round((5 + level / 2.0 + tier * level / 8.0) * rolls.factor(Stat.ATTACK));
@@ -144,18 +144,24 @@ final class Combatant
 	}
 
 	/**
-	 * Picks the style of one attack. A creature with a second style rolls it and uses it on that share of its hits;
-	 * any other uses its one style and does not touch the random source, so battles between those are unchanged.
+	 * Gives the fighter its moves. A fighter that is never given any fights with one basic attack of its own style,
+	 * which is the one attack every creature had before moves existed.
 	 *
-	 * @param random the battle's random source
-	 * @return the style of this attack
+	 * @param known the moves, in the order the creature knows them; null or empty keeps the basic attack
+	 * @return this fighter
 	 */
-	CombatType rollStyle(Random random)
+	Combatant moves(List<Move> known)
 	{
-		if (secondStyle == null)
-			return type;
+		if (known != null && !known.isEmpty())
+			this.moves = Collections.unmodifiableList(new ArrayList<>(known));
 
-		return random.nextDouble() < secondChance ? secondStyle : type;
+		return this;
+	}
+
+	/** @return the moves the fighter can use, in the order it knows them; never empty */
+	List<Move> moves()
+	{
+		return moves;
 	}
 
 	/** @return the creature level */

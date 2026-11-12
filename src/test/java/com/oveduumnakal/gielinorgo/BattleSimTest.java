@@ -6,6 +6,7 @@ package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -22,12 +23,9 @@ public class BattleSimTest
 	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
 	private static final Species ARCHER = new Species("Archer", 13, CombatType.RANGED);
 	private static final Species WIZARD = new Species("Wizard", 13, CombatType.MAGIC);
-	private static final Species FIRE_DRAGON = new Species("Green dragon", 88, CombatType.MELEE)
-		.withSecondStyle(CombatType.MAGIC, 0.25);
-	private static final Species SURE_BREATH = new Species("Test dragon", 88, CombatType.MELEE)
-		.withSecondStyle(CombatType.MAGIC, 1.0);
-	private static final Species ICE_WYVERN = new Species("Spitting Wyvern", 139, CombatType.MELEE)
-		.withSecondStyle(CombatType.MAGIC, 1.0);
+	private static final Species FIRE_DRAGON = new Species("Green dragon", 88, CombatType.MELEE);
+	private static final Species SURE_BREATH = new Species("Test dragon", 88, CombatType.MELEE);
+	private static final Species ICE_WYVERN = new Species("Spitting Wyvern", 139, CombatType.MELEE);
 	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
 
 	@Test
@@ -157,10 +155,11 @@ public class BattleSimTest
 	}
 
 	@Test
-	public void aDragonBreathesFireOnAboutOneHitInFour()
+	public void aDragonUsesBothItsMovesAndTheLinesNameThem()
 	{
 		int hits = 0;
 		int breaths = 0;
+		int bites = 0;
 		for (int seed = 0; seed < 300; seed++)
 		{
 			for (BattleLine line : fight(FIRE_DRAGON, 40, GOBLIN, 70, seed).lines())
@@ -169,34 +168,43 @@ public class BattleSimTest
 					continue;
 
 				hits++;
+				boolean missed = line.miss();
 				if (line.special())
 				{
 					breaths++;
-					assertTrue(line.text(), line.text().startsWith("Green dragon breathes fire for "));
+					String start = missed ? "Green dragon's Dragonfire missed" : "Green dragon uses Dragonfire: -";
+					assertTrue(line.text(), line.text().startsWith(start));
 				}
 				else
 				{
-					assertTrue(line.text(), line.text().startsWith("-"));
+					bites++;
+					assertTrue(line.text(), line.text().startsWith("Green dragon uses Bite: -"));
 				}
 			}
 		}
 
-		double share = breaths / (double) hits;
-		assertTrue("expected about 0.25 of " + hits + " hits to be breath, got " + share, share > 0.2 && share < 0.3);
+		assertTrue("both moves come up: " + breaths + " breaths, " + bites + " bites", breaths > 0 && bites > 0);
+		assertTrue("the stronger move comes up more often", breaths + bites == hits);
 	}
 
 	@Test
 	public void aWyvernBreathesIce()
 	{
+		boolean sawBreath = false;
 		for (BattleLine line : fight(ICE_WYVERN, 40, GOBLIN, 70, 1).lines())
 		{
-			if (line.special())
-				assertTrue(line.text(), line.text().startsWith("Spitting Wyvern breathes ice for "));
+			if (line.special() && !line.miss())
+			{
+				sawBreath = true;
+				assertTrue(line.text(), line.text().startsWith("Spitting Wyvern uses Icy breath: -"));
+			}
 		}
+
+		assertTrue(sawBreath);
 	}
 
 	@Test
-	public void hitLinesCarryTheStyleTheyWereRolledIn()
+	public void hitLinesCarryTheStyleOfTheMoveThatMadeThem()
 	{
 		boolean sawBite = false;
 		boolean sawBreath = false;
@@ -209,6 +217,9 @@ public class BattleSimTest
 					assertNull(line.style());
 					continue;
 				}
+
+				if (line.overPlayer())
+					continue;
 
 				assertEquals(line.text(), line.special() ? CombatType.MAGIC : CombatType.MELEE, line.style());
 				sawBite |= !line.special();
@@ -243,22 +254,22 @@ public class BattleSimTest
 	}
 
 	@Test
-	public void aBreathOverAPlayerReadsTheSameAndTheOthersAreUnchanged()
+	public void aMoveOverAPlayerReadsTheSameAsOneOverTheFoe()
 	{
 		boolean sawBreath = false;
 		for (int seed = 0; seed < 50 && !sawBreath; seed++)
 		{
 			for (BattleLine line : fight(GOBLIN, 70, FIRE_DRAGON, 40, seed).lines())
 			{
-				if (line.kind() == BattleLine.Kind.FOE_HIT && line.special())
+				if (line.kind() == BattleLine.Kind.FOE_HIT && line.special() && !line.miss())
 				{
 					sawBreath = true;
 					assertTrue(line.overPlayer());
-					assertTrue(line.text(), line.text().startsWith("Green dragon breathes fire for "));
+					assertTrue(line.text(), line.text().startsWith("Green dragon uses Dragonfire: -"));
 				}
-				else if (line.kind() == BattleLine.Kind.FOE_HIT)
+				else if (line.kind() == BattleLine.Kind.LEAD_HIT)
 				{
-					assertTrue(line.text(), line.text().startsWith("Goblin -"));
+					assertTrue(line.text(), line.text().startsWith("-"));
 				}
 			}
 		}
@@ -267,7 +278,32 @@ public class BattleSimTest
 	}
 
 	@Test
-	public void aBattleWithBreathIsTheSameForTheSameSeed()
+	public void aMissIsAnAttackLineThatSaysSoAndDoesNoDamage()
+	{
+		boolean sawMiss = false;
+		for (int seed = 0; seed < 40; seed++)
+		{
+			Combatant dragon = new Combatant(FIRE_DRAGON, 40, 1.0).moves(TestMoves.dragon());
+			Combatant goblin = new Combatant(GOBLIN, 70, 1.0);
+			BattleResult result = BattleSim.fight(dragon, goblin, new Random(seed));
+			for (BattleLine line : result.lines())
+			{
+				if (!line.miss())
+					continue;
+
+				sawMiss = true;
+				assertEquals("a miss is still a blow", BattleLine.Kind.LEAD_HIT, line.kind());
+				assertEquals("Green dragon's Dragonfire missed", line.text());
+				assertFalse(line.overPlayer());
+				assertEquals(Tone.INFO, line.tone());
+			}
+		}
+
+		assertTrue(sawMiss);
+	}
+
+	@Test
+	public void aBattleWithMovesIsTheSameForTheSameSeed()
 	{
 		for (int seed = 0; seed < 20; seed++)
 		{
@@ -281,7 +317,7 @@ public class BattleSimTest
 	}
 
 	@Test
-	public void theTriangleUsesTheStyleRolledForTheHit()
+	public void theTriangleUsesTheStyleOfTheMove()
 	{
 		Combatant dragon = new Combatant(FIRE_DRAGON, 50, 1.0);
 		Combatant archer = new Combatant(ARCHER, 50, 1.0);
@@ -298,76 +334,17 @@ public class BattleSimTest
 	}
 
 	@Test
-	public void aCreatureWithOneStyleLeavesTheRandomSourceAlone()
+	public void powerScalesTheDamageAndPowerOneChangesNothing()
 	{
-		Combatant goblin = new Combatant(GOBLIN, 10, 1.0);
+		Combatant attacker = new Combatant(GOBLIN, 50, 1.0);
+		Combatant target = new Combatant(GOBLIN, 50, 1.0);
+		Move plain = new Move("a", "A", CombatType.MELEE, 1.0, 1.0);
+		Move strong = new Move("b", "B", CombatType.MELEE, 2.0, 1.0);
 
-		for (long seed = 0; seed < 100; seed++)
-		{
-			Random used = new Random(seed);
-			Random untouched = new Random(seed);
-			for (int i = 0; i < 20; i++)
-				assertEquals(CombatType.MELEE, goblin.rollStyle(used));
-
-			assertEquals("seed " + seed, untouched.nextLong(), used.nextLong());
-		}
-	}
-
-	@Test
-	public void aCreatureWithTwoStylesDrawsExactlyOneValuePerAttack()
-	{
-		Combatant dragon = new Combatant(FIRE_DRAGON, 10, 1.0);
-		boolean breathed = false;
-		boolean bit = false;
-
-		for (long seed = 0; seed < 100; seed++)
-		{
-			Random used = new Random(seed);
-			Random mirror = new Random(seed);
-			for (int i = 0; i < 20; i++)
-			{
-				CombatType expected = mirror.nextDouble() < FIRE_DRAGON.secondChance() ? CombatType.MAGIC
-					: CombatType.MELEE;
-				CombatType style = dragon.rollStyle(used);
-
-				assertEquals("seed " + seed + " attack " + i, expected, style);
-				breathed |= style == CombatType.MAGIC;
-				bit |= style == CombatType.MELEE;
-			}
-
-			assertEquals("seed " + seed, mirror.nextLong(), used.nextLong());
-		}
-
-		assertTrue(breathed && bit);
-	}
-
-	@Test
-	public void aTwoStyleFightDrawsTheSameOnBothSides()
-	{
-		for (long seed = 0; seed < 50; seed++)
-		{
-			Random first = new Random(seed);
-			Random second = new Random(seed);
-
-			BattleResult mine = BattleSim.fight(new Combatant(FIRE_DRAGON, 40, 1.0), new Combatant(GOBLIN, 70, 1.0),
-				first);
-			BattleResult theirs = BattleSim.fight(new Combatant(FIRE_DRAGON, 40, 1.0), new Combatant(GOBLIN, 70, 1.0),
-				second);
-
-			List<BattleLine> mineLines = mine.lines();
-			List<BattleLine> theirLines = theirs.lines();
-			assertEquals(mineLines.size(), theirLines.size());
-			for (int i = 0; i < mineLines.size(); i++)
-			{
-				BattleLine a = mineLines.get(i);
-				BattleLine b = theirLines.get(i);
-
-				assertEquals(a.text(), b.text());
-				assertEquals(a.special(), b.special());
-			}
-
-			assertEquals("seed " + seed, first.nextLong(), second.nextLong());
-		}
+		assertEquals(BattleSim.damage(attacker, target, new Random(3)), BattleSim.damage(attacker, plain, target,
+			new Random(3)));
+		assertTrue(BattleSim.damage(attacker, strong, target, new Random(3))
+			> BattleSim.damage(attacker, plain, target, new Random(3)));
 	}
 
 	@Test
@@ -499,8 +476,23 @@ public class BattleSimTest
 
 	private static BattleResult fight(Species mine, int myLevel, Species foe, int foeLevel, long seed)
 	{
-		return BattleSim.fight(new Combatant(mine, myLevel, 1.0), new Combatant(foe, foeLevel, 1.0),
-			new Random(seed));
+		return BattleSim.fight(fighter(mine, myLevel), fighter(foe, foeLevel), new Random(seed));
+	}
+
+	/** Builds a fighter; the test dragons and the wyvern get the moves their names suggest. */
+	private static Combatant fighter(Species species, int level)
+	{
+		Combatant one = new Combatant(species, level, 1.0);
+		if (species == FIRE_DRAGON)
+			return one.moves(TestMoves.dragon());
+
+		if (species == SURE_BREATH)
+			return one.moves(Collections.singletonList(TestMoves.DRAGONFIRE));
+
+		if (species == ICE_WYVERN)
+			return one.moves(Collections.singletonList(TestMoves.ICY_BREATH));
+
+		return one;
 	}
 
 	@Test

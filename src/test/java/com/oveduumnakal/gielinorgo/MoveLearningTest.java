@@ -234,4 +234,24 @@ public class MoveLearningTest
 		assertTrue(after.level() > 1);
 		assertNull(after.moves);
 	}
+
+	@Test
+	public void aBattleUsesTheCreaturesMovesAndAWildCreatureGetsItsLevelsMoves()
+	{
+		Creature pup = own("pup", 12, "a", "b", "c");
+		pup.hpFraction = 1.0;
+
+		BattleResult result = game.battle(new WildEntry(1, PUP, 12, 12));
+
+		boolean mineNamed = false;
+		boolean foeNamed = false;
+		for (BattleLine line : result.lines())
+		{
+			mineNamed |= line.kind() == BattleLine.Kind.LEAD_HIT && line.text().contains(" uses ");
+			foeNamed |= line.kind() == BattleLine.Kind.FOE_HIT && line.text().contains(" uses ");
+		}
+
+		assertTrue("the creature's own moves are named in its lines", mineNamed);
+		assertTrue("the wild creature fights with the moves its level unlocked", foeNamed);
+	}
 }

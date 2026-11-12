@@ -22,12 +22,6 @@ final class BattleSim
 	private static final double VARIANCE_FLOOR = 0.85;
 	private static final double VARIANCE_RANGE = 0.3;
 
-	/** What a line says when a creature uses its second style; only the breath users have one. */
-	private static final String BREATHES = " breathes fire for ";
-
-	/** The same for wyverns, whose breath is icy. */
-	private static final String BREATHES_ICE = " breathes ice for ";
-
 	private BattleSim()
 	{
 	}
@@ -167,7 +161,7 @@ final class BattleSim
 	}
 
 	/**
-	 * Damage of one attack made in a given style, which for a creature with a second style may not be its main one.
+	 * Damage of one plain attack made in a given style, a move of power 1.
 	 *
 	 * @param attacker the creature attacking
 	 * @param style the style of this attack, which decides the combat triangle
@@ -177,8 +171,24 @@ final class BattleSim
 	 */
 	static int damage(Combatant attacker, CombatType style, Combatant defender, Random random)
 	{
+		return damage(attacker, Move.basic(style), defender, random);
+	}
+
+	/**
+	 * Damage of one attack with a move: the attacker's attack stat, times the combat triangle for the move's style
+	 * against the defender's style, times the move's power, times a spread of 0.85 to 1.15, less half the defender's
+	 * defence. A power of 1 leaves the formula exactly as it was before moves existed.
+	 *
+	 * @param attacker the creature attacking
+	 * @param move the move used
+	 * @param defender the creature being hit
+	 * @param random the source of the damage spread; one call
+	 * @return the damage, at least 1
+	 */
+	static int damage(Combatant attacker, Move move, Combatant defender, Random random)
+	{
 		double spread = VARIANCE_FLOOR + VARIANCE_RANGE * random.nextDouble();
-		double raw = attacker.attack() * style.multiplierAgainst(defender.type()) * spread;
+		double raw = attacker.attack() * move.style().multiplierAgainst(defender.type()) * move.power() * spread;
 		return Math.max(1, (int) Math.round(raw - defender.defence() / 2.0));
 	}
 
@@ -205,45 +215,45 @@ final class BattleSim
 	}
 
 	/**
-	 * The line for one attack, shown over whoever was hit: the damage, then the health the target has left.
+	 * The line for one attack that hit, shown over whoever was hit. A creature's basic attack reads as it always did
+	 * (the damage, then the health the target has left); a named move reads {@code Bob uses Dragonfire: -14 (20/50)}.
 	 *
 	 * @param attacker the creature that attacked
 	 * @param defender the creature that was hit
 	 * @param damage the health removed
 	 * @param mine whether the player's creature made the attack
-	 * @param style the style the attack was made in, already rolled; a style other than the attacker's own reads as
-	 *     a fire breath
+	 * @param move the move used; one of the second slot plays the attacker's second animation
 	 * @return the line, over the wild creature for the player's hits and over the player for hits taken
 	 */
-	static BattleLine strike(Combatant attacker, Combatant defender, int damage, boolean mine,
-		CombatType style)
+	static BattleLine strike(Combatant attacker, Combatant defender, int damage, boolean mine, Move move)
 	{
-		boolean special = style != attacker.type();
-		boolean icy = special && icy(attacker);
 		String health = " (" + (int) Math.ceil(defender.hp()) + "/" + defender.maxHp() + ")";
+		String named = attacker.name() + " uses " + move.name() + ": -" + damage + health;
 		if (mine)
 		{
-			String text = special ? breath(attacker) + damage + health : "-" + damage + health;
-			return new BattleLine(text, Tone.GOOD, false, BattleLine.Kind.LEAD_HIT, special, style, icy);
+			String text = move.plain() ? "-" + damage + health : named;
+			return new BattleLine(text, Tone.GOOD, false, BattleLine.Kind.LEAD_HIT, move.second(), move.style(),
+				move.icy());
 		}
 
-		String text = special ? breath(attacker) + damage + health : defender.name() + " -" + damage + health;
-		return new BattleLine(text, Tone.BAD, true, BattleLine.Kind.FOE_HIT, special, style, icy);
-	}
-
-	private static String breath(Combatant attacker)
-	{
-		return attacker.name() + (icy(attacker) ? BREATHES_ICE : BREATHES);
+		String text = move.plain() ? defender.name() + " -" + damage + health : named;
+		return new BattleLine(text, Tone.BAD, true, BattleLine.Kind.FOE_HIT, move.second(), move.style(),
+			move.icy());
 	}
 
 	/**
-	 * @param attacker the creature that breathes
-	 * @return whether its breath is icy: wyverns breathe ice, everything else fire
+	 * The line for an attack that missed, shown over the creature that was not hit.
+	 *
+	 * @param attacker the creature that attacked
+	 * @param mine whether the player's creature made the attack
+	 * @param move the move used
+	 * @return the line, over the wild creature for the player's misses and over the player for the foe's
 	 */
-	private static boolean icy(Combatant attacker)
+	static BattleLine miss(Combatant attacker, boolean mine, Move move)
 	{
-		String name = attacker.name().toLowerCase();
-		return name.contains("wyvern");
+		String text = attacker.name() + "'s " + move.name() + " missed";
+		BattleLine.Kind kind = mine ? BattleLine.Kind.LEAD_HIT : BattleLine.Kind.FOE_HIT;
+		return new BattleLine(text, Tone.INFO, !mine, kind, move.second(), move.style(), move.icy(), true);
 	}
 
 	/**

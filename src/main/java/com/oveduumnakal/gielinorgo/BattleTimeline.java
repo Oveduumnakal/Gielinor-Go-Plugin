@@ -94,6 +94,7 @@ final class BattleTimeline
 		private final CombatType style;
 		private final ProjectileLook look;
 		private final Combatant entered;
+		private final boolean missed;
 
 		/**
 		 * Describes the step in which a creature of the team steps in as the lead.
@@ -106,6 +107,7 @@ final class BattleTimeline
 			this.style = null;
 			this.look = null;
 			this.entered = entered;
+			this.missed = false;
 		}
 
 		/**
@@ -128,10 +130,30 @@ final class BattleTimeline
 		 */
 		Step(Beat beat, CombatType style, ProjectileLook look)
 		{
+			this(beat, style, look, false);
+		}
+
+		/**
+		 * Describes a step that may be a miss.
+		 *
+		 * @param beat what happens
+		 * @param style the style of the attack, or null when the beat is not an attack
+		 * @param look what the projectile looks like, or null when the attack has none
+		 * @param missed whether the attack misses: it is acted out, but the target does not react
+		 */
+		Step(Beat beat, CombatType style, ProjectileLook look, boolean missed)
+		{
 			this.beat = beat;
 			this.style = style;
 			this.look = look;
 			this.entered = null;
+			this.missed = missed;
+		}
+
+		/** @return whether the attack of this beat misses, so the target does not react */
+		boolean missed()
+		{
+			return missed;
 		}
 
 		/** @return the creature that steps in at a {@link Beat#LEAD_ENTERS} beat, else null */
@@ -267,7 +289,8 @@ final class BattleTimeline
 
 	/**
 	 * Turns battle lines into steps. The opening line is a beat where nobody strikes ({@link Beat#FACE_OFF}), so text
-	 * and blows stay one to one; a line that is only text makes no step. A hit keeps the style it was rolled in.
+	 * and blows stay one to one; a line that is only text makes no step. A hit keeps the style of the move that made
+	 * it, and a miss is marked so the target does not react.
 	 *
 	 * @param lines the lines of the battle, in order
 	 * @return one step per line that is something to see
@@ -285,12 +308,12 @@ final class BattleTimeline
 
 				case LEAD_HIT:
 					steps.add(new Step(line.special() ? Beat.LEAD_SPECIAL : Beat.LEAD_ATTACKS, line.style(),
-						ProjectileLook.of(line.style(), line.special(), line.icy())));
+						ProjectileLook.of(line.style(), line.special(), line.icy()), line.miss()));
 					break;
 
 				case FOE_HIT:
 					steps.add(new Step(line.special() ? Beat.FOE_SPECIAL : Beat.FOE_ATTACKS, line.style(),
-						ProjectileLook.of(line.style(), line.special(), line.icy())));
+						ProjectileLook.of(line.style(), line.special(), line.icy()), line.miss()));
 					break;
 
 				case CLOSING:

@@ -33,6 +33,7 @@ final class BattleLine
 	private final boolean special;
 	private final CombatType style;
 	private final boolean icy;
+	private final boolean miss;
 
 	BattleLine(String text, Tone tone, boolean overPlayer)
 	{
@@ -72,6 +73,25 @@ final class BattleLine
 	BattleLine(String text, Tone tone, boolean overPlayer, Kind kind, boolean special, CombatType style,
 		boolean icy)
 	{
+		this(text, tone, overPlayer, kind, special, style, icy, false);
+	}
+
+	/**
+	 * Builds a line for an attack that may have missed.
+	 *
+	 * @param text the line
+	 * @param tone the mood, from the player's side
+	 * @param overPlayer whether the line is about the player's creature
+	 * @param kind what the line is
+	 * @param special whether the attack used the attacker's second animation, such as a breath
+	 * @param style the style of the attack, or null for a line that is not an attack
+	 * @param icy whether a breath is icy, as a wyvern's is; false for anything that is not a breath
+	 * @param miss whether the attack missed, so the target does not react
+	 */
+	BattleLine(String text, Tone tone, boolean overPlayer, Kind kind, boolean special, CombatType style,
+		boolean icy, boolean miss)
+	{
+		this.miss = miss;
 		this.style = style;
 		this.icy = icy;
 		this.special = special;
@@ -81,7 +101,13 @@ final class BattleLine
 		this.kind = kind;
 	}
 
-	/** @return true when the attack was the attacker's second kind (a breath), so it plays its second animation */
+	/** @return true when the attack missed: it is still acted out, but the target does not react */
+	boolean miss()
+	{
+		return miss;
+	}
+
+	/** @return true when the attack was a move of the second slot (a breath), so it plays its second animation */
 	boolean special()
 	{
 		return special;

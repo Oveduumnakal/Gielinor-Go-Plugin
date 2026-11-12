@@ -419,7 +419,8 @@ final class GoGame
 			fighters.add(creature);
 			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls())
 				.gilded(creature.gilded)
-				.npc(creature.npcId));
+				.npc(creature.npcId)
+				.moves(MoveLearning.known(creature, found, moves)));
 		}
 
 		if (mine.isEmpty())
@@ -430,7 +431,7 @@ final class GoGame
 
 		List<Combatant> theirs = new ArrayList<>();
 		for (Champion.Member member : champion.team())
-			theirs.add(new Combatant(species.find(member.species()), member.level(), 1.0));
+			theirs.add(foeOf(species.find(member.species()), member.level()));
 
 		TeamBattleResult fought = BattleSim.teamFight(mine, theirs, random);
 		for (int i = 0; i < fighters.size(); i++)
@@ -695,7 +696,7 @@ final class GoGame
 			return null;
 		}
 
-		Combatant foe = new Combatant(entry.species(), entry.level(), 1.0);
+		Combatant foe = foeOf(entry.species(), entry.level());
 		BattleState state = new BattleState(mine, Collections.singletonList(foe), random, BattleState.Mode.WILD);
 		return new BattleSession(state, fighters, entry, null, BattleSim.opening(mine.get(0), foe));
 	}
@@ -737,7 +738,7 @@ final class GoGame
 
 		List<Creature> fighters = new ArrayList<>();
 		List<Combatant> mine = restedTeam(now, fighters);
-		Combatant foe = new Combatant(entry.species(), entry.level(), 1.0);
+		Combatant foe = foeOf(entry.species(), entry.level());
 		BattleState state = new BattleState(mine, Collections.singletonList(foe), random, BattleState.Mode.WILD,
 			(jar, healthLeft) -> tryCatchInBattle(entry, jar, healthLeft));
 		return new BattleSession(state, fighters, entry, null, BattleSim.opening(mine.get(0), foe));
@@ -775,7 +776,7 @@ final class GoGame
 
 		List<Combatant> theirs = new ArrayList<>();
 		for (Champion.Member member : champion.team())
-			theirs.add(new Combatant(species.find(member.species()), member.level(), 1.0));
+			theirs.add(foeOf(species.find(member.species()), member.level()));
 
 		BattleState state = new BattleState(mine, theirs, random, BattleState.Mode.CHAMPION);
 		BattleLine opening = new BattleLine("Challenging the " + champion.title() + "!", Tone.INFO, true);
@@ -802,7 +803,8 @@ final class GoGame
 			fighters.add(creature);
 			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls())
 				.gilded(creature.gilded)
-				.npc(creature.npcId));
+				.npc(creature.npcId)
+				.moves(MoveLearning.known(creature, found, moves)));
 		}
 
 		return mine;
@@ -1474,7 +1476,7 @@ final class GoGame
 			creature.hpStampMs = now;
 		}
 
-		run = new EliteRun(elite, species);
+		run = new EliteRun(elite, species).withMoves(moves);
 		tell("The Elite challenge begins. Health carries over and nothing rests until it ends", Tone.INFO);
 		return eliteBattle();
 	}
@@ -1536,7 +1538,8 @@ final class GoGame
 			fighters.add(creature);
 			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls())
 				.gilded(creature.gilded)
-				.npc(creature.npcId));
+				.npc(creature.npcId)
+				.moves(MoveLearning.known(creature, found, moves)));
 		}
 
 		return mine;
@@ -1921,6 +1924,11 @@ final class GoGame
 
 		if (!result.learned().isEmpty() || !result.queued().isEmpty())
 			dirty = true;
+	}
+
+	private Combatant foeOf(Species foe, int level)
+	{
+		return new Combatant(foe, level, 1.0).moves(moves.movesAt(foe, level));
 	}
 
 	/**

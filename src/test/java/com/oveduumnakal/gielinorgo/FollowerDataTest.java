@@ -10,6 +10,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import com.google.gson.Gson;
 import org.junit.Test;
@@ -18,6 +21,7 @@ import net.runelite.api.Animation;
 import net.runelite.api.AnimationController;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -117,11 +121,48 @@ public class FollowerDataTest
 			species = SpeciesTable.load(gson, reader);
 		}
 
+		MoveTable moves;
+		try (Reader reader = open(MoveTable.RESOURCE))
+		{
+			moves = MoveTable.load(gson, reader);
+		}
+
 		assertEquals(CombatType.MELEE, species.find("Green dragon").style());
-		assertEquals(CombatType.MAGIC, species.find("Green dragon").secondStyle());
-		assertEquals(0.25, species.find("Green dragon").secondChance(), 0.0001);
-		assertNull(species.find("Baby green dragon").secondStyle());
-		assertNull(species.find("Goblin").secondStyle());
+		int breathers = 0;
+		List<String> unanimated = new ArrayList<>();
+		for (Species one : species.all())
+		{
+			if (!breathes(moves, one))
+				continue;
+
+			breathers++;
+			boolean animated = false;
+			for (int id : one.ids())
+				animated |= table.secondAttack(id) != AnimationTable.NONE;
+
+			if (!animated)
+				unanimated.add(one.name());
+		}
+
+		assertEquals("only Galvek has no breath animation in the cache data, and plays its attack instead",
+			Arrays.asList("Galvek"), unanimated);
+
+		assertEquals("the twenty dragons and four wyverns that breathed before still do", 24, breathers);
+		Species baby = species.find("Baby green dragon");
+		Species goblin = species.find("Goblin");
+		assertFalse(breathes(moves, baby));
+		assertFalse(breathes(moves, goblin));
+	}
+
+	private static boolean breathes(MoveTable moves, Species one)
+	{
+		for (Move move : moves.pool(one))
+		{
+			if (move.second())
+				return true;
+		}
+
+		return false;
 	}
 
 	@Test
