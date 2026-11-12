@@ -33,6 +33,21 @@ final class Creature
 	/** The name the player gave this creature, or null for none. Local only: it is never sent to other players. */
 	String nickname;
 
+	/** Health roll, {@value StatRolls#MIN} to {@value StatRolls#MAX}. 0 is average, and what an older save loads as. */
+	int rollHp;
+
+	/** Attack roll, {@value StatRolls#MIN} to {@value StatRolls#MAX}. 0 is average. */
+	int rollAttack;
+
+	/** Defence roll, {@value StatRolls#MIN} to {@value StatRolls#MAX}. 0 is average. */
+	int rollDefence;
+
+	/** Speed roll, {@value StatRolls#MIN} to {@value StatRolls#MAX}. 0 is average. */
+	int rollSpeed;
+
+	/** A {@link Temperament#name()}, or null for the steady temperament, which changes nothing. */
+	String temperament;
+
 	/** Used by Gson. */
 	Creature()
 	{
@@ -44,6 +59,28 @@ final class Creature
 		this.xp = XpRules.xpForLevel(level);
 		this.caughtAtMs = nowMs;
 		this.hpStampMs = nowMs;
+	}
+
+	/** @return the creature's rolls and temperament; a creature that never rolled gets {@link StatRolls#AVERAGE} */
+	StatRolls rolls()
+	{
+		Temperament parsed = Temperament.named(temperament);
+		return new StatRolls(rollHp, rollAttack, rollDefence, rollSpeed, parsed == null ? Temperament.STEADY : parsed);
+	}
+
+	/**
+	 * Gives the creature its rolls and temperament.
+	 *
+	 * @param rolls the rolls; steady is stored as null
+	 */
+	void setRolls(StatRolls rolls)
+	{
+		int[] values = rolls.values();
+		rollHp = values[0];
+		rollAttack = values[1];
+		rollDefence = values[2];
+		rollSpeed = values[3];
+		temperament = rolls.temperament() == Temperament.STEADY ? null : rolls.temperament().name();
 	}
 
 	/** @return the creature's level, 1 to 99 */

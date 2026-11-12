@@ -119,6 +119,7 @@ final class TradeDialog
 	private static String creatureLabel(CreatureView view)
 	{
 		String species = view.nickname() == null ? "" : " [" + view.name() + "]";
-		return PanelUi.displayName(view) + species + " (Lv " + view.level() + ")";
+		String rating = view.rating() == StatRolls.Rating.AVERAGE ? "" : " " + view.rating().label();
+		return PanelUi.displayName(view) + species + " (Lv " + view.level() + ")" + rating;
 	}
 }

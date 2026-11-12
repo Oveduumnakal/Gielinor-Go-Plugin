@@ -301,7 +301,7 @@ final class GoGame
 				continue;
 
 			fighters.add(creature);
-			mine.add(new Combatant(found, nameOf(creature), creature.level(), health));
+			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls()));
 		}
 
 		if (mine.isEmpty())
@@ -453,12 +453,17 @@ final class GoGame
 
 		Creature caught = new Creature(entry.species().key(), entry.level(), clock.getAsLong());
 		caught.gilded = entry.gilded();
+		caught.setRolls(StatRolls.roll(random));
 		keep(caught);
 		recordOwned(caught);
 		if (caught.gilded)
 			tell(entry, "Caught gilded " + name + " (Lv " + entry.level() + ")!", Tone.FIND);
 		else
 			tell(entry, "Caught " + name + " (Lv " + entry.level() + ")!", Tone.GOOD);
+
+		String rating = ratingNote(caught);
+		if (!rating.isEmpty())
+			tell(entry, rating, Tone.FIND);
 
 		addTrainerXp(CatchRules.catchXp(entry.level()));
 		return CatchOutcome.CAUGHT;
@@ -494,7 +499,7 @@ final class GoGame
 			return null;
 		}
 
-		Combatant mine = new Combatant(leadSpecies, nameOf(lead), lead.level(), health);
+		Combatant mine = new Combatant(leadSpecies, nameOf(lead), lead.level(), health, lead.rolls());
 		Combatant foe = new Combatant(entry.species(), entry.level(), 1.0);
 		BattleResult result = BattleSim.fight(mine, foe, random);
 		lead.hpFraction = result.hpFractionLeft();
@@ -812,9 +817,14 @@ final class GoGame
 		Species born = pool.get(random.nextInt(pool.size()));
 		Creature creature = new Creature(born.key(), 1, clock.getAsLong());
 		creature.gilded = random.nextInt(WildTracker.GILDED_ONE_IN) == 0;
+		creature.setRolls(StatRolls.roll(random));
 		keep(creature);
 		recordOwned(creature);
 		tell("Egg hatched: " + (creature.gilded ? "gilded " : "") + born.name() + "!", Tone.FIND);
+		String rating = ratingNote(creature);
+		if (!rating.isEmpty())
+			tell(rating, Tone.FIND);
+
 		return true;
 	}
 
@@ -995,6 +1005,21 @@ final class GoGame
 		return creature.nickname != null ? creature.nickname : speciesNameOf(creature);
 	}
 
+	/**
+	 * Words the rating of a creature for the line that follows a catch or hatch.
+	 *
+	 * @param creature the creature
+	 * @return the rating and temperament, such as {@code Strong (Brave)}, or an empty string for an average creature
+	 */
+	private static String ratingNote(Creature creature)
+	{
+		StatRolls rolls = creature.rolls();
+		if (rolls.rating() == StatRolls.Rating.AVERAGE)
+			return "";
+
+		return rolls.rating().label() + " (" + rolls.temperament().label() + ")";
+	}
+
 	private String speciesNameOf(Creature creature)
 	{
 		Species found = species.find(creature.species);
@@ -1010,7 +1035,8 @@ final class GoGame
 			Rarity rarity = found == null ? Rarity.COMMON : found.rarity();
 			CombatType type = found == null ? CombatType.MELEE : found.style();
 			views.add(new CreatureView(speciesNameOf(creature), creature.level(), XpRules.progress(creature.xp),
-				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname));
+				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname,
+				creature.rolls()));
 		}
 
 		return views;

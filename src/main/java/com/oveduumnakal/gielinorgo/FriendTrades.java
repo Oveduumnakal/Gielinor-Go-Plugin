@@ -371,7 +371,9 @@ final class FriendTrades implements GoGame.TradeLocks
 
 		Species found = species.find(item.species());
 		String name = found == null ? String.valueOf(item.species()) : found.name();
-		return (item.gilded() ? "gilded " : "") + name + " (Lv " + item.level() + ")";
+		StatRolls rolls = item.rolls();
+		String rating = rolls == null || rolls.rating() == StatRolls.Rating.AVERAGE ? "" : " " + rolls.rating().label();
+		return (item.gilded() ? "gilded " : "") + name + " (Lv " + item.level() + ")" + rating;
 	}
 
 	/**
@@ -570,8 +572,8 @@ final class FriendTrades implements GoGame.TradeLocks
 	 * Checks that a creature or egg named in a message could exist.
 	 *
 	 * @param item the item, as sent
-	 * @return true for a known species with XP inside the level cap, or a real egg rarity with a sensible number
-	 *     of tiles left
+	 * @return true for a known species with XP inside the level cap and rolls in range, or a real egg rarity with
+	 *     a sensible number of tiles left
 	 */
 	private boolean valid(Item item)
 	{
@@ -585,8 +587,9 @@ final class FriendTrades implements GoGame.TradeLocks
 				&& item.tilesLeft() <= rarity.eggTiles();
 		}
 
-		return item.species() != null && species.find(item.species()) != null && item.xp() >= 0
-			&& item.xp() <= XpRules.xpForLevel(XpRules.MAX_LEVEL) && XpRules.levelForXp(item.xp()) == item.level();
+		return item.species() != null && species.find(item.species()) != null && item.rolls() != null
+			&& item.xp() >= 0 && item.xp() <= XpRules.xpForLevel(XpRules.MAX_LEVEL)
+			&& XpRules.levelForXp(item.xp()) == item.level();
 	}
 
 	/**
@@ -602,7 +605,21 @@ final class FriendTrades implements GoGame.TradeLocks
 			return want.egg().equals(got.egg());
 
 		return got.egg() == null && Species.keyFor(want.species()).equals(Species.keyFor(got.species()))
-			&& XpRules.levelForXp(got.xp()) == want.level();
+			&& XpRules.levelForXp(got.xp()) == want.level() && sameRolls(want, got);
+	}
+
+	/**
+	 * Checks that two creatures have the same rolls and temperament, when the one asked for names them. A request
+	 * from a build that sends no rolls matches any creature.
+	 *
+	 * @param want what was asked for
+	 * @param got what was found or offered
+	 * @return true when the rolls match or the request names none
+	 */
+	private static boolean sameRolls(Item want, Item got)
+	{
+		StatRolls asked = want.rolls();
+		return !want.hasRolls() || (asked != null && asked.equals(got.rolls()));
 	}
 
 	/**
@@ -627,7 +644,7 @@ final class FriendTrades implements GoGame.TradeLocks
 		for (Creature creature : game.data().team)
 		{
 			boolean same = Species.keyFor(creature.species).equals(Species.keyFor(want.species()));
-			if (same && creature.level() == want.level())
+			if (same && creature.level() == want.level() && sameRolls(want, describe(new Mine(creature, null))))
 				return new Mine(creature, null);
 		}
 
@@ -733,7 +750,7 @@ final class FriendTrades implements GoGame.TradeLocks
 			return before.egg().equals(now.egg());
 
 		return now.egg() == null && Species.keyFor(before.species()).equals(Species.keyFor(now.species()))
-			&& before.xp() == now.xp() && before.gilded() == now.gilded();
+			&& before.xp() == now.xp() && before.gilded() == now.gilded() && before.rolls().equals(now.rolls());
 	}
 
 	/**
@@ -790,6 +807,7 @@ final class FriendTrades implements GoGame.TradeLocks
 		Creature creature = new Creature(species.find(item.species()).key(), 1, clock.getAsLong());
 		creature.xp = XpRules.capped(item.xp());
 		creature.gilded = item.gilded();
+		creature.setRolls(item.rolls());
 		return game.receive(creature);
 	}
 
@@ -798,7 +816,7 @@ final class FriendTrades implements GoGame.TradeLocks
 		if (mine.creature != null)
 		{
 			Creature creature = mine.creature;
-			return Item.creature(creature.species, creature.level(), creature.xp, creature.gilded);
+			return Item.creature(creature.species, creature.level(), creature.xp, creature.gilded, creature.rolls());
 		}
 
 		return Item.egg(mine.egg.rarityTier().name(), mine.egg.tilesLeft);

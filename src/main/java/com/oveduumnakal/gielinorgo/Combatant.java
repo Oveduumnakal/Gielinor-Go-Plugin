@@ -17,6 +17,7 @@ final class Combatant
 	private final int maxHp;
 	private final int attack;
 	private final int defence;
+	private final int speed;
 	private double hp;
 
 	/**
@@ -41,15 +42,43 @@ final class Combatant
 	 */
 	Combatant(Species species, String displayName, int level, double hpFraction)
 	{
+		this(species, displayName, level, hpFraction, StatRolls.AVERAGE);
+	}
+
+	/**
+	 * Builds a fighter with rolls and a temperament, under the species name.
+	 *
+	 * @param species the species
+	 * @param level the creature level, 1 to 99
+	 * @param hpFraction the share of full health it starts with, from 0 to 1
+	 * @param rolls the creature's rolls and temperament
+	 */
+	Combatant(Species species, int level, double hpFraction, StatRolls rolls)
+	{
+		this(species, species.name(), level, hpFraction, rolls);
+	}
+
+	/**
+	 * Builds a fighter with rolls and a temperament that goes by another name in the battle lines.
+	 *
+	 * @param species the species
+	 * @param displayName the name the battle lines use
+	 * @param level the creature level, 1 to 99
+	 * @param hpFraction the share of full health it starts with, from 0 to 1
+	 * @param rolls the creature's rolls and temperament; {@link StatRolls#AVERAGE} leaves every stat as it was
+	 */
+	Combatant(Species species, String displayName, int level, double hpFraction, StatRolls rolls)
+	{
 		double tier = Math.sqrt(Math.max(1, species.level()));
 		this.name = displayName;
 		this.type = species.style();
 		this.secondStyle = species.secondStyle();
 		this.secondChance = species.secondChance();
 		this.level = level;
-		this.maxHp = (int) Math.round(20 + 2.0 * level + tier * level / 2.0);
-		this.attack = (int) Math.round(5 + level / 2.0 + tier * level / 8.0);
-		this.defence = (int) Math.round(5 + level / 2.0 + tier * level / 10.0);
+		this.maxHp = (int) Math.round((20 + 2.0 * level + tier * level / 2.0) * rolls.factor(Stat.HEALTH));
+		this.attack = (int) Math.round((5 + level / 2.0 + tier * level / 8.0) * rolls.factor(Stat.ATTACK));
+		this.defence = (int) Math.round((5 + level / 2.0 + tier * level / 10.0) * rolls.factor(Stat.DEFENCE));
+		this.speed = (int) Math.round((5 + level / 2) * rolls.factor(Stat.SPEED));
 		this.hp = maxHp * Math.max(0.0, Math.min(1.0, hpFraction));
 	}
 
@@ -102,6 +131,12 @@ final class Combatant
 	int defence()
 	{
 		return defence;
+	}
+
+	/** @return the speed stat: the higher one attacks first */
+	int speed()
+	{
+		return speed;
 	}
 
 	/** @return health left */

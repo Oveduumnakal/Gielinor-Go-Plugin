@@ -97,7 +97,7 @@ final class StorageTab extends JPanel
 		row.setBorder(new EmptyBorder(5, 8, 5, 8));
 		row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		row.setToolTipText("<html>" + PanelUi.tooltipName(view) + "<br>" + view.type().label()
-			+ " - " + view.rarity().label() + "<br>Click to move to your team"
+			+ " - " + view.rarity().label() + "<br>" + PanelUi.tooltipRolls(view) + "<br>Click to move to your team"
 			+ "<br>Right-click to rename or release</html>");
 		row.addMouseListener(new MouseAdapter()
 		{

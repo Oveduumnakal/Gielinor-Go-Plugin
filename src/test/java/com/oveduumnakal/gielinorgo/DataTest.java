@@ -192,6 +192,36 @@ public class DataTest
 	}
 
 	@Test
+	public void anOldSaveLoadsWithAverageRollsAndNoTemperament()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"team\":[{\"species\":\"goblin\",\"xp\":5}]}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+		Creature lead = loaded.lead();
+
+		assertEquals(0, lead.rollHp + lead.rollAttack + lead.rollDefence + lead.rollSpeed);
+		assertNull(lead.temperament);
+		assertEquals(StatRolls.AVERAGE, lead.rolls());
+	}
+
+	@Test
+	public void rollsAndTemperamentSurviveARoundTrip()
+	{
+		GoPersistence persistence = new GoPersistence(new MapStore(), gson);
+		SaveData data = SaveData.fresh();
+		Creature goblin = new Creature("goblin", 7, 123L);
+		goblin.setRolls(new StatRolls(4, -3, 0, 5, Temperament.HASTY));
+		data.team.add(goblin);
+
+		persistence.save(data);
+		SaveData loaded = persistence.load();
+
+		assertEquals(new StatRolls(4, -3, 0, 5, Temperament.HASTY), loaded.team.get(0).rolls());
+		assertEquals("HASTY", loaded.team.get(0).temperament);
+	}
+
+	@Test
 	public void noSaveMeansAFreshStart()
 	{
 		SaveData loaded = new GoPersistence(new MapStore(), gson).load();

@@ -4,7 +4,12 @@ class Creature {
   hpFraction: double
   hpStampMs: long
   nickname: String
+  rollAttack: int
+  rollDefence: int
+  rollHp: int
+  rollSpeed: int
   species: String
+  temperament: String
   xp: long
 }
 class Egg {

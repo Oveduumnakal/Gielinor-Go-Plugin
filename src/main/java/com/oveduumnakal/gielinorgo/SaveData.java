@@ -97,10 +97,10 @@ final class SaveData
 		team.removeIf(creature -> creature == null || creature.species == null);
 		storage.removeIf(creature -> creature == null || creature.species == null);
 		for (Creature creature : team)
-			creature.nickname = Nickname.clean(creature.nickname);
+			clean(creature);
 
 		for (Creature creature : storage)
-			creature.nickname = Nickname.clean(creature.nickname);
+			clean(creature);
 
 		while (team.size() > TEAM_SIZE)
 			storage.add(team.remove(team.size() - 1));
@@ -110,6 +110,22 @@ final class SaveData
 
 		version = VERSION;
 		return this;
+	}
+
+	/**
+	 * Cleans the parts of a creature a damaged or older save may have left out of range.
+	 *
+	 * @param creature the creature
+	 */
+	private static void clean(Creature creature)
+	{
+		creature.nickname = Nickname.clean(creature.nickname);
+		creature.rollHp = StatRolls.clamp(creature.rollHp);
+		creature.rollAttack = StatRolls.clamp(creature.rollAttack);
+		creature.rollDefence = StatRolls.clamp(creature.rollDefence);
+		creature.rollSpeed = StatRolls.clamp(creature.rollSpeed);
+		if (Temperament.named(creature.temperament) == null)
+			creature.temperament = null;
 	}
 
 	/**

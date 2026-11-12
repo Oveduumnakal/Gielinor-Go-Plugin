@@ -10,7 +10,8 @@ import net.runelite.client.party.messages.PartyMemberMessage;
  * The one message Gielinor Go sends through a RuneLite party, for battles and trades between friends. It reaches
  * only the people in the player's own party, and carries nothing but creatures and eggs: a team's species and
  * levels, the trainer level, the rarities of the eggs carried, and the creature or egg named in a trade. RuneLite
- * tells messages apart by class name, so this name must not be reused by another plugin.
+ * tells messages apart by class name, so this name must not be reused by another plugin. Creatures travel with
+ * their rolls and temperament; nicknames never do.
  */
 public class GielinorGoPartyMessage extends PartyMemberMessage
 {
@@ -38,6 +39,13 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	/** Kind of a message that turns an offer down or calls a trade off. */
 	static final String REFUSE = "REFUSE";
 
+	/**
+	 * The version of the battle rules and message layout this build speaks. Two players can only fight each other
+	 * when it matches, since a different rule would give each of them a different winner. A message from a build
+	 * that sends no version reads as 0.
+	 */
+	static final int PROTOCOL = 2;
+
 	/** One creature or one egg named in a trade. Exactly one of the species and the egg rarity is set. */
 	static final class Item
 	{
@@ -45,6 +53,8 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 		private int level;
 		private long xp;
 		private boolean gilded;
+		private int[] rolls;
+		private String temperament;
 		private String egg;
 		private int tilesLeft;
 
@@ -69,6 +79,24 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 			item.level = level;
 			item.xp = xp;
 			item.gilded = gilded;
+			return item;
+		}
+
+		/**
+		 * Names a creature with its rolls and temperament.
+		 *
+		 * @param species the species key
+		 * @param level the creature's level
+		 * @param xp the creature's XP, or 0 when only the level is known
+		 * @param gilded whether the creature is gilded
+		 * @param rolls the creature's rolls and temperament
+		 * @return the item
+		 */
+		static Item creature(String species, int level, long xp, boolean gilded, StatRolls rolls)
+		{
+			Item item = creature(species, level, xp, gilded);
+			item.rolls = rolls.values();
+			item.temperament = rolls.temperament() == Temperament.STEADY ? null : rolls.temperament().name();
 			return item;
 		}
 
@@ -111,6 +139,23 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 			return gilded;
 		}
 
+		/**
+		 * Reads the creature's rolls.
+		 *
+		 * @return the rolls, {@link StatRolls#AVERAGE} when the sender sent none, or null when what was sent is out
+		 *     of range or unknown
+		 */
+		StatRolls rolls()
+		{
+			return StatRolls.of(rolls, temperament);
+		}
+
+		/** @return whether the sender sent rolls or a temperament, rather than leaving them out */
+		boolean hasRolls()
+		{
+			return rolls != null || temperament != null;
+		}
+
 		/** @return the egg's rarity name, or null for a creature */
 		String egg()
 		{
@@ -132,6 +177,9 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	private boolean askBack;
 	private String[] species;
 	private int[] levels;
+	private int[][] rolls;
+	private String[] temperaments;
+	private int version;
 	private String[] eggs;
 	private Item give;
 	private Item want;
@@ -161,6 +209,7 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 		this.trainer = trainer;
 		this.species = species;
 		this.levels = levels;
+		this.version = PROTOCOL;
 	}
 
 	/** @return what the message is for; anything a party member sent, so it may be null or unknown */
@@ -188,6 +237,20 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	}
 
 	/**
+	 * Adds the rolls and temperaments of the team in {@code species}.
+	 *
+	 * @param teamRolls four rolls per creature, in the order health, attack, defence, speed
+	 * @param teamTemperaments a {@link Temperament#name()} per creature, null for steady
+	 * @return this message
+	 */
+	GielinorGoPartyMessage rolled(int[][] teamRolls, String[] teamTemperaments)
+	{
+		rolls = teamRolls;
+		temperaments = teamTemperaments;
+		return this;
+	}
+
+	/**
 	 * Adds what the sender gives in a trade.
 	 *
 	 * @param item the creature or egg, or null for nothing
@@ -209,6 +272,24 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	{
 		want = item;
 		return this;
+	}
+
+	/** @return the rolls of each creature; as sent, so it may be null (all average) or nonsense */
+	int[][] rolls()
+	{
+		return rolls;
+	}
+
+	/** @return the temperament of each creature; as sent, so it may be null (all steady) or nonsense */
+	String[] temperaments()
+	{
+		return temperaments;
+	}
+
+	/** @return the protocol version the sender speaks, or 0 for a build that sends none */
+	int version()
+	{
+		return version;
 	}
 
 	/** @return the rarities of the eggs the sender carries; as sent, so it may be null or nonsense */

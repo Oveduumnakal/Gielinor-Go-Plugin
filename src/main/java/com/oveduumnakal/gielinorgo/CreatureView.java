@@ -17,10 +17,18 @@ final class CreatureView
 	private final CombatType type;
 	private final boolean gilded;
 	private final String nickname;
+	private final StatRolls rolls;
 
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname)
 	{
+		this(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, StatRolls.AVERAGE);
+	}
+
+	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
+		boolean gilded, String nickname, StatRolls rolls)
+	{
+		this.rolls = rolls;
 		this.gilded = gilded;
 		this.nickname = nickname;
 		this.name = name;
@@ -41,6 +49,30 @@ final class CreatureView
 	String nickname()
 	{
 		return nickname;
+	}
+
+	/** @return the creature's rolls and temperament */
+	StatRolls rolls()
+	{
+		return rolls;
+	}
+
+	/** @return the one-word rating of its rolls */
+	StatRolls.Rating rating()
+	{
+		return rolls.rating();
+	}
+
+	/** @return the name of its temperament, such as Brave */
+	String temperamentLabel()
+	{
+		return rolls.temperament().label();
+	}
+
+	/** @return its four rolls as a line, such as {@code Health +3 · Attack -1 · Defence 0 · Speed +5} */
+	String rollsLine()
+	{
+		return rolls.describe();
 	}
 
 	/** @return the creature level, 1 to 99 */
@@ -96,12 +128,13 @@ final class CreatureView
 			&& rarity == that.rarity
 			&& type == that.type
 			&& Objects.equals(name, that.name)
-			&& Objects.equals(nickname, that.nickname);
+			&& Objects.equals(nickname, that.nickname)
+			&& rolls.equals(that.rolls);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname);
+		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls);
 	}
 }

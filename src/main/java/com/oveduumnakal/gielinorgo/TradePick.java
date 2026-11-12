@@ -91,6 +91,7 @@ final class TradePick
 		CreatureView now = kept.get(index);
 		return now.name().equals(creature.name()) && Objects.equals(now.nickname(), creature.nickname())
 			&& now.level() == creature.level()
-			&& now.gilded() == creature.gilded() && Double.compare(now.xpProgress(), creature.xpProgress()) == 0;
+			&& now.gilded() == creature.gilded() && now.rolls().equals(creature.rolls())
+			&& Double.compare(now.xpProgress(), creature.xpProgress()) == 0;
 	}
 }
