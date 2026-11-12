@@ -17,6 +17,7 @@ import net.runelite.api.GameState;
 import net.runelite.api.Model;
 import net.runelite.api.NPC;
 import net.runelite.api.Perspective;
+import net.runelite.api.Player;
 import net.runelite.api.Point;
 import net.runelite.api.Renderable;
 import net.runelite.api.WorldView;
@@ -56,6 +57,9 @@ final class BattleStage implements RenderCallback, StageAnchors
 	 */
 	static final double WILD_SIZE = 0.75;
 
+	/** The value of {@code wantedFacing} while a catch has not asked the stand-in to turn anywhere. */
+	private static final int NO_FACING = -1;
+
 	private final Client client;
 	private final FollowerService follower;
 	private final AnimationTable animations;
@@ -73,6 +77,14 @@ final class BattleStage implements RenderCallback, StageAnchors
 	private int foeHeight;
 	private int foeTiles = 1;
 	private volatile Spot foeSpot;
+	private StageCatch catching;
+	private boolean risen;
+	private int wantedFacing = NO_FACING;
+	private boolean turningAway;
+	private double runFromX;
+	private double runFromY;
+	private double runDirX;
+	private double runDirY;
 
 	/**
 	 * Creates the stage with nothing playing.
@@ -199,7 +211,7 @@ final class BattleStage implements RenderCallback, StageAnchors
 			return;
 		}
 
-		if (fades.ending())
+		if (fades.ending() || catching != null)
 			return;
 
 		BattleTimeline.Beat beat = timeline.tick(follower.errandArrived());
@@ -236,11 +248,16 @@ final class BattleStage implements RenderCallback, StageAnchors
 		if (view == null || client.getGameState() != GameState.LOGGED_IN)
 			return;
 
+		if (catching != null && stepCatch())
+			return;
+
 		standIn.clientTick();
 		fades.tick(home != null && home.equals(npc.getWorldLocation()));
-		standIn.setOpacity(fades.standInOpacity());
+		standIn.setOpacity(catching == null ? fades.standInOpacity()
+			: Math.min(fades.standInOpacity(), catching.opacity()));
 		mirrorGhost();
-		int wanted = FollowerPath.angle(follower.x() - centerX, follower.y() - centerY);
+		int wanted = wantedFacing != NO_FACING ? wantedFacing
+			: FollowerPath.angle(follower.x() - centerX, follower.y() - centerY);
 		facing = FollowerPath.turnToward(facing, wanted);
 		place(view);
 		if (fades.finished())
@@ -266,7 +283,7 @@ final class BattleStage implements RenderCallback, StageAnchors
 	boolean knockedOut(NPC other)
 	{
 		return other != null && other == npc && timeline != null && timeline.knockedOut()
-			&& fades != null && !fades.ending();
+			&& fades != null && !fades.ending() && !risen;
 	}
 
 	/** @return the game's index of the monster whose stand-in is on stage, or -1 when no battle is on stage */
@@ -326,6 +343,112 @@ final class BattleStage implements RenderCallback, StageAnchors
 			shapes.add(ground);
 
 		return shapes;
+	}
+
+	/**
+	 * Tells the stage that a jar was thrown at the monster on stage: the battle beats stop, the stand-in keeps its
+	 * pose (it stays lying if it is knocked out), the lead stays where it is and the real monster stays hidden, and
+	 * from the landing the stand-in acts the result out ({@link StageCatch}). A throw while a catch is already in
+	 * the air starts the new result from the throw. Nothing starts when the monster is not the one on stage or the
+	 * stage is already fading out, and the caller then ends the stage as it did before.
+	 *
+	 * @param target the monster that was thrown at
+	 * @param outcome what the throw led to
+	 * @return true when the catch is played on the stand-in, so the stage must not be ended
+	 */
+	boolean beginCatch(NPC target, CatchOutcome outcome)
+	{
+		if (!isStaged(target) || timeline == null || fades == null || fades.ending() || standIn == null
+			|| !StageCatch.plays(outcome))
+			return false;
+
+		boolean lying = timeline.knockedOut() && !risen;
+		catching = new StageCatch(outcome, lying);
+		wantedFacing = NO_FACING;
+		turningAway = false;
+		return true;
+	}
+
+	/**
+	 * Plays one client tick of the catch on the stand-in: the flinch, the getting up, the turn, the size, the run
+	 * and the end. Called from {@link #move()} while a catch is on stage.
+	 *
+	 * @return true when the stage was ended and nothing more may be done this tick
+	 */
+	private boolean stepCatch()
+	{
+		StageCatch scene = catching;
+		scene.tick();
+		if (scene.getsUp())
+		{
+			standIn.recover();
+			risen = true;
+		}
+
+		TargetScript.Step step = scene.step();
+		if (step == TargetScript.Step.HIT)
+			standIn.act(CreatureBody.Act.HIT);
+		else if (step == TargetScript.Step.ATTACK)
+			standIn.act(CreatureBody.Act.ATTACK);
+
+		if (scene.turn() != TargetScript.Turn.NONE)
+			startCatchTurn(scene.turn());
+
+		standIn.setSize(scene.size());
+		if (turningAway)
+		{
+			double run = scene.runTiles();
+			centerX = runFromX + runDirX * run;
+			centerY = runFromY + runDirY * run;
+		}
+
+		if (scene.cutsStage())
+		{
+			finish();
+			return true;
+		}
+
+		if (scene.fadesStage())
+			beginEnd();
+
+		return false;
+	}
+
+	/**
+	 * Works out which way the stand-in turns for its second act: to the player, or away from the player and running
+	 * that way.
+	 *
+	 * @param turn the turn, not none
+	 */
+	private void startCatchTurn(TargetScript.Turn turn)
+	{
+		Player player = client.getLocalPlayer();
+		WorldView view = client.getTopLevelWorldView();
+		LocalPoint from = player == null || view == null ? null : player.getLocalLocation();
+		double dx = from == null ? 0 : centerX - (from.getX() / (double) TILE - 0.5 + view.getBaseX());
+		double dy = from == null ? 0 : centerY - (from.getY() / (double) TILE - 0.5 + view.getBaseY());
+		double length = Math.hypot(dx, dy);
+		if (length < 0.01)
+		{
+			double turned = facing * 2 * Math.PI / FollowerPath.FULL_TURN;
+			dx = -Math.sin(turned);
+			dy = -Math.cos(turned);
+			length = 1;
+		}
+
+		runDirX = dx / length;
+		runDirY = dy / length;
+		runFromX = centerX;
+		runFromY = centerY;
+		if (turn == TargetScript.Turn.TO_PLAYER)
+		{
+			wantedFacing = FollowerPath.angle(-runDirX, -runDirY);
+			return;
+		}
+
+		wantedFacing = FollowerPath.angle(runDirX, runDirY);
+		turningAway = true;
+		standIn.setBase(animations.walk(standIn.npcId()));
 	}
 
 	/**
@@ -567,6 +690,10 @@ final class BattleStage implements RenderCallback, StageAnchors
 		CreatureBody body = standIn;
 		boolean sendBack = timeline != null && errandOpen;
 		timeline = null;
+		catching = null;
+		risen = false;
+		wantedFacing = NO_FACING;
+		turningAway = false;
 		foeSpot = null;
 		npc = null;
 		standIn = null;

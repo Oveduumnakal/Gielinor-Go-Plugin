@@ -1033,7 +1033,8 @@ public class GielinorGoPlugin extends Plugin
 	/**
 	 * Acts a throw out on screen, when that setting is on: the player throws whenever a jar was really used and
 	 * then reacts to the result, and the creature reacts when the jar lands: a caught one shrinks into the jar and
-	 * fades back in later, one that breaks free attacks, one that flees runs off and fades back in.
+	 * fades back in later, one that breaks free attacks, one that flees runs off and fades back in. A creature whose
+	 * battle is on stage reacts through its stand-in instead, and the battle scene stays until that is over.
 	 *
 	 * @param outcome what the throw led to
 	 * @param npcIndex the game's index for the monster thrown at
@@ -1045,17 +1046,24 @@ public class GielinorGoPlugin extends Plugin
 		if (!thrown)
 			return;
 
-		stage.forget(candidates.get(npcIndex));
+		NPC target = candidates.get(npcIndex);
+		boolean onStage = config.catchEffects() && stage.beginCatch(target, outcome);
+		if (!onStage)
+			stage.forget(target);
+
 		if (!config.catchEffects())
 			return;
 
 		if (effects.throwJar())
 		{
 			effects.react(outcome);
-			jarFlight.start(jar, candidates.get(npcIndex));
+			jarFlight.start(jar, target, onStage ? stage : null);
 		}
 
-		effects.play(outcome, candidates.get(npcIndex));
+		if (!onStage)
+			effects.play(outcome, target);
+		else if (StageCatch.leavesHidden(outcome))
+			effects.playHidden(outcome, target);
 	}
 
 	private void battle(int npcIndex)

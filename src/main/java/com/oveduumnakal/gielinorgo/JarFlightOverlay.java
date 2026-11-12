@@ -36,6 +36,7 @@ final class JarFlightOverlay extends Overlay
 	private final Client client;
 	private JarType jar;
 	private NPC target;
+	private StageAnchors stage;
 	private int age;
 
 	/**
@@ -58,8 +59,22 @@ final class JarFlightOverlay extends Overlay
 	 */
 	void start(JarType thrown, NPC npc)
 	{
+		start(thrown, npc, null);
+	}
+
+	/**
+	 * Starts a flight to a creature that may be acted out on a stage. While the stand-in is drawn the jar flies to
+	 * it, since the real monster is hidden and may stand somewhere else.
+	 *
+	 * @param thrown the jar that was thrown
+	 * @param npc the creature it is thrown at, or null when it is out of view, in which case nothing is drawn
+	 * @param anchors the stage whose stand-in is the target, or null to fly to the real creature
+	 */
+	void start(JarType thrown, NPC npc, StageAnchors anchors)
+	{
 		jar = npc == null ? null : thrown;
 		target = npc;
+		stage = anchors;
 		age = 0;
 	}
 
@@ -79,6 +94,7 @@ final class JarFlightOverlay extends Overlay
 	{
 		jar = null;
 		target = null;
+		stage = null;
 		age = 0;
 	}
 
@@ -117,7 +133,8 @@ final class JarFlightOverlay extends Overlay
 			return;
 
 		LocalPoint from = player.getLocalLocation();
-		LocalPoint to = npc.getLocalLocation();
+		StageAnchors.Spot standIn = stage == null ? null : stage.spotOf(Notice.Anchor.STAGE_FOE);
+		LocalPoint to = standIn == null ? npc.getLocalLocation() : standIn.point();
 		if (from == null || to == null)
 			return;
 
@@ -126,7 +143,8 @@ final class JarFlightOverlay extends Overlay
 			(int) Math.round(JarFlight.between(from.getX(), to.getX(), progress)),
 			(int) Math.round(JarFlight.between(from.getY(), to.getY(), progress)),
 			player.getWorldView());
-		int height = (int) Math.round(JarFlight.height(HAND_HEIGHT, npc.getLogicalHeight() / 2.0, progress));
+		int targetHeight = standIn == null ? npc.getLogicalHeight() : standIn.height();
+		int height = (int) Math.round(JarFlight.height(HAND_HEIGHT, targetHeight / 2.0, progress));
 		Point screen = Perspective.localToCanvas(client, at, player.getWorldView().getPlane(), height);
 		if (screen == null)
 			return;

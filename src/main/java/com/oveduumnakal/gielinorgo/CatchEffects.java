@@ -82,6 +82,8 @@ final class CatchEffects implements RenderCallback
 	{
 		private final NPC npc;
 		private final CatchOutcome outcome;
+		/** Whether the stand-in of a staged battle acts the result out, so no copy is made here. */
+		private final boolean staged;
 		/** Client ticks since the throw. */
 		private int age;
 		private CreatureBody copy;
@@ -97,10 +99,11 @@ final class CatchEffects implements RenderCallback
 		private Model[] shades;
 		private RuneLiteObject ghost;
 
-		private CatchAct(NPC npc, CatchOutcome outcome)
+		private CatchAct(NPC npc, CatchOutcome outcome, boolean staged)
 		{
 			this.npc = npc;
 			this.outcome = outcome;
+			this.staged = staged;
 		}
 	}
 
@@ -171,7 +174,23 @@ final class CatchEffects implements RenderCallback
 		if (npc == null || fighting(npc) || TargetScript.end(outcome) == 0)
 			return;
 
-		finish(acts.put(npc.getIndex(), new CatchAct(npc, outcome)));
+		finish(acts.put(npc.getIndex(), new CatchAct(npc, outcome, false)));
+	}
+
+	/**
+	 * Marks a creature whose result is acted out by the stand-in of a battle on stage ({@link StageCatch}): only the
+	 * hiding of the real monster and its fade back in are played here, no copy is shown. Rules for a monster in a
+	 * fight are the same as for {@link #play(CatchOutcome, NPC)}.
+	 *
+	 * @param outcome what the throw led to
+	 * @param npc the monster that was thrown at, or null when it already left view
+	 */
+	void playHidden(CatchOutcome outcome, NPC npc)
+	{
+		if (npc == null || fighting(npc) || TargetScript.end(outcome) == 0)
+			return;
+
+		finish(acts.put(npc.getIndex(), new CatchAct(npc, outcome, true)));
 	}
 
 	/** Moves every effect on by one client tick. */
@@ -210,7 +229,7 @@ final class CatchEffects implements RenderCallback
 			if (!stillValid(effect))
 				return false;
 
-			if (effect.age >= TargetScript.LAND && !effect.copyTried)
+			if (effect.age >= TargetScript.LAND && !effect.copyTried && !effect.staged)
 				startCopy(effect);
 
 			if (effect.copyTried && effect.copy == null && effect.outcome != CatchOutcome.CAUGHT)

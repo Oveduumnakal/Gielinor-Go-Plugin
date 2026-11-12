@@ -106,8 +106,10 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   **Catch a knocked-out creature.** When your lead wins, the wild creature lies knocked out for about 10 seconds.
   Right-click the lying copy to get the same **Catch** options as the real monster (you can also do this while it
   fights). A knocked-out creature is twice as easy to catch (x2.0); once it is back up it is x1.5 as before. Caught:
-  the catch plays out as usual. Broke free: it gets up and the scene ends. Ran away: the scene ends and it is no
-  longer wild.
+  the jar flies to the lying copy, which shrinks into it (it does not get up to flinch), and the real monster
+  fades back in after five seconds. Broke free: the copy gets up, turns to you, attacks and the scene ends. Ran away:
+  the copy gets up and runs off fading out, and it is no longer wild. A jar thrown while it still fights is played
+  on the copy the same way.
 
 - **Creatures evolve**
 
