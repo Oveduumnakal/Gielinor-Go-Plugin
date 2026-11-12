@@ -20,6 +20,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.junit.Before;
 import org.junit.Test;
@@ -276,5 +279,116 @@ public class GameDataTest
 		assertTrue(elite.contains(3191, 3367, 0));
 		assertTrue(elite.contains(3185, 3352, 0));
 		assertTrue(elite.contains(3197, 3366, 0));
+	}
+
+	private JsonObject movesFile() throws IOException
+	{
+		try (Reader reader = open(MoveTable.RESOURCE))
+		{
+			return gson.fromJson(reader, JsonObject.class);
+		}
+	}
+
+	@Test
+	public void everyMoveIsInRangeAndEveryPoolReferenceExists() throws IOException
+	{
+		JsonObject file = movesFile();
+		Set<String> ids = new HashSet<>();
+		for (JsonElement element : file.getAsJsonArray("moves"))
+		{
+			JsonObject move = element.getAsJsonObject();
+			String id = move.get("id").getAsString();
+			assertTrue("repeated move " + id, ids.add(id));
+			double power = move.get("power").getAsDouble();
+			double accuracy = move.get("accuracy").getAsDouble();
+			assertTrue(id + ": power " + power, power > 0 && power <= 3.0);
+			assertTrue(id + ": accuracy " + accuracy, accuracy >= 0.5 && accuracy <= 1.0);
+			assertNotNull(id + ": style", CombatType.valueOf(move.get("style").getAsString()));
+			assertTrue(id + ": name", move.get("name").getAsString().length() > 0);
+			if (move.has("slot"))
+				assertTrue(id + ": slot", move.get("slot").getAsString().matches("ATTACK|SECOND"));
+		}
+
+		assertTrue("expected at least 50 moves, got " + ids.size(), ids.size() >= 50);
+		JsonObject pools = file.getAsJsonObject("pools");
+		assertTrue("expected at least 20 pools, got " + pools.size(), pools.size() >= 20);
+		for (String name : pools.keySet())
+		{
+			JsonArray learns = pools.getAsJsonObject(name).getAsJsonArray("learns");
+			int last = 0;
+			Set<String> inPool = new HashSet<>();
+			for (JsonElement learn : learns)
+			{
+				JsonArray pair = learn.getAsJsonArray();
+				String id = pair.get(0).getAsString();
+				int level = pair.get(1).getAsInt();
+				assertTrue(name + " names the unknown move " + id, ids.contains(id));
+				assertTrue(name + " repeats " + id, inPool.add(id));
+				assertTrue(name + ": levels must rise at " + id, level > last || (level == 1 && last == 0));
+				assertTrue(name + ": level " + level, level >= 1 && level <= 99);
+				last = level;
+			}
+
+			assertTrue(name + " teaches at most 12 moves", learns.size() >= 1 && learns.size() <= 12);
+		}
+
+		JsonObject defaults = file.getAsJsonObject("defaults");
+		for (String style : defaults.keySet())
+			assertTrue(style + " default pool exists", pools.has(defaults.get(style).getAsString()));
+
+		JsonObject own = file.getAsJsonObject("species");
+		for (String key : own.keySet())
+			assertTrue(key + " has a pool that exists", pools.has(own.get(key).getAsString()));
+	}
+
+	@Test
+	public void everySpeciesResolvesToAPoolThatStartsWithAPlainMoveAtLevelOne() throws IOException
+	{
+		MoveTable table;
+		try (Reader reader = open(MoveTable.RESOURCE))
+		{
+			table = MoveTable.load(gson, reader);
+		}
+
+		for (Species one : species.all())
+		{
+			String pool = table.poolOf(one);
+			assertNotNull(one.name() + " has no pool", pool);
+			List<Move> first = table.movesAt(one, 1);
+			assertEquals(one.name() + " knows one move at level 1", 1, first.size());
+			assertEquals(one.name() + ": power", 1.0, first.get(0).power(), 0.0);
+			assertEquals(one.name() + ": accuracy", 1.0, first.get(0).accuracy(), 0.0);
+			assertEquals(one.name() + " knows four moves at level 99", 4, table.movesAt(one, 99).size());
+		}
+
+		for (String key : table.assignedSpecies())
+			assertNotNull(key + " is not a species", species.find(key));
+
+		for (String pool : table.poolNames())
+			assertTrue(pool + " starts at level 1", table.describePool(pool).get(0).endsWith("@1"));
+	}
+
+	@Test
+	public void dragonsAndWyvernsBreatheWithTheSecondAttack() throws IOException
+	{
+		MoveTable table;
+		try (Reader reader = open(MoveTable.RESOURCE))
+		{
+			table = MoveTable.load(gson, reader);
+		}
+
+		List<Move> green = table.movesAt(species.find("Green dragon"), 40);
+		assertEquals("Bite", green.get(0).name());
+		assertTrue("Dragonfire is a breath", table.find("dragonfire").second());
+		assertEquals(CombatType.MAGIC, table.find("dragonfire").style());
+		assertTrue("Icy breath is icy", table.find("icy_breath").icy());
+		assertEquals(4, green.size());
+		assertEquals("Inferno", green.get(3).name());
+		assertEquals("a baby dragon does not breathe", "lesser_dragon",
+			table.poolOf(species.find("Baby green dragon")));
+		assertEquals("dragon", table.poolOf(species.find("Vorkath")));
+		assertEquals("wyvern", table.poolOf(species.find("Spitting Wyvern")));
+		assertEquals("wizard", table.poolOf(species.find("Dark wizard")));
+		assertEquals("default_melee", table.poolOf(species.find("Man")));
 	}
 }
