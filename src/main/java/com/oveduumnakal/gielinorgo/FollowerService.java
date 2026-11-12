@@ -67,6 +67,7 @@ final class FollowerService
 	private CreatureBody body;
 	private String shownKey;
 	private boolean shownGilded;
+	private int height;
 	private int idle = AnimationTable.NONE;
 	private int walk = AnimationTable.NONE;
 
@@ -213,6 +214,32 @@ final class FollowerService
 		return path.y();
 	}
 
+	/** @return whether the follower is on screen right now, so a tag over it has something to float above */
+	boolean shown()
+	{
+		return body != null && body.isActive();
+	}
+
+	/**
+	 * Finds the spot on the ground under the follower, for drawing something over it.
+	 *
+	 * @return the follower's place in the scene, or null when it is not on screen
+	 */
+	LocalPoint groundPoint()
+	{
+		WorldView view = client.getTopLevelWorldView();
+		if (!shown() || view == null || !path.placed())
+			return null;
+
+		return new LocalPoint(sceneUnits(path.x(), view.getBaseX()), sceneUnits(path.y(), view.getBaseY()), view);
+	}
+
+	/** @return how tall the follower is drawn, in local units, for placing a tag above its head */
+	int tagHeight()
+	{
+		return height;
+	}
+
 	/**
 	 * Acts out a move of a battle with the lead creature.
 	 *
@@ -351,6 +378,7 @@ final class FollowerService
 		if (body == null)
 			return false;
 
+		height = (int) Math.round(heightOf(data) * heightScale / NpcModels.NORMAL_SCALE);
 		idle = animations.idle(parts.npcId());
 		walk = animations.walk(parts.npcId());
 		body.setBase(idle);

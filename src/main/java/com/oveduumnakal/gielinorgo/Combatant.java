@@ -28,8 +28,21 @@ final class Combatant
 	 */
 	Combatant(Species species, int level, double hpFraction)
 	{
+		this(species, species.name(), level, hpFraction);
+	}
+
+	/**
+	 * Builds a fighter that goes by another name in the battle lines, such as a nickname.
+	 *
+	 * @param species the species
+	 * @param displayName the name the battle lines use
+	 * @param level the creature level, 1 to 99
+	 * @param hpFraction the share of full health it starts with, from 0 to 1
+	 */
+	Combatant(Species species, String displayName, int level, double hpFraction)
+	{
 		double tier = Math.sqrt(Math.max(1, species.level()));
-		this.name = species.name();
+		this.name = displayName;
 		this.type = species.style();
 		this.secondStyle = species.secondStyle();
 		this.secondChance = species.secondChance();
@@ -40,7 +53,7 @@ final class Combatant
 		this.hp = maxHp * Math.max(0.0, Math.min(1.0, hpFraction));
 	}
 
-	/** @return the species name */
+	/** @return the name the battle lines use: the species name, or a nickname */
 	String name()
 	{
 		return name;

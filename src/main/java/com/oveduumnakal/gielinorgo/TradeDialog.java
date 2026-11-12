@@ -118,6 +118,7 @@ final class TradeDialog
 
 	private static String creatureLabel(CreatureView view)
 	{
-		return PanelUi.displayName(view) + " (Lv " + view.level() + ")";
+		String species = view.nickname() == null ? "" : " [" + view.name() + "]";
+		return PanelUi.displayName(view) + species + " (Lv " + view.level() + ")";
 	}
 }

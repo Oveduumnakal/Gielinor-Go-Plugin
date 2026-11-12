@@ -62,7 +62,7 @@ final class StorageTab extends JPanel
 			stack.add(PanelUi.emptyState(EMPTY_TEXT));
 
 		if (!storage.isEmpty())
-			stack.add(PanelUi.hint("Click a creature to move it to your team. Right-click to release."));
+			stack.add(PanelUi.hint("Click a creature to move it to your team. Right-click to rename or release."));
 
 		for (int i = 0; i < storage.size(); i++)
 		{
@@ -96,8 +96,9 @@ final class StorageTab extends JPanel
 		row.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		row.setBorder(new EmptyBorder(5, 8, 5, 8));
 		row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		row.setToolTipText("<html>" + view.type().label() + " - " + view.rarity().label()
-			+ "<br>Click to move to your team<br>Right-click to release</html>");
+		row.setToolTipText("<html>" + PanelUi.tooltipName(view) + "<br>" + view.type().label()
+			+ " - " + view.rarity().label() + "<br>Click to move to your team"
+			+ "<br>Right-click to rename or release</html>");
 		row.addMouseListener(new MouseAdapter()
 		{
 			@Override
@@ -115,25 +116,33 @@ final class StorageTab extends JPanel
 			@Override
 			public void mousePressed(MouseEvent e)
 			{
-				pressed(e, row, index, view.name());
+				pressed(e, row, index, view);
 			}
 		});
 		return row;
 	}
 
-	private void pressed(MouseEvent event, JPanel row, int index, String name)
+	private void pressed(MouseEvent event, JPanel row, int index, CreatureView view)
 	{
 		if (SwingUtilities.isRightMouseButton(event))
 		{
 			JPopupMenu menu = new JPopupMenu();
 			menu.add(PanelUi.menuItem("Move to team", () -> actions.moveToTeam(index)));
-			menu.add(PanelUi.menuItem("Release...", () -> confirmRelease(index, name)));
+			menu.add(PanelUi.menuItem("Rename...", () -> rename(index, view)));
+			menu.add(PanelUi.menuItem("Release...", () -> confirmRelease(index, PanelUi.displayName(view))));
 			menu.show(row, event.getX(), event.getY());
 			return;
 		}
 
 		if (SwingUtilities.isLeftMouseButton(event))
 			actions.moveToTeam(index);
+	}
+
+	private void rename(int index, CreatureView view)
+	{
+		String typed = PanelUi.askName(this, view);
+		if (typed != null)
+			actions.rename(TradePick.of(Holding.STORAGE, index, view), typed);
 	}
 
 	private void confirmRelease(int index, String name)

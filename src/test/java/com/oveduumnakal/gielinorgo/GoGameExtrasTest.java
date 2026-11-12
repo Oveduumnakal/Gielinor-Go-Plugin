@@ -82,6 +82,37 @@ public class GoGameExtrasTest
 	}
 
 	@Test
+	public void evolutionKeepsTheNicknameAndUsesItInTheLine()
+	{
+		Creature imp = new Creature("imp", 19, now);
+		game.data().team.add(imp);
+		game.rename(imp, "Spark");
+
+		game.addOsrsXp(10 * (int) (XpRules.xpForLevel(20) - XpRules.xpForLevel(19)));
+
+		assertEquals("lesser demon", lead().species);
+		assertEquals("Spark", lead().nickname);
+		assertTrue(messages.contains("Spark evolved into Lesser demon!"));
+		PanelState state = game.snapshot();
+		CreatureView first = state.team().get(0);
+		assertEquals("Spark", first.nickname());
+	}
+
+	@Test
+	public void championBattleLinesUseTheNickname()
+	{
+		Creature dragon = new Creature("king black dragon", 40, now);
+		game.data().team.add(dragon);
+		game.rename(dragon, "Smaug");
+		game.moveTo(3222, 3218, 0);
+
+		TeamBattleResult fought = game.challenge("lumbridge");
+
+		assertTrue(fought.lines().stream().anyMatch(line -> line.text().contains("Smaug")));
+		assertTrue(fought.lines().stream().noneMatch(line -> line.text().contains("King Black Dragon")));
+	}
+
+	@Test
 	public void aBigJumpEvolvesThroughEveryStage()
 	{
 		game.data().team.add(new Creature("imp", 1, now));

@@ -174,4 +174,21 @@ public interface GielinorGoConfig extends Config
 	{
 		return false;
 	}
+
+	/**
+	 * Whether the lead creature's nickname floats over the follower.
+	 *
+	 * @return true to show the nickname over the follower
+	 */
+	@ConfigItem(
+		keyName = "showLeadName",
+		name = "Show lead's nickname",
+		description = "Shows the nickname you gave your lead creature above it while it follows you. Only you can"
+			+ " see it.\nA lead without a nickname shows nothing.",
+		position = 9
+	)
+	default boolean showLeadName()
+	{
+		return true;
+	}
 }
