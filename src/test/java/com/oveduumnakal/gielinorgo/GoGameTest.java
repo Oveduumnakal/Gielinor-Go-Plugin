@@ -174,9 +174,9 @@ public class GoGameTest
 		int found = game.data().jarCount(JarType.CAVE);
 		assertTrue("expected about 20 Cave jars from 400k Mining XP, got " + found, found >= 8 && found <= 35);
 		assertEquals(0, game.data().jarCount(JarType.SWIFT));
-		assertTrue(messages.contains("+1 Cave jar (Mining)"));
-		assertTrue(noticeFor("+1 Cave jar (Mining)").overPlayer());
-		assertEquals(Tone.FIND, noticeFor("+1 Cave jar (Mining)").tone());
+		assertTrue(messages.contains("Found a Cave jar (Mining)"));
+		assertTrue(noticeFor("Found a Cave jar (Mining)").overPlayer());
+		assertEquals(Tone.FIND, noticeFor("Found a Cave jar (Mining)").tone());
 	}
 
 	@Test
@@ -255,6 +255,14 @@ public class GoGameTest
 	}
 
 	@Test
+	public void jarFindsReadFoundAJarWithoutAWalkingSource()
+	{
+		assertEquals("Found a Bronze jar", GoGame.foundJars(JarType.BRONZE, 1, null));
+		assertEquals("Found 3 Bronze jars", GoGame.foundJars(JarType.BRONZE, 3, null));
+		assertEquals("Found 2 Iron jars (champion)", GoGame.foundJars(JarType.IRON, 2, "champion"));
+	}
+
+	@Test
 	public void walkingEarnsABronzeJarEvery150Tiles()
 	{
 		game.addSteps(GoGame.TILES_PER_JAR - 1);
@@ -282,9 +290,9 @@ public class GoGameTest
 		for (int i = 0; i < 200; i++)
 			game.addSkillXp("MINING", 5_000);
 
-		assertEquals(JarType.BRONZE, noticeFor("+1 Bronze jar (walking)").jar());
-		assertEquals(JarType.BRONZE, noticeFor("+" + GoGame.JARS_PER_LEVEL_UP + " Bronze jars (level up)").jar());
-		assertEquals(JarType.CAVE, noticeFor("+1 Cave jar (Mining)").jar());
+		assertEquals(JarType.BRONZE, noticeFor("Found a Bronze jar").jar());
+		assertEquals(JarType.BRONZE, noticeFor("Found " + GoGame.JARS_PER_LEVEL_UP + " Bronze jars (level up)").jar());
+		assertEquals(JarType.CAVE, noticeFor("Found a Cave jar (Mining)").jar());
 	}
 
 	@Test
@@ -309,7 +317,7 @@ public class GoGameTest
 
 			found++;
 			assertNotNull(notice.text(), notice.jar());
-			assertEquals(notice.text(), "+1 " + notice.jar().label() + " jar (battle win)");
+			assertEquals(notice.text(), "Found a " + notice.jar().label() + " jar (battle win)");
 		}
 
 		assertTrue(found > 0);
