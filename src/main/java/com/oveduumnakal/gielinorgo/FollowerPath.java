@@ -8,17 +8,21 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 /**
- * Where the follower stands and how it moves. It walks the tiles the player just left, in the same order, so it
- * trails one tile behind and takes every corner the player took. Positions are world tiles; a whole number is the
- * middle of a tile. It has no link to the game client, so it can be tested tick by tick.
+ * Where the follower stands and how it moves. It is told where the player is drawn, a little at a time, and walks
+ * the way the player came, so it trails one tile behind the drawn character and takes every corner it took.
+ * Positions are world tiles; a whole number is the middle of a tile. It has no link to the game client, so it can
+ * be tested tick by tick.
  */
 final class FollowerPath
 {
 	/** Client ticks, 20 ms each, in one game tick. */
 	static final int CLIENT_TICKS = 30;
 
-	/** Most tiles the follower may have left to walk before it gives up and reappears next to the player. */
+	/** Most tiles the follower may be too far behind before it gives up and reappears next to the player. */
 	static final int MAX_TRAIL = 8;
+
+	/** Tiles the follower keeps between itself and the player, along the way the player came. */
+	static final double FOLLOW_GAP = 1.0;
 
 	/** Fastest the follower moves, in tiles per game tick. A running player moves 2. */
 	static final int MAX_SPEED = 4;
@@ -56,15 +60,16 @@ final class FollowerPath
 		boolean free(int x, int y);
 	}
 
-	private final Deque<int[]> trail = new ArrayDeque<>();
+	private final Deque<double[]> trail = new ArrayDeque<>();
 	private boolean placed;
 	private boolean walking;
 	private int playerX;
 	private int playerY;
+	private double drawnX;
+	private double drawnY;
 	private int plane;
 	private double x;
 	private double y;
-	private double speed;
 	private int facing;
 	private int wantFacing;
 	private boolean errand;
@@ -74,54 +79,55 @@ final class FollowerPath
 	private double lookY;
 
 	/**
-	 * Records where the player is this game tick, and sets the follower's pace for the tick ahead. A first reading,
-	 * a teleport or a change of plane puts the follower down next to the player.
+	 * Records where the player is drawn, and keeps the points the player passed through. It is meant to be called
+	 * every client tick with the drawn position, which moves a little at a time; a first reading, a jump of more
+	 * than {@link StepCounter#MAX_STEP} tiles (a teleport) or a change of plane puts the follower down next to the
+	 * player.
 	 *
-	 * @param x the player's world x
-	 * @param y the player's world y
+	 * @param x the player's world x, in tiles; a whole number is the middle of a tile
+	 * @param y the player's world y, in tiles; a whole number is the middle of a tile
 	 * @param level the player's plane
 	 * @param ground which tiles are free, for putting the follower down
 	 */
-	void playerAt(int x, int y, int level, Ground ground)
+	void playerAt(double x, double y, int level, Ground ground)
 	{
-		int dx = x - playerX;
-		int dy = y - playerY;
-		int jump = Math.max(Math.abs(dx), Math.abs(dy));
+		double jump = Math.max(Math.abs(x - drawnX), Math.abs(y - drawnY));
 		if (!placed || level != plane || jump > StepCounter.MAX_STEP)
 		{
 			place(x, y, level, ground);
 			return;
 		}
 
+		playerX = (int) Math.round(x);
+		playerY = (int) Math.round(y);
 		if (errand)
 		{
-			playerX = x;
-			playerY = y;
+			drawnX = x;
+			drawnY = y;
 			return;
 		}
 
-		if (jump > 0)
+		if (jump > ARRIVED)
 		{
-			trail.add(new int[]{playerX, playerY});
-			if (jump == StepCounter.MAX_STEP)
-				trail.add(new int[]{playerX + dx / 2, playerY + dy / 2});
-
-			playerX = x;
-			playerY = y;
+			trail.add(new double[]{drawnX, drawnY});
+			drawnX = x;
+			drawnY = y;
 		}
 
-		double left = tilesLeft();
-		if (left > MAX_TRAIL)
+		double behind = behind();
+		if (behind > MAX_TRAIL)
 		{
 			place(x, y, level, ground);
 			return;
 		}
 
-		walking = left > ARRIVED;
-		speed = Math.max(1.0, Math.min(MAX_SPEED, left)) / CLIENT_TICKS;
+		walking = behind > ARRIVED;
 	}
 
-	/** Moves the follower along its trail for one client tick, and turns it toward the way it is going. */
+	/**
+	 * Moves the follower along the points the player passed through for one client tick, just far enough to be
+	 * {@link #FOLLOW_GAP} tile behind the player along that way, and turns it toward the way it is going.
+	 */
 	void advance()
 	{
 		if (!placed)
@@ -133,21 +139,26 @@ final class FollowerPath
 			return;
 		}
 
-		double budget = speed;
-		while (budget > 0 && !trail.isEmpty())
+		double budget = Math.min(behind(), (double) MAX_SPEED / CLIENT_TICKS);
+		boolean moved = budget > ARRIVED;
+		while (budget > 0)
 		{
-			int[] next = trail.peek();
-			double dx = next[0] - x;
-			double dy = next[1] - y;
+			double targetX = trail.isEmpty() ? drawnX : trail.peek()[0];
+			double targetY = trail.isEmpty() ? drawnY : trail.peek()[1];
+			double dx = targetX - x;
+			double dy = targetY - y;
 			double distance = Math.max(Math.abs(dx), Math.abs(dy));
 			if (distance > ARRIVED)
 				wantFacing = angle(dx, dy);
 
 			if (distance <= budget)
 			{
-				x = next[0];
-				y = next[1];
+				x = targetX;
+				y = targetY;
 				budget -= distance;
+				if (trail.isEmpty())
+					break;
+
 				trail.poll();
 			}
 			else
@@ -158,6 +169,7 @@ final class FollowerPath
 			}
 		}
 
+		walking = moved;
 		facing = turnToward(facing, wantFacing);
 	}
 
@@ -237,9 +249,8 @@ final class FollowerPath
 			}
 		}
 
-		trail.add(best);
+		trail.add(new double[]{best[0], best[1]});
 		walking = true;
-		speed = Math.max(1.0, Math.min(MAX_SPEED, tilesLeft())) / CLIENT_TICKS;
 	}
 
 	/** @return whether the follower is on an errand */
@@ -352,20 +363,23 @@ final class FollowerPath
 	 * Puts the follower down on a free tile next to the player, facing them, or on the player's own tile when every
 	 * tile around them is blocked.
 	 *
-	 * @param px the player's world x
-	 * @param py the player's world y
+	 * @param drawn the player's drawn world x, in tiles
+	 * @param drawnAt the player's drawn world y, in tiles
 	 * @param level the player's plane
 	 * @param ground which tiles are free
 	 */
-	private void place(int px, int py, int level, Ground ground)
+	private void place(double drawn, double drawnAt, int level, Ground ground)
 	{
+		int px = (int) Math.round(drawn);
+		int py = (int) Math.round(drawnAt);
 		trail.clear();
 		placed = true;
 		walking = false;
 		errand = false;
-		speed = 1.0 / CLIENT_TICKS;
 		playerX = px;
 		playerY = py;
+		drawnX = drawn;
+		drawnY = drawnAt;
 		plane = level;
 		x = px;
 		y = py;
@@ -382,19 +396,25 @@ final class FollowerPath
 		}
 	}
 
-	/** @return the tiles the follower still has to walk, counting a diagonal step as one tile like the game does */
-	private double tilesLeft()
+	/**
+	 * Works out how far the follower is from being {@link #FOLLOW_GAP} tile behind the player, along the points
+	 * the player passed through, counting a diagonal step as one tile like the game does.
+	 *
+	 * @return the tiles the follower may still walk, or 0 when it is that close or closer
+	 */
+	private double behind()
 	{
-		double left = 0;
+		double length = 0;
 		double fromX = x;
 		double fromY = y;
-		for (int[] tile : trail)
+		for (double[] point : trail)
 		{
-			left += Math.max(Math.abs(tile[0] - fromX), Math.abs(tile[1] - fromY));
-			fromX = tile[0];
-			fromY = tile[1];
+			length += Math.max(Math.abs(point[0] - fromX), Math.abs(point[1] - fromY));
+			fromX = point[0];
+			fromY = point[1];
 		}
 
-		return left;
+		length += Math.max(Math.abs(drawnX - fromX), Math.abs(drawnY - fromY));
+		return Math.max(0, length - FOLLOW_GAP);
 	}
 }

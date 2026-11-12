@@ -76,17 +76,116 @@ public class FollowerPathTest
 	}
 
 	@Test
-	public void itIsHalfWayAfterHalfAGameTick()
+	public void aStraightWalkKeepsItOneTileBehindTheDrawnCharacterAtEveryClientTick()
 	{
 		path.playerAt(3200, 3200, 0, WALLED_IN);
-		path.playerAt(3201, 3200, 0, WALLED_IN);
-		gameTick();
-		path.playerAt(3202, 3200, 0, WALLED_IN);
-		for (int i = 0; i < FollowerPath.CLIENT_TICKS / 2; i++)
+		for (int tick = 1; tick <= 4 * FollowerPath.CLIENT_TICKS; tick++)
+		{
+			double drawn = 3200 + (double) tick / FollowerPath.CLIENT_TICKS;
+			path.playerAt(drawn, 3200, 0, WALLED_IN);
+			path.advance();
+			if (tick > FollowerPath.CLIENT_TICKS)
+				assertAt(drawn - 1, 3200);
+		}
+
+		assertTrue(path.walking());
+		assertEquals(EAST, path.orientation());
+	}
+
+	@Test
+	public void aStraightRunKeepsItOneTileBehindTheDrawnCharacterAtEveryClientTick()
+	{
+		path.playerAt(3200, 3200, 0, WALLED_IN);
+		for (int tick = 1; tick <= 4 * FollowerPath.CLIENT_TICKS; tick++)
+		{
+			double drawn = 3200 + 2.0 * tick / FollowerPath.CLIENT_TICKS;
+			path.playerAt(drawn, 3200, 0, WALLED_IN);
+			path.advance();
+			if (tick > FollowerPath.CLIENT_TICKS)
+				assertAt(drawn - 1, 3200);
+		}
+
+		assertTrue(path.walking());
+	}
+
+	@Test
+	public void aCornerIsTakenWhereTheDrawnCharacterTurned()
+	{
+		path.playerAt(3200, 3200, 0, WALLED_IN);
+		int ticks = 0;
+		for (; ticks < 2 * FollowerPath.CLIENT_TICKS; ticks++)
+		{
+			path.playerAt(3200 + (ticks + 1.0) / FollowerPath.CLIENT_TICKS, 3200, 0, WALLED_IN);
+			path.advance();
+		}
+
+		for (int tick = 1; tick <= FollowerPath.CLIENT_TICKS; tick++)
+		{
+			path.playerAt(3202, 3200 + (double) tick / FollowerPath.CLIENT_TICKS, 0, WALLED_IN);
+			path.advance();
+		}
+
+		assertAt(3202, 3200);
+		assertEquals(EAST, path.orientation());
+		for (int tick = 0; tick < 2; tick++)
+		{
+			path.playerAt(3202, 3201, 0, WALLED_IN);
+			path.advance();
+		}
+
+		path.playerAt(3202, 3201.5, 0, WALLED_IN);
+		for (int tick = 0; tick < FollowerPath.CLIENT_TICKS; tick++)
 			path.advance();
 
-		assertEquals(3200.5, path.x(), CLOSE);
-		assertEquals(3200, path.y(), CLOSE);
+		assertAt(3202, 3200.5);
+		assertEquals(NORTH, path.orientation());
+	}
+
+	@Test
+	public void whenTheDrawnCharacterStopsItEndsOneTileBehindNotOnIt()
+	{
+		path.playerAt(3200, 3200, 0, WALLED_IN);
+		for (int tick = 1; tick <= 3 * FollowerPath.CLIENT_TICKS; tick++)
+		{
+			path.playerAt(3200 + (double) tick / FollowerPath.CLIENT_TICKS, 3200, 0, WALLED_IN);
+			path.advance();
+		}
+
+		for (int tick = 0; tick < 2 * FollowerPath.CLIENT_TICKS; tick++)
+		{
+			path.playerAt(3203, 3200, 0, WALLED_IN);
+			path.advance();
+		}
+
+		assertAt(3202, 3200);
+		assertFalse(path.walking());
+	}
+
+	@Test
+	public void itNeverWalksAheadOfTheDrawnCharacter()
+	{
+		path.playerAt(3200, 3200, 0, OPEN);
+		for (int tick = 1; tick <= 3 * FollowerPath.CLIENT_TICKS; tick++)
+		{
+			double drawn = 3200 + 2.0 * tick / FollowerPath.CLIENT_TICKS;
+			path.playerAt(drawn, 3200, 0, OPEN);
+			path.advance();
+			if (drawn >= 3201)
+				assertTrue(path.x() <= drawn - FollowerPath.FOLLOW_GAP + CLOSE);
+		}
+	}
+
+	@Test
+	public void aLagOfMoreThanEightTilesPutsItDownNextToThePlayer()
+	{
+		path.playerAt(3200, 3200, 0, OPEN);
+		path.playerAt(3202, 3200, 0, OPEN);
+		path.playerAt(3204, 3200, 0, OPEN);
+		path.playerAt(3206, 3200, 0, OPEN);
+		path.playerAt(3208, 3200, 0, OPEN);
+		path.playerAt(3210, 3200, 0, OPEN);
+
+		assertAt(3210, 3199);
 	}
 
 	@Test

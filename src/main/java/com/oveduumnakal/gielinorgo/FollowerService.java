@@ -19,7 +19,6 @@ import net.runelite.api.ModelData;
 import net.runelite.api.Player;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.LocalPoint;
-import net.runelite.api.coords.WorldPoint;
 
 /**
  * Shows the lead creature walking behind the player. The follower is a model this plugin adds to the player's own
@@ -70,6 +69,7 @@ final class FollowerService
 	private int height;
 	private int idle = AnimationTable.NONE;
 	private int walk = AnimationTable.NONE;
+	private boolean wanted;
 
 	/**
 	 * Creates the service. Nothing is shown until the first {@link #gameTick(String, boolean)}.
@@ -86,7 +86,11 @@ final class FollowerService
 	}
 
 	/**
-	 * Tells the follower which creature to be and where the player now stands. Called once per game tick.
+	 * Tells the follower which creature to be. Called once per game tick. Where the follower stands is fed from
+	 * {@link #clientTick()}, because the character is drawn gliding between tiles, and the follower trails the drawn
+	 * character, not the tile the server last reported. Each client tick is watched, not each game tick, because the
+	 * drawn character crosses a tile border half way through a game tick and a game tick reading would be late by a
+	 * whole tick.
 	 *
 	 * @param speciesKey the lead creature's species, or null when no follower should show
 	 * @param gilded whether the lead creature is gilded
@@ -107,18 +111,39 @@ final class FollowerService
 		if (body == null)
 			return;
 
-		WorldPoint at = player.getWorldLocation();
-		path.playerAt(at.getX(), at.getY(), at.getPlane(), (x, y) -> free(view, at.getPlane(), x, y));
+		wanted = true;
+	}
+
+	/**
+	 * Tells the path where the player is drawn right now, as a world tile with a fraction.
+	 *
+	 * @param view the top level world view
+	 */
+	private void followDrawnCharacter(WorldView view)
+	{
+		Player player = client.getLocalPlayer();
+		LocalPoint drawn = player == null ? null : player.getLocalLocation();
+		if (drawn == null || player.getWorldView() != view)
+			return;
+
+		int plane = view.getPlane();
+		double tileX = view.getBaseX() + (double) drawn.getX() / TILE - 0.5;
+		double tileY = view.getBaseY() + (double) drawn.getY() / TILE - 0.5;
+		path.playerAt(tileX, tileY, plane, (x, y) -> free(view, plane, x, y));
 	}
 
 	/** Moves the follower a little and keeps it in the scene. Called once per client tick. */
 	void clientTick()
 	{
-		if (body == null || !path.placed() || client.getGameState() != GameState.LOGGED_IN)
+		if (body == null || !wanted || client.getGameState() != GameState.LOGGED_IN)
 			return;
 
 		WorldView view = client.getTopLevelWorldView();
 		if (view == null)
+			return;
+
+		followDrawnCharacter(view);
+		if (!path.placed())
 			return;
 
 		path.advance();
@@ -152,6 +177,7 @@ final class FollowerService
 	/** Takes the follower off the screen until the next game tick asks for it again. */
 	void hide()
 	{
+		wanted = false;
 		path.reset();
 		if (body == null)
 			return;
