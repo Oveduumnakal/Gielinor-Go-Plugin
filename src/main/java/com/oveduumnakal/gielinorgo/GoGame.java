@@ -621,6 +621,9 @@ final class GoGame
 	 */
 	BattleSession startBattle(WildEntry entry)
 	{
+		if (eliteBusy())
+			return null;
+
 		Creature lead = data.lead();
 		Species leadSpecies = lead == null ? null : species.find(lead.species);
 		if (leadSpecies == null)
@@ -659,6 +662,9 @@ final class GoGame
 	 */
 	BattleSession startChallenge(String championId)
 	{
+		if (eliteBusy())
+			return null;
+
 		Champion champion = champions.byId(championId);
 		if (champion == null)
 			return null;

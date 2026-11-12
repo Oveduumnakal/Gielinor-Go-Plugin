@@ -938,6 +938,9 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void useItem(TradePick pick, ItemType type)
 	{
+		if (battleOpen())
+			return;
+
 		if (!pick.matches(game.snapshot()))
 		{
 			announce(Notice.player("What you picked has changed. Pick again", Tone.BAD));
@@ -1255,14 +1258,35 @@ public class GielinorGoPlugin extends Plugin
 
 	private void eliteChallenge()
 	{
+		if (battleOpen())
+			return;
+
 		heldNotices = new ArrayList<>();
 		playTeamBattle(game.eliteChallenge(), true);
 	}
 
 	private void eliteContinue()
 	{
+		if (battleOpen())
+			return;
+
 		heldNotices = new ArrayList<>();
 		playTeamBattle(game.eliteContinue(), true);
+	}
+
+	/**
+	 * Tells the player that a battle they are choosing the turns of comes first. An Elite battle or a healing item in
+	 * the middle of it would change the team behind the battle's back.
+	 *
+	 * @return whether such a battle is on
+	 */
+	private boolean battleOpen()
+	{
+		if (!director.active())
+			return false;
+
+		announce(Notice.player("Finish the battle first", Tone.BAD));
+		return true;
 	}
 
 	private void eliteForfeit()
