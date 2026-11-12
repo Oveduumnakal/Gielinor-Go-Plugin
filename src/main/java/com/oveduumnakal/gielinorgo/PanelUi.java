@@ -96,11 +96,21 @@ final class PanelUi
 	 */
 	static JLabel wrapped(String text, Color color)
 	{
-		JLabel label = new JLabel("<html><div style='width:" + CARD_TEXT_WIDTH + "px'>" + escape(text)
-			+ "</div></html>");
+		JLabel label = new JLabel(wrappedHtml(text));
 		label.setFont(FontManager.getRunescapeSmallFont());
 		label.setForeground(color);
 		return label;
+	}
+
+	/**
+	 * Builds the HTML a {@link #wrapped} label shows, for changing its text later.
+	 *
+	 * @param text the text, shown as written
+	 * @return the text escaped and laid out to the card width
+	 */
+	static String wrappedHtml(String text)
+	{
+		return "<html><div style='width:" + CARD_TEXT_WIDTH + "px'>" + escape(text) + "</div></html>";
 	}
 
 	/**
@@ -190,6 +200,31 @@ final class PanelUi
 			return escape(view.name());
 
 		return escape(view.nickname()) + " (" + escape(view.name()) + ")";
+	}
+
+	/**
+	 * Picks the colour of a rating word.
+	 *
+	 * @param rating the rating
+	 * @return gold for exceptional, green for strong, otherwise grey
+	 */
+	static Color ratingColor(StatRolls.Rating rating)
+	{
+		if (rating == StatRolls.Rating.EXCEPTIONAL)
+			return GOLD;
+
+		return rating == StatRolls.Rating.STRONG ? ColorScheme.PROGRESS_COMPLETE_COLOR : ColorScheme.LIGHT_GRAY_COLOR;
+	}
+
+	/**
+	 * Writes the hidden numbers of a creature for a tooltip.
+	 *
+	 * @param view the creature
+	 * @return two lines of HTML: the rating and temperament, then the four rolls
+	 */
+	static String tooltipRolls(CreatureView view)
+	{
+		return view.rating().label() + " \u00b7 " + view.temperamentLabel() + "<br>" + view.rollsLine();
 	}
 
 	/**

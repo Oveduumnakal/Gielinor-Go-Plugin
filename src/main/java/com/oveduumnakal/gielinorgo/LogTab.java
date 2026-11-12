@@ -7,11 +7,16 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -43,6 +48,20 @@ final class LogTab extends JPanel
 	private static final int ROW_HEIGHT = 22;
 	private static final Color UNSEEN_COLOR = new Color(0x6A6A6A);
 
+	private static final int TODAY_ROWS = 5;
+	private static final Color EVENT_COLOR = new Color(0x4AA3FF);
+	private static final String STAR = "\u2605";
+
+	/** Whether the Today section is open, remembered while the plugin runs. */
+	private static boolean todayOpen = true;
+
+	private final JLabel todayCaption;
+	private final JPanel todayBody;
+	private final JLabel[] todayNames = new JLabel[TODAY_ROWS];
+	private final JLabel[] todayRarities = new JLabel[TODAY_ROWS];
+	private final JPanel[] todayRows = new JPanel[TODAY_ROWS];
+	private final JLabel todayEvent;
+	private final JLabel todayNight;
 	private final JLabel header;
 	private final IconTextField search;
 	private final JComboBox<LogFilter> filter;
@@ -50,11 +69,45 @@ final class LogTab extends JPanel
 	private final JList<LogEntry> list;
 	private final JScrollPane scroll;
 	private List<LogEntry> shown;
+	private Set<String> featured = Collections.emptySet();
+	private TodayView today = TodayView.NONE;
 
 	LogTab()
 	{
 		super(new BorderLayout());
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
+
+		todayCaption = PanelUi.caption("TODAY");
+		todayCaption.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		todayCaption.setToolTipText("Click to open or close");
+		todayCaption.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				todayOpen = !todayOpen;
+				showToday();
+			}
+		});
+		todayBody = new JPanel();
+		todayBody.setLayout(new BoxLayout(todayBody, BoxLayout.Y_AXIS));
+		todayBody.setOpaque(false);
+		todayBody.setAlignmentX(Component.LEFT_ALIGNMENT);
+		for (int i = 0; i < TODAY_ROWS; i++)
+		{
+			todayNames[i] = PanelUi.caption("");
+			todayRarities[i] = PanelUi.caption("");
+			todayRows[i] = PanelUi.sides(todayNames[i], todayRarities[i]);
+			todayRows[i].setAlignmentX(Component.LEFT_ALIGNMENT);
+			todayBody.add(todayRows[i]);
+		}
+
+		todayEvent = PanelUi.wrapped("", EVENT_COLOR);
+		todayNight = PanelUi.wrapped("", EVENT_COLOR);
+		todayEvent.setAlignmentX(Component.LEFT_ALIGNMENT);
+		todayNight.setAlignmentX(Component.LEFT_ALIGNMENT);
+		todayBody.add(todayEvent);
+		todayBody.add(todayNight);
 
 		header = PanelUi.caption("");
 		search = new IconTextField();
@@ -73,6 +126,10 @@ final class LogTab extends JPanel
 		header.setAlignmentX(Component.LEFT_ALIGNMENT);
 		search.setAlignmentX(Component.LEFT_ALIGNMENT);
 		filter.setAlignmentX(Component.LEFT_ALIGNMENT);
+		todayCaption.setAlignmentX(Component.LEFT_ALIGNMENT);
+		top.add(todayCaption);
+		top.add(todayBody);
+		top.add(Box.createVerticalStrut(6));
 		top.add(header);
 		top.add(Box.createVerticalStrut(4));
 		top.add(search);
@@ -97,6 +154,7 @@ final class LogTab extends JPanel
 	 */
 	void update(PanelState state)
 	{
+		updateToday(state.today());
 		header.setText("CAUGHT  " + state.caughtSpecies() + " / " + state.totalSpecies() + "   SEEN  "
 			+ state.seenSpecies());
 		if (state.log() == shown)
@@ -104,6 +162,46 @@ final class LogTab extends JPanel
 
 		shown = state.log();
 		refill(true);
+	}
+
+	private void updateToday(TodayView view)
+	{
+		boolean changed = !view.featuredKeys().equals(featured);
+		today = view;
+		featured = view.featuredKeys();
+		List<TodayView.Pick> picks = view.featured();
+		for (int i = 0; i < TODAY_ROWS; i++)
+		{
+			boolean has = i < picks.size();
+			todayRows[i].setVisible(has && todayOpen);
+			if (!has)
+				continue;
+
+			TodayView.Pick pick = picks.get(i);
+			todayNames[i].setText(pick.name());
+			todayNames[i].setForeground(pick.rarity().color());
+			todayRarities[i].setText(pick.rarity().label());
+			todayRarities[i].setForeground(pick.rarity().color());
+		}
+
+		todayEvent.setText(PanelUi.wrappedHtml(view.event() == null ? "" : view.event()));
+		todayNight.setText(PanelUi.wrappedHtml(view.night() ? view.nightLine() : ""));
+		showToday();
+		if (changed && filter.getSelectedItem() == LogFilter.FEATURED)
+			refill(false);
+	}
+
+	private void showToday()
+	{
+		todayCaption.setVisible(today.active());
+		todayCaption.setText("TODAY \u00B7 resets in " + today.resetText());
+		todayBody.setVisible(today.active() && todayOpen);
+		for (int i = 0; i < TODAY_ROWS; i++)
+			todayRows[i].setVisible(todayOpen && i < today.featured().size());
+
+		todayEvent.setVisible(todayOpen && today.event() != null);
+		todayNight.setVisible(todayOpen && today.night());
+		todayCaption.revalidate();
 	}
 
 	private void refill(boolean keepScroll)
@@ -119,7 +217,7 @@ final class LogTab extends JPanel
 		List<LogEntry> matches = new ArrayList<>();
 		for (LogEntry entry : shown)
 		{
-			if (selected.matches(entry) && matchesQuery(entry, query))
+			if (selected.matches(entry, featured) && matchesQuery(entry, query))
 				matches.add(entry);
 		}
 
@@ -148,7 +246,8 @@ final class LogTab extends JPanel
 		ALL("All"),
 		CAUGHT("Caught"),
 		SEEN_ONLY("Seen only"),
-		NOT_SEEN("Not seen");
+		NOT_SEEN("Not seen"),
+		FEATURED("Featured");
 
 		private final String label;
 
@@ -161,10 +260,14 @@ final class LogTab extends JPanel
 		 * Tests one species against this filter.
 		 *
 		 * @param entry the species
+		 * @param featured the keys of today's featured species
 		 * @return whether the list should show it
 		 */
-		boolean matches(LogEntry entry)
+		boolean matches(LogEntry entry, Set<String> featured)
 		{
+			if (this == FEATURED)
+				return featured.contains(Species.keyFor(entry.name()));
+
 			if (this == CAUGHT)
 				return entry.caught();
 
@@ -240,8 +343,13 @@ final class LogTab extends JPanel
 		}
 	}
 
+	private static String starFor(Font font)
+	{
+		return font.canDisplay(STAR.charAt(0)) ? STAR + " " : "* ";
+	}
+
 	/** Draws one species row. A single instance is reused for every row. */
-	private static final class LogRenderer extends JPanel implements ListCellRenderer<LogEntry>
+	private final class LogRenderer extends JPanel implements ListCellRenderer<LogEntry>
 	{
 		private final JLabel name = new JLabel();
 		private final JLabel right = new JLabel();
@@ -261,23 +369,24 @@ final class LogTab extends JPanel
 			boolean selected, boolean focused)
 		{
 			setBackground(index % 2 == 0 ? ColorScheme.DARK_GRAY_COLOR : ColorScheme.DARKER_GRAY_COLOR);
+			String star = featured.contains(Species.keyFor(entry.name())) ? starFor(name.getFont()) : "";
 			if (entry.caught())
 			{
-				name.setText(entry.name());
+				name.setText(star + entry.name());
 				name.setForeground(entry.rarity().color());
 				right.setText("×" + entry.caughtCount());
 				right.setForeground(entry.gilded() ? PanelUi.GOLD : ColorScheme.LIGHT_GRAY_COLOR);
 			}
 			else if (entry.seen())
 			{
-				name.setText(entry.name());
+				name.setText(star + entry.name());
 				name.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 				right.setText("seen");
 				right.setForeground(ColorScheme.LIGHT_GRAY_COLOR);
 			}
 			else
 			{
-				name.setText("???");
+				name.setText(star + "???");
 				name.setForeground(UNSEEN_COLOR);
 				right.setText(entry.rarity().label());
 				right.setForeground(UNSEEN_COLOR);

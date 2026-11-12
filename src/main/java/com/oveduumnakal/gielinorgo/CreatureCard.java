@@ -45,7 +45,7 @@ final class CreatureCard extends JPanel
 	private final JLabel name = PanelUi.label("", FontManager.getRunescapeBoldFont(), Color.WHITE);
 	private final JLabel level = PanelUi.label("", FontManager.getRunescapeSmallFont(), Color.WHITE);
 	private final JLabel style = PanelUi.caption("");
-	private final JLabel lead = PanelUi.label("Lead", FontManager.getRunescapeSmallFont(), ColorScheme.BRAND_ORANGE);
+	private final JLabel badge = PanelUi.label("", FontManager.getRunescapeSmallFont(), ColorScheme.BRAND_ORANGE);
 	private final BarComponent hp = new BarComponent(ColorScheme.PROGRESS_COMPLETE_COLOR, HP_BAR_HEIGHT);
 	private final BarComponent xp = new BarComponent(XP_COLOR, XP_BAR_HEIGHT);
 	private int index;
@@ -67,7 +67,7 @@ final class CreatureCard extends JPanel
 		text.setOpaque(false);
 		text.add(PanelUi.sides(name, level));
 		text.add(Box.createVerticalStrut(1));
-		text.add(PanelUi.sides(style, lead));
+		text.add(PanelUi.sides(style, badge));
 		text.add(Box.createVerticalStrut(5));
 		text.add(hp);
 		text.add(Box.createVerticalStrut(2));
@@ -114,8 +114,8 @@ final class CreatureCard extends JPanel
 		name.setText(PanelUi.displayName(view));
 		name.setForeground(PanelUi.nameColor(view));
 		level.setText("Lv " + view.level());
-		style.setText(view.nickname() == null ? view.type().label() : view.name() + " \u00b7 " + view.type().label());
-		lead.setVisible(isLead);
+		style.setText(view.type().label() + " \u00b7 " + view.temperamentLabel());
+		showBadge(view, isLead);
 		hp.set(view.hpFraction(), hpColor(view.hpFraction()));
 		xp.set(view.xpProgress(), XP_COLOR);
 		Color stripe = isLead ? ColorScheme.BRAND_ORANGE : ColorScheme.DARKER_GRAY_COLOR;
@@ -123,7 +123,7 @@ final class CreatureCard extends JPanel
 			BorderFactory.createMatteBorder(0, STRIPE, 0, 0, view.gilded() ? PanelUi.GOLD : stripe),
 			BorderFactory.createEmptyBorder(6, 6, 7, 8)));
 		setCursor(Cursor.getPredefinedCursor(isLead ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR));
-		setToolTipText("<html>" + PanelUi.tooltipName(view) + "<br>Health "
+		setToolTipText("<html>" + PanelUi.tooltipName(view) + "<br>" + PanelUi.tooltipRolls(view) + "<br>Health "
 			+ Math.round(view.hpFraction() * 100) + "%<br>"
 			+ Math.round(view.xpProgress() * 100) + "% to level " + Math.min(XpRules.MAX_LEVEL, view.level() + 1)
 			+ "<br>" + (isLead ? "Your lead: fights battles and trains twice as fast" : "Click to make lead")
@@ -135,6 +135,30 @@ final class CreatureCard extends JPanel
 		portrait.setIcon(null);
 		String wanted = portraitOf;
 		portraits.request(wanted, image -> showPortrait(wanted, image));
+	}
+
+	/**
+	 * Shows the small word on the right of the second line: the rating when it is not average, otherwise "Lead" for
+	 * the lead creature. A rated lead shows its rating only, because both words do not fit beside the style and
+	 * temperament; the orange stripe and the tooltip still mark it as the lead.
+	 *
+	 * @param view the creature
+	 * @param isLead whether it is the lead
+	 */
+	private void showBadge(CreatureView view, boolean isLead)
+	{
+		StatRolls.Rating rating = view.rating();
+		if (rating != StatRolls.Rating.AVERAGE)
+		{
+			badge.setText(rating.label());
+			badge.setForeground(PanelUi.ratingColor(rating));
+			badge.setVisible(true);
+			return;
+		}
+
+		badge.setText("Lead");
+		badge.setForeground(ColorScheme.BRAND_ORANGE);
+		badge.setVisible(isLead);
 	}
 
 	/**

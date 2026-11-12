@@ -320,6 +320,133 @@ public class BattleSimTest
 		}
 	}
 
+	@Test
+	public void aCreatureWithNoRollsHasExactlyTheOldStats()
+	{
+		Combatant plain = new Combatant(GOBLIN, 20, 1.0);
+		Combatant average = new Combatant(GOBLIN, "Goblin", 20, 1.0, StatRolls.AVERAGE);
+
+		assertEquals(Math.round(20 + 2.0 * 20 + Math.sqrt(13) * 20 / 2.0), plain.maxHp());
+		assertEquals(plain.maxHp(), average.maxHp());
+		assertEquals(plain.attack(), average.attack());
+		assertEquals(plain.defence(), average.defence());
+		assertEquals(5 + 20 / 2, plain.speed());
+		assertEquals(plain.speed(), average.speed());
+	}
+
+	@Test
+	public void statsScaleWithRollsAndTemperament()
+	{
+		Combatant plain = new Combatant(GOBLIN, 40, 1.0);
+		Combatant strong = new Combatant(GOBLIN, 40, 1.0, new StatRolls(5, 5, 5, 5, Temperament.STEADY));
+		Combatant weak = new Combatant(GOBLIN, 40, 1.0, new StatRolls(-5, -5, -5, -5, Temperament.STEADY));
+		Combatant brave = new Combatant(GOBLIN, 40, 1.0, new StatRolls(0, 0, 0, 0, Temperament.BRAVE));
+
+		assertTrue(strong.maxHp() > plain.maxHp() && plain.maxHp() > weak.maxHp());
+		assertTrue(strong.attack() > plain.attack() && plain.attack() > weak.attack());
+		assertTrue(strong.defence() > plain.defence() && plain.defence() > weak.defence());
+		assertTrue(strong.speed() > plain.speed() && plain.speed() > weak.speed());
+		assertEquals(Math.round(plain.maxHp() * 1.075), strong.maxHp());
+		assertTrue(brave.attack() > plain.attack());
+		assertTrue(brave.defence() < plain.defence());
+		assertEquals(plain.maxHp(), brave.maxHp());
+	}
+
+	@Test
+	public void aFasterLowerLevelCreatureAttacksFirst()
+	{
+		StatRolls quickRolls = new StatRolls(0, 0, 0, 5, Temperament.NIMBLE);
+		StatRolls slowRolls = new StatRolls(0, 0, 0, -5, Temperament.STEADY);
+		Combatant quick = new Combatant(GOBLIN, 20, 1.0, quickRolls);
+		Combatant slow = new Combatant(GOBLIN, 21, 1.0, slowRolls);
+		assertTrue(quick.speed() > slow.speed());
+
+		for (int seed = 0; seed < 20; seed++)
+		{
+			BattleResult result = BattleSim.fight(new Combatant(GOBLIN, 20, 1.0, quickRolls),
+				new Combatant(GOBLIN, 21, 1.0, slowRolls), new Random(seed));
+
+			BattleLine first = result.lines().get(1);
+			assertEquals("seed " + seed, BattleLine.Kind.LEAD_HIT, first.kind());
+		}
+	}
+
+	@Test
+	public void aTieOnSpeedFallsBackToLevelThenTheCoin()
+	{
+		StatRolls rolls = new StatRolls(0, 0, 0, 0, Temperament.STEADY);
+		int leadFirst = 0;
+		for (int seed = 0; seed < 40; seed++)
+		{
+			BattleResult higher = BattleSim.fight(new Combatant(GOBLIN, 5, 1.0, rolls),
+				new Combatant(GOBLIN, 4, 1.0, rolls), new Random(seed));
+			BattleLine opened = higher.lines().get(1);
+			assertEquals(BattleLine.Kind.LEAD_HIT, opened.kind());
+
+			BattleResult even = BattleSim.fight(new Combatant(GOBLIN, 9, 1.0, rolls),
+				new Combatant(GOBLIN, 9, 1.0, rolls), new Random(seed * 7919L));
+			BattleLine toss = even.lines().get(1);
+			leadFirst += toss.kind() == BattleLine.Kind.LEAD_HIT ? 1 : 0;
+		}
+
+		assertTrue("equal creatures toss a coin: " + leadFirst, leadFirst > 0 && leadFirst < 40);
+	}
+
+	@Test
+	public void twoUnrolledCreaturesFightExactlyAsTheyAlwaysDid()
+	{
+		for (int seed = 0; seed < 50; seed++)
+		{
+			Random pick = new Random(seed);
+			int mine = 1 + pick.nextInt(99);
+			int foe = 1 + pick.nextInt(99);
+			BattleResult plain = fight(GOBLIN, mine, DRAGON, foe, seed);
+			BattleResult average = BattleSim.fight(new Combatant(GOBLIN, "Goblin", mine, 1.0, StatRolls.AVERAGE),
+				new Combatant(DRAGON, "King Black Dragon", foe, 1.0, StatRolls.AVERAGE), new Random(seed));
+
+			assertEquals(plain.log(), average.log());
+			assertEquals(plain.won(), average.won());
+			assertTrue(plain.turns() > 0);
+		}
+	}
+
+	/**
+	 * Battles recorded before rolls existed: seed, species, levels, winner, turns and the hash of the log. An
+	 * unrolled battle must still come out exactly the same.
+	 */
+	@Test
+	public void unrolledBattlesMatchTheOnesRecordedBeforeRollsExisted()
+	{
+		Species[] species = {GOBLIN, DRAGON, WIZARD};
+		int[][] recorded = {
+			{0, 0, 8, -1277317425},
+			{1, 1, 5, 266527838},
+			{2, 0, 5, 1740425804},
+			{3, 1, 15, -104490119},
+			{4, 1, 12, -1868845961},
+			{5, 1, 6, -1565569272},
+			{6, 1, 5, 104386038},
+			{7, 0, 10, -60745422},
+			{8, 1, 13, 145099186},
+			{9, 0, 5, 2032157480},
+			{10, 0, 15, -129741735},
+			{11, 1, 12, -92214220}
+		};
+		for (int[] row : recorded)
+		{
+			Random pick = new Random(row[0] * 31L + 5);
+			Species mine = species[pick.nextInt(3)];
+			Species foe = species[pick.nextInt(3)];
+			int myLevel = 1 + pick.nextInt(60);
+			int foeLevel = pick.nextBoolean() ? myLevel : 1 + pick.nextInt(60);
+			BattleResult result = fight(mine, myLevel, foe, foeLevel, row[0] * 7919L);
+
+			assertEquals("seed " + row[0], row[1] == 1, result.won());
+			assertEquals("seed " + row[0], row[2], result.turns());
+			assertEquals("seed " + row[0], row[3], result.log().hashCode());
+		}
+	}
+
 	private static BattleResult fight(Species mine, int myLevel, Species foe, int foeLevel, long seed)
 	{
 		return BattleSim.fight(new Combatant(mine, myLevel, 1.0), new Combatant(foe, foeLevel, 1.0),

@@ -7,8 +7,10 @@ package com.oveduumnakal.gielinorgo;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -153,6 +155,42 @@ public class GoGameExtrasTest
 	}
 
 	@Test
+	public void aRoamingWinDropsAnEggMoreOftenAndOneRarityHigher()
+	{
+		int roamingEggs = 0;
+		int plainEggs = 0;
+		for (int i = 0; i < 1000; i++)
+		{
+			game.data().team.clear();
+			game.data().team.add(new Creature("king black dragon", 40, now));
+			game.data().eggs.clear();
+			game.battle(new WildEntry(1, CHICKEN, 12, 1, false, false, true));
+			if (!game.data().eggs.isEmpty())
+			{
+				roamingEggs++;
+				assertEquals(Rarity.UNCOMMON, firstEgg().rarityTier());
+			}
+
+			game.data().team.clear();
+			game.data().team.add(new Creature("king black dragon", 40, now));
+			game.data().eggs.clear();
+			game.battle(new WildEntry(1, CHICKEN, 2, 1));
+			if (!game.data().eggs.isEmpty())
+				plainEggs++;
+		}
+
+		assertTrue("expected about 300 roaming eggs, got " + roamingEggs, roamingEggs > 240 && roamingEggs < 360);
+		assertTrue("expected about 100 plain eggs, got " + plainEggs, plainEggs > 60 && plainEggs < 140);
+	}
+
+	@Test
+	public void aRoamingLegendaryEggStaysLegendary()
+	{
+		assertEquals(Rarity.LEGENDARY, Rarity.LEGENDARY.next());
+		assertEquals(Rarity.RARE, Rarity.UNCOMMON.next());
+	}
+
+	@Test
 	public void anEggHatchesAfterEnoughWalking()
 	{
 		game.data().eggs.add(new Egg(Rarity.EPIC));
@@ -170,6 +208,56 @@ public class GoGameExtrasTest
 		assertEquals("no other species is Epic in this test", "king black dragon", lead().species);
 		assertEquals(1, lead().level());
 		assertEquals(1, (int) game.data().caught.get("king black dragon"));
+	}
+
+	@Test
+	public void everyHatchRollsItsOwnMakeUp()
+	{
+		Set<StatRolls> seen = new HashSet<>();
+		for (int i = 0; i < 30; i++)
+		{
+			game.data().eggs.clear();
+			game.data().eggs.add(new Egg(Rarity.EPIC));
+			game.addSteps(Rarity.EPIC.eggTiles());
+			Creature born = newest();
+
+			assertTrue(born.rolls().valid());
+			seen.add(born.rolls());
+		}
+
+		assertTrue("30 hatches should not all roll alike, got " + seen.size(), seen.size() > 10);
+	}
+
+	@Test
+	public void evolutionKeepsTheRollsAndTemperament()
+	{
+		Creature imp = new Creature("imp", 19, now);
+		imp.setRolls(new StatRolls(5, -2, 3, 1, Temperament.FIERCE));
+		game.data().team.add(imp);
+
+		game.addOsrsXp(10 * (int) (XpRules.xpForLevel(20) - XpRules.xpForLevel(19)));
+
+		assertEquals("lesser demon", lead().species);
+		assertEquals(new StatRolls(5, -2, 3, 1, Temperament.FIERCE), lead().rolls());
+		assertEquals("FIERCE", lead().temperament);
+	}
+
+	@Test
+	public void aSavedCreatureWithRollsOutOfRangeIsPulledBackIn()
+	{
+		SaveData data = SaveData.fresh();
+		Creature odd = new Creature("imp", 5, now);
+		odd.rollHp = 40;
+		odd.rollSpeed = -40;
+		odd.temperament = "GRUMPY";
+		data.team.add(odd);
+
+		data.sanitized();
+
+		assertEquals(StatRolls.MAX, odd.rollHp);
+		assertEquals(StatRolls.MIN, odd.rollSpeed);
+		assertNull(odd.temperament);
+		assertTrue(odd.rolls().valid());
 	}
 
 	@Test
@@ -270,6 +358,13 @@ public class GoGameExtrasTest
 	private Creature lead()
 	{
 		return game.data().lead();
+	}
+
+	private Creature newest()
+	{
+		List<Creature> stored = game.data().storage;
+		List<Creature> team = game.data().team;
+		return stored.isEmpty() ? team.get(team.size() - 1) : stored.get(stored.size() - 1);
 	}
 
 	private Egg firstEgg()

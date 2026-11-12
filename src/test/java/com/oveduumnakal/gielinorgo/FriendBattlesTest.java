@@ -387,6 +387,182 @@ public class FriendBattlesTest
 		assertEquals(challenge.seed(), copy.seed());
 	}
 
+	@Test
+	public void rolledTeamsStillGiveBothPlayersTheSameWinner()
+	{
+		annData.team.clear();
+		bobData.team.clear();
+		Random dealer = new Random(99);
+		for (int i = 0; i < SaveData.TEAM_SIZE; i++)
+		{
+			Creature mine = new Creature("imp", 20 + i, now);
+			mine.setRolls(StatRolls.roll(dealer));
+			annData.team.add(mine);
+			Creature theirs = new Creature("imp", 20 + i, now);
+			theirs.setRolls(StatRolls.roll(dealer));
+			bobData.team.add(theirs);
+		}
+
+		meet();
+		int annWins = 0;
+		for (int round = 0; round < 30; round++)
+		{
+			now += FriendBattles.REST_MS;
+			ann.challenge(BOB, "Bob", annData);
+			TeamBattleResult bobSaw = bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+			TeamBattleResult annSaw = ann.receive(last(fromBob), ANN, "Bob", annData, true);
+
+			assertNotNull("round " + round, bobSaw);
+			assertNotNull("round " + round, annSaw);
+			assertNotEquals("round " + round, annSaw.won(), bobSaw.won());
+			assertEquals("round " + round, texts(annSaw).size(), texts(bobSaw).size());
+			annWins += annSaw.won() ? 1 : 0;
+		}
+
+		assertTrue("both sides should win some rounds, Ann won " + annWins, annWins > 0 && annWins < 30);
+	}
+
+	@Test
+	public void theRollsDecideAnOtherwiseEvenBattle()
+	{
+		annData.team.clear();
+		bobData.team.clear();
+		Creature strong = new Creature("imp", 30, now);
+		strong.setRolls(new StatRolls(5, 5, 5, 5, Temperament.STEADY));
+		Creature weak = new Creature("imp", 30, now);
+		weak.setRolls(new StatRolls(-5, -5, -5, -5, Temperament.STEADY));
+		annData.team.add(strong);
+		bobData.team.add(weak);
+		meet();
+
+		for (int round = 0; round < 10; round++)
+		{
+			now += FriendBattles.REST_MS;
+			ann.challenge(BOB, "Bob", annData);
+			TeamBattleResult bobSaw = bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+			TeamBattleResult annSaw = ann.receive(last(fromBob), ANN, "Bob", annData, true);
+
+			assertTrue("round " + round, annSaw.won());
+			assertFalse("round " + round, bobSaw.won());
+		}
+	}
+
+	@Test
+	public void rollsTravelInTheMessageAndNicknamesDoNot()
+	{
+		Creature rolled = annData.team.get(1);
+		rolled.setRolls(new StatRolls(5, 5, 3, 1, Temperament.RECKLESS));
+		rolled.nickname = "Sparky";
+
+		ann.hello(annData, false);
+		GielinorGoPartyMessage hello = last(fromAnn);
+		String wire = new Gson().toJson(hello);
+		GielinorGoPartyMessage arrived = new Gson().fromJson(wire, GielinorGoPartyMessage.class);
+
+		assertFalse(wire.contains("Sparky"));
+		assertEquals(GielinorGoPartyMessage.PROTOCOL, arrived.version());
+		assertArrayEquals(new int[] {5, 5, 3, 1}, arrived.rolls()[1]);
+		assertArrayEquals(new int[] {0, 0, 0, 0}, arrived.rolls()[0]);
+		assertEquals("RECKLESS", arrived.temperaments()[1]);
+		assertNull(arrived.temperaments()[0]);
+
+		arrived.setMemberId(ANN);
+		bob.receive(arrived, BOB, "Ann", bobData, true);
+		FriendView seen = bob.views(names()).get(0);
+		assertEquals("King Black Dragon 60, Imp 10 (Exceptional)", seen.team());
+	}
+
+	@Test
+	public void aTeamWithNoRollsAtAllFightsAtAverage()
+	{
+		String[] species = {"imp"};
+		int[] levels = {20};
+		GielinorGoPartyMessage plain = challengeWith(species, levels);
+		assertNull(plain.rolls());
+		assertNull(plain.temperaments());
+
+		TeamBattleResult bobSaw = bob.receive(plain, BOB, "Ann", bobData, true);
+
+		assertNotNull(bobSaw);
+		assertEquals(GielinorGoPartyMessage.ACCEPT, last(fromBob).kind());
+	}
+
+	@Test
+	public void aBadRollArrayDropsTheMessage()
+	{
+		rejects(new int[][] {{9, 0, 0, 0}}, null);
+		rejects(new int[][] {{0, 0, 0, -6}}, null);
+		rejects(new int[][] {{0, 0, 0}}, null);
+		rejects(new int[][] {null}, null);
+		rejects(new int[][] {{0, 0, 0, 0}, {0, 0, 0, 0}}, null);
+		rejects(null, new String[] {"GRUMPY"});
+		rejects(null, new String[] {"STEADY", "BRAVE"});
+
+		assertTrue("nothing may be sent back for a message that makes no sense", fromBob.isEmpty());
+		assertTrue(bob.views(names()).isEmpty());
+		GielinorGoPartyMessage good = withRolls(new String[] {"imp"}, new int[] {20}, new int[][] {{5, -5, 0, 1}},
+			new String[] {"BRAVE"});
+		assertNotNull(bob.receive(good, BOB, "Ann", bobData, true));
+	}
+
+	@Test
+	public void aChallengeFromAnotherVersionIsTurnedAway()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		GielinorGoPartyMessage old = otherVersion(last(fromAnn), 1);
+
+		assertNull(bob.receive(old, BOB, "Ann", bobData, true));
+
+		assertEquals("Ann runs a different version of Gielinor Go", last(bobTold));
+		assertTrue("nothing is sent back to a different version", fromBob.size() == 1);
+		assertNull(bob.receive(otherVersion(last(fromAnn), 0), BOB, "Ann", bobData, true));
+	}
+
+	@Test
+	public void anAnswerFromAnotherVersionIsTurnedAway()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+
+		assertNull(ann.receive(otherVersion(last(fromBob), 3), ANN, "Bob", annData, true));
+
+		assertEquals("Bob runs a different version of Gielinor Go", last(annTold));
+	}
+
+	@Test
+	public void aHelloFromAnotherVersionStillIntroducesThePlayer()
+	{
+		ann.hello(annData, false);
+
+		assertNull(bob.receive(otherVersion(last(fromAnn), 1), BOB, "Ann", bobData, true));
+
+		assertEquals(1, bob.views(names()).size());
+		assertTrue(bobTold.isEmpty());
+	}
+
+	private void rejects(int[][] rolls, String[] temperaments)
+	{
+		GielinorGoPartyMessage bad = withRolls(new String[] {"imp"}, new int[] {20}, rolls, temperaments);
+		assertNull(bob.receive(bad, BOB, "Ann", bobData, true));
+	}
+
+	private GielinorGoPartyMessage withRolls(String[] species, int[] levels, int[][] rolls, String[] temperaments)
+	{
+		return challengeWith(species, levels).rolled(rolls, temperaments);
+	}
+
+	private static GielinorGoPartyMessage otherVersion(GielinorGoPartyMessage message, int version)
+	{
+		Gson gson = new Gson();
+		String wire = gson.toJson(message).replace("\"version\":" + GielinorGoPartyMessage.PROTOCOL,
+			"\"version\":" + version);
+		GielinorGoPartyMessage copy = gson.fromJson(wire, GielinorGoPartyMessage.class);
+		copy.setMemberId(message.getMemberId());
+		return copy;
+	}
+
 	/** Lets the two players learn of each other, as two hellos through the party would. */
 	private void meet()
 	{

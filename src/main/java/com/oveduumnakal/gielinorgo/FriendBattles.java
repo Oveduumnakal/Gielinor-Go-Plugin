@@ -39,20 +39,22 @@ final class FriendBattles
 		private final int trainerLevel;
 		private final String[] species;
 		private final int[] levels;
+		private final List<StatRolls> rolls;
 		private final List<Rarity> eggs;
 
-		private Friend(int trainerLevel, String[] species, int[] levels, List<Rarity> eggs)
+		private Friend(int trainerLevel, String[] species, int[] levels, List<StatRolls> rolls, List<Rarity> eggs)
 		{
 			this.trainerLevel = trainerLevel;
 			this.species = species;
 			this.levels = levels;
+			this.rolls = rolls;
 			this.eggs = eggs;
 		}
 
 		private boolean sameAs(Friend other)
 		{
 			return trainerLevel == other.trainerLevel && Arrays.equals(species, other.species)
-				&& Arrays.equals(levels, other.levels) && eggs.equals(other.eggs);
+				&& Arrays.equals(levels, other.levels) && rolls.equals(other.rolls) && eggs.equals(other.eggs);
 		}
 	}
 
@@ -64,15 +66,19 @@ final class FriendBattles
 		private final long seed;
 		private final String[] species;
 		private final int[] levels;
+		private final int[][] rolls;
+		private final String[] temperaments;
 		private final long sentMs;
 
-		private Pending(long friendId, long battle, long seed, String[] species, int[] levels, long sentMs)
+		private Pending(long friendId, GielinorGoPartyMessage sent, long sentMs)
 		{
 			this.friendId = friendId;
-			this.battle = battle;
-			this.seed = seed;
-			this.species = species;
-			this.levels = levels;
+			this.battle = sent.battle();
+			this.seed = sent.seed();
+			this.species = sent.species();
+			this.levels = sent.levels();
+			this.rolls = sent.rolls();
+			this.temperaments = sent.temperaments();
 			this.sentMs = sentMs;
 		}
 	}
@@ -193,7 +199,7 @@ final class FriendBattles
 
 		GielinorGoPartyMessage sent = message(GielinorGoPartyMessage.CHALLENGE, friendId, random.nextLong(),
 			random.nextLong(), data);
-		pending = new Pending(friendId, sent.battle(), sent.seed(), sent.species(), sent.levels(), now);
+		pending = new Pending(friendId, sent, now);
 		outbox.accept(sent);
 		tell("Challenged " + friendName + "!", Tone.INFO);
 	}
@@ -225,6 +231,13 @@ final class FriendBattles
 		if (message.to() != myId)
 			return null;
 
+		boolean fights = kind.equals(GielinorGoPartyMessage.CHALLENGE) || kind.equals(GielinorGoPartyMessage.ACCEPT);
+		if (fights && message.version() != GielinorGoPartyMessage.PROTOCOL)
+		{
+			tell(senderName + " runs a different version of Gielinor Go", Tone.BAD);
+			return null;
+		}
+
 		if (kind.equals(GielinorGoPartyMessage.CHALLENGE))
 			return challenged(message, senderName, data, accepting);
 
@@ -241,8 +254,9 @@ final class FriendBattles
 			return null;
 		}
 
-		List<Combatant> mine = fighters(answered.species, answered.levels);
-		List<Combatant> theirs = fighters(message.species(), message.levels());
+		List<Combatant> mine = fighters(answered.species, answered.levels, answered.rolls, answered.temperaments);
+		List<Combatant> theirs = fighters(message.species(), message.levels(), message.rolls(),
+			message.temperaments());
 		if (!kind.equals(GielinorGoPartyMessage.ACCEPT) || mine == null || theirs == null || theirs.isEmpty())
 			return null;
 
@@ -289,7 +303,10 @@ final class FriendBattles
 			Friend friend = entry.getValue();
 			List<String> team = new ArrayList<>();
 			for (int i = 0; i < friend.species.length; i++)
-				team.add(species.find(friend.species[i]).name() + " " + friend.levels[i]);
+			{
+				String rating = ratingNote(friend.rolls.get(i));
+				team.add(species.find(friend.species[i]).name() + " " + friend.levels[i] + rating);
+			}
 
 			List<String> tradeable = new ArrayList<>();
 			for (GielinorGoPartyMessage.Item item : tradeable(entry.getKey()))
@@ -317,7 +334,8 @@ final class FriendBattles
 			return items;
 
 		for (int i = 0; i < friend.species.length; i++)
-			items.add(GielinorGoPartyMessage.Item.creature(friend.species[i], friend.levels[i], 0, false));
+			items.add(GielinorGoPartyMessage.Item.creature(friend.species[i], friend.levels[i], 0, false,
+				friend.rolls.get(i)));
 
 		for (Rarity egg : friend.eggs)
 			items.add(GielinorGoPartyMessage.Item.egg(egg.name(), 0));
@@ -338,14 +356,15 @@ final class FriendBattles
 	private TeamBattleResult challenged(GielinorGoPartyMessage message, String senderName, SaveData data,
 		boolean accepting)
 	{
-		List<Combatant> theirs = fighters(message.species(), message.levels());
+		List<Combatant> theirs = fighters(message.species(), message.levels(), message.rolls(),
+			message.temperaments());
 		if (theirs == null || theirs.isEmpty())
 			return null;
 
 		long now = clock.getAsLong();
 		GielinorGoPartyMessage answer = message(GielinorGoPartyMessage.ACCEPT, message.getMemberId(),
 			message.battle(), random.nextLong(), data);
-		List<Combatant> mine = fighters(answer.species(), answer.levels());
+		List<Combatant> mine = fighters(answer.species(), answer.levels(), answer.rolls(), answer.temperaments());
 		if (!accepting || mine == null || mine.isEmpty() || now - lastBattleMs < REST_MS)
 		{
 			outbox.accept(new GielinorGoPartyMessage(GielinorGoPartyMessage.DECLINE, message.getMemberId(),
@@ -381,17 +400,17 @@ final class FriendBattles
 	private boolean remember(GielinorGoPartyMessage message)
 	{
 		long sender = message.getMemberId();
-		if (fighters(message.species(), message.levels()) == null)
+		if (fighters(message.species(), message.levels(), message.rolls(), message.temperaments()) == null)
 			return false;
 
 		if (!friends.containsKey(sender) && friends.size() >= MAX_FRIENDS)
 			return false;
 
 		int trainer = Math.max(1, Math.min(XpRules.MAX_LEVEL, message.trainer()));
-		Friend shown = new Friend(trainer, message.species().clone(), message.levels().clone(),
-			eggsOf(message.eggs()));
-		Friend before = friends.put(sender, shown);
-		changed |= before == null || !before.sameAs(shown);
+		Friend kept = new Friend(trainer, message.species().clone(), message.levels().clone(),
+			rollsFor(message.species().length, message.rolls(), message.temperaments()), eggsOf(message.eggs()));
+		Friend before = friends.put(sender, kept);
+		changed |= before == null || !before.sameAs(kept);
 		return true;
 	}
 
@@ -470,12 +489,19 @@ final class FriendBattles
 	 *
 	 * @param keys species keys, as sent
 	 * @param levels creature levels, as sent
+	 * @param rolls four rolls per creature, as sent; null means every creature is average
+	 * @param temperaments a temperament name per creature, as sent; null means every creature is steady
 	 * @return the fighters, empty for an empty team, or null when the team makes no sense: too many creatures, an
-	 *     unknown species, or a level outside 1 to 99
+	 *     unknown species, a level outside 1 to 99, rolls out of range or of the wrong shape, or an unknown
+	 *     temperament
 	 */
-	private List<Combatant> fighters(String[] keys, int[] levels)
+	private List<Combatant> fighters(String[] keys, int[] levels, int[][] rolls, String[] temperaments)
 	{
 		if (keys == null || levels == null || keys.length != levels.length || keys.length > SaveData.TEAM_SIZE)
+			return null;
+
+		List<StatRolls> made = rollsFor(keys.length, rolls, temperaments);
+		if (made == null)
 			return null;
 
 		List<Combatant> fighters = new ArrayList<>();
@@ -485,10 +511,53 @@ final class FriendBattles
 			if (found == null || levels[i] < 1 || levels[i] > XpRules.MAX_LEVEL)
 				return null;
 
-			fighters.add(new Combatant(found, levels[i], 1.0));
+			fighters.add(new Combatant(found, levels[i], 1.0, made.get(i)));
 		}
 
 		return fighters;
+	}
+
+	/**
+	 * Reads the rolls a message carries for a team.
+	 *
+	 * @param size how many creatures the team has
+	 * @param rolls four rolls per creature, as sent, or null for all average
+	 * @param temperaments a temperament name per creature, as sent, or null for all steady
+	 * @return one set of rolls per creature, or null when an array is the wrong length, a roll is out of range or
+	 *     a temperament is unknown
+	 */
+	private static List<StatRolls> rollsFor(int size, int[][] rolls, String[] temperaments)
+	{
+		if ((rolls != null && rolls.length != size) || (temperaments != null && temperaments.length != size))
+			return null;
+
+		List<StatRolls> made = new ArrayList<>(size);
+		for (int i = 0; i < size; i++)
+		{
+			if (rolls != null && rolls[i] == null)
+				return null;
+
+			int[] values = rolls == null ? null : rolls[i];
+			StatRolls one = StatRolls.of(values, temperaments == null ? null : temperaments[i]);
+			if (one == null)
+				return null;
+
+			made.add(one);
+		}
+
+		return made;
+	}
+
+	/**
+	 * Words a creature's rating for the end of a team line.
+	 *
+	 * @param rolls the creature's rolls
+	 * @return a space and the rating in brackets, or an empty string for an average creature
+	 */
+	static String ratingNote(StatRolls rolls)
+	{
+		StatRolls.Rating rating = rolls.rating();
+		return rating == StatRolls.Rating.AVERAGE ? "" : " (" + rating.label() + ")";
 	}
 
 	/**
@@ -513,10 +582,15 @@ final class FriendBattles
 
 		String[] keys = new String[known.size()];
 		int[] levels = new int[known.size()];
+		int[][] rolls = new int[known.size()][];
+		String[] temperaments = new String[known.size()];
 		for (int i = 0; i < keys.length; i++)
 		{
 			keys[i] = known.get(i).species;
 			levels[i] = known.get(i).level();
+			StatRolls own = known.get(i).rolls();
+			rolls[i] = own.values();
+			temperaments[i] = own.temperament() == Temperament.STEADY ? null : own.temperament().name();
 		}
 
 		String[] eggs = new String[data.eggs.size()];
@@ -528,7 +602,7 @@ final class FriendBattles
 
 		GielinorGoPartyMessage message = new GielinorGoPartyMessage(kind, to, battle, seed,
 			XpRules.trainerLevelForXp(data.trainerXp), keys, levels);
-		return message.carrying(eggs);
+		return message.rolled(rolls, temperaments).carrying(eggs);
 	}
 
 	private boolean waiting(long now)

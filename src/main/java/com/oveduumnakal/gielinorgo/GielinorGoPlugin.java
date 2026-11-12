@@ -148,6 +148,8 @@ public class GielinorGoPlugin extends Plugin
 	private final Map<Skill, Integer> lastLevel = new EnumMap<>(Skill.class);
 	private final StepCounter stepCounter = new StepCounter();
 	private WildTracker tracker = new WildTracker(random);
+	private final SpawnClock spawnClock = SpawnClock.system();
+	private SpawnCalendar calendar;
 	private GoGame game;
 	private GoPersistence persistence;
 	private WildOverlay wildOverlay;
@@ -192,6 +194,8 @@ public class GielinorGoPlugin extends Plugin
 		SpeciesTable species = loadSpecies();
 		game = new GoGame(species, loadEvolutions(species), loadChampions(species), random,
 			System::currentTimeMillis, this::announce);
+		calendar = new SpawnCalendar(species);
+		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
 		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce);
 		trades = new FriendTrades(species, game, random, System::currentTimeMillis, this::sendToParty,
 			this::announce);
@@ -909,15 +913,17 @@ public class GielinorGoPlugin extends Plugin
 
 		WorldPoint point = npc.getWorldLocation();
 		boolean underground = point != null && Terrain.underground(point.getX(), point.getY());
+		boolean events = config.spawnEvents();
 		WildEntry entry = tracker.offer(npc.getIndex(), npc.getId(), species, npc.getCombatLevel(), underground,
-			now, config.wildChance());
+			now, calendar.chance(species, config.wildChance(), events, spawnClock),
+			calendar.gildedOneIn(species, events, spawnClock), events);
 		if (entry == null)
 			return;
 
 		game.markSeen(entry);
-		String kind = entry.gilded() ? "A gilded " : "A wild ";
+		String kind = entry.gilded() ? "A gilded " : entry.roaming() ? "A roaming " : "A wild ";
 		announce(Notice.creature(entry.npcIndex(), kind + species.name() + " appeared!",
-			entry.gilded() ? Tone.FIND : Tone.INFO));
+			entry.gilded() || entry.roaming() ? Tone.FIND : Tone.INFO));
 	}
 
 	private void offerRandomCandidate()
@@ -953,7 +959,7 @@ public class GielinorGoPlugin extends Plugin
 		Species species = entry.species();
 		Rarity rarity = species.rarity();
 		String name = ColorUtil.wrapWithColorTag(species.name(), rarity.color());
-		String target = (entry.gilded() ? "Gilded " : "") + name + " (Lv " + entry.level() + ")";
+		String target = entry.prefix() + name + " (Lv " + entry.level() + ")";
 		int index = entry.npcIndex();
 		JarType standard = game.jarToThrow();
 		for (JarType specialty : game.matchingSpecialtyJars(entry))

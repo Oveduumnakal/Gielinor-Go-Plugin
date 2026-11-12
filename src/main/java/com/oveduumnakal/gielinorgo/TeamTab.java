@@ -17,8 +17,9 @@ import javax.swing.border.EmptyBorder;
 import net.runelite.client.ui.ColorScheme;
 
 /**
- * The Team tab: one {@link CreatureCard} per team member, then the carried eggs. Cards are rebuilt only when the
- * team changes; egg rows are rebuilt only when the egg count or rarities change, and otherwise updated in place.
+ * The Team tab: one {@link CreatureCard} per team member, then the carried eggs, then the tasks. Cards are
+ * rebuilt only when the team changes; egg rows are rebuilt only when the egg count or rarities change, and
+ * otherwise updated in place.
  */
 final class TeamTab extends JPanel
 {
@@ -32,6 +33,7 @@ final class TeamTab extends JPanel
 	private final JPanel eggRows = new JPanel();
 	private final List<EggRow> rows = new ArrayList<>();
 	private final List<CreatureCard> slots = new ArrayList<>();
+	private final TasksSection taskSection = new TasksSection();
 	private final JLabel hint = PanelUi.hint("Click a creature to make it your lead. Right-click for more.");
 
 	TeamTab(PanelActions actions, PortraitSource portraits)
@@ -60,6 +62,8 @@ final class TeamTab extends JPanel
 		stack.add(cards);
 		stack.add(hint);
 		stack.add(eggBox);
+		taskSection.setAlignmentX(Component.LEFT_ALIGNMENT);
+		stack.add(taskSection);
 		add(PanelUi.scroll(column), BorderLayout.CENTER);
 	}
 
@@ -68,11 +72,13 @@ final class TeamTab extends JPanel
 	 *
 	 * @param team the team, lead first
 	 * @param eggs the carried eggs
+	 * @param tasks the daily and weekly tasks
 	 */
-	void update(List<CreatureView> team, List<EggView> eggs)
+	void update(List<CreatureView> team, List<EggView> eggs, TaskView tasks)
 	{
 		updateCards(team);
 		updateEggs(eggs);
+		taskSection.update(tasks);
 	}
 
 	/**

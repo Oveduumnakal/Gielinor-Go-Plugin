@@ -58,10 +58,24 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Your lead creature follows a step behind you as a small copy of itself, so it never gets in the way. A gilded
   lead follows in gold. Only you can see it, it cannot be clicked, and you can switch it off in the settings.
 
+- **Every creature is one of a kind**
+
+  Each creature you catch or hatch rolls four hidden bonuses, for health, attack, defence and speed, and one of ten
+  temperaments. A roll runs from -5 to +5 and is worth 1.5% of that stat, so a creature is up to 7.5% stronger or
+  weaker in each. A temperament is either Steady, which changes nothing, or gives 10% more of one stat and 10% less
+  of another: Brave (attack up, defence down), Reckless, Fierce, Guarded, Stubborn, Hardy, Stout, Hasty and Nimble.
+  The four rolls add up to a rating: Weak, Average, Strong or Exceptional. The card shows the temperament beside the
+  style and the rating on the right, and hovering shows the numbers (`Health +3 · Attack -1 · Defence 0 · Speed +5`).
+  Average creatures show no rating word, and a rated lead shows its rating in place of "Lead". Catching a rated
+  creature adds a line with its rating. The faster creature strikes first in a battle; with equal speed the higher
+  level goes first, and then it is a coin toss. Wild creatures fight at average until you catch them. Creatures
+  you had before this update keep exactly the strength they had: average rolls and the Steady temperament. A
+  creature keeps its rolls when it evolves, moves to Storage or is traded.
+
 - **Nicknames**
 
   Right-click a creature in Team or Storage and choose **Rename...** to give it a name of 1 to 12 letters, numbers,
-  spaces or hyphens. The nickname shows on its card (the species moves to the second line), in Storage, in battle
+  spaces or hyphens. The nickname shows on its card (hover the card for the species), in Storage, in battle
   lines and in level-up and evolution lines, and a creature keeps it when it evolves. Leave the box empty to go
   back to the species name. With **Show lead's nickname** on (the default), your lead's nickname floats above it
   as it follows you. Nicknames stay on your computer: friends never see them, and a creature you trade away
@@ -105,6 +119,55 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   One wild creature in 500 is gilded: gold outline in the world, gold name in your panel. They are only for
   showing off.
 
+### Spawn variety
+
+- **Featured today**
+
+  Each day one species of every rarity is featured, the same for every player on the same plugin version, and a
+  featured species turns wild three times as often. The Today section at the top of the Log tab names them and
+  shows when they change (midnight UTC). A star marks them in the Log, and the Log's filter has a **Featured**
+  choice.
+
+- **Night**
+
+  Between 20:00 and 06:00 on your computer's clock, undead, demons and other unholy creatures turn wild twice as
+  often.
+
+- **Weekend events**
+
+  Each Saturday and Sunday (UTC) one group turns wild twice as often and is gilded twice as often: Dragons, Undead,
+  Tide, Giants, Slayer monsters or Goblins, a new one each week. When boosts overlap they multiply, up to six times.
+
+- **Roaming creatures**
+
+  One wild creature in 20 is a stronger roaming one: 10 levels higher, with "Roaming" in front of its name. Beating
+  one drops an egg 30% of the time instead of 10%, and the egg is one rarity higher.
+
+  Switch featured species, night, weekend events and roaming creatures off with **Spawn events** in the settings.
+
+### Daily and weekly tasks
+
+- **Three daily tasks and one weekly task**
+
+  Every day at 00:00 UTC (the same moment the game's daily reset happens) three new tasks appear, and a new weekly
+  task every Monday. They are the same for every player. Daily tasks are things like catching a few creatures,
+  catching ones of one combat style, catching one underground, winning battles, walking, gaining XP in any skill or
+  hatching an egg. The weekly task is bigger: beat a City Champion, catch 25 creatures, win 15 battles or walk
+  5,000 tiles. They show on the Team tab under your eggs, with a bar for each and the time left to the reset.
+
+- **Rewards are paid for you**
+
+  When a task is done the reward is paid at once and floats over your head: 2 jars of the best tier you have
+  unlocked, or 100 trainer XP, for a daily task; 5 jars and a Rare egg for the weekly one. When you have no room
+  for an egg you get 5 jars instead.
+
+- **Login streak**
+
+  The first catch of each UTC day pays 2 Bronze jars and adds a day to your streak. Miss a day and it starts again
+  at 1. Every 7th day in a row pays an Uncommon egg. The Team tab shows your streak and how many days are left to
+  the next egg. The plugin goes by your computer's clock, so changing the clock would cheat; nothing stops that in
+  a single-player side game.
+
 ### City Champions
 
 - **Eight cities, eight champions**
@@ -119,18 +182,20 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Join a RuneLite party with a friend, using RuneLite's Party plugin, and everyone in it who plays Gielinor Go
   shows up on your Battle tab. Challenge one and your two teams fight it out at once, with the result floating
   over both your heads. Friend battles are for fun: both teams fight at full health and nothing is won or lost.
+  Both players need the same version of the plugin: a battle with a player on another version is turned away with
+  a line saying so.
 
 - **Trade creatures and eggs**
 
   Offer a friend one of your creatures or eggs, for one of theirs or as a gift. They see the offer on your card
   and choose Accept or Decline, and nothing changes hands until they accept. A traded creature keeps its level,
-  and an egg keeps the walking already done. Jars cannot be traded. Promised creatures and eggs cannot be released or hatched until the trade ends. There is no server to referee, so a trade
+  and an egg keeps the walking already done. Rolls and temperament travel with it, and the offer shows the rating. Jars cannot be traded. Promised creatures and eggs cannot be released or hatched until the trade ends. There is no server to referee, so a trade
   can complete on one side only: if either player leaves the party, logs out or changes world in the middle of a
   trade, one creature can end up with both of you while the other one is lost.
 
 - **Only your party hears about it**
 
-  The only things the plugin ever sends are your team (species and levels), your trainer level, the rarities of
+  The only things the plugin ever sends are your team (species, levels, rolls and temperaments), your trainer level, the rarities of
   the eggs you carry and whatever you put in a trade (never nicknames), and only to the people in your own party. You can turn
   battle challenges off in the settings.
 
@@ -138,10 +203,10 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 
 - **Team, Storage, Creature Log and Battle**
 
-  The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, the creatures
-  you have stored, and a Creature Log of every species in the game so you can see what you have caught, what
-  you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
-  you can challenge.
+  The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, your daily and weekly tasks, the
+  creatures you have stored, and a Creature Log of every species in the game so you can see what you have caught,
+  what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
+  you can challenge. The top of the Log tab shows what is featured today and which event is on.
 
 ## Links
 

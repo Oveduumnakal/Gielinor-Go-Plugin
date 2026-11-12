@@ -30,6 +30,12 @@ final class WildTracker
 	/** A wild creature is gilded one time in this many. */
 	static final int GILDED_ONE_IN = 500;
 
+	/** A wild creature is a stronger roaming one one time in this many. */
+	static final int ROAMING_ONE_IN = 20;
+
+	/** Levels a roaming creature has over an ordinary one. */
+	static final int ROAMING_LEVELS = 10;
+
 	/** How long a roll is remembered, counted from the roll or from the monster last leaving view. */
 	static final long MEMORY_MS = 180_000L;
 
@@ -52,11 +58,13 @@ final class WildTracker
 	 * @param combatLevel the monster's combat level
 	 * @param underground whether the monster is underground
 	 * @param nowMs the current wall-clock time in milliseconds
-	 * @param oneIn the odds: the monster turns wild one time in this many
+	 * @param chance the chance, from 0 to 1, that the monster turns wild
+	 * @param gildedOneIn the odds that a wild creature is gilded: one time in this many
+	 * @param mayRoam whether a wild creature may turn out to be a roaming one, one time in {@link #ROAMING_ONE_IN}
 	 * @return the new wild entry, or null when the monster stays ordinary
 	 */
 	WildEntry offer(int npcIndex, int npcId, Species species, int combatLevel, boolean underground, long nowMs,
-		int oneIn)
+		double chance, int gildedOneIn, boolean mayRoam)
 	{
 		forgetOld(nowMs);
 		if (species == null || !mayRoll(npcIndex, npcId, nowMs) || wild.size() >= MAX_WILD)
@@ -65,15 +73,19 @@ final class WildTracker
 		if (nowMs - lastWildMs < COOLDOWN_MS)
 			return null;
 
-		if (random.nextInt(Math.max(1, oneIn)) != 0)
+		if (random.nextDouble() >= chance)
 		{
 			rolls.put(npcIndex, new Roll(npcId, null, nowMs));
 			return null;
 		}
 
 		int level = CatchRules.wildLevel(combatLevel, random);
-		boolean gilded = random.nextInt(GILDED_ONE_IN) == 0;
-		WildEntry entry = new WildEntry(npcIndex, species, level, combatLevel, underground, gilded);
+		boolean gilded = random.nextInt(Math.max(1, gildedOneIn)) == 0;
+		boolean roaming = mayRoam && random.nextInt(ROAMING_ONE_IN) == 0;
+		if (roaming)
+			level = Math.min(XpRules.MAX_LEVEL, level + ROAMING_LEVELS);
+
+		WildEntry entry = new WildEntry(npcIndex, species, level, combatLevel, underground, gilded, roaming);
 		wild.put(npcIndex, entry);
 		rolls.put(npcIndex, new Roll(npcId, entry, nowMs));
 		lastWildMs = nowMs;

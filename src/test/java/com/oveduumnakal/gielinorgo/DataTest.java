@@ -192,6 +192,101 @@ public class DataTest
 	}
 
 	@Test
+	public void anOldSaveLoadsWithAverageRollsAndNoTemperament()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"team\":[{\"species\":\"goblin\",\"xp\":5}]}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+		Creature lead = loaded.lead();
+
+		assertEquals(0, lead.rollHp + lead.rollAttack + lead.rollDefence + lead.rollSpeed);
+		assertNull(lead.temperament);
+		assertEquals(StatRolls.AVERAGE, lead.rolls());
+	}
+
+	@Test
+	public void anOldSaveStartsWithFreshTasksAndNoStreak()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"team\":[{\"species\":\"goblin\",\"xp\":5}]}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+
+		assertNotNull(loaded.tasks);
+		assertEquals(0, loaded.tasks.streak);
+		assertEquals(3, loaded.tasks.daily.length);
+		assertEquals(3, loaded.tasks.dailyPaid.length);
+		assertEquals(0, loaded.tasks.weekly);
+		assertEquals(-1L, loaded.tasks.lastCatchDay);
+	}
+
+	@Test
+	public void aNullOrDamagedTaskBlockIsRepaired()
+	{
+		SaveData nulled = new SaveData();
+		nulled.tasks = null;
+		assertEquals(0, nulled.sanitized().tasks.streak);
+
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"tasks\":{\"day\":5,\"daily\":[1],"
+			+ "\"dailyPaid\":[true,true,true,true,true],\"weekly\":-4,\"streak\":-2}}");
+
+		TaskProgress loaded = new GoPersistence(store, gson).load().tasks;
+
+		assertEquals(5L, loaded.day);
+		assertEquals(3, loaded.daily.length);
+		assertEquals(1, loaded.daily[0]);
+		assertEquals(0, loaded.daily[2]);
+		assertEquals(3, loaded.dailyPaid.length);
+		assertTrue(loaded.dailyPaid[2]);
+		assertEquals(0, loaded.weekly);
+		assertEquals(0, loaded.streak);
+	}
+
+	@Test
+	public void taskProgressAndTheStreakSurviveARoundTrip()
+	{
+		GoPersistence persistence = new GoPersistence(new MapStore(), gson);
+		SaveData data = SaveData.fresh();
+		data.tasks.day = 20_000L;
+		data.tasks.daily = new int[] {2, 0, 5};
+		data.tasks.dailyPaid = new boolean[] {false, false, true};
+		data.tasks.week = 2857L;
+		data.tasks.weekly = 9;
+		data.tasks.weeklyPaid = false;
+		data.tasks.streak = 4;
+		data.tasks.lastCatchDay = 19_999L;
+
+		persistence.save(data);
+		TaskProgress loaded = persistence.load().tasks;
+
+		assertEquals(20_000L, loaded.day);
+		assertEquals(5, loaded.daily[2]);
+		assertTrue(loaded.dailyPaid[2]);
+		assertEquals(2857L, loaded.week);
+		assertEquals(9, loaded.weekly);
+		assertEquals(4, loaded.streak);
+		assertEquals(19_999L, loaded.lastCatchDay);
+	}
+
+	@Test
+	public void rollsAndTemperamentSurviveARoundTrip()
+	{
+		GoPersistence persistence = new GoPersistence(new MapStore(), gson);
+		SaveData data = SaveData.fresh();
+		Creature goblin = new Creature("goblin", 7, 123L);
+		goblin.setRolls(new StatRolls(4, -3, 0, 5, Temperament.HASTY));
+		data.team.add(goblin);
+
+		persistence.save(data);
+		SaveData loaded = persistence.load();
+
+		assertEquals(new StatRolls(4, -3, 0, 5, Temperament.HASTY), loaded.team.get(0).rolls());
+		assertEquals("HASTY", loaded.team.get(0).temperament);
+	}
+
+	@Test
 	public void noSaveMeansAFreshStart()
 	{
 		SaveData loaded = new GoPersistence(new MapStore(), gson).load();

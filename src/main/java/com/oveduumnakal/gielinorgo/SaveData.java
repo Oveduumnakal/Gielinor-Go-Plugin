@@ -70,6 +70,9 @@ final class SaveData
 	/** Ids of the City Champions the player has beaten. */
 	Set<String> sigils = new LinkedHashSet<>();
 
+	/** Progress on the daily and weekly tasks and the login streak. Null in saves from before tasks existed. */
+	TaskProgress tasks = new TaskProgress();
+
 	/** @return a save for a player who has never played, with the starting jars */
 	static SaveData fresh()
 	{
@@ -93,14 +96,15 @@ final class SaveData
 		eggs = eggs == null ? new ArrayList<>() : new ArrayList<>(eggs);
 		gilded = gilded == null ? new LinkedHashSet<>() : new LinkedHashSet<>(gilded);
 		sigils = sigils == null ? new LinkedHashSet<>() : new LinkedHashSet<>(sigils);
+		tasks = tasks == null ? new TaskProgress() : tasks.sanitized();
 		eggs.removeIf(egg -> egg == null);
 		team.removeIf(creature -> creature == null || creature.species == null);
 		storage.removeIf(creature -> creature == null || creature.species == null);
 		for (Creature creature : team)
-			creature.nickname = Nickname.clean(creature.nickname);
+			clean(creature);
 
 		for (Creature creature : storage)
-			creature.nickname = Nickname.clean(creature.nickname);
+			clean(creature);
 
 		while (team.size() > TEAM_SIZE)
 			storage.add(team.remove(team.size() - 1));
@@ -110,6 +114,22 @@ final class SaveData
 
 		version = VERSION;
 		return this;
+	}
+
+	/**
+	 * Cleans the parts of a creature a damaged or older save may have left out of range.
+	 *
+	 * @param creature the creature
+	 */
+	private static void clean(Creature creature)
+	{
+		creature.nickname = Nickname.clean(creature.nickname);
+		creature.rollHp = StatRolls.clamp(creature.rollHp);
+		creature.rollAttack = StatRolls.clamp(creature.rollAttack);
+		creature.rollDefence = StatRolls.clamp(creature.rollDefence);
+		creature.rollSpeed = StatRolls.clamp(creature.rollSpeed);
+		if (Temperament.named(creature.temperament) == null)
+			creature.temperament = null;
 	}
 
 	/**

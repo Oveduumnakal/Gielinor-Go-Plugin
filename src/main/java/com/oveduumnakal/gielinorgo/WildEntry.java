@@ -16,6 +16,7 @@ final class WildEntry
 	private final int combatLevel;
 	private final Set<Trait> traits;
 	private final boolean gilded;
+	private final boolean roaming;
 	private boolean battled;
 	private boolean weakened;
 
@@ -50,7 +51,25 @@ final class WildEntry
 	 */
 	WildEntry(int npcIndex, Species species, int level, int combatLevel, boolean underground, boolean gilded)
 	{
+		this(npcIndex, species, level, combatLevel, underground, gilded, false);
+	}
+
+	/**
+	 * Creates a wild creature that may be gilded and may be a roaming one.
+	 *
+	 * @param npcIndex the game's index for the monster
+	 * @param species the species
+	 * @param level the creature level it would be caught at, already raised for a roaming one
+	 * @param combatLevel the monster's combat level in the game
+	 * @param underground whether it was met underground, which gives it the {@link Trait#CAVE} trait
+	 * @param gilded whether it is a rare gilded creature
+	 * @param roaming whether it is a stronger roaming creature that drops a better egg
+	 */
+	WildEntry(int npcIndex, Species species, int level, int combatLevel, boolean underground, boolean gilded,
+		boolean roaming)
+	{
 		this.gilded = gilded;
+		this.roaming = roaming;
 		this.npcIndex = npcIndex;
 		this.species = species;
 		this.level = level;
@@ -96,6 +115,18 @@ final class WildEntry
 	boolean gilded()
 	{
 		return gilded;
+	}
+
+	/** @return whether this is a stronger roaming creature, which drops a better egg when beaten */
+	boolean roaming()
+	{
+		return roaming;
+	}
+
+	/** @return the words that go in front of the species name: "Gilded ", "Roaming ", both, or nothing */
+	String prefix()
+	{
+		return (gilded ? "Gilded " : "") + (roaming ? "Roaming " : "");
 	}
 
 	/** @return whether the player has already battled this one */

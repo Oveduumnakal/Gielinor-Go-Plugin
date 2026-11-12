@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 
 /**
  * The game itself: jars, catching, training and battles, all applied to one {@link SaveData}. It has no link to
@@ -35,6 +36,15 @@ final class GoGame
 
 	/** Chance that a battle win drops an egg, while the player has room for one. */
 	static final double EGG_DROP_CHANCE = 0.10;
+
+	/** Chance that a battle win over a roaming creature drops an egg, while the player has room for one. */
+	static final double ROAMING_EGG_CHANCE = 0.30;
+
+	/** Jars a task or streak pays when its egg has no free slot to go in. */
+	static final int EGG_FALLBACK_JARS = 5;
+
+	/** Bronze jars the first catch of a UTC day pays. */
+	static final int STREAK_JARS = 2;
 
 	/** Most evolutions one creature can go through in a single burst of XP. */
 	private static final int MAX_EVOLUTIONS_AT_ONCE = 5;
@@ -96,6 +106,9 @@ final class GoGame
 	private boolean dirty;
 	private String cityId;
 	private TradeLocks tradeLocks = NO_LOCKS;
+	private Supplier<TodayView> today = () -> TodayView.NONE;
+	private final TaskCalendar taskCalendar = new TaskCalendar();
+	private TaskBoard board;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -129,6 +142,16 @@ final class GoGame
 		this.random = random;
 		this.clock = clock;
 		this.notices = notices;
+	}
+
+	/**
+	 * Sets where the panel's Today section comes from.
+	 *
+	 * @param source gives what the Today section shows right now
+	 */
+	void today(Supplier<TodayView> source)
+	{
+		this.today = source;
 	}
 
 	/** @return the live save */
@@ -182,6 +205,9 @@ final class GoGame
 	 */
 	void addOsrsXp(int gained)
 	{
+		if (gained > 0)
+			payTasks(startTasks().gainedXp(gained));
+
 		if (gained <= 0 || data.team.isEmpty())
 			return;
 
@@ -225,6 +251,7 @@ final class GoGame
 		if (tiles <= 0)
 			return;
 
+		payTasks(startTasks().walked(tiles));
 		data.stepProgress += tiles;
 		dirty = true;
 		while (data.stepProgress >= TILES_PER_JAR)
@@ -301,7 +328,7 @@ final class GoGame
 				continue;
 
 			fighters.add(creature);
-			mine.add(new Combatant(found, nameOf(creature), creature.level(), health));
+			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls()));
 		}
 
 		if (mine.isEmpty())
@@ -330,6 +357,8 @@ final class GoGame
 		{
 			lines.add(new BattleLine("You beat the " + champion.title() + "!", Tone.GOOD, true));
 			rewardChampionWin(champion);
+			payTasks(startTasks().battleWon());
+			payTasks(startTasks().championBeaten());
 		}
 		else
 		{
@@ -467,6 +496,7 @@ final class GoGame
 
 		Creature caught = new Creature(entry.species().key(), entry.level(), clock.getAsLong());
 		caught.gilded = entry.gilded();
+		caught.setRolls(StatRolls.roll(random));
 		keep(caught);
 		recordOwned(caught);
 		if (caught.gilded)
@@ -474,7 +504,12 @@ final class GoGame
 		else
 			tell(entry, "Caught " + name + " (Lv " + entry.level() + ")!", Tone.GOOD);
 
+		String rating = ratingNote(caught);
+		if (!rating.isEmpty())
+			tell(entry, rating, Tone.FIND);
+
 		addTrainerXp(CatchRules.catchXp(entry.level()));
+		payCatch(entry);
 		return CatchOutcome.CAUGHT;
 	}
 
@@ -508,7 +543,7 @@ final class GoGame
 			return null;
 		}
 
-		Combatant mine = new Combatant(leadSpecies, nameOf(lead), lead.level(), health);
+		Combatant mine = new Combatant(leadSpecies, nameOf(lead), lead.level(), health, lead.rolls());
 		Combatant foe = new Combatant(entry.species(), entry.level(), 1.0);
 		BattleResult result = BattleSim.fight(mine, foe, random);
 		lead.hpFraction = result.hpFractionLeft();
@@ -516,7 +551,10 @@ final class GoGame
 		entry.markBattled(result.won());
 		dirty = true;
 		if (result.won())
+		{
 			rewardWin(lead, leadSpecies, entry);
+			payTasks(startTasks().battleWon());
+		}
 
 		return result;
 	}
@@ -751,9 +789,10 @@ final class GoGame
 		for (Egg egg : data.eggs)
 			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal));
 
+		TaskView tasks = startTasks().view(now, bestUnlockedJar());
 		return new PanelState(trainerLevel(), XpRules.trainerProgress(data.trainerXp), data.battlesWon, jars,
 			selectedJar(), data.stepProgress, views(data.team, now), views(data.storage, now), log(),
-			knownCaughtSpecies(), data.seen.size(), eggs, championViews());
+			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get(), tasks);
 	}
 
 	/** @return how many caught species the species list still knows, so removed species do not inflate the total */
@@ -826,9 +865,15 @@ final class GoGame
 		Species born = pool.get(random.nextInt(pool.size()));
 		Creature creature = new Creature(born.key(), 1, clock.getAsLong());
 		creature.gilded = random.nextInt(WildTracker.GILDED_ONE_IN) == 0;
+		creature.setRolls(StatRolls.roll(random));
 		keep(creature);
 		recordOwned(creature);
 		tell("Egg hatched: " + (creature.gilded ? "gilded " : "") + born.name() + "!", Tone.FIND);
+		String rating = ratingNote(creature);
+		if (!rating.isEmpty())
+			tell(rating, Tone.FIND);
+
+		payTasks(startTasks().hatched());
 		return true;
 	}
 
@@ -875,6 +920,121 @@ final class GoGame
 		addTrainerXp(50L + 10L * champion.topLevel());
 	}
 
+	/**
+	 * Finds the task board for the live save, making a new one when the save was replaced.
+	 *
+	 * @return the board
+	 */
+	private TaskBoard tasks()
+	{
+		if (board == null || !board.tracks(data.tasks))
+			board = new TaskBoard(taskCalendar, data.tasks);
+
+		return board;
+	}
+
+	/**
+	 * Gets the task board ready for an event: the board for the live save, moved on to today and this week.
+	 *
+	 * @return the board
+	 */
+	private TaskBoard startTasks()
+	{
+		TaskBoard current = tasks();
+		if (current.rollover(clock.getAsLong()))
+			dirty = true;
+
+		return current;
+	}
+
+	/**
+	 * Handles a catch for the streak and the tasks: the first catch of a UTC day pays jars and may pay an egg.
+	 *
+	 * @param entry the creature just caught
+	 */
+	private void payCatch(WildEntry entry)
+	{
+		TaskBoard current = startTasks();
+		TaskBoard.Streak streak = current.recordCatch();
+		dirty = true;
+		if (streak != null)
+		{
+			data.addJars(JarType.BRONZE, STREAK_JARS);
+			String bonus = "+" + STREAK_JARS + " Bronze jars";
+			if (streak.eggDue())
+				bonus += ", " + eggOrJars(Rarity.UNCOMMON);
+
+			tell("Day " + streak.days() + " streak: " + bonus, Tone.FIND);
+		}
+
+		boolean underground = entry.traits().contains(Trait.CAVE);
+		payTasks(current.caught(entry.species().style(), underground));
+	}
+
+	/**
+	 * Gives an egg, or jars when the player cannot carry another egg.
+	 *
+	 * @param rarity the egg's rarity
+	 * @return the reward in words, for the line the player is told
+	 */
+	private String eggOrJars(Rarity rarity)
+	{
+		if (hasRoomForEgg())
+		{
+			data.eggs.add(new Egg(rarity));
+			return "+1 " + rarity.label() + " egg";
+		}
+
+		JarType best = bestUnlockedJar();
+		data.addJars(best, EGG_FALLBACK_JARS);
+		return "+" + EGG_FALLBACK_JARS + " " + best.label() + " jars instead of an egg";
+	}
+
+	/**
+	 * Pays the tasks an event just finished and tells the player. Egg rewards are only ever paid for the weekly
+	 * task, which no egg hatching can finish, so the egg list is never changed while a hatch walks over it.
+	 *
+	 * @param done the finished tasks
+	 */
+	private void payTasks(List<Task> done)
+	{
+		for (Task task : done)
+		{
+			JarType best = bestUnlockedJar();
+			List<String> parts = new ArrayList<>();
+			if (task.jars() > 0)
+			{
+				data.addJars(best, task.jars());
+				parts.add("+" + task.jars() + " " + best.label() + (task.jars() == 1 ? " jar" : " jars"));
+			}
+
+			if (task.egg() != null)
+				parts.add(eggOrJars(task.egg()));
+
+			if (task.trainerXp() > 0)
+				parts.add("+" + task.trainerXp() + " trainer XP");
+
+			dirty = true;
+			tell((task.weekly() ? "Weekly" : "Daily") + " task done: " + String.join(", ", parts), Tone.GOOD);
+			if (task.trainerXp() > 0)
+				addTrainerXp(task.trainerXp());
+		}
+	}
+
+	/** @return the tier jar with the highest trainer level the player has reached */
+	private JarType bestUnlockedJar()
+	{
+		JarType best = JarType.BRONZE;
+		int level = trainerLevel();
+		for (JarType type : JarType.values())
+		{
+			if (!type.specialty() && level >= type.trainerLevel() && type.trainerLevel() >= best.trainerLevel())
+				best = type;
+		}
+
+		return best;
+	}
+
 	private JarType selectedJar()
 	{
 		for (JarType type : JarType.values())
@@ -911,10 +1071,14 @@ final class GoGame
 			tell("+1 " + drop.label() + " jar (battle win)", Tone.FIND);
 		}
 
-		if (!hasRoomForEgg() || random.nextDouble() >= EGG_DROP_CHANCE)
+		double eggChance = entry.roaming() ? ROAMING_EGG_CHANCE : EGG_DROP_CHANCE;
+		if (!hasRoomForEgg() || random.nextDouble() >= eggChance)
 			return;
 
 		Rarity rarity = entry.species().rarity();
+		if (entry.roaming())
+			rarity = rarity.next();
+
 		data.eggs.add(new Egg(rarity));
 		tell("+1 " + rarity.label() + " egg (battle win)", Tone.FIND);
 	}
@@ -1009,6 +1173,21 @@ final class GoGame
 		return creature.nickname != null ? creature.nickname : speciesNameOf(creature);
 	}
 
+	/**
+	 * Words the rating of a creature for the line that follows a catch or hatch.
+	 *
+	 * @param creature the creature
+	 * @return the rating and temperament, such as {@code Strong (Brave)}, or an empty string for an average creature
+	 */
+	private static String ratingNote(Creature creature)
+	{
+		StatRolls rolls = creature.rolls();
+		if (rolls.rating() == StatRolls.Rating.AVERAGE)
+			return "";
+
+		return rolls.rating().label() + " (" + rolls.temperament().label() + ")";
+	}
+
 	private String speciesNameOf(Creature creature)
 	{
 		Species found = species.find(creature.species);
@@ -1024,7 +1203,8 @@ final class GoGame
 			Rarity rarity = found == null ? Rarity.COMMON : found.rarity();
 			CombatType type = found == null ? CombatType.MELEE : found.style();
 			views.add(new CreatureView(speciesNameOf(creature), creature.level(), XpRules.progress(creature.xp),
-				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname));
+				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname,
+				creature.rolls()));
 		}
 
 		return views;
