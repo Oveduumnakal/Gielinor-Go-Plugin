@@ -38,6 +38,7 @@ public class GoGameTest
 	{
 		SpeciesTable table = new SpeciesTable(Arrays.asList(GOBLIN, CHICKEN, DRAGON));
 		game = new GoGame(table, new Random(11), () -> now, this::record);
+		game.setBankNear(true);
 	}
 
 	@Test
