@@ -24,21 +24,16 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Pins whole battles, line by line, recorded from the battle code as it was before the turn engine was introduced:
- * plain fights, a creature with two styles, level and speed ties, a fight that runs into the turn limit, tired
- * starts, team fights and the single duels friend battles are made of. The recording lives in the test resource
- * {@code battle-goldens.txt} and is never edited: a failure here means the battle rules changed.
+ * plain fights, dragons that breathe, level and speed ties, a fight that runs into the turn limit, tired starts, team
+ * fights and the single duels friend battles are made of. The recording lives in the test resource
+ * {@code battle-goldens.txt}: a failure here means the battle rules changed. When moves replaced the second style
+ * (issue 21) the 49 cases that have a dragon, a wyvern or the always-casting mage in them were re-recorded on
+ * purpose; the 40 others are exactly as first recorded.
  */
 public class BattleGoldensTest
 {
 	private static final String RESOURCE = "/battle-goldens.txt";
 	private static final String CASE = "== ";
-
-	/**
-	 * The cases that have a dragon, a wyvern or the mage that always casts in them. A dragon's breath is now a move it
-	 * knows, so these battles change on purpose; the next commit re-records them and this skip goes.
-	 */
-	private static final String MOVED = "dragon is .*|wyvern .*|two dragons .*|turn limit .*|team \\d+"
-		+ "|team with a turn limit .*|duel \\d+ (mine|theirs)";
 
 	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
 	private static final Species ARCHER = new Species("Archer", 13, CombatType.RANGED);
@@ -58,10 +53,7 @@ public class BattleGoldensTest
 
 		assertEquals(recorded.keySet(), now.keySet());
 		for (Map.Entry<String, String> one : recorded.entrySet())
-		{
-			if (!one.getKey().matches(MOVED))
-				assertEquals(one.getKey(), one.getValue(), now.get(one.getKey()));
-		}
+			assertEquals(one.getKey(), one.getValue(), now.get(one.getKey()));
 	}
 
 	@Test
@@ -74,8 +66,8 @@ public class BattleGoldensTest
 		for (String body : recorded.values())
 		{
 			capped |= body.contains("turns=" + BattleSim.MAX_TURNS + " ");
-			breathed |= body.contains("breathes fire for");
-			iced |= body.contains("breathes ice for");
+			breathed |= body.contains("uses Dragonfire");
+			iced |= body.contains("uses Icy breath");
 		}
 
 		assertTrue("a battle that reaches the turn limit is recorded", capped);

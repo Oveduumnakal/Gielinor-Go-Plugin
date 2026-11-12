@@ -9,12 +9,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-/** Pins the results of team and friend battles, recorded before the battles were acted out on screen. */
+/**
+ * Pins the results of team and friend battles, recorded before the battles were acted out on screen. They were
+ * re-recorded when moves replaced the dragons' second style (issue 21): the verdict lines say the same, the health
+ * left differs.
+ */
 public class RecordedBattlesTest
 {
 	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
@@ -28,26 +31,26 @@ public class RecordedBattlesTest
 
 	private static final String[] TEAM_BATTLES =
 	{
-		"LOST mine 0.0 0.0 0.0 theirs 0.0 0.0 85.0 134.0 lost / Gob beat Archer (Lv 16)"
+		"LOST mine 0.0 0.0 0.0 theirs 0.0 0.0 286.0 134.0 lost / Gob beat Archer (Lv 16)"
 		+ " / Gob lost to Wizard (Lv 25) / Green dragon beat Wizard (Lv 25)"
 		+ " / Green dragon lost to Green dragon (Lv 45) / Wizard lost to Green dragon (Lv 45)",
-		"WON mine 0.0 56.80000000000001 126.0 theirs 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
+		"WON mine 0.0 28.80000000000001 126.0 theirs 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
 		+ " / Gob lost to Wizard (Lv 25) / Green dragon beat Wizard (Lv 25)"
 		+ " / Green dragon beat Green dragon (Lv 45)",
-		"WON mine 0.0 117.80000000000001 149.0 theirs 0.0 0.0 0.0 0.0 won"
+		"WON mine 0.0 28.80000000000001 149.0 theirs 0.0 0.0 0.0 0.0 won"
 		+ " / Gob beat Archer (Lv 16) / Gob lost to Wizard (Lv 25)"
 		+ " / Green dragon beat Wizard (Lv 25) / Green dragon beat Green dragon (Lv 45)"
 		+ " / Green dragon beat Goblin (Lv 32)",
-		"WON mine 0.0 235.60000000000002 172.0 theirs 0.0 0.0 0.0 won"
-		+ " / Gob beat Archer (Lv 16) / Gob lost to Wizard (Lv 25)"
-		+ " / Green dragon beat Wizard (Lv 25) / Green dragon beat Green dragon (Lv 45)",
-		"WON mine 0.0 281.6 195.0 theirs 0.0 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
+		"WON mine 0.0 337.6 172.0 theirs 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
+		+ " / Gob lost to Wizard (Lv 25) / Green dragon beat Wizard (Lv 25)"
+		+ " / Green dragon beat Green dragon (Lv 45)",
+		"WON mine 0.0 297.6 195.0 theirs 0.0 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
 		+ " / Gob beat Wizard (Lv 25) / Gob lost to Green dragon (Lv 45)"
 		+ " / Green dragon beat Green dragon (Lv 45) / Green dragon beat Goblin (Lv 34)",
-		"WON mine 0.0 314.6 218.0 theirs 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
+		"WON mine 0.0 410.6 218.0 theirs 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
 		+ " / Gob beat Wizard (Lv 25) / Gob lost to Green dragon (Lv 45)"
 		+ " / Green dragon beat Green dragon (Lv 45)",
-		"WON mine 0.0 432.40000000000003 241.0 theirs 0.0 0.0 0.0 0.0 won"
+		"WON mine 0.0 304.40000000000003 241.0 theirs 0.0 0.0 0.0 0.0 won"
 		+ " / Gob beat Archer (Lv 16) / Gob beat Wizard (Lv 25)"
 		+ " / Gob lost to Green dragon (Lv 45) / Green dragon beat Green dragon (Lv 45)"
 		+ " / Green dragon beat Goblin (Lv 36)"
@@ -83,7 +86,6 @@ public class RecordedBattlesTest
 		+ " / Your Imp lost to Ann's Green dragon (Lv 95) / Ann won this one"
 	};
 
-	@Ignore("a dragon is now a creature with moves; the next commit re-records these results")
 	@Test
 	public void teamFightsGiveTheRecordedResults()
 	{
@@ -91,7 +93,6 @@ public class RecordedBattlesTest
 			assertEquals("team seed " + seed, TEAM_BATTLES[seed], team(seed));
 	}
 
-	@Ignore("a dragon is now a creature with moves; the next commit re-records these results")
 	@Test
 	public void friendBattlesGiveTheRecordedResults()
 	{
