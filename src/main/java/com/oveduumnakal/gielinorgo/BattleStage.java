@@ -199,7 +199,8 @@ final class BattleStage implements RenderCallback, StageAnchors
 				return false;
 
 			errandOpen = true;
-			body.setBase(animations.idle(parts.npcId()));
+			body.useLive(wild);
+			body.setBase(body.standAnimation());
 			body.setOpacity(0.0);
 			standIn = body;
 			npc = wild;
@@ -604,7 +605,7 @@ final class BattleStage implements RenderCallback, StageAnchors
 
 		wantedFacing = FollowerPath.angle(runDirX, runDirY);
 		turningAway = true;
-		standIn.setBase(animations.walk(standIn.npcId()));
+		standIn.setBase(standIn.walkAnimation());
 	}
 
 	/**

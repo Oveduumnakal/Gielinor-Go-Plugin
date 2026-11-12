@@ -12,6 +12,7 @@ import net.runelite.api.AnimationController;
 import net.runelite.api.Client;
 import net.runelite.api.Model;
 import net.runelite.api.ModelData;
+import net.runelite.api.NPC;
 import net.runelite.api.RuneLiteObject;
 
 /**
@@ -78,6 +79,8 @@ final class CreatureBody extends RuneLiteObject
 	private boolean turnWalking;
 	private boolean turnStruck;
 	private int restBase = AnimationTable.NONE;
+	private int liveIdle = AnimationTable.NONE;
+	private int liveWalk = AnimationTable.NONE;
 	private double settleFrom;
 	private int settleAge = TurnMotion.SETTLE_TICKS;
 	private int drawnHeight;
@@ -180,6 +183,37 @@ final class CreatureBody extends RuneLiteObject
 		body.drawnHeight = (int) Math.round(FollowerService.heightOf(data) * heightScale / NpcModels.NORMAL_SCALE);
 		body.setBase(animations.idle(parts.npcId()));
 		return body;
+	}
+
+	/**
+	 * Remembers the stand and walk animations of the live NPC this body is a copy of, for an NPC id the animation
+	 * table has no row for. A failed read leaves them as they were.
+	 *
+	 * @param live the live NPC
+	 */
+	void useLive(NPC live)
+	{
+		try
+		{
+			liveIdle = live.getIdlePoseAnimation();
+			liveWalk = live.getWalkAnimation();
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not read the animations of NPC {}", npcId, e);
+		}
+	}
+
+	/** @return the stand animation: the table's, or the live NPC's when the table has no row for the NPC id */
+	int standAnimation()
+	{
+		return animations.idle(npcId, liveIdle);
+	}
+
+	/** @return the walk animation: the table's, or the live NPC's when the table has no row for the NPC id */
+	int walkAnimation()
+	{
+		return animations.walk(npcId, liveWalk, liveIdle);
 	}
 
 	/** @return how tall the body is drawn, in scene units, when it was made by {@link #petSized}; else 0 */
@@ -396,7 +430,7 @@ final class CreatureBody extends RuneLiteObject
 		if (walking != turnWalking)
 		{
 			turnWalking = walking;
-			applyBase(walking ? animations.walk(npcId) : restBase);
+			applyBase(walking ? walkAnimation() : restBase);
 		}
 
 		if (!turnStruck && turnAge >= TurnMotion.strikeTick())

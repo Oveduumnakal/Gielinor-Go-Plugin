@@ -283,7 +283,8 @@ final class CatchEffects implements RenderCallback
 		if (body == null)
 			return;
 
-		body.setBase(animations.idle(parts.npcId()));
+		body.useLive(effect.npc);
+		body.setBase(body.standAnimation());
 		effect.copy = body;
 		effect.plane = view.getPlane();
 		effect.startX = at.getX();
@@ -359,7 +360,7 @@ final class CatchEffects implements RenderCallback
 		}
 
 		effect.wantFacing = FollowerPath.angle(effect.runX, effect.runY);
-		effect.copy.setBase(animations.walk(effect.copy.npcId()));
+		effect.copy.setBase(effect.copy.walkAnimation());
 	}
 
 	/**

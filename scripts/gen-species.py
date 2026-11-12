@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 """Generate species.json (attackable OSRS monsters) from the OSRS Wiki Bucket API.
 
-Run from the repo root: python3 scripts/gen-species.py
+Run from the repo root: python3 scripts/gen-species.py [dump.tar.gz]
+
+The wiki lists the NPC ids of only some of the NPCs that carry a monster's name (the Goblin page lists 43 of about 150;
+the small Monkey Guard is missing). A wild monster is matched to its species by NAME, so any NPC with the name and a
+combat level can turn wild. When the optional dump (the abextm/osrs-cache release gen-animations.py reads) is given,
+the ids of every NPC in it that has the species' name (any letter case) and a combat level above 0 are added after the
+wiki ids. Without it only the wiki ids are written.
 """
 import json
 import re
+import sys
+import tarfile
 import time
 import urllib.parse
 import urllib.request
@@ -17,8 +25,10 @@ PAGE = 500
 QUERY = ("bucket('infobox_monster').select('page_name','name','combat_level','attack_style','attribute',"
          "'attack_speed','size','poisonous','slayer_level','id').limit(%d).offset(%d).run()")
 
-# NPC ids kept per species, for drawing its portrait. A few are enough: the plugin tries them in order.
-MAX_IDS = 4
+# NPC ids kept per species: those of every wiki row (variant or version) with its name, the row the species' level and
+# style come from first, so ids()[0] stays the id the portrait and old saves know. Every id needs animations (see
+# gen-animations.py), so there is no small cap any more; this only stops a runaway name (Guard has 232).
+MAX_IDS = 300
 
 # Trait rules. Each trait makes one specialty jar work better (see JarType.java). CAVE is not listed here:
 # it depends on where the creature is met, not on its species.
@@ -90,7 +100,16 @@ def ids_of(row):
             continue
         if npc_id > 0 and npc_id not in found:
             found.append(npc_id)
-    return found[:MAX_IDS]
+    return found
+
+
+def merge_ids(first, more):
+    """The ids of the best row, then the ids of the other rows with the same name that it does not have."""
+    merged = list(first)
+    for npc_id in more:
+        if npc_id not in merged:
+            merged.append(npc_id)
+    return merged
 
 
 def traits_of(name, row):
@@ -135,6 +154,24 @@ def record(entry):
     return data
 
 
+NPC_DEF = re.compile(r"(?:^|/)npc_defs/(\d+)\.json$")
+
+
+def dump_ids(path):
+    """Maps a lowercase NPC name to the sorted ids of the NPCs in the dump that have it and a combat level."""
+    found = {}
+    with tarfile.open(path, "r:*") as tar:
+        for member in tar:
+            match = NPC_DEF.search(member.name)
+            if not match:
+                continue
+            definition = json.load(tar.extractfile(member))
+            name = str(definition.get("name") or "").strip().lower()
+            if name and (definition.get("combatLevel") or 0) > 0:
+                found.setdefault(name, []).append(int(match.group(1)))
+    return {name: sorted(ids) for name, ids in found.items()}
+
+
 def load_blocklist():
     """Returns the lowercase names listed in the blocklist file, skipping blank lines and # comments."""
     with open(BLOCKLIST, encoding="utf-8") as f:
@@ -176,10 +213,18 @@ def main():
         if not name or level < 1 or any(c in name for c in "[]{}<>|()"):
             continue
         key = name.lower()
+        row_ids = ids_of(row)
         if key not in best or level > best[key][1]:
-            best[key] = (name, level, style_of(row.get("attack_style")), traits_of(name, row), ids_of(row),
-                           second_style_of(style_of(row.get("attack_style")), row))
+            kept = best[key][4] if key in best else []
+            best[key] = (name, level, style_of(row.get("attack_style")), traits_of(name, row),
+                           merge_ids(row_ids, kept), second_style_of(style_of(row.get("attack_style")), row))
+        else:
+            best[key] = best[key][:4] + (merge_ids(best[key][4], row_ids),) + best[key][5:]
     entries = sorted(best.values(), key=lambda e: e[0].lower())
+    if len(sys.argv) > 1:
+        extra = dump_ids(sys.argv[1])
+        entries = [e[:4] + (merge_ids(e[4], extra.get(e[0].lower(), [])),) + e[5:] for e in entries]
+    entries = [e[:4] + (e[4][:MAX_IDS],) + e[5:] for e in entries]
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("[\n")
         f.write(",\n".join(json.dumps(record(e), separators=(",", ":"), ensure_ascii=False) for e in entries))

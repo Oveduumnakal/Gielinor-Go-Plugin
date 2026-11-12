@@ -123,7 +123,9 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   walks off its tile, and at the end the copy fades back into the real monster over 3 game ticks. Only you see any
   of this, and
   the real monster is untouched. A breath plays the creature's breath animation. Creatures with no animation for a
-  move lunge or tip over instead. Switch it off in the settings.
+  move lunge or tip over instead. Every variant of a monster that shares its name (a goblin of any kind, a small or a big
+  Monkey Guard) has its own animations, and a monster the data does not know yet stands and walks the way the game
+  draws it. Switch it off in the settings.
 
   **Catch a knocked-out creature.** When your lead wins, the wild creature lies knocked out for about 10 seconds.
   Right-click the lying copy to get the same **Catch** options as the real monster (you can also do this while it
