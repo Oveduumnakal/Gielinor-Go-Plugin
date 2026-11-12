@@ -282,13 +282,14 @@ final class BattleState
 		private boolean mineFainted;
 		private boolean foeFainted;
 		private boolean voluntary;
+		private CatchOutcome thrown;
 
 		private TurnResult result()
 		{
 			TurnResult.Status status = over != null ? over
 				: needsSwitch ? TurnResult.Status.NEEDS_SWITCH : TurnResult.Status.ONGOING;
 			return new TurnResult(status, lines, hits, duel, used, enteredMine, enteredFoe, mineFainted, foeFainted,
-				voluntary);
+				voluntary, thrown);
 		}
 	}
 
@@ -362,6 +363,7 @@ final class BattleState
 			throw new IllegalArgumentException("Jars cannot be thrown in this battle");
 
 		CatchOutcome outcome = judge.throwJar(jar, foe().hpFraction());
+		turn.thrown = outcome;
 		switch (outcome)
 		{
 			case CAUGHT:

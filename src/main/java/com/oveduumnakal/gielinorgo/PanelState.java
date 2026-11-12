@@ -31,12 +31,43 @@ final class PanelState
 	private final List<ChampionView> champions;
 	private final TodayView today;
 	private final TaskView tasks;
+	private final BattleView battle;
 
 	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
 		JarType selectedJar, int stepProgress, List<CreatureView> team, List<CreatureView> storage,
 		List<LogEntry> log, int caughtSpecies, int seenSpecies, List<EggView> eggs, List<ChampionView> champions,
 		TodayView today, TaskView tasks)
 	{
+		this(trainerLevel, trainerProgress, battlesWon, jars, selectedJar, stepProgress, team, storage, log,
+			caughtSpecies, seenSpecies, eggs, champions, today, tasks, null);
+	}
+
+	/**
+	 * Builds a snapshot that also carries the battle waiting for a choice.
+	 *
+	 * @param trainerLevel the trainer level
+	 * @param trainerProgress progress to the next trainer level
+	 * @param battlesWon battles won so far
+	 * @param jars jars owned
+	 * @param selectedJar the jar the player chose to throw
+	 * @param stepProgress tiles walked towards the next jar
+	 * @param team the team, lead first
+	 * @param storage the stored creatures
+	 * @param log the Creature Log
+	 * @param caughtSpecies how many species were caught
+	 * @param seenSpecies how many species were seen
+	 * @param eggs the eggs carried
+	 * @param champions every City Champion
+	 * @param today the Today section
+	 * @param tasks the Tasks section
+	 * @param battle the battle that waits for a choice, or null when none does
+	 */
+	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
+		JarType selectedJar, int stepProgress, List<CreatureView> team, List<CreatureView> storage,
+		List<LogEntry> log, int caughtSpecies, int seenSpecies, List<EggView> eggs, List<ChampionView> champions,
+		TodayView today, TaskView tasks, BattleView battle)
+	{
+		this.battle = battle;
 		this.today = today;
 		this.tasks = tasks;
 		this.eggs = Collections.unmodifiableList(new ArrayList<>(eggs));
@@ -52,6 +83,24 @@ final class PanelState
 		this.log = log;
 		this.caughtSpecies = caughtSpecies;
 		this.seenSpecies = seenSpecies;
+	}
+
+	/**
+	 * Copies the snapshot with the battle that waits for a choice, so the panel can show the battle box.
+	 *
+	 * @param waiting the battle, or null when none waits
+	 * @return the new snapshot
+	 */
+	PanelState withBattle(BattleView waiting)
+	{
+		return new PanelState(trainerLevel, trainerProgress, battlesWon, jars, selectedJar, stepProgress, team,
+			storage, log, caughtSpecies, seenSpecies, eggs, champions, today, tasks, waiting);
+	}
+
+	/** @return the battle that waits for the player's choice, or null when none does */
+	BattleView battle()
+	{
+		return battle;
 	}
 
 	/** @return the trainer level, 1 to 99 */

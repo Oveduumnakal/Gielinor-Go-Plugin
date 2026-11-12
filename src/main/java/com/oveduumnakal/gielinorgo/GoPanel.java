@@ -29,9 +29,10 @@ import net.runelite.client.ui.components.materialtabs.MaterialTab;
 import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 
 /**
- * The Gielinor Go side panel: a short header with the trainer's progress and the jar to throw, and four tabs for
- * the team, the storage, the Creature Log and battles against friends and City Champions. It only draws
- * {@link PanelState} and {@link FriendsState} snapshots and reports clicks to {@link PanelActions}.
+ * The Gielinor Go side panel: a short header with the trainer's progress and the jar to throw, the battle box while
+ * a battle waits for a choice, and four tabs for the team, the storage, the Creature Log and battles against friends
+ * and City Champions. It only draws {@link PanelState} and {@link FriendsState} snapshots and reports clicks to
+ * {@link PanelActions}.
  */
 final class GoPanel extends PluginPanel
 {
@@ -101,6 +102,7 @@ final class GoPanel extends PluginPanel
 	private final StorageTab storageTab;
 	private final LogTab logTab;
 	private final ChampionsTab championsTab;
+	private final BattleBox battleBox;
 	private List<JarChoice> shownJars = new ArrayList<>();
 	private boolean fillingJars;
 	private PanelState latest;
@@ -120,8 +122,13 @@ final class GoPanel extends PluginPanel
 		storageTab = new StorageTab(actions);
 		logTab = new LogTab();
 		championsTab = new ChampionsTab(actions, this::openTrade);
+		battleBox = new BattleBox(actions::battleChoice);
 
-		add(buildHeader(), BorderLayout.NORTH);
+		JPanel top = new JPanel(new BorderLayout());
+		top.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		top.add(buildHeader(), BorderLayout.NORTH);
+		top.add(battleBox, BorderLayout.CENTER);
+		add(top, BorderLayout.NORTH);
 		add(buildTabs(), BorderLayout.CENTER);
 	}
 
@@ -141,6 +148,7 @@ final class GoPanel extends PluginPanel
 		stepsLabel.setToolTipText("Walk " + (GoGame.TILES_PER_JAR - state.stepProgress())
 			+ " more tiles to find a Bronze jar");
 		showJars(state);
+		battleBox.show(state.battle());
 		teamTab.update(state.team(), state.eggs(), state.tasks());
 		storageTab.update(state.storage());
 		logTab.update(state);

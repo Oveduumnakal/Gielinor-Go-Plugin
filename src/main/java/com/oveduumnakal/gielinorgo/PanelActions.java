@@ -86,4 +86,12 @@ interface PanelActions
 	 * @param type the jar type
 	 */
 	void selectJar(JarType type);
+
+	/**
+	 * Makes the choice of a battle that waits for one: attack, switch, throw a jar or run. It is checked again on the
+	 * game thread, and a choice made when none is open changes nothing.
+	 *
+	 * @param choice what the player chose
+	 */
+	void battleChoice(BattleChoice choice);
 }

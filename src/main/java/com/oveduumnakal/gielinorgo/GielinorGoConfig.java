@@ -10,6 +10,7 @@ import net.runelite.client.config.Alpha;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.Keybind;
 import net.runelite.client.config.Range;
 
 /**
@@ -210,5 +211,110 @@ public interface GielinorGoConfig extends Config
 	default boolean spawnEvents()
 	{
 		return true;
+	}
+
+	/**
+	 * Whether a battle with a wild creature or a City Champion waits for the player to choose an action each turn.
+	 *
+	 * @return true to choose attack, switch, catch or run every turn; false for battles that play themselves
+	 */
+	@ConfigItem(
+		keyName = "chooseBattleActions",
+		name = "Choose battle actions",
+		description = "A battle with a wild creature or a City Champion waits for you each turn: Attack, Switch,"
+			+ " Catch or Run.\nChoose in the side panel, or with the hotkeys below. With no choice in time, your"
+			+ " creature attacks by itself.\nOff means a battle is one click and plays itself, with your lead"
+			+ " alone. Friend battles always play themselves.",
+		position = 11
+	)
+	default boolean chooseBattleActions()
+	{
+		return false;
+	}
+
+	/**
+	 * How long the player has to choose each turn of a battle they steer.
+	 *
+	 * @return the seconds
+	 */
+	@Range(min = 5, max = 30)
+	@ConfigItem(
+		keyName = "turnSeconds",
+		name = "Seconds per turn",
+		description = "How long you have to choose before your creature attacks by itself.\nOnly used when Choose"
+			+ " battle actions is on.",
+		position = 12
+	)
+	default int turnSeconds()
+	{
+		return 10;
+	}
+
+	/**
+	 * Hotkey for Attack while a battle waits for a choice.
+	 *
+	 * @return the key, unset by default
+	 */
+	@ConfigItem(
+		keyName = "attackKey",
+		name = "Attack hotkey",
+		description = "Attacks while a battle waits for your choice. Unset by default, so no key is taken from"
+			+ " chat or dialogue.",
+		position = 13
+	)
+	default Keybind attackKey()
+	{
+		return Keybind.NOT_SET;
+	}
+
+	/**
+	 * Hotkey for Switch while a battle waits for a choice.
+	 *
+	 * @return the key, unset by default
+	 */
+	@ConfigItem(
+		keyName = "switchKey",
+		name = "Switch hotkey",
+		description = "Steps in the next creature that can fight while a battle waits for your choice. Unset by"
+			+ " default.\nTo pick a particular creature, use the Switch button in the side panel.",
+		position = 14
+	)
+	default Keybind switchKey()
+	{
+		return Keybind.NOT_SET;
+	}
+
+	/**
+	 * Hotkey for Catch while a battle waits for a choice.
+	 *
+	 * @return the key, unset by default
+	 */
+	@ConfigItem(
+		keyName = "catchKey",
+		name = "Catch hotkey",
+		description = "Throws the selected jar while a battle with a wild creature waits for your choice. Unset by"
+			+ " default.",
+		position = 15
+	)
+	default Keybind catchKey()
+	{
+		return Keybind.NOT_SET;
+	}
+
+	/**
+	 * Hotkey for Run while a battle waits for a choice.
+	 *
+	 * @return the key, unset by default
+	 */
+	@ConfigItem(
+		keyName = "runKey",
+		name = "Run hotkey",
+		description = "Runs away while a battle waits for your choice. Nothing is won and the creature cannot be"
+			+ " battled again. Unset by default.",
+		position = 16
+	)
+	default Keybind runKey()
+	{
+		return Keybind.NOT_SET;
 	}
 }
