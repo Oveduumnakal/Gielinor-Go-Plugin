@@ -109,7 +109,8 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
-	 * Whether a battle against a wild creature is acted out: the lead walks up to it and they fight.
+	 * Whether a battle is acted out: against a wild creature, the lead walks up to it and they fight; against a
+	 * City Champion or a friend, the two teams fight beside the player.
 	 *
 	 * @return true to play the battle animations
 	 */
@@ -117,8 +118,8 @@ public interface GielinorGoConfig extends Config
 		keyName = "battleAnimations",
 		name = "Battle animations",
 		description = "Your lead creature walks up to the wild creature in a battle. They attack and react to each"
-			+ " hit,\nand the loser lies down for a few seconds.\nOnly you can see this, and the real monster is"
-			+ " untouched.",
+			+ " hit,\nand the loser lies down for a few seconds.\nCity Champion and friend battles are acted out too."
+			+ "\nOnly you can see this, and the real monster is untouched.",
 		position = 5
 	)
 	default boolean battleAnimations()

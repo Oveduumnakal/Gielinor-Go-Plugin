@@ -66,6 +66,12 @@ final class FollowerService
 	private CreatureBody body;
 	private String shownKey;
 	private boolean shownGilded;
+	private String leadKey;
+	private boolean leadGilded;
+	private String asKey;
+	private boolean asGilded;
+	private volatile boolean showingAs;
+	private double fade = 1.0;
 	private int height;
 	private int idle = AnimationTable.NONE;
 	private int walk = AnimationTable.NONE;
@@ -106,8 +112,12 @@ final class FollowerService
 			return;
 		}
 
-		if (!speciesKey.equals(shownKey) || gilded != shownGilded)
-			rebuild(speciesKey, gilded);
+		leadKey = speciesKey;
+		leadGilded = gilded;
+		String key = asKey != null ? asKey : speciesKey;
+		boolean look = asKey != null ? asGilded : gilded;
+		if (!key.equals(shownKey) || look != shownGilded)
+			rebuild(key, look);
 
 		if (body == null)
 			return;
@@ -192,6 +202,15 @@ final class FollowerService
 		}
 
 		body.clientTick();
+		applyFade();
+		if (!body.visible())
+		{
+			if (body.isActive())
+				body.setActive(false);
+
+			return;
+		}
+
 		double push = body.push();
 		if (push != 0.0)
 		{
@@ -205,6 +224,23 @@ final class FollowerService
 		body.setBase(path.walking() ? walk : idle);
 		if (!body.isActive())
 			body.setActive(true);
+	}
+
+	/**
+	 * Gives the body the opacity a scene asked for. A body that cannot be built at that opacity is drawn solid from
+	 * then on.
+	 */
+	private void applyFade()
+	{
+		try
+		{
+			body.setOpacity(fade);
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not fade the follower", e);
+			fade = 1.0;
+		}
 	}
 
 	/**
@@ -239,6 +275,48 @@ final class FollowerService
 		hide();
 		body = null;
 		shownKey = null;
+		asKey = null;
+		showingAs = false;
+		fade = 1.0;
+	}
+
+	/**
+	 * Shows another creature in the lead's place, for a battle scene in which another team member steps in. It stays
+	 * on screen where the lead was, and keeps showing that creature, also after the lead changes or a map loads,
+	 * until {@code showAs(null, false)} gives the lead back. A creature is always shown in a fresh body, so one that
+	 * was knocked down does not stay lying when another of the same species steps in. The name tag over the
+	 * follower is the lead's, so it is not drawn while another creature is shown ({@link #showingAs()}).
+	 *
+	 * @param speciesKey the species to show, or null to show the lead again
+	 * @param gilded whether the creature is painted gold; ignored for null
+	 */
+	void showAs(String speciesKey, boolean gilded)
+	{
+		asKey = speciesKey;
+		asGilded = gilded;
+		showingAs = speciesKey != null;
+		String key = speciesKey != null ? speciesKey : leadKey;
+		boolean look = speciesKey != null ? gilded : leadGilded;
+		boolean different = key != null && (speciesKey != null || !key.equals(shownKey) || look != shownGilded);
+		if (different && wanted && client.getGameState() == GameState.LOGGED_IN)
+			swap(key, look);
+	}
+
+	/** @return whether another creature than the lead is shown, so the lead's name tag must not be drawn */
+	boolean showingAs()
+	{
+		return showingAs;
+	}
+
+	/**
+	 * Sets how solid the follower is drawn. It is applied on each client tick, also to a body built after this call,
+	 * and is back to solid when the plugin stops.
+	 *
+	 * @param opacity from 0 (unseen) to 1 (solid)
+	 */
+	void fadeTo(double opacity)
+	{
+		fade = Math.max(0.0, Math.min(1.0, opacity));
 	}
 
 	/**
@@ -431,6 +509,20 @@ final class FollowerService
 		if (path.onErrand())
 			path.reset();
 
+		swap(speciesKey, gilded);
+	}
+
+	/**
+	 * Swaps the follower's body for one of another creature, leaving the path, and an errand on it, alone.
+	 *
+	 * @param speciesKey the species to show
+	 * @param gilded whether to paint it gold
+	 */
+	private void swap(String speciesKey, boolean gilded)
+	{
+		if (body != null && body.isActive())
+			body.setActive(false);
+
 		body = null;
 		shownKey = speciesKey;
 		shownGilded = gilded;
@@ -438,53 +530,22 @@ final class FollowerService
 		if (species == null)
 			return;
 
-		for (int npcId : species.ids())
-		{
-			try
-			{
-				if (build(npcId, gilded))
-					return;
-			}
-			catch (RuntimeException | AssertionError e)
-			{
-				log.debug("Gielinor Go: could not build a follower from NPC {}", npcId, e);
-			}
-		}
+		body = CreatureBody.petSized(client, animations, species, gilded);
+		if (body == null)
+			return;
+
+		height = body.drawnHeight();
+		idle = animations.idle(body.npcId());
+		walk = animations.walk(body.npcId());
+		body.setBase(idle);
 	}
 
 	/**
-	 * Builds the follower's object from one NPC id.
+	 * Paints a model gold.
 	 *
-	 * @param npcId the NPC id
-	 * @param gilded whether to paint it gold
-	 * @return true when the follower is ready, false when this NPC id has no usable model
+	 * @param data the model, changed in place
 	 */
-	private boolean build(int npcId, boolean gilded)
-	{
-		NpcModels.Parts parts = NpcModels.load(client, npcId);
-		if (parts == null)
-			return false;
-
-		ModelData data = parts.data();
-		if (gilded)
-			gild(data);
-
-		double factor = SHOWN_SIZE * fit(parts.size(), reachOf(data) * parts.widthScale() / NpcModels.NORMAL_SCALE,
-			heightOf(data) * parts.heightScale() / NpcModels.NORMAL_SCALE);
-		int widthScale = Math.max(1, (int) Math.round(parts.widthScale() * factor));
-		int heightScale = Math.max(1, (int) Math.round(parts.heightScale() * factor));
-		body = CreatureBody.create(client, animations, parts, widthScale, heightScale);
-		if (body == null)
-			return false;
-
-		height = (int) Math.round(heightOf(data) * heightScale / NpcModels.NORMAL_SCALE);
-		idle = animations.idle(parts.npcId());
-		walk = animations.walk(parts.npcId());
-		body.setBase(idle);
-		return true;
-	}
-
-	private static void gild(ModelData data)
+	static void gild(ModelData data)
 	{
 		short[] colors = data.getFaceColors();
 		if (colors == null)
@@ -501,7 +562,11 @@ final class FollowerService
 		}
 	}
 
-	private static double reachOf(ModelData data)
+	/**
+	 * @param data a model
+	 * @return how far any vertex is from the model's middle, sideways, in scene units
+	 */
+	static double reachOf(ModelData data)
 	{
 		float[] x = data.getVerticesX();
 		float[] z = data.getVerticesZ();

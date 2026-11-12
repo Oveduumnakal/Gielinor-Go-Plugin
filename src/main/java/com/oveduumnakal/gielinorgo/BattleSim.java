@@ -42,7 +42,7 @@ final class BattleSim
 	{
 		List<BattleLine> log = new ArrayList<>();
 		log.add(opening(mine, foe));
-		int turns = duel(mine, foe, random, log);
+		int turns = duel(mine, foe, random, log, true);
 		boolean won = ahead(mine, foe);
 		log.add(closing(mine, foe, won));
 		return new BattleResult(won, log, mine.hpFraction(), turns);
@@ -55,34 +55,43 @@ final class BattleSim
 	 * @param mine the player's creatures, in the order they fight; their health is changed by the battle
 	 * @param theirs the opposing creatures, in the order they fight
 	 * @param random the source of damage spread and of the first move on a level tie
-	 * @return the outcome, with one line per creature knocked out
+	 * @return the outcome, with one line per creature knocked out and the duels it was made of
 	 */
 	static TeamBattleResult teamFight(List<Combatant> mine, List<Combatant> theirs, Random random)
 	{
 		List<BattleLine> log = new ArrayList<>();
+		List<Duel> duels = new ArrayList<>();
 		int myIndex = 0;
 		int theirIndex = 0;
 		while (myIndex < mine.size() && theirIndex < theirs.size())
 		{
 			Combatant fighter = mine.get(myIndex);
 			Combatant foe = theirs.get(theirIndex);
-			if (duelWon(fighter, foe, random))
+			List<BattleLine> hits = new ArrayList<>();
+			boolean won = duelWon(fighter, foe, random, hits, true);
+			BattleLine out;
+			if (won)
 			{
 				foe.knockOut();
-				log.add(new BattleLine(fighter.name() + " beat " + foe.name() + " (Lv " + foe.level() + ")",
-					Tone.GOOD, true));
-				theirIndex++;
+				out = new BattleLine(fighter.name() + " beat " + foe.name() + " (Lv " + foe.level() + ")",
+					Tone.GOOD, true);
 			}
 			else
 			{
 				fighter.knockOut();
-				log.add(new BattleLine(fighter.name() + " lost to " + foe.name() + " (Lv " + foe.level() + ")",
-					Tone.BAD, true));
-				myIndex++;
+				out = new BattleLine(fighter.name() + " lost to " + foe.name() + " (Lv " + foe.level() + ")",
+					Tone.BAD, true);
 			}
+
+			log.add(out);
+			duels.add(new Duel(fighter, myIndex, foe, theirIndex, hits, out, won));
+			if (won)
+				theirIndex++;
+			else
+				myIndex++;
 		}
 
-		return new TeamBattleResult(theirIndex >= theirs.size(), log);
+		return new TeamBattleResult(theirIndex >= theirs.size(), log, duels);
 	}
 
 	/**
@@ -95,7 +104,25 @@ final class BattleSim
 	 */
 	static boolean duelWon(Combatant first, Combatant second, Random random)
 	{
-		duel(first, second, random, null);
+		return duelWon(first, second, random, null, true);
+	}
+
+	/**
+	 * Fights one duel and keeps the line of every hit. It makes exactly the same random calls as
+	 * {@link #duelWon(Combatant, Combatant, Random)}, so keeping the lines changes no result.
+	 *
+	 * @param first the creature whose side is asking; it wins a duel that ends level
+	 * @param second the creature it fights
+	 * @param random the source of damage spread and of the first move on a level tie
+	 * @param hits receives one line per hit, or null to keep none
+	 * @param firstIsMine whether the first creature is the player's, so its hits are worded as the player's and the
+	 *     second one's as the opponent's
+	 * @return true when the first creature won
+	 */
+	static boolean duelWon(Combatant first, Combatant second, Random random, List<BattleLine> hits,
+		boolean firstIsMine)
+	{
+		duel(first, second, random, hits, firstIsMine);
 		return ahead(first, second);
 	}
 
@@ -106,9 +133,10 @@ final class BattleSim
 	 * @param foe the opposing creature
 	 * @param random the source of damage spread and of the first move on a level tie
 	 * @param log receives one line per attack, or null to keep no lines
+	 * @param mineIsMine whether the first creature is the player's, for the wording of the lines
 	 * @return how many attacks were made
 	 */
-	private static int duel(Combatant mine, Combatant foe, Random random, List<BattleLine> log)
+	private static int duel(Combatant mine, Combatant foe, Random random, List<BattleLine> log, boolean mineIsMine)
 	{
 		boolean myTurn = movesFirst(mine, foe, random);
 		int turns = 0;
@@ -120,7 +148,7 @@ final class BattleSim
 			int damage = damage(attacker, style, defender, random);
 			defender.hit(damage);
 			if (log != null)
-				log.add(strike(attacker, defender, damage, myTurn, style));
+				log.add(strike(attacker, defender, damage, myTurn == mineIsMine, style));
 
 			myTurn = !myTurn;
 			turns++;

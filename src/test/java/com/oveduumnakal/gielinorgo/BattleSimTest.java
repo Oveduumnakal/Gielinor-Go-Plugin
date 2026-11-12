@@ -4,6 +4,8 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -499,5 +501,36 @@ public class BattleSimTest
 	{
 		return BattleSim.fight(new Combatant(mine, myLevel, 1.0), new Combatant(foe, foeLevel, 1.0),
 			new Random(seed));
+	}
+
+	@Test
+	public void teamFightKeepsADuelForEveryKnockOut()
+	{
+		List<Combatant> mine = new ArrayList<>(Arrays.asList(new Combatant(GOBLIN, 12, 1.0),
+			new Combatant(ARCHER, 30, 1.0)));
+		List<Combatant> theirs = new ArrayList<>(Arrays.asList(new Combatant(WIZARD, 20, 1.0),
+			new Combatant(DRAGON, 40, 1.0)));
+
+		TeamBattleResult result = BattleSim.teamFight(mine, theirs, new Random(3));
+
+		List<Duel> duels = result.duels();
+		List<BattleLine> lines = result.lines();
+
+		assertEquals(lines.size(), duels.size());
+		for (int i = 0; i < duels.size(); i++)
+		{
+			Duel duel = duels.get(i);
+			assertEquals(lines.get(i), duel.knockOut());
+			assertFalse(duel.hits().isEmpty());
+			for (BattleLine hit : duel.hits())
+				assertTrue(hit.kind() == BattleLine.Kind.LEAD_HIT || hit.kind() == BattleLine.Kind.FOE_HIT);
+		}
+
+		Duel first = duels.get(0);
+
+		assertEquals("goblin", first.mineSpecies());
+		assertEquals("wizard", first.theirSpecies());
+		assertEquals(0, first.mineIndex());
+		assertEquals(0, first.theirIndex());
 	}
 }

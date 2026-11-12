@@ -72,6 +72,36 @@ public class NoticeBoardTest
 	}
 
 	@Test
+	public void anArenaFoeNoticeHasNoMonsterAndStacksByItself()
+	{
+		Notice foe = Notice.stageFoe("hit", Tone.GOOD);
+
+		assertEquals(Notice.Anchor.STAGE_FOE, foe.anchor());
+		assertTrue("with no stage showing it falls back to the player's head", foe.overPlayer());
+		assertTrue(foe.sameAnchor(Notice.stageFoe("another", Tone.BAD)));
+		assertFalse(foe.sameAnchor(Notice.stageLead("ouch", Tone.BAD)));
+		assertFalse(foe.sameAnchor(Notice.player("reward", Tone.FIND)));
+		assertFalse(foe.sameAnchor(Notice.stageFoe(7, "wild", Tone.INFO)));
+
+		NoticeBoard board = new NoticeBoard();
+		for (int i = 0; i < NoticeBoard.MAX_PER_HEAD + 2; i++)
+		{
+			board.show(Notice.stageFoe("foe " + i, Tone.INFO), i);
+			board.show(Notice.player("player " + i, Tone.INFO), i);
+		}
+
+		int foes = 0;
+		for (NoticeBoard.Shown line : board.visible(10))
+		{
+			if (line.notice().anchor() == Notice.Anchor.STAGE_FOE)
+				foes++;
+		}
+
+		assertEquals(NoticeBoard.MAX_PER_HEAD, foes);
+		assertEquals(2 * NoticeBoard.MAX_PER_HEAD, board.visible(10).size());
+	}
+
+	@Test
 	public void anchorsAreDifferentPlacesEvenOverTheSameMonster()
 	{
 		Notice head = Notice.creature(7, "a", Tone.INFO);

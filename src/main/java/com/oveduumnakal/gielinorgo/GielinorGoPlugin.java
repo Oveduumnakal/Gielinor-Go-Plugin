@@ -165,6 +165,7 @@ public class GielinorGoPlugin extends Plugin
 	private CatchEffects effects;
 	private JarFlightOverlay jarFlight;
 	private BattleStage stage;
+	private ArenaStage arena;
 	private FriendBattles friends;
 	private FriendTrades trades;
 	private final MessageRate partyRate = new MessageRate();
@@ -205,14 +206,13 @@ public class GielinorGoPlugin extends Plugin
 		lastHelloTick = -HELLO_TICKS;
 		persistence = new GoPersistence(configManager, gson);
 		wildOverlay = new WildOverlay(this, config, outlineRenderer);
-		floatingText = new FloatingTextOverlay(client, this, noticeBoard,
-			anchor -> stage == null ? null : stage.spotOf(anchor));
+		floatingText = new FloatingTextOverlay(client, this, noticeBoard, this::stageSpot);
 		overlayManager.add(wildOverlay);
 		overlayManager.add(floatingText);
 		portraits = new PortraitService(client, clientThread, game::speciesFor);
 		AnimationTable animations = loadAnimations();
 		follower = new FollowerService(client, animations, game::speciesFor);
-		followerTag = new FollowerTagOverlay(client, follower, () -> leadTag);
+		followerTag = new FollowerTagOverlay(client, follower, () -> follower.showingAs() ? null : leadTag);
 		overlayManager.add(followerTag);
 		effects = new CatchEffects(client, animations, config::catchEffects);
 		renderCallbackManager.register(effects);
@@ -220,6 +220,7 @@ public class GielinorGoPlugin extends Plugin
 		overlayManager.add(jarFlight);
 		stage = new BattleStage(client, follower, animations);
 		renderCallbackManager.register(stage);
+		arena = new ArenaStage(client, follower, animations, game::speciesFor);
 		panel = new GoPanel(panelActions(), portraits);
 		BufferedImage icon = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
 		navButton = NavigationButton.builder()
@@ -237,6 +238,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		clientThread.invoke(this::saveNow);
 		clientThread.invoke(stage::clear);
+		clientThread.invoke(arena::clear);
 		clientThread.invoke(follower::remove);
 		renderCallbackManager.unregister(effects);
 		renderCallbackManager.unregister(stage);
@@ -285,6 +287,21 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
+	 * Finds where a battle that is acted out on screen has a body, whichever stage is playing. Called from the render
+	 * thread.
+	 *
+	 * @param anchor which body
+	 * @return its place, or null when no stage has it
+	 */
+	private StageAnchors.Spot stageSpot(Notice.Anchor anchor)
+	{
+		BattleStage wild = stage;
+		StageAnchors.Spot spot = wild == null ? null : wild.spotOf(anchor);
+		ArenaStage team = arena;
+		return spot != null || team == null ? spot : team.spotOf(anchor);
+	}
+
+	/**
 	 * Loads the right save whenever the logged-in account changes.
 	 *
 	 * @param event the profile change
@@ -311,6 +328,7 @@ public class GielinorGoPlugin extends Plugin
 		{
 			effects.sceneLoading();
 			stage.clear();
+			arena.clear();
 			follower.sceneLoading();
 		}
 
@@ -320,6 +338,7 @@ public class GielinorGoPlugin extends Plugin
 		saveNow();
 		trades.clear();
 		stage.clear();
+		arena.clear();
 		follower.hide();
 		effects.clear();
 		jarFlight.clear();
@@ -433,6 +452,7 @@ public class GielinorGoPlugin extends Plugin
 
 		follower.clientTick();
 		stage.clientTick();
+		arena.clientTick();
 	}
 
 	/**
@@ -754,7 +774,7 @@ public class GielinorGoPlugin extends Plugin
 			boolean changed = friends.takeChanged() | result != null;
 			changed |= trades.receive(message, me.getMemberId(), sender);
 			saveNow();
-			playBack(result == null ? null : result.lines(), Notice.PLAYER);
+			playTeamBattle(result, !GielinorGoPartyMessage.CHALLENGE.equals(message.kind()) || !interacting());
 			if (changed)
 				refreshPanel();
 		}
@@ -1076,7 +1096,7 @@ public class GielinorGoPlugin extends Plugin
 		BattleResult result = game.battle(entry);
 		List<BattleLine> lines = result == null ? null : result.summary(BATTLE_LINES);
 		boolean staged = lines != null && config.battleAnimations()
-			&& stage.start(candidates.get(npcIndex), lines, result.won());
+			&& !arena.active() && stage.start(candidates.get(npcIndex), lines, result.won());
 		playBack(lines, npcIndex, staged);
 		refreshPanel();
 	}
@@ -1091,16 +1111,64 @@ public class GielinorGoPlugin extends Plugin
 		if (stage.active() && !config.battleAnimations())
 			stage.clear();
 
+		if (arena.active() && !config.battleAnimations())
+			arena.clear();
+
 		stage.gameTick();
-		if (noticeBoard.holding() && (stage.linesDue() || !stage.active()))
+		long now = System.currentTimeMillis();
+		for (Notice line : arena.gameTick())
+		{
+			if (config.showResults())
+				noticeBoard.show(line, now);
+		}
+
+		if (noticeBoard.holding() && (stage.linesDue() || (!stage.active() && !arena.active())))
 			noticeBoard.release();
 	}
 
 	private void challenge(String championId)
 	{
 		heldNotices = new ArrayList<>();
-		TeamBattleResult result = game.challenge(championId);
-		playBack(result == null ? null : result.lines(), Notice.PLAYER);
+		playTeamBattle(game.challenge(championId), true);
+	}
+
+	/**
+	 * @return whether the player is busy with something in the game, such as fighting a monster or talking to
+	 *     someone, so a scene they did not ask for must not start over it
+	 */
+	private boolean interacting()
+	{
+		Player player = client.getLocalPlayer();
+		return player == null || player.getInteracting() != null;
+	}
+
+	/**
+	 * Shows a team battle: acted out beside the player when it can be, otherwise as text only. Acted out, each hit
+	 * floats over the creature that was hit and each knock-out over the player as the scene reaches it; the lines
+	 * before the first knock-out show at once, and the verdict and whatever the game announced while resolving the
+	 * battle wait until the scene is over. {@link #heldNotices} must be open, and is closed here.
+	 *
+	 * @param result the battle, or null when none started
+	 * @param allowScene whether a scene may start; false when the player is busy with something else
+	 */
+	private void playTeamBattle(TeamBattleResult result, boolean allowScene)
+	{
+		boolean staged = result != null && allowScene && config.battleAnimations() && !stage.active()
+			&& arena.start(result.duels(), result.leadFirst());
+		if (!staged)
+		{
+			playBack(result == null ? null : result.lines(), Notice.PLAYER);
+			return;
+		}
+
+		long now = System.currentTimeMillis();
+		for (BattleLine line : result.leadIn())
+		{
+			if (config.showResults())
+				noticeBoard.show(Notice.player(line.text(), line.tone()), now);
+		}
+
+		playBack(result.leadOut(), Notice.PLAYER, true);
 	}
 
 	/**

@@ -128,6 +128,66 @@ public class FriendBattlesTest
 	}
 
 	@Test
+	public void bothSidesGetTheSameDuelsSeenFromTheirOwnSide()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		TeamBattleResult bobSaw = bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+		TeamBattleResult annSaw = ann.receive(last(fromBob), ANN, "Bob", annData, true);
+
+		List<Duel> annDuels = annSaw.duels();
+		List<Duel> bobDuels = bobSaw.duels();
+
+		assertFalse(annDuels.isEmpty());
+		assertEquals(annDuels.size(), bobDuels.size());
+		assertTrue("both players' first creature is their lead", annSaw.leadFirst() && bobSaw.leadFirst());
+		for (int i = 0; i < annDuels.size(); i++)
+		{
+			Duel mine = annDuels.get(i);
+			Duel theirs = bobDuels.get(i);
+
+			assertEquals(mine.mineIndex(), theirs.theirIndex());
+			assertEquals(mine.theirIndex(), theirs.mineIndex());
+			assertEquals(mine.mineSpecies(), theirs.theirSpecies());
+			assertEquals(mine.theirSpecies(), theirs.mineSpecies());
+			assertEquals(mine.mineLevel(), theirs.theirLevel());
+			assertEquals(mine.theirLevel(), theirs.mineLevel());
+			assertNotEquals(mine.mineWon(), theirs.mineWon());
+			assertTrue(annSaw.lines().contains(mine.knockOut()));
+			assertTrue(bobSaw.lines().contains(theirs.knockOut()));
+			List<BattleLine> mineHits = mine.hits();
+			List<BattleLine> theirHits = theirs.hits();
+
+			assertEquals(mineHits.size(), theirHits.size());
+			for (int j = 0; j < mineHits.size(); j++)
+			{
+				BattleLine one = mineHits.get(j);
+				BattleLine other = theirHits.get(j);
+
+				assertEquals(mirrored(one.kind()), other.kind());
+				assertEquals(one.style(), other.style());
+				assertEquals(one.overPlayer(), !other.overPlayer());
+				assertTrue(one.text() + " and " + other.text() + " tell the same hit",
+					one.text().endsWith(other.text()) || other.text().endsWith(one.text()));
+			}
+		}
+	}
+
+	@Test
+	public void aLeadLeftOutOfTheTeamMeansTheFirstFighterIsNotTheLead()
+	{
+		annData.team.add(0, new Creature("kraken", 5, now));
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		TeamBattleResult bobSaw = bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+		TeamBattleResult annSaw = ann.receive(last(fromBob), ANN, "Bob", annData, true);
+
+		assertFalse("a creature this version does not know is left out, so the lead does not fight",
+			annSaw.leadFirst());
+		assertTrue(bobSaw.leadFirst());
+	}
+
+	@Test
 	public void bothPlayersSeeTheSameBattleWhenADragonBreathes()
 	{
 		Species green = new Species("Green dragon", 88, CombatType.MELEE).withSecondStyle(CombatType.MAGIC, 0.5);

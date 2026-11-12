@@ -328,7 +328,8 @@ final class GoGame
 				continue;
 
 			fighters.add(creature);
-			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls()));
+			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls())
+				.gilded(creature.gilded));
 		}
 
 		if (mine.isEmpty())
@@ -365,7 +366,8 @@ final class GoGame
 			lines.add(new BattleLine("The " + champion.title() + " won. Rest and try again", Tone.BAD, true));
 		}
 
-		return new TeamBattleResult(fought.won(), lines);
+		return new TeamBattleResult(fought.won(), lines, fought.duels())
+			.withLeadFirst(fighters.get(0) == data.lead());
 	}
 
 	/** Rewards an OSRS level-up with Bronze jars. */

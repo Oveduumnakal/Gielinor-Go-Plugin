@@ -262,7 +262,8 @@ final class FriendBattles
 
 		remember(message);
 		lastBattleMs = clock.getAsLong();
-		return fight(mine, theirs, answered.seed ^ message.seed(), true, senderName);
+		boolean leadFirst = leadIsFirst(mine, data);
+		return fight(mine, theirs, answered.seed ^ message.seed(), true, senderName).withLeadFirst(leadFirst);
 	}
 
 	/**
@@ -375,7 +376,21 @@ final class FriendBattles
 		remember(message);
 		lastBattleMs = now;
 		outbox.accept(answer);
-		return fight(theirs, mine, message.seed() ^ answer.seed(), false, senderName);
+		boolean leadFirst = leadIsFirst(mine, data);
+		return fight(theirs, mine, message.seed() ^ answer.seed(), false, senderName).withLeadFirst(leadFirst);
+	}
+
+	/**
+	 * Tells whether the first creature of a team is the player's lead, the one that walks beside the player.
+	 *
+	 * @param mine the player's fighters, in order
+	 * @param data the player's save
+	 * @return true when the first fighter is of the lead's species
+	 */
+	private static boolean leadIsFirst(List<Combatant> mine, SaveData data)
+	{
+		Creature lead = data.lead();
+		return lead != null && !mine.isEmpty() && mine.get(0).speciesKey().equals(Species.keyFor(lead.species));
 	}
 
 	/**
@@ -449,6 +464,7 @@ final class FriendBattles
 	{
 		Random dice = new Random(seed);
 		List<BattleLine> lines = new ArrayList<>();
+		List<Duel> duels = new ArrayList<>();
 		lines.add(new BattleLine("Battle with " + friendName + "!", Tone.INFO, true));
 		int firstIndex = 0;
 		int secondIndex = 0;
@@ -456,7 +472,10 @@ final class FriendBattles
 		{
 			Combatant one = first.get(firstIndex);
 			Combatant two = second.get(secondIndex);
-			boolean firstWon = BattleSim.duelWon(one, two, dice);
+			List<BattleLine> hits = new ArrayList<>();
+			boolean firstWon = BattleSim.duelWon(one, two, dice, hits, iAmFirst);
+			int oneIndex = firstIndex;
+			int twoIndex = secondIndex;
 			if (firstWon)
 			{
 				two.knockOut();
@@ -471,8 +490,11 @@ final class FriendBattles
 			Combatant mine = iAmFirst ? one : two;
 			Combatant theirs = iAmFirst ? two : one;
 			boolean iWon = firstWon == iAmFirst;
-			lines.add(new BattleLine("Your " + mine.name() + (iWon ? " beat " : " lost to ") + friendName + "'s "
-				+ theirs.name() + " (Lv " + theirs.level() + ")", iWon ? Tone.GOOD : Tone.BAD, true));
+			BattleLine out = new BattleLine("Your " + mine.name() + (iWon ? " beat " : " lost to ") + friendName
+				+ "'s " + theirs.name() + " (Lv " + theirs.level() + ")", iWon ? Tone.GOOD : Tone.BAD, true);
+			lines.add(out);
+			duels.add(new Duel(mine, iAmFirst ? oneIndex : twoIndex, theirs, iAmFirst ? twoIndex : oneIndex, hits, out,
+				iWon));
 		}
 
 		boolean won = (secondIndex >= second.size()) == iAmFirst;
@@ -481,7 +503,7 @@ final class FriendBattles
 		else
 			lines.add(new BattleLine(friendName + " won this one", Tone.BAD, true));
 
-		return new TeamBattleResult(won, lines);
+		return new TeamBattleResult(won, lines, duels);
 	}
 
 	/**

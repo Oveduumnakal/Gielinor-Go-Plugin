@@ -4,6 +4,9 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.runelite.api.Animation;
 import net.runelite.api.AnimationController;
 import net.runelite.api.Client;
@@ -20,6 +23,8 @@ import net.runelite.api.RuneLiteObject;
  */
 final class CreatureBody extends RuneLiteObject
 {
+	private static final Logger log = LoggerFactory.getLogger(CreatureBody.class);
+
 	/** One move of a battle. */
 	enum Act
 	{
@@ -75,6 +80,7 @@ final class CreatureBody extends RuneLiteObject
 	private int restBase = AnimationTable.NONE;
 	private double settleFrom;
 	private int settleAge = TurnMotion.SETTLE_TICKS;
+	private int drawnHeight;
 
 	private CreatureBody(Client client, AnimationTable animations, int npcId, ModelData source, Model still,
 		Model posable, int widthScale, int heightScale)
@@ -119,6 +125,67 @@ final class CreatureBody extends RuneLiteObject
 		body.setModel(posable);
 		body.setAnimationController(body.controller);
 		return body;
+	}
+
+	/**
+	 * Builds a creature as it is drawn beside the player: the way a boss pet is a small copy of its boss, at
+	 * {@link FollowerService#SHOWN_SIZE} of the size that fits ({@link FollowerService#fit(int, double, double)}).
+	 * Each NPC id of the species is tried in turn, as the portraits do, until one has a model.
+	 *
+	 * @param client the game client
+	 * @param animations the animation ids of each NPC
+	 * @param species the species
+	 * @param gilded whether to paint it gold
+	 * @return the body, standing still with its idle animation and not yet in the scene, or null when no NPC id of
+	 *     the species can be drawn
+	 */
+	static CreatureBody petSized(Client client, AnimationTable animations, Species species, boolean gilded)
+	{
+		for (int npcId : species.ids())
+		{
+			try
+			{
+				CreatureBody body = petSized(client, animations, npcId, gilded);
+				if (body != null)
+					return body;
+			}
+			catch (RuntimeException | AssertionError e)
+			{
+				log.debug("Gielinor Go: could not build a creature from NPC {}", npcId, e);
+			}
+		}
+
+		return null;
+	}
+
+	private static CreatureBody petSized(Client client, AnimationTable animations, int npcId, boolean gilded)
+	{
+		NpcModels.Parts parts = NpcModels.load(client, npcId);
+		if (parts == null)
+			return null;
+
+		ModelData data = parts.data();
+		if (gilded)
+			FollowerService.gild(data);
+
+		double factor = FollowerService.SHOWN_SIZE * FollowerService.fit(parts.size(),
+			FollowerService.reachOf(data) * parts.widthScale() / NpcModels.NORMAL_SCALE,
+			FollowerService.heightOf(data) * parts.heightScale() / NpcModels.NORMAL_SCALE);
+		int widthScale = Math.max(1, (int) Math.round(parts.widthScale() * factor));
+		int heightScale = Math.max(1, (int) Math.round(parts.heightScale() * factor));
+		CreatureBody body = create(client, animations, parts, widthScale, heightScale);
+		if (body == null)
+			return null;
+
+		body.drawnHeight = (int) Math.round(FollowerService.heightOf(data) * heightScale / NpcModels.NORMAL_SCALE);
+		body.setBase(animations.idle(parts.npcId()));
+		return body;
+	}
+
+	/** @return how tall the body is drawn, in scene units, when it was made by {@link #petSized}; else 0 */
+	int drawnHeight()
+	{
+		return drawnHeight;
 	}
 
 	/**

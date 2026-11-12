@@ -186,6 +186,16 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   From Lumbridge to Yanille, each city has a champion with a team of three. Stand in the city, open the Battle
   tab and challenge them with your whole team. Your first win earns the city's sigil and a stack of better jars.
 
+  With **Battle animations** on, the battle is acted out beside you: the champion's first creature fades in about 3
+  tiles away, your lead walks up to it, and they fight with the same attacks, arrows and breath as a wild battle.
+  Three hits of each duel are shown (the first, one from the middle and the last) with their lines floating over the
+  creature that was hit. The loser lies down for a couple of seconds and fades out, and the next creature of its team
+  steps in; your lead is drawn as whichever of your creatures is fighting, and walks back to you afterwards. A
+  knock-out line floats over you as it happens, and the verdict and any rewards float up once the scene is over. A
+  battle of three creatures against three takes about 45 seconds at most. Creatures are drawn small, like your
+  follower. The result is decided before the scene starts, so nothing in it can change the outcome. With the setting
+  off, or when there is no room or no follower on screen, the battle is text only.
+
 ### Friends
 
 - **Battle a friend's team**
@@ -193,6 +203,10 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Join a RuneLite party with a friend, using RuneLite's Party plugin, and everyone in it who plays Gielinor Go
   shows up on your Battle tab. Challenge one and your two teams fight it out at once, with the result floating
   over both your heads. Friend battles are for fun: both teams fight at full health and nothing is won or lost.
+  With **Battle animations** on, you each see the battle acted out beside you, the same way as a champion battle,
+  drawn from the teams you both already showed each other: nothing extra is sent. A battle a friend starts with you
+  is only acted out when you are not busy fighting or talking to something, so it never takes over a boss fight; you
+  then get the text only. A friend's gilded creature is drawn plain.
   Both players need the same version of the plugin: a battle with a player on another version is turned away with
   a line saying so.
 
