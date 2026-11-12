@@ -2032,7 +2032,12 @@ final class GoGame
 		return rolls.rating().label() + " (" + rolls.temperament().label() + ")";
 	}
 
-	private String speciesNameOf(Creature creature)
+	/**
+	 * @param creature a creature the player owns
+	 * @return its species name as written for the player, such as {@code Monkey Guard}; the saved key when the
+	 *     species is no longer in the list
+	 */
+	String speciesNameOf(Creature creature)
 	{
 		Species found = species.find(creature.species);
 		return found == null ? creature.species : found.name();
