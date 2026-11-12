@@ -7,12 +7,12 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.runelite.api.Client;
-import net.runelite.api.NPC;
 import net.runelite.api.Perspective;
 import net.runelite.api.Player;
 import net.runelite.api.Point;
@@ -22,7 +22,7 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 
 /**
- * Draws the thrown jar's picture flying in an arc from the player to the creature, on the player's own screen
+ * Draws the thrown jar's picture flying in an arc from the player to the creature's body, on the player's own screen
  * only. The flight follows both of them while it lasts, and ends by itself when the jar lands. Every client call
  * is guarded, so a failure here can never break the drawing of the rest of the screen.
  */
@@ -35,8 +35,7 @@ final class JarFlightOverlay extends Overlay
 
 	private final Client client;
 	private JarType jar;
-	private NPC target;
-	private StageAnchors stage;
+	private Supplier<StageAnchors.Spot> target;
 	private int age;
 
 	/**
@@ -52,29 +51,15 @@ final class JarFlightOverlay extends Overlay
 	}
 
 	/**
-	 * Starts a flight.
+	 * Starts a flight to a creature's body.
 	 *
 	 * @param thrown the jar that was thrown
-	 * @param npc the creature it is thrown at, or null when it is out of view, in which case nothing is drawn
+	 * @param place finds where the creature's body is drawn each time it is asked, or null for nothing to draw
 	 */
-	void start(JarType thrown, NPC npc)
+	void start(JarType thrown, Supplier<StageAnchors.Spot> place)
 	{
-		start(thrown, npc, null);
-	}
-
-	/**
-	 * Starts a flight to a creature that may be acted out on a stage. While the stand-in is drawn the jar flies to
-	 * it, since the real monster is hidden and may stand somewhere else.
-	 *
-	 * @param thrown the jar that was thrown
-	 * @param npc the creature it is thrown at, or null when it is out of view, in which case nothing is drawn
-	 * @param anchors the stage whose stand-in is the target, or null to fly to the real creature
-	 */
-	void start(JarType thrown, NPC npc, StageAnchors anchors)
-	{
-		jar = npc == null ? null : thrown;
-		target = npc;
-		stage = anchors;
+		jar = place == null ? null : thrown;
+		target = place;
 		age = 0;
 	}
 
@@ -94,7 +79,6 @@ final class JarFlightOverlay extends Overlay
 	{
 		jar = null;
 		target = null;
-		stage = null;
 		age = 0;
 	}
 
@@ -128,13 +112,13 @@ final class JarFlightOverlay extends Overlay
 	{
 		BufferedImage image = JarIcons.image(flying);
 		Player player = client.getLocalPlayer();
-		NPC npc = target;
-		if (image == null || player == null || npc == null || player.getWorldView() == null)
+		Supplier<StageAnchors.Spot> place = target;
+		StageAnchors.Spot body = place == null ? null : place.get();
+		if (image == null || player == null || body == null || player.getWorldView() == null)
 			return;
 
 		LocalPoint from = player.getLocalLocation();
-		StageAnchors.Spot standIn = stage == null ? null : stage.spotOf(Notice.Anchor.STAGE_FOE);
-		LocalPoint to = standIn == null ? npc.getLocalLocation() : standIn.point();
+		LocalPoint to = body.point();
 		if (from == null || to == null)
 			return;
 
@@ -143,8 +127,7 @@ final class JarFlightOverlay extends Overlay
 			(int) Math.round(JarFlight.between(from.getX(), to.getX(), progress)),
 			(int) Math.round(JarFlight.between(from.getY(), to.getY(), progress)),
 			player.getWorldView());
-		int targetHeight = standIn == null ? npc.getLogicalHeight() : standIn.height();
-		int height = (int) Math.round(JarFlight.height(HAND_HEIGHT, targetHeight / 2.0, progress));
+		int height = (int) Math.round(JarFlight.height(HAND_HEIGHT, body.height() / 2.0, progress));
 		Point screen = Perspective.localToCanvas(client, at, player.getWorldView().getPlane(), height);
 		if (screen == null)
 			return;

@@ -105,9 +105,7 @@ public class QuestSpeciesTest
 			WildEntry entry = tracker.offer(i, 100 + i, quest, 40, i % 2 == 0, now, 1.0, 1, true);
 
 			assertNull(entry);
-			assertNull(tracker.get(i));
-			assertFalse(tracker.canRestore(i, 100 + i, now));
-			assertNull(tracker.restore(i, 100 + i, now));
+			assertTrue(tracker.all().isEmpty());
 		}
 
 		Species plain = new Species("Plain Beast", 40, CombatType.MELEE);

@@ -16,8 +16,8 @@ import net.runelite.api.NPC;
 import net.runelite.api.RuneLiteObject;
 
 /**
- * A creature drawn as an object in the scene: the lead creature beside the player, or the stand-in for a wild
- * creature during a battle. It loops a base animation (standing or walking) and can act out one move of a battle
+ * A creature drawn as an object in the scene: the lead creature beside the player, or the body of a wild
+ * creature. It loops a base animation (standing or walking) and can act out one move of a battle
  * on top of it: attack, get hit, or go down. A move with no animation of its own is faked with a short lunge or
  * recoil, or by laying the model on the ground. A melee attacker can also step up to its target, strike and step
  * back ({@link #meleeTurn(double, Act)}, timed by {@link TurnMotion}). Every method must be called on the game thread.
@@ -219,6 +219,31 @@ final class CreatureBody extends RuneLiteObject
 		{
 			log.debug("Gielinor Go: could not read the animations of NPC {}", npcId, e);
 		}
+	}
+
+	/**
+	 * Remembers stand and walk animations that were read from a live NPC earlier, for a body that is built again
+	 * after the NPC is gone.
+	 *
+	 * @param idle the stand animation id, or {@link AnimationTable#NONE}
+	 * @param walk the walk animation id, or {@link AnimationTable#NONE}
+	 */
+	void useAnimations(int idle, int walk)
+	{
+		liveIdle = idle;
+		liveWalk = walk;
+	}
+
+	/** @return the stand animation the live NPC had, as {@link #useLive} read it, or {@link AnimationTable#NONE} */
+	int liveIdle()
+	{
+		return liveIdle;
+	}
+
+	/** @return the walk animation the live NPC had, as {@link #useLive} read it, or {@link AnimationTable#NONE} */
+	int liveWalk()
+	{
+		return liveWalk;
 	}
 
 	/** @return the stand animation: the table's, or the live NPC's when the table has no row for the NPC id */
