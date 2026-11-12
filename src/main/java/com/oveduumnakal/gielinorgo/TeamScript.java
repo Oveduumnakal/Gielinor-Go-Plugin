@@ -135,12 +135,25 @@ final class TeamScript
 		private final Entry started;
 		private final BattleLine line;
 		private final boolean done;
+		private final boolean waiting;
 
 		private Tick(Entry started, BattleLine line, boolean done)
+		{
+			this(started, line, done, false);
+		}
+
+		private Tick(Entry started, BattleLine line, boolean done, boolean waiting)
 		{
 			this.started = started;
 			this.line = line;
 			this.done = done;
+			this.waiting = waiting;
+		}
+
+		/** @return whether an open script has played everything it was given and waits for more */
+		boolean waiting()
+		{
+			return waiting;
 		}
 
 		/** @return the entry that begins on this tick, or null when the one before carries on */
@@ -166,14 +179,44 @@ final class TeamScript
 	static final class Run
 	{
 		private final List<Entry> entries;
+		private boolean open;
 		private int next;
 		private Entry current;
 		private int left;
 		private int age;
 
-		private Run(List<Entry> entries)
+		private Run(List<Entry> entries, boolean open)
 		{
 			this.entries = entries;
+			this.open = open;
+		}
+
+		/**
+		 * Adds entries to a script that is still open, for the next turn of a battle the player steers.
+		 *
+		 * @param more the entries, in order
+		 */
+		void append(List<Entry> more)
+		{
+			entries.addAll(more);
+		}
+
+		/** Closes the script: it is done once the entries it has are played. */
+		void close()
+		{
+			open = false;
+		}
+
+		/** @return whether the script can still be added to */
+		boolean open()
+		{
+			return open;
+		}
+
+		/** @return whether an open script has played everything it was given and waits for more */
+		boolean waiting()
+		{
+			return open && left == 0 && next >= entries.size();
 		}
 
 		/**
@@ -187,7 +230,7 @@ final class TeamScript
 			if (left == 0)
 			{
 				if (next >= entries.size())
-					return new Tick(null, null, true);
+					return new Tick(null, null, !open, open);
 
 				current = entries.get(next++);
 				left = current.ticks;
@@ -304,6 +347,101 @@ final class TeamScript
 	/** @return a fresh run of the script, at its start */
 	Run run()
 	{
-		return new Run(new ArrayList<>(entries));
+		return new Run(new ArrayList<>(entries), false);
+	}
+
+	/**
+	 * Starts the script of a battle the player steers: it has no entries yet and no end, and waits whenever it has
+	 * played what it was given.
+	 *
+	 * @return an open run
+	 */
+	static Run openRun()
+	{
+		return new Run(new ArrayList<>(), true);
+	}
+
+	/**
+	 * Makes the entry that brings the opposing creature in.
+	 *
+	 * @param species the species key
+	 * @return the entry
+	 */
+	static Entry enterFoe(String species)
+	{
+		return new Entry(Kind.ENTER_FOE, Side.FOE, species, false, null, null, FADE_TICKS);
+	}
+
+	/**
+	 * Makes the entry that brings one of the player's creatures in.
+	 *
+	 * @param species the species key
+	 * @param gilded whether it is drawn gold
+	 * @return the entry
+	 */
+	static Entry enterMine(String species, boolean gilded)
+	{
+		return new Entry(Kind.ENTER_MINE, Side.MINE, species, gilded, null, null, FADE_TICKS);
+	}
+
+	/**
+	 * Turns one turn of a battle the player steers into the entries that act it out: a creature that comes back and
+	 * one that steps in, the blows, and whoever falls, fades out and is replaced.
+	 *
+	 * @param turn the turn
+	 * @return the entries, in order
+	 */
+	static List<Entry> entriesOf(TurnResult turn)
+	{
+		List<Entry> out = new ArrayList<>();
+		if (turn.voluntarySwitch())
+			out.add(new Entry(Kind.EXIT, Side.MINE, null, false, null, null, FADE_TICKS));
+
+		Combatant entered = turn.enteredMine();
+		if (entered != null)
+			out.add(enterMine(entered.speciesKey(), entered.isGilded()));
+
+		for (BattleLine hit : turn.hits())
+		{
+			List<BattleTimeline.Step> steps = BattleTimeline.stepsOf(Collections.singletonList(hit));
+			if (!steps.isEmpty())
+				out.add(new Entry(Kind.HIT, null, null, false, steps.get(0), hit, BattleTimeline.BEAT_TICKS));
+		}
+
+		Duel duel = turn.duel();
+		BattleLine knockOut = duel == null ? null : duel.knockOut();
+		if (turn.mineFainted())
+		{
+			out.add(new Entry(Kind.DOWN, Side.MINE, null, false, null, knockOut, TEAM_HOLD_TICKS));
+			out.add(new Entry(Kind.EXIT, Side.MINE, null, false, null, null, FADE_TICKS));
+		}
+
+		if (turn.foeFainted())
+		{
+			out.add(new Entry(Kind.DOWN, Side.FOE, null, false, null, knockOut, TEAM_HOLD_TICKS));
+			out.add(new Entry(Kind.EXIT, Side.FOE, null, false, null, null, FADE_TICKS));
+		}
+
+		Combatant next = turn.enteredFoe();
+		if (next != null)
+			out.add(enterFoe(next.speciesKey()));
+
+		return out;
+	}
+
+	/**
+	 * Makes the last entries of a battle the player steers: the opposing creature that won fades out, as it does in
+	 * a battle played in one go.
+	 *
+	 * @param won whether the player's team won
+	 * @return the entries
+	 */
+	static List<Entry> endEntries(boolean won)
+	{
+		List<Entry> out = new ArrayList<>();
+		if (!won)
+			out.add(new Entry(Kind.EXIT, Side.FOE, null, false, null, null, FADE_TICKS));
+
+		return out;
 	}
 }

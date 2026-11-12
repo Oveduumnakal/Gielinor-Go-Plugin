@@ -132,9 +132,76 @@ final class ArenaStage implements StageAnchors
 	 */
 	boolean start(List<Duel> duels, boolean leadFirst)
 	{
+		if (duels.isEmpty())
+			return false;
+
+		String firstFoe = duels.get(0).theirSpecies();
+		return begin(firstFoe, TeamScript.of(duels, leadFirst).run());
+	}
+
+	/**
+	 * Starts acting out a team battle the player steers, which is fed turn by turn ({@link #append}) and waits in
+	 * between ({@link #waiting()}). The same things stop it from starting as for {@link #start}.
+	 *
+	 * @param foeSpecies the species key of the first opposing creature
+	 * @param mineSpecies the species key of the player's first creature to fight
+	 * @param mineGilded whether that creature is gilded
+	 * @param leadFirst whether the player's first creature to fight is the lead beside the player, so it needs no
+	 *     fade-in and keeps its name tag
+	 * @return true when the battle is on stage
+	 */
+	boolean startOpen(String foeSpecies, String mineSpecies, boolean mineGilded, boolean leadFirst)
+	{
+		TeamScript.Run open = TeamScript.openRun();
+		List<TeamScript.Entry> first = new ArrayList<>();
+		first.add(TeamScript.enterFoe(foeSpecies));
+		if (!leadFirst)
+			first.add(TeamScript.enterMine(mineSpecies, mineGilded));
+
+		open.append(first);
+		return begin(foeSpecies, open);
+	}
+
+	/**
+	 * Adds the next turn of a battle the player steers to the scene.
+	 *
+	 * @param turn the turn
+	 */
+	void append(TurnResult turn)
+	{
+		TeamScript.Run current = run;
+		if (current != null && current.open())
+			current.append(TeamScript.entriesOf(turn));
+	}
+
+	/**
+	 * Gives a battle the player steers its end: what is left plays, the opposing creature that won fades out, and
+	 * the scene ends.
+	 *
+	 * @param won whether the player's team won
+	 */
+	void finishWith(boolean won)
+	{
+		TeamScript.Run current = run;
+		if (current == null || !current.open())
+			return;
+
+		current.append(TeamScript.endEntries(won));
+		current.close();
+	}
+
+	/** @return whether a battle the player steers has played everything it was given and waits for a choice */
+	boolean waiting()
+	{
+		TeamScript.Run current = run;
+		return current != null && !walking && current.waiting();
+	}
+
+	private boolean begin(String firstFoe, TeamScript.Run script)
+	{
 		WorldView view = client.getTopLevelWorldView();
 		Player player = client.getLocalPlayer();
-		if (run != null || duels.isEmpty() || view == null || player == null
+		if (run != null || view == null || player == null
 			|| client.getGameState() != GameState.LOGGED_IN || !follower.shown())
 			return false;
 
@@ -145,7 +212,7 @@ final class ArenaStage implements StageAnchors
 			if (at == null)
 				return false;
 
-			body = buildFoe(duels.get(0).theirSpecies());
+			body = buildFoe(firstFoe);
 			if (body == null)
 				return false;
 
@@ -168,7 +235,7 @@ final class ArenaStage implements StageAnchors
 			walking = true;
 			walked = 0;
 			acting.release();
-			run = TeamScript.of(duels, leadFirst).run();
+			run = script;
 			return true;
 		}
 		catch (RuntimeException | AssertionError e)

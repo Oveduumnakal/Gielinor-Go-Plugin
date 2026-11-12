@@ -170,6 +170,10 @@ final class DuelActing
 				foeStrikes(step, CreatureBody.Act.SPECIAL);
 				break;
 
+			case LEAD_FELL:
+				lead.act(CreatureBody.Act.DEFEATED);
+				break;
+
 			default:
 				if (leadLost)
 					lead.act(CreatureBody.Act.DEFEATED);

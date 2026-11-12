@@ -11,8 +11,11 @@ import java.util.List;
 /**
  * Who acts when in a battle that is acted out on screen. The lead creature first walks up to the other one; then
  * each battle line is one beat, {@link #BEAT_TICKS} game ticks apart, an attack by one side and a reaction by the
- * other; at the last line the loser goes down and stays down for a few seconds. It has no link to the game client,
- * so the order of events can be tested tick by tick.
+ * other; at the last line the loser goes down and stays down for a few seconds. An automatic battle is planned in
+ * full when it starts. A battle the player steers is fed beat by beat ({@link #append}) and waits in
+ * {@link Phase#WAITING} whenever it has played everything it was given, until the next turn is appended or the
+ * battle is ended with {@link #finishWith(boolean)}. It has no link to the game client, so the order of events can
+ * be tested tick by tick.
  */
 final class BattleTimeline
 {
@@ -46,6 +49,9 @@ final class BattleTimeline
 		/** The battle lines are being played, one every {@link #BEAT_TICKS} game ticks. */
 		FIGHTING,
 
+		/** A battle the player steers has played every beat it was given and waits for the next turn. */
+		WAITING,
+
 		/** The loser is down. */
 		DOWN,
 
@@ -72,7 +78,10 @@ final class BattleTimeline
 		FOE_SPECIAL,
 
 		/** The result is out and the loser goes down. */
-		FINISH
+		FINISH,
+
+		/** The lead creature goes down, but the battle goes on: another creature of the team must step in. */
+		LEAD_FELL
 	}
 
 	/** One beat of the fight, with how the attack of that beat is made. */
@@ -133,7 +142,8 @@ final class BattleTimeline
 	}
 
 	private final List<Step> steps;
-	private final boolean leadWon;
+	private boolean leadWon;
+	private boolean sealed;
 	private Phase phase = Phase.WALKING;
 	private int walked;
 	private int next;
@@ -149,11 +159,74 @@ final class BattleTimeline
 	 */
 	BattleTimeline(List<Step> steps, boolean leadWon)
 	{
+		this(steps, leadWon, true);
+	}
+
+	private BattleTimeline(List<Step> steps, boolean leadWon, boolean sealed)
+	{
 		this.steps = new ArrayList<>(steps);
-		if (this.steps.isEmpty() || this.steps.get(this.steps.size() - 1).beat() != Beat.FINISH)
+		if (sealed && (this.steps.isEmpty() || this.steps.get(this.steps.size() - 1).beat() != Beat.FINISH))
 			this.steps.add(new Step(Beat.FINISH, null));
 
 		this.leadWon = leadWon;
+		this.sealed = sealed;
+	}
+
+	/**
+	 * Plans the start of a battle the player steers: the beats known so far, and no end yet.
+	 *
+	 * @param steps what happens on the first beats, usually the face-off
+	 * @return a timeline that waits for more beats once it has played these
+	 */
+	static BattleTimeline open(List<Step> steps)
+	{
+		return new BattleTimeline(steps, false, false);
+	}
+
+	/**
+	 * Adds the beats of the next turn of a battle the player steers. A battle that is waiting goes on with them.
+	 * Beats added to a battle that already has its end are ignored.
+	 *
+	 * @param more the beats, in order
+	 */
+	void append(List<Step> more)
+	{
+		if (sealed)
+			return;
+
+		steps.addAll(more);
+		if (phase == Phase.WAITING && next < steps.size())
+			phase = Phase.FIGHTING;
+	}
+
+	/**
+	 * Gives a battle the player steers its end: the beats that are left play, and then the loser goes down. Does
+	 * nothing for a battle that already has its end.
+	 *
+	 * @param won whether the player's creature won
+	 */
+	void finishWith(boolean won)
+	{
+		if (sealed)
+			return;
+
+		sealed = true;
+		leadWon = won;
+		steps.add(new Step(Beat.FINISH, null));
+		if (phase == Phase.WAITING)
+			phase = Phase.FIGHTING;
+	}
+
+	/** @return whether the battle has its end, so nothing more can be added */
+	boolean sealed()
+	{
+		return sealed;
+	}
+
+	/** @return whether a battle the player steers has played everything it was given and waits for the next turn */
+	boolean waiting()
+	{
+		return phase == Phase.WAITING;
 	}
 
 	/**
@@ -216,11 +289,20 @@ final class BattleTimeline
 			phase = Phase.FIGHTING;
 		}
 
+		if (phase == Phase.WAITING && next < steps.size())
+			phase = Phase.FIGHTING;
+
 		if (phase == Phase.FIGHTING)
 		{
 			if (wait > 0)
 			{
 				wait--;
+				return null;
+			}
+
+			if (next >= steps.size())
+			{
+				phase = Phase.WAITING;
 				return null;
 			}
 
