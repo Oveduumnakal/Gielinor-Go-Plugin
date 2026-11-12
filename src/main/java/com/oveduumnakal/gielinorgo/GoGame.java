@@ -119,6 +119,7 @@ final class GoGame
 	private EliteTable elite = EliteTable.empty();
 	private EliteRun run;
 	private boolean atGuild;
+	private boolean bankNear;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -250,7 +251,7 @@ final class GoGame
 		{
 			data.addJars(jar, 1);
 			dirty = true;
-			tell("+1 " + jar.label() + " jar (" + skillName(skill) + ")", Tone.FIND, jar);
+			tell(foundJars(jar, 1, skillName(skill)), Tone.FIND, jar);
 		}
 
 		rollSkillItems(skill, gained);
@@ -273,7 +274,7 @@ final class GoGame
 		{
 			data.stepProgress -= TILES_PER_JAR;
 			data.addJars(JarType.BRONZE, 1);
-			tell("+1 Bronze jar (walking)", Tone.FIND, JarType.BRONZE);
+			tell(foundJars(JarType.BRONZE, 1, null), Tone.FIND, JarType.BRONZE);
 		}
 
 		walking = true;
@@ -319,6 +320,26 @@ final class GoGame
 
 		cityId = id;
 		return true;
+	}
+
+	/**
+	 * Tells the game whether a bank is near the player, so the team may be changed there.
+	 *
+	 * @param near true when a banker, bank booth or bank chest is within {@link BankSpots#NEAR_TILES} tiles
+	 */
+	void setBankNear(boolean near)
+	{
+		bankNear = near;
+	}
+
+	/** @return whether the team may be changed here; otherwise the player is told where to go */
+	private boolean mayChangeTeam()
+	{
+		if (TeamSwapRule.allowed(cityId != null, bankNear))
+			return true;
+
+		tell(TeamSwapRule.REFUSAL, Tone.BAD);
+		return false;
 	}
 
 	/**
@@ -401,7 +422,7 @@ final class GoGame
 	{
 		data.addJars(JarType.BRONZE, JARS_PER_LEVEL_UP);
 		dirty = true;
-		tell("+" + JARS_PER_LEVEL_UP + " Bronze jars (level up)", Tone.FIND, JarType.BRONZE);
+		tell(foundJars(JarType.BRONZE, JARS_PER_LEVEL_UP, "level up"), Tone.FIND, JarType.BRONZE);
 	}
 
 	/**
@@ -564,12 +585,46 @@ final class GoGame
 	}
 
 	/**
-	 * Sends the lead creature into a battle against a wild creature.
+	 * Sends the team into a battle against a wild creature, played to the end without the player's choices. It is
+	 * the engine of a steered battle ({@link #startBattle}) answered by rule: every turn attacks, and when a
+	 * creature faints the next one that can fight steps in for free. The battle is lost only when the whole team is
+	 * down. The team fights in order and the creatures too tired to battle sit out, so when the lead is too tired
+	 * the first rested creature opens. Winning, health, the daily tasks and the {@code battled} mark are settled by
+	 * {@link #act} exactly as for a steered battle.
 	 *
 	 * @param entry the wild creature
 	 * @return the battle, or null when no battle could start
 	 */
 	BattleResult battle(WildEntry entry)
+	{
+		BattleSession session = startAutoBattle(entry);
+		if (session == null)
+			return null;
+
+		List<BattleLine> log = new ArrayList<>();
+		List<TurnResult> turns = new ArrayList<>();
+		log.add(session.opening());
+		while (!session.over())
+		{
+			BattleState state = session.state();
+			BattleChoice next = state.needsSwitch() ? BattleChoice.switchTo(state.firstAlive())
+				: BattleChoice.attack();
+			TurnResult turn = act(session, next);
+			if (turn == null)
+				break;
+
+			turns.add(turn);
+			log.addAll(turn.lines());
+		}
+
+		BattleState state = session.state();
+		boolean won = state.ended() == TurnResult.Status.WON;
+		log.add(BattleSim.closing(state.mine(), state.foe(), won));
+		return new BattleResult(won, log, state.mine().hpFraction(), state.totalAttacks(), turns,
+			session.fighter(0), session.fighters().get(0) == data.lead());
+	}
+
+	private BattleSession startAutoBattle(WildEntry entry)
 	{
 		if (eliteBusy())
 			return null;
@@ -588,28 +643,17 @@ final class GoGame
 			return null;
 		}
 
-		long now = clock.getAsLong();
-		double health = lead.hpFractionAt(now);
-		if (health < MIN_BATTLE_HP)
+		List<Creature> fighters = new ArrayList<>();
+		List<Combatant> mine = restedTeam(clock.getAsLong(), fighters);
+		if (mine.isEmpty())
 		{
-			tell(nameOf(lead) + " is too tired", Tone.BAD);
+			tell(data.team.size() > 1 ? "Your team is too tired" : nameOf(lead) + " is too tired", Tone.BAD);
 			return null;
 		}
 
-		Combatant mine = new Combatant(leadSpecies, nameOf(lead), lead.level(), health, lead.rolls());
 		Combatant foe = new Combatant(entry.species(), entry.level(), 1.0);
-		BattleResult result = BattleSim.fight(mine, foe, random);
-		lead.hpFraction = result.hpFractionLeft();
-		lead.hpStampMs = now;
-		entry.markBattled(result.won());
-		dirty = true;
-		if (result.won())
-		{
-			rewardWin(lead, leadSpecies, entry);
-			payTasks(startTasks().battleWon());
-		}
-
-		return result;
+		BattleState state = new BattleState(mine, Collections.singletonList(foe), random, BattleState.Mode.WILD);
+		return new BattleSession(state, fighters, entry, null, BattleSim.opening(mine.get(0), foe));
 	}
 
 	/**
@@ -892,6 +936,9 @@ final class GoGame
 		if (eliteBusy())
 			return;
 
+		if (!mayChangeTeam())
+			return;
+
 		if (teamIndex < 0 || teamIndex >= data.team.size())
 			return;
 
@@ -913,6 +960,9 @@ final class GoGame
 	void moveToTeam(int storageIndex)
 	{
 		if (eliteBusy())
+			return;
+
+		if (!mayChangeTeam())
 			return;
 
 		if (storageIndex < 0 || storageIndex >= data.storage.size())
@@ -1242,7 +1292,7 @@ final class GoGame
 
 		tell("Sigil of " + champion.city() + " earned!", Tone.FIND);
 		data.addJars(champion.rewardJar(), champion.rewardJars());
-		tell("+" + champion.rewardJars() + " " + champion.rewardJar().label() + " jars (champion)", Tone.FIND,
+		tell(foundJars(champion.rewardJar(), champion.rewardJars(), "champion"), Tone.FIND,
 			champion.rewardJar());
 		addTrainerXp(50L + 10L * champion.topLevel());
 		giveItems(ItemType.LARGE_SALVE, ItemRules.CHAMPION_LARGE_SALVES, "champion");
@@ -1725,7 +1775,7 @@ final class GoGame
 		{
 			JarType drop = randomUnlockedJar();
 			data.addJars(drop, 1);
-			tell("+1 " + drop.label() + " jar (battle win)", Tone.FIND, drop);
+			tell(foundJars(drop, 1, "battle win"), Tone.FIND, drop);
 		}
 
 		double eggChance = entry.roaming() ? ROAMING_EGG_CHANCE : EGG_DROP_CHANCE;
@@ -1914,6 +1964,20 @@ final class GoGame
 	}
 
 	/**
+	 * Words a jar find: {@code Found a Bronze jar} or {@code Found 3 Bronze jars}, with an optional short source.
+	 *
+	 * @param jar the jar found
+	 * @param count how many
+	 * @param source what gave them, shown in brackets when it tells the player something, or null
+	 * @return the line
+	 */
+	static String foundJars(JarType jar, int count, String source)
+	{
+		String what = count == 1 ? "a " + jar.label() + " jar" : count + " " + jar.label() + " jars";
+		return "Found " + what + (source == null ? "" : " (" + source + ")");
+	}
+
+	/**
 	 * Tells the player about a jar they found, with the jar's picture beside the line.
 	 *
 	 * @param text the line
@@ -1969,7 +2033,12 @@ final class GoGame
 		return rolls.rating().label() + " (" + rolls.temperament().label() + ")";
 	}
 
-	private String speciesNameOf(Creature creature)
+	/**
+	 * @param creature a creature the player owns
+	 * @return its species name as written for the player, such as {@code Monkey Guard}; the saved key when the
+	 *     species is no longer in the list
+	 */
+	String speciesNameOf(Creature creature)
 	{
 		Species found = species.find(creature.species);
 		return found == null ? creature.species : found.name();

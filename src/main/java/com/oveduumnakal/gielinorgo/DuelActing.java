@@ -174,6 +174,9 @@ final class DuelActing
 				lead.act(CreatureBody.Act.DEFEATED);
 				break;
 
+			case LEAD_ENTERS:
+				break;
+
 			default:
 				if (leadLost)
 					lead.act(CreatureBody.Act.DEFEATED);

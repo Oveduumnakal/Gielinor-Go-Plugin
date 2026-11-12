@@ -215,6 +215,32 @@ final class StatRolls
 		return text.toString();
 	}
 
+	/**
+	 * Writes the rolls with the percentage each stat really gets from roll and temperament together.
+	 *
+	 * @return health and attack, a {@code <br>}, then defence and speed, each as the roll and then the net change in
+	 *     brackets, for example {@code Speed -4 (+3%)}; a stat whose net change rounds to nothing shows only its roll
+	 */
+	String describeNet()
+	{
+		StringBuilder text = new StringBuilder();
+		for (Stat stat : Stat.values())
+		{
+			if (stat.ordinal() == 2)
+				text.append("<br>");
+			else if (text.length() > 0)
+				text.append(" \u00b7 ");
+
+			int roll = roll(stat);
+			text.append(stat.label()).append(' ').append(roll > 0 ? "+" + roll : String.valueOf(roll));
+			long net = Math.round((factor(stat) - 1.0) * 100);
+			if (net != 0)
+				text.append(" (" + (net > 0 ? "+" : "") + net + "%)");
+		}
+
+		return text.toString();
+	}
+
 	private static boolean inRange(int roll)
 	{
 		return roll >= MIN && roll <= MAX;

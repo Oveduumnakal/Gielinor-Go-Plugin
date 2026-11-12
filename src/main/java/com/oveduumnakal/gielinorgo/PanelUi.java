@@ -220,11 +220,13 @@ final class PanelUi
 	 * Writes the hidden numbers of a creature for a tooltip.
 	 *
 	 * @param view the creature
-	 * @return two lines of HTML: the rating and temperament, then the four rolls
+	 * @return three lines of HTML: the rating and temperament with its effect, then the four rolls with the
+	 *     percentage each stat really gets, two to a line
 	 */
 	static String tooltipRolls(CreatureView view)
 	{
-		return view.rating().label() + " \u00b7 " + view.temperamentLabel() + "<br>" + view.rollsLine();
+		return view.rating().label() + " \u00b7 " + view.temperamentLabel() + ": " + view.temperamentEffect()
+			+ "<br>" + view.rollsNetLines();
 	}
 
 	/**

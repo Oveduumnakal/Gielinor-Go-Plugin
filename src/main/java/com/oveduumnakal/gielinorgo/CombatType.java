@@ -42,6 +42,18 @@ enum CombatType
 		return MELEE;
 	}
 
+	/** @return the style that is strong against this one: melee loses to magic, ranged to melee, magic to ranged */
+	CombatType losesTo()
+	{
+		return beats().beats();
+	}
+
+	/** @return one quiet sentence for a tooltip: what this style beats and what beats it */
+	String matchup()
+	{
+		return label + " beats " + beats().label() + ", loses to " + losesTo().label();
+	}
+
 	/**
 	 * Damage multiplier for an attack of this style against a defender.
 	 *

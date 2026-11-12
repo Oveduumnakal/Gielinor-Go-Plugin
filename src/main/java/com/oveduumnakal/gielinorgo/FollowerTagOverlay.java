@@ -20,14 +20,16 @@ import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
-import net.runelite.client.ui.overlay.OverlayUtil;
 
-/** Draws the lead creature's nickname above the follower. Nothing is drawn for a creature without a nickname. */
+/** Draws the lead creature's name above the follower: its nickname, or its species name when it has none. */
 final class FollowerTagOverlay extends Overlay
 {
 	private static final Logger log = LoggerFactory.getLogger(FollowerTagOverlay.class);
 	private static final int HEAD_GAP = 30;
-	private static final Color TAG_COLOR = new Color(0xFFFFFF);
+	/** Opacity of the tag text and its shadow, from 0 to 255: half. */
+	static final int TAG_ALPHA = 128;
+	private static final Color TAG_COLOR = new Color(255, 255, 255, TAG_ALPHA);
+	private static final Color SHADOW_COLOR = new Color(0, 0, 0, TAG_ALPHA);
 
 	private final Client client;
 	private final FollowerService follower;
@@ -82,7 +84,24 @@ final class FollowerTagOverlay extends Overlay
 		graphics.setFont(FontManager.getRunescapeBoldFont());
 		Point at = Perspective.getCanvasTextLocation(client, graphics, ground, text,
 			follower.tagHeight() + HEAD_GAP);
-		if (at != null)
-			OverlayUtil.renderTextLocation(graphics, at, text, TAG_COLOR);
+		if (at == null)
+			return;
+
+		graphics.setColor(SHADOW_COLOR);
+		graphics.drawString(text, at.getX() + 1, at.getY() + 1);
+		graphics.setColor(TAG_COLOR);
+		graphics.drawString(text, at.getX(), at.getY());
+	}
+
+	/**
+	 * Picks the text the tag shows for a creature.
+	 *
+	 * @param nickname the creature's nickname, or null for none
+	 * @param species the creature's species name
+	 * @return the nickname when there is one, otherwise the species name
+	 */
+	static String nameFor(String nickname, String species)
+	{
+		return nickname == null || nickname.isEmpty() ? species : nickname;
 	}
 }
