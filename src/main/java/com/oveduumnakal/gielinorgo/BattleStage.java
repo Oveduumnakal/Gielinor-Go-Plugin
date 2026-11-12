@@ -284,6 +284,9 @@ final class BattleStage implements RenderCallback, StageAnchors
 		if (step != null)
 			acting.play(step, timeline.leadLost());
 
+		if (step != null && step.beat() == BattleTimeline.Beat.LEAD_ENTERS)
+			showLead(step.entered());
+
 		if (timeline.phase() == BattleTimeline.Phase.DONE)
 			beginEnd();
 	}
@@ -356,6 +359,27 @@ final class BattleStage implements RenderCallback, StageAnchors
 			steps.add(new BattleTimeline.Step(BattleTimeline.Beat.LEAD_FELL, null));
 
 		current.append(steps);
+	}
+
+	/**
+	 * Gives an automatic battle in which creatures step in all its beats and its end at once, as a battle the player
+	 * steers is fed turn by turn. The beats play in order, a creature that falls lies down and the next one walks in.
+	 *
+	 * @param script what happens after the face-off
+	 * @param leadWon whether the player's side won
+	 * @param opener the creature that opened the battle
+	 * @param leadOpened whether it is the lead, which already stands beside the player
+	 */
+	void playScript(WildScript script, boolean leadWon, Combatant opener, boolean leadOpened)
+	{
+		if (timeline == null)
+			return;
+
+		if (!leadOpened)
+			showLead(opener);
+
+		timeline.append(script.steps());
+		timeline.finishWith(leadWon);
 	}
 
 	/**

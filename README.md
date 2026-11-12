@@ -102,7 +102,10 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 
 - **Battles that play themselves**
 
-  Choose **Battle** on a wild creature and your lead fights it right away. Each hit floats over the creature's
+  Choose **Battle** on a wild creature and your lead fights it right away. When it faints, the next creature of
+  your team that can fight steps in by itself ("Go, Bob!") and the battle goes on; it is lost only when your whole
+  team is down. Creatures below a quarter of their health sit out, so when the lead is too tired the first rested
+  creature opens. A win pays once and the creature that lands the last blow gets the creature XP. Each hit floats over the creature's
   head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. Melee beats Ranged, Ranged beats Magic, and Magic beats
   Melee. A creature's card tooltip reminds you of its style's match-up. There is no opening line: the fight goes
   straight from the face-off to the first blow. A creature that loses to you is easier to catch. Dragons and wyverns bite in melee but about one hit in
@@ -133,7 +136,7 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 - **Choose your own moves**
 
   Turn on **Choose battle actions** in the settings (it is off by default, and then every battle plays itself as
-  described above, with your lead alone). A battle with a wild creature or a City Champion then waits for you each
+  described above, with your whole team: the next creature steps in on its own). A battle with a wild creature or a City Champion then waits for you each
   turn, and the battle box appears at the top of the side panel, above the tabs, with both creatures' health, a
   countdown bar and four buttons:
 

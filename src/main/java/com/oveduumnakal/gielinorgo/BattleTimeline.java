@@ -81,7 +81,10 @@ final class BattleTimeline
 		FINISH,
 
 		/** The lead creature goes down, but the battle goes on: another creature of the team must step in. */
-		LEAD_FELL
+		LEAD_FELL,
+
+		/** Another creature of the team steps in as the lead, in a battle that played its switches by itself. */
+		LEAD_ENTERS
 	}
 
 	/** One beat of the fight, with how the attack of that beat is made. */
@@ -90,6 +93,20 @@ final class BattleTimeline
 		private final Beat beat;
 		private final CombatType style;
 		private final ProjectileLook look;
+		private final Combatant entered;
+
+		/**
+		 * Describes the step in which a creature of the team steps in as the lead.
+		 *
+		 * @param entered the creature that steps in
+		 */
+		Step(Combatant entered)
+		{
+			this.beat = Beat.LEAD_ENTERS;
+			this.style = null;
+			this.look = null;
+			this.entered = entered;
+		}
 
 		/**
 		 * Describes a step with no projectile.
@@ -114,6 +131,13 @@ final class BattleTimeline
 			this.beat = beat;
 			this.style = style;
 			this.look = look;
+			this.entered = null;
+		}
+
+		/** @return the creature that steps in at a {@link Beat#LEAD_ENTERS} beat, else null */
+		Combatant entered()
+		{
+			return entered;
 		}
 
 		/** @return what happens */
