@@ -424,6 +424,19 @@ final class GoGame
 	 */
 	CatchOutcome tryCatch(WildEntry entry, JarType jar)
 	{
+		return tryCatch(entry, jar, false);
+	}
+
+	/**
+	 * Throws a chosen jar at a wild creature that may lie knocked out.
+	 *
+	 * @param entry the wild creature
+	 * @param jar the jar to throw, or null when the player has none
+	 * @param knockedOut whether the creature lies knocked out, which makes it easier to catch
+	 * @return what happened, see {@link #tryCatch(WildEntry, JarType)}
+	 */
+	CatchOutcome tryCatch(WildEntry entry, JarType jar, boolean knockedOut)
+	{
 		String name = entry.species().name();
 		if (jar == null || data.jarCount(jar) <= 0)
 		{
@@ -439,7 +452,8 @@ final class GoGame
 
 		data.addJars(jar, -1);
 		dirty = true;
-		if (random.nextDouble() >= CatchRules.chance(jar, entry.combatLevel(), entry.weakened(), entry.traits()))
+		if (random.nextDouble() >= CatchRules.chance(jar, entry.combatLevel(), entry.weakened(), entry.traits(),
+			knockedOut))
 		{
 			if (random.nextDouble() < CatchRules.FLEE_CHANCE)
 			{

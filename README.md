@@ -84,6 +84,12 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   the real monster is untouched. A breath plays the creature's breath animation. Creatures with no animation for a
   move lunge or tip over instead. Switch it off in the settings.
 
+  **Catch a knocked-out creature.** When your lead wins, the wild creature lies knocked out for about 10 seconds.
+  Right-click the lying copy to get the same **Catch** options as the real monster (you can also do this while it
+  fights). A knocked-out creature is twice as easy to catch (x2.0); once it is back up it is x1.5 as before. Caught:
+  the catch plays out as usual. Broke free: it gets up and the scene ends. Ran away: the scene ends and it is no
+  longer wild.
+
 - **Creatures evolve**
 
   Many creatures grow into a stronger relative when they reach a certain level: an Imp becomes a Lesser demon,

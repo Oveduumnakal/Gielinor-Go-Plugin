@@ -254,6 +254,21 @@ final class CreatureBody extends RuneLiteObject
 		return lying;
 	}
 
+	/**
+	 * Gives the model to hit-test a click against. It is a model that already exists and is never changed here: the
+	 * body tipped onto the ground while it lies down, else the body standing still. An animation that is playing is
+	 * not followed, so a death animation that lays the model down is covered by the tile it stands on instead.
+	 *
+	 * @return the model, or null when none is built
+	 */
+	Model hitModel()
+	{
+		if (lying && tipped[level] != null)
+			return tipped[level];
+
+		return stillNow();
+	}
+
 	@Override
 	public Model getModel()
 	{

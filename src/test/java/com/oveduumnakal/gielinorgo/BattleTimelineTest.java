@@ -152,6 +152,47 @@ public class BattleTimelineTest
 	}
 
 	@Test
+	public void aBeatenWildCreatureStaysDownTenSecondsKnockedOut()
+	{
+		BattleTimeline timeline = new BattleTimeline(TWO_HITS, true);
+		assertFalse(timeline.knockedOut());
+		timeline.tick(true);
+		afterPause(timeline);
+		afterPause(timeline);
+
+		assertEquals(17, BattleTimeline.KNOCKED_OUT_TICKS);
+		assertEquals(BattleTimeline.KNOCKED_OUT_TICKS, timeline.holdTicks());
+		for (int tick = 1; tick < BattleTimeline.KNOCKED_OUT_TICKS; tick++)
+		{
+			assertNull(timeline.tick(true));
+			assertEquals(BattleTimeline.Phase.DOWN, timeline.phase());
+			assertTrue(timeline.knockedOut());
+		}
+
+		assertNull(timeline.tick(true));
+		assertEquals(BattleTimeline.Phase.DONE, timeline.phase());
+		assertFalse(timeline.knockedOut());
+	}
+
+	@Test
+	public void theLeadStaysDownTheShortTimeWhenItLostAndIsNeverKnockedOut()
+	{
+		BattleTimeline timeline = new BattleTimeline(TWO_HITS, false);
+		timeline.tick(true);
+		afterPause(timeline);
+		afterPause(timeline);
+
+		assertEquals(BattleTimeline.HOLD_TICKS, timeline.holdTicks());
+		assertFalse(timeline.knockedOut());
+		for (int tick = 1; tick < BattleTimeline.HOLD_TICKS; tick++)
+			assertNull(timeline.tick(true));
+
+		assertEquals(BattleTimeline.Phase.DOWN, timeline.phase());
+		assertNull(timeline.tick(true));
+		assertEquals(BattleTimeline.Phase.DONE, timeline.phase());
+	}
+
+	@Test
 	public void theLoserIsTheLeadOnlyWhenTheLeadLost()
 	{
 		assertTrue(new BattleTimeline(TWO_HITS, false).leadLost());

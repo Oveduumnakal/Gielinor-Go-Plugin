@@ -22,8 +22,11 @@ final class BattleTimeline
 	/** Game ticks from one attack to the next, the same pace as the battle lines ({@link NoticeBoard#LINE_TICKS}). */
 	static final int BEAT_TICKS = NoticeBoard.LINE_TICKS;
 
-	/** Game ticks the loser stays down: about five seconds. */
+	/** Game ticks the lead stays down when it loses: about five seconds. */
 	static final int HOLD_TICKS = 8;
+
+	/** Game ticks a beaten wild creature stays down, knocked out and open to a jar: about ten seconds. */
+	static final int KNOCKED_OUT_TICKS = 17;
 
 	/** Client ticks, 20 ms each, an attack's lunge or a recoil lasts. Shorter than a game tick (30). */
 	static final int LUNGE_TICKS = 18;
@@ -169,10 +172,22 @@ final class BattleTimeline
 			return beat;
 		}
 
-		if (phase == Phase.DOWN && ++held >= HOLD_TICKS)
+		if (phase == Phase.DOWN && ++held >= holdTicks())
 			phase = Phase.DONE;
 
 		return null;
+	}
+
+	/** @return how many game ticks the loser stays down: {@link #KNOCKED_OUT_TICKS} for a wild loser */
+	int holdTicks()
+	{
+		return leadWon ? KNOCKED_OUT_TICKS : HOLD_TICKS;
+	}
+
+	/** @return whether the wild creature lies knocked out: the lead won and the loser is down */
+	boolean knockedOut()
+	{
+		return leadWon && phase == Phase.DOWN;
 	}
 
 	/** @return the stage the battle is at */

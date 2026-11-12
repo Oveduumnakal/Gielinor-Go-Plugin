@@ -65,6 +65,30 @@ public class RulesTest
 	}
 
 	@Test
+	public void aKnockedOutCreatureIsEvenEasierAndTheBonusesAreNotMultiplied()
+	{
+		Set<Trait> none = EnumSet.noneOf(Trait.class);
+		double normal = CatchRules.chance(JarType.BRONZE, 100, false);
+
+		assertEquals(2.0, CatchRules.KNOCKED_OUT_BONUS, 0);
+		assertEquals(normal * CatchRules.KNOCKED_OUT_BONUS,
+			CatchRules.chance(JarType.BRONZE, 100, false, none, true), EPSILON);
+		assertEquals(normal * CatchRules.KNOCKED_OUT_BONUS,
+			CatchRules.chance(JarType.BRONZE, 100, true, none, true), EPSILON);
+		assertTrue(CatchRules.chance(JarType.BRONZE, 100, true, none, true)
+			> CatchRules.chance(JarType.BRONZE, 100, true, none, false));
+	}
+
+	@Test
+	public void theKnockedOutBonusStaysInsideTheClamp()
+	{
+		Set<Trait> none = EnumSet.noneOf(Trait.class);
+
+		assertEquals(CatchRules.MAX_CHANCE, CatchRules.chance(JarType.DRAGON, 1, true, none, true), 0);
+		assertEquals(CatchRules.MIN_CHANCE, CatchRules.chance(JarType.BRONZE, 5000, false, none, true), 0);
+	}
+
+	@Test
 	public void aSpecialtyJarOnlyHelpsOnItsTrait()
 	{
 		Set<Trait> fast = EnumSet.of(Trait.MELEE, Trait.FAST);

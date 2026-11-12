@@ -20,6 +20,12 @@ final class CatchRules
 	/** Multiplier on the catch chance for a wild creature that just lost a battle. */
 	static final double WEAKENED_BONUS = 1.5;
 
+	/**
+	 * Multiplier on the catch chance while a wild creature that just lost a battle still lies knocked out. It
+	 * replaces {@link #WEAKENED_BONUS}; the two are never multiplied together.
+	 */
+	static final double KNOCKED_OUT_BONUS = 2.0;
+
 	/** Chance that a creature runs away after breaking out of a jar. */
 	static final double FLEE_CHANCE = 0.3;
 
@@ -59,8 +65,26 @@ final class CatchRules
 	 */
 	static double chance(JarType jar, int combatLevel, boolean weakened, Set<Trait> traits)
 	{
+		return chance(jar, combatLevel, weakened, traits, false);
+	}
+
+	/**
+	 * Chance that one throw catches a monster that may lie knocked out.
+	 *
+	 * @param jar the jar thrown
+	 * @param combatLevel the monster's combat level
+	 * @param weakened whether the monster just lost a battle to the player
+	 * @param traits the monster's traits, which a specialty jar may be good at
+	 * @param knockedOut whether the monster still lies knocked out; {@link #KNOCKED_OUT_BONUS} then applies
+	 *     instead of {@link #WEAKENED_BONUS}
+	 * @return the chance, from {@link #MIN_CHANCE} to {@link #MAX_CHANCE}
+	 */
+	static double chance(JarType jar, int combatLevel, boolean weakened, Set<Trait> traits, boolean knockedOut)
+	{
 		double base = jar.bonusAgainst(traits) * CHANCE_PIVOT / (CHANCE_PIVOT + Math.max(0, combatLevel));
-		if (weakened)
+		if (knockedOut)
+			base *= KNOCKED_OUT_BONUS;
+		else if (weakened)
 			base *= WEAKENED_BONUS;
 
 		return Math.max(MIN_CHANCE, Math.min(MAX_CHANCE, base));
