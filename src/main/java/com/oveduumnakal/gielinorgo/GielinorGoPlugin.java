@@ -1204,10 +1204,35 @@ public class GielinorGoPlugin extends Plugin
 		heldNotices = new ArrayList<>();
 		BattleResult result = game.battle(entry);
 		List<BattleLine> lines = result == null ? null : result.summary(BATTLE_LINES);
-		boolean staged = lines != null && config.battleAnimations()
-			&& !arena.active() && stage.start(candidates.get(npcIndex), lines, result.won());
+		boolean staged;
+		if (result != null && result.switches() > 0)
+			staged = stageTeamBattle(npcIndex, result, lines);
+		else
+			staged = lines != null && config.battleAnimations()
+				&& !arena.active() && stage.start(candidates.get(npcIndex), lines, result.won());
+
 		playBack(lines, npcIndex, staged);
 		refreshPanel();
+	}
+
+	/**
+	 * Acts out an automatic battle in which creatures stepped in, through the same open timeline a battle the player
+	 * steers uses: the face-off, then every beat at once ({@link WildScript}), then the end. The real lead is shown
+	 * again when the scene ends.
+	 *
+	 * @param npcIndex the game's index for the monster
+	 * @param result the battle
+	 * @param lines the lines of the battle, as {@link WildScript} cut them
+	 * @return whether the battle is on stage, so its text waits for the scene
+	 */
+	private boolean stageTeamBattle(int npcIndex, BattleResult result, List<BattleLine> lines)
+	{
+		if (!config.battleAnimations() || arena.active() || stage.active()
+			|| !stage.startOpen(candidates.get(npcIndex), lines.subList(0, 1)))
+			return false;
+
+		stage.playScript(WildScript.of(result), result.won(), result.opener(), result.leadOpened());
+		return true;
 	}
 
 	/**

@@ -562,12 +562,46 @@ final class GoGame
 	}
 
 	/**
-	 * Sends the lead creature into a battle against a wild creature.
+	 * Sends the team into a battle against a wild creature, played to the end without the player's choices. It is
+	 * the engine of a steered battle ({@link #startBattle}) answered by rule: every turn attacks, and when a
+	 * creature faints the next one that can fight steps in for free. The battle is lost only when the whole team is
+	 * down. The team fights in order and the creatures too tired to battle sit out, so when the lead is too tired
+	 * the first rested creature opens. Winning, health, the daily tasks and the {@code battled} mark are settled by
+	 * {@link #act} exactly as for a steered battle.
 	 *
 	 * @param entry the wild creature
 	 * @return the battle, or null when no battle could start
 	 */
 	BattleResult battle(WildEntry entry)
+	{
+		BattleSession session = startAutoBattle(entry);
+		if (session == null)
+			return null;
+
+		List<BattleLine> log = new ArrayList<>();
+		List<TurnResult> turns = new ArrayList<>();
+		log.add(session.opening());
+		while (!session.over())
+		{
+			BattleState state = session.state();
+			BattleChoice next = state.needsSwitch() ? BattleChoice.switchTo(state.firstAlive())
+				: BattleChoice.attack();
+			TurnResult turn = act(session, next);
+			if (turn == null)
+				break;
+
+			turns.add(turn);
+			log.addAll(turn.lines());
+		}
+
+		BattleState state = session.state();
+		boolean won = state.ended() == TurnResult.Status.WON;
+		log.add(BattleSim.closing(state.mine(), state.foe(), won));
+		return new BattleResult(won, log, state.mine().hpFraction(), state.totalAttacks(), turns,
+			session.fighter(0), session.fighters().get(0) == data.lead());
+	}
+
+	private BattleSession startAutoBattle(WildEntry entry)
 	{
 		if (eliteBusy())
 			return null;
@@ -586,28 +620,17 @@ final class GoGame
 			return null;
 		}
 
-		long now = clock.getAsLong();
-		double health = lead.hpFractionAt(now);
-		if (health < MIN_BATTLE_HP)
+		List<Creature> fighters = new ArrayList<>();
+		List<Combatant> mine = restedTeam(clock.getAsLong(), fighters);
+		if (mine.isEmpty())
 		{
-			tell(nameOf(lead) + " is too tired", Tone.BAD);
+			tell(data.team.size() > 1 ? "Your team is too tired" : nameOf(lead) + " is too tired", Tone.BAD);
 			return null;
 		}
 
-		Combatant mine = new Combatant(leadSpecies, nameOf(lead), lead.level(), health, lead.rolls());
 		Combatant foe = new Combatant(entry.species(), entry.level(), 1.0);
-		BattleResult result = BattleSim.fight(mine, foe, random);
-		lead.hpFraction = result.hpFractionLeft();
-		lead.hpStampMs = now;
-		entry.markBattled(result.won());
-		dirty = true;
-		if (result.won())
-		{
-			rewardWin(lead, leadSpecies, entry);
-			payTasks(startTasks().battleWon());
-		}
-
-		return result;
+		BattleState state = new BattleState(mine, Collections.singletonList(foe), random, BattleState.Mode.WILD);
+		return new BattleSession(state, fighters, entry, null, BattleSim.opening(mine.get(0), foe));
 	}
 
 	/**
