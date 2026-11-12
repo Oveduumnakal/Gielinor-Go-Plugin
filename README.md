@@ -95,8 +95,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Right-click a creature in Team or Storage and choose **Rename...** to give it a name of 1 to 12 letters, numbers,
   spaces or hyphens. The nickname shows on its card (hover the card for the species), in Storage, in battle
   lines and in level-up and evolution lines, and a creature keeps it when it evolves. Leave the box empty to go
-  back to the species name. With **Show lead's nickname** on (the default), your lead's nickname floats above it
-  as it follows you. Nicknames stay on your computer: friends never see them, and a creature you trade away
+  back to the species name. With **Show lead's name** on (the default), your lead's name (its nickname, or its species name
+  without one) floats above it at half opacity as it follows you. Nicknames stay on your computer: friends never see them, and a creature you trade away
   arrives without one.
 
 - **Battles that play themselves**
