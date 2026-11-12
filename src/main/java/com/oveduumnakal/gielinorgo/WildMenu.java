@@ -14,11 +14,11 @@ import java.util.List;
 final class WildMenu
 {
 	/**
-	 * Whether a plain left click on a wild creature throws the selected jar. When false, a left click starts a
-	 * battle instead. Either way both are in the right-click menu. The owner chose a left click on the creature on
-	 * 2026-11-12; which action it does is the builder's default and is meant to be flipped here.
+	 * Whether a plain left click on a wild creature throws the selected jar. When false (the owner's choice of
+	 * 2026-11-12), a left click starts a battle instead, except on a knocked-out creature
+	 * ({@link #leftClickCatches(boolean)}). Flip it here.
 	 */
-	static final boolean LEFT_CLICK_CATCHES = true;
+	static final boolean LEFT_CLICK_CATCHES = false;
 
 	/** The words of a catch entry. */
 	static final String CATCH = "Catch";
@@ -59,6 +59,19 @@ final class WildMenu
 
 	private WildMenu()
 	{
+	}
+
+	/**
+	 * Works out what a plain left click does for a wild creature in some state: the default
+	 * ({@link #LEFT_CLICK_CATCHES}) while it stands, and a catch once it lies knocked out, when a jar has the best
+	 * odds.
+	 *
+	 * @param knockedOut whether the creature lies knocked out after losing a battle
+	 * @return true when the left click throws the selected jar, false when it starts a battle
+	 */
+	static boolean leftClickCatches(boolean knockedOut)
+	{
+		return knockedOut || LEFT_CLICK_CATCHES;
 	}
 
 	/**

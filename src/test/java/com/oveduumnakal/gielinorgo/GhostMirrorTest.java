@@ -95,8 +95,8 @@ public class GhostMirrorTest
 	@Test
 	public void theStandInIsThreeQuartersOfTheRealSize()
 	{
-		assertEquals(96, BattleStage.shrunk(128));
-		assertEquals(192, BattleStage.shrunk(256));
-		assertEquals(1, BattleStage.shrunk(0));
+		assertEquals(96, WildBody.shrunk(128));
+		assertEquals(192, WildBody.shrunk(256));
+		assertEquals(1, WildBody.shrunk(0));
 	}
 }

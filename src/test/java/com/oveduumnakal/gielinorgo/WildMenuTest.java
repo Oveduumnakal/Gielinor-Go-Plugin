@@ -24,9 +24,16 @@ public class WildMenuTest
 	private static final JarType SPECIALTY = JarType.values()[1];
 
 	@Test
-	public void aLeftClickCatchesByDefault()
+	public void aLeftClickBattlesByDefault()
 	{
-		assertTrue(WildMenu.LEFT_CLICK_CATCHES);
+		assertFalse(WildMenu.LEFT_CLICK_CATCHES);
+	}
+
+	@Test
+	public void aKnockedOutCreatureIsCaughtByALeftClick()
+	{
+		assertTrue(WildMenu.leftClickCatches(true));
+		assertEquals(WildMenu.LEFT_CLICK_CATCHES, WildMenu.leftClickCatches(false));
 	}
 
 	@Test

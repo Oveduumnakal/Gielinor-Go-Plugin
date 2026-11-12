@@ -61,6 +61,7 @@ final class WildBody
 	private int tiles = 1;
 	private boolean facingHeld;
 	private boolean fadeBroken;
+	private boolean unreachableNoted;
 	private volatile StageAnchors.Spot spot;
 
 	/**
@@ -210,6 +211,29 @@ final class WildBody
 	int facing()
 	{
 		return facing;
+	}
+
+	/**
+	 * Gives the height of the ground the body is drawn on, so a projectile can leave from or land on its body.
+	 *
+	 * @return the scene's z of the body's feet, or NaN while it is not drawn
+	 */
+	double groundZ()
+	{
+		StageAnchors.Spot at = spot;
+		return at == null ? Double.NaN : Perspective.getTileHeight(client, at.point(), plane);
+	}
+
+	/**
+	 * Notes that the player was told a battle with this creature is shown as text because it cannot be reached.
+	 *
+	 * @return true the first time, false after that, so the player is told once
+	 */
+	boolean noteUnreachable()
+	{
+		boolean first = !unreachableNoted;
+		unreachableNoted = true;
+		return first;
 	}
 
 	/** @return where the body is drawn now, or null while it is not in the scene */

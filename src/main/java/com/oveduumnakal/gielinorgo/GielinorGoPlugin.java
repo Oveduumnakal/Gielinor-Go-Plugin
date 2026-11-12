@@ -243,8 +243,7 @@ public class GielinorGoPlugin extends Plugin
 		renderCallbackManager.register(effects);
 		jarFlight = new JarFlightOverlay(client);
 		overlayManager.add(jarFlight);
-		stage = new BattleStage(client, follower, animations);
-		renderCallbackManager.register(stage);
+		stage = new BattleStage(client, follower, System::currentTimeMillis);
 		arena = new ArenaStage(client, follower, animations, game::speciesFor);
 		director = new BattleDirector(game, config::turnSeconds, battleListener());
 		promptOverlay = new BattlePromptOverlay();
@@ -277,7 +276,6 @@ public class GielinorGoPlugin extends Plugin
 		clientThread.invoke(bodies::clear);
 		clientThread.invoke(follower::remove);
 		renderCallbackManager.unregister(effects);
-		renderCallbackManager.unregister(stage);
 		clientThread.invoke(effects::clear);
 		clientThread.invoke(jarFlight::clear);
 		overlayManager.remove(jarFlight);
@@ -497,7 +495,6 @@ public class GielinorGoPlugin extends Plugin
 	{
 		int index = event.getNpc().getIndex();
 		effects.forget(event.getNpc());
-		stage.forget(event.getNpc());
 		candidates.remove(index);
 		tracker.leftView(index, System.currentTimeMillis());
 	}
@@ -634,7 +631,10 @@ public class GielinorGoPlugin extends Plugin
 	{
 		long now = System.currentTimeMillis();
 		for (int wildId : bodies.gameTick(now))
+		{
 			tracker.remove(wildId);
+			stage.forget(wildId);
+		}
 	}
 
 	/**
@@ -1220,7 +1220,7 @@ public class GielinorGoPlugin extends Plugin
 		WildBody body = bodies.get(wildId);
 		boolean withBattle = !entry.battled() && !director.active() && body != null && !body.life().leaving();
 		List<WildMenu.Item> items = WildMenu.topFirst(game.jarToThrow(), game.matchingSpecialtyJars(entry),
-			withBattle, WildMenu.LEFT_CLICK_CATCHES);
+			withBattle, WildMenu.leftClickCatches(knockedOut(wildId)));
 		for (int i = items.size() - 1; i >= 0; i--)
 		{
 			WildMenu.Item item = items.get(i);
@@ -1324,7 +1324,10 @@ public class GielinorGoPlugin extends Plugin
 		}
 
 		if (outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED)
+		{
 			bodies.remove(wildId, System.currentTimeMillis());
+			stage.forget(wildId);
+		}
 	}
 
 	private void battle(int wildId)
@@ -1343,8 +1346,47 @@ public class GielinorGoPlugin extends Plugin
 		heldNotices = new ArrayList<>();
 		BattleResult result = game.battle(entry);
 		List<BattleLine> lines = result == null ? null : result.playbackSummary(BATTLE_LINES);
-		playBack(lines, wildId, false);
+		boolean staged = false;
+		if (result != null && config.battleAnimations() && !arena.active() && !stage.active())
+		{
+			staged = result.switches() > 0 ? stageTeamBattle(body, result, lines)
+				: stage.start(body, lines, result.won());
+			noteUnreachable(wildId, body);
+		}
+
+		playBack(lines, wildId, staged);
 		refreshPanel();
+	}
+
+	/**
+	 * Says once for a wild creature that a battle with it is shown as text because the lead has no way to get to it.
+	 *
+	 * @param wildId the wild creature's id
+	 * @param body its body
+	 */
+	private void noteUnreachable(int wildId, WildBody body)
+	{
+		if (stage.takeUnreachable() && body.noteUnreachable())
+			announce(Notice.creature(wildId, "Can't reach it, so the battle is shown as text", Tone.INFO));
+	}
+
+	/**
+	 * Acts out an automatic battle in which creatures stepped in, through the same open timeline a battle the player
+	 * steers uses: the face-off, then every beat at once ({@link WildScript}), then the end. The real lead is shown
+	 * again when the scene ends.
+	 *
+	 * @param body the wild creature's body
+	 * @param result the battle
+	 * @param lines the lines of the battle, as {@link WildScript} cut them
+	 * @return whether the battle is on stage, so its text waits for the scene
+	 */
+	private boolean stageTeamBattle(WildBody body, BattleResult result, List<BattleLine> lines)
+	{
+		if (!stage.startOpen(body, lines.subList(0, 1)))
+			return false;
+
+		stage.playScript(WildScript.of(result), result.won(), result.opener(), result.leadOpened());
+		return true;
 	}
 
 	/**
@@ -1566,8 +1608,14 @@ public class GielinorGoPlugin extends Plugin
 		List<BattleLine> opening = Collections.singletonList(battle.opening());
 		steerWild = wildId;
 		steerHome = null;
-		director.begin(battle, null);
-		playBack(opening, wildId, false);
+		WildBody body = bodies.get(wildId);
+		boolean staged = body != null && config.battleAnimations() && !arena.active() && !stage.active()
+			&& stage.startOpen(body, opening);
+		if (body != null)
+			noteUnreachable(wildId, body);
+
+		director.begin(battle, staged ? new WildScene(stage) : null);
+		playBack(opening, wildId, staged);
 		refreshPanel();
 	}
 
