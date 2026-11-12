@@ -1,3 +1,6 @@
+<p align="center">
+  <img src="docs/img/00-banner.jpg" alt="Gielinor Go banner" width="100%">
+</p>
 <h1 align="center">Gielinor Go</h1>
 
 Gielinor Go is a RuneLite plugin that adds a creature-raising side game to Old School RuneScape. Catch the monsters
