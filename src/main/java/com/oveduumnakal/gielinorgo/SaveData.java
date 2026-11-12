@@ -76,6 +76,9 @@ final class SaveData
 	/** Ids of the Creature Log milestones whose reward has been paid. Null in saves from before milestones. */
 	Set<String> milestones = new LinkedHashSet<>();
 
+	/** How many times the player has cleared the Elite challenge. 0 in saves from before it existed. */
+	int eliteClears;
+
 	/** @return a save for a player who has never played, with the starting jars */
 	static SaveData fresh()
 	{

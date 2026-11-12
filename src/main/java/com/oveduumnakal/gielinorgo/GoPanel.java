@@ -133,7 +133,8 @@ final class GoPanel extends PluginPanel
 	void update(PanelState state)
 	{
 		latest = state;
-		trainerLabel.setText("Trainer Lv " + state.trainerLevel());
+		trainerLabel.setText((state.elite().titled() ? "Grand Champion Lv " : "Trainer Lv ") + state.trainerLevel());
+		trainerLabel.setForeground(state.elite().titled() ? PanelUi.GOLD : Color.WHITE);
 		trainerBar.set(state.trainerProgress(), ColorScheme.BRAND_ORANGE);
 		trainerBar.setToolTipText(Math.round(state.trainerProgress() * 100) + "% to the next trainer level");
 		winsLabel.setText(state.battlesWon() + (state.battlesWon() == 1 ? " battle won" : " battles won"));
@@ -145,6 +146,7 @@ final class GoPanel extends PluginPanel
 		storageTab.update(state.storage());
 		logTab.update(state);
 		championsTab.update(state.champions());
+		championsTab.updateElite(state.elite());
 	}
 
 	/**

@@ -32,6 +32,7 @@ final class PanelState
 	private final TodayView today;
 	private final TaskView tasks;
 	private MilestoneView milestones = MilestoneView.NONE;
+	private EliteView elite = EliteView.NONE;
 
 	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
 		JarType selectedJar, int stepProgress, List<CreatureView> team, List<CreatureView> storage,
@@ -154,12 +155,20 @@ final class PanelState
 	 * Adds the end-game goals to a state that is still being built. Call it before the state is shared.
 	 *
 	 * @param milestoneView the Creature Log milestones
+	 * @param eliteView the Elite challenge card
 	 * @return this state
 	 */
-	PanelState withGoals(MilestoneView milestoneView)
+	PanelState withGoals(MilestoneView milestoneView, EliteView eliteView)
 	{
 		this.milestones = milestoneView;
+		this.elite = eliteView;
 		return this;
+	}
+
+	/** @return the Elite challenge card for the Battle tab */
+	EliteView elite()
+	{
+		return elite;
 	}
 
 	/** @return the next Creature Log milestone and the full list, for the Log tab */

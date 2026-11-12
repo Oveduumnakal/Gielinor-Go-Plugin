@@ -198,6 +198,7 @@ public class GielinorGoPlugin extends Plugin
 			System::currentTimeMillis, this::announce);
 		calendar = new SpawnCalendar(species);
 		game.milestones(loadMilestones(species));
+		game.elite(loadElite(species));
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
 		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce);
 		trades = new FriendTrades(species, game, random, System::currentTimeMillis, this::sendToParty,
@@ -605,6 +606,25 @@ public class GielinorGoPlugin extends Plugin
 		{
 			log.warn("Gielinor Go: could not read the family list", e);
 			return new Milestones(species, Collections.emptyList());
+		}
+	}
+
+	private EliteTable loadElite(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(EliteTable.RESOURCE))
+		{
+			if (in == null)
+				return EliteTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return EliteTable.load(gson, reader, species);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the Elite challenge", e);
+			return EliteTable.empty();
 		}
 	}
 
@@ -1152,6 +1172,25 @@ public class GielinorGoPlugin extends Plugin
 		playTeamBattle(game.challenge(championId), true);
 	}
 
+	private void eliteChallenge()
+	{
+		heldNotices = new ArrayList<>();
+		playTeamBattle(game.eliteChallenge(), true);
+	}
+
+	private void eliteContinue()
+	{
+		heldNotices = new ArrayList<>();
+		playTeamBattle(game.eliteContinue(), true);
+	}
+
+	private void eliteForfeit()
+	{
+		heldNotices = new ArrayList<>();
+		game.eliteForfeit();
+		playBack(null, Notice.PLAYER);
+	}
+
 	/**
 	 * @return whether the player is busy with something in the game, such as fighting a monster or talking to
 	 *     someone, so a scene they did not ask for must not start over it
@@ -1288,6 +1327,24 @@ public class GielinorGoPlugin extends Plugin
 			public void challenge(String championId)
 			{
 				onGameThread(() -> GielinorGoPlugin.this.challenge(championId));
+			}
+
+			@Override
+			public void eliteChallenge()
+			{
+				onGameThread(GielinorGoPlugin.this::eliteChallenge);
+			}
+
+			@Override
+			public void eliteContinue()
+			{
+				onGameThread(GielinorGoPlugin.this::eliteContinue);
+			}
+
+			@Override
+			public void eliteForfeit()
+			{
+				onGameThread(GielinorGoPlugin.this::eliteForfeit);
 			}
 
 			@Override

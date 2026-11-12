@@ -46,6 +46,9 @@ final class GoGame
 	/** Bronze jars the first catch of a UTC day pays. */
 	static final int STREAK_JARS = 2;
 
+	/** The least share of full health a creature needs to take part in a battle of an Elite run. */
+	static final double ELITE_MIN_HEALTH = 0.01;
+
 	/** Most evolutions one creature can go through in a single burst of XP. */
 	private static final int MAX_EVOLUTIONS_AT_ONCE = 5;
 
@@ -112,6 +115,9 @@ final class GoGame
 	private Milestones milestoneTable = Milestones.NONE;
 	private boolean milestonesDue;
 	private boolean walking;
+	private EliteTable elite = EliteTable.empty();
+	private EliteRun run;
+	private boolean atGuild;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -174,6 +180,7 @@ final class GoGame
 		log = null;
 		xpCarry = 0;
 		dirty = false;
+		run = null;
 		milestonesDue = true;
 		settleMilestones();
 	}
@@ -299,10 +306,13 @@ final class GoGame
 	 */
 	boolean moveTo(int x, int y, int plane)
 	{
+		boolean guild = elite.contains(x, y, plane);
+		boolean guildChanged = guild != atGuild;
+		atGuild = guild;
 		Champion here = champions.at(x, y, plane);
 		String id = here == null ? null : here.id();
 		if (id == null ? cityId == null : id.equals(cityId))
-			return false;
+			return guildChanged;
 
 		cityId = id;
 		return true;
@@ -316,6 +326,9 @@ final class GoGame
 	 */
 	TeamBattleResult challenge(String championId)
 	{
+		if (eliteBusy())
+			return null;
+
 		Champion champion = champions.byId(championId);
 		if (champion == null)
 			return null;
@@ -533,6 +546,9 @@ final class GoGame
 	 */
 	BattleResult battle(WildEntry entry)
 	{
+		if (eliteBusy())
+			return null;
+
 		Creature lead = data.lead();
 		Species leadSpecies = lead == null ? null : species.find(lead.species);
 		if (leadSpecies == null)
@@ -578,6 +594,9 @@ final class GoGame
 	 */
 	void setLead(int teamIndex)
 	{
+		if (eliteBusy())
+			return;
+
 		if (teamIndex <= 0 || teamIndex >= data.team.size())
 			return;
 
@@ -592,6 +611,9 @@ final class GoGame
 	 */
 	void moveToStorage(int teamIndex)
 	{
+		if (eliteBusy())
+			return;
+
 		if (teamIndex < 0 || teamIndex >= data.team.size())
 			return;
 
@@ -612,6 +634,9 @@ final class GoGame
 	 */
 	void moveToTeam(int storageIndex)
 	{
+		if (eliteBusy())
+			return;
+
 		if (storageIndex < 0 || storageIndex >= data.storage.size())
 			return;
 
@@ -805,11 +830,12 @@ final class GoGame
 		for (Egg egg : data.eggs)
 			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal));
 
+		freezeTeam(now);
 		TaskView tasks = startTasks().view(now, bestUnlockedJar());
 		return new PanelState(trainerLevel(), XpRules.trainerProgress(data.trainerXp), data.battlesWon, jars,
 			selectedJar(), data.stepProgress, views(data.team, now), views(data.storage, now), log(),
 			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get(), tasks)
-			.withGoals(milestoneTable.progress(data));
+			.withGoals(milestoneTable.progress(data), eliteView());
 	}
 
 	/** @return how many caught species the species list still knows, so removed species do not inflate the total */
@@ -1026,6 +1052,246 @@ final class GoGame
 			else
 				tell(line, Tone.FIND, reward.jar());
 		}
+	}
+
+	/**
+	 * Sets the Elite challenge. Without this call there is none.
+	 *
+	 * @param table the Elite teams and rewards
+	 */
+	void elite(EliteTable table)
+	{
+		elite = table == null ? EliteTable.empty() : table;
+		run = null;
+	}
+
+	/** @return whether an Elite run is open, so the team's health is carried and nothing rests */
+	boolean eliteOpen()
+	{
+		return run != null && run.open();
+	}
+
+	/**
+	 * Starts an Elite run and plays its first battle, or plays the next battle of a run that is open.
+	 *
+	 * @return the battle, or null when the challenge cannot start; the reason is told to the player
+	 */
+	TeamBattleResult eliteChallenge()
+	{
+		if (eliteOpen())
+			return eliteBattle();
+
+		long now = clock.getAsLong();
+		boolean fit = !eliteFighters(new ArrayList<>(), now, MIN_BATTLE_HP).isEmpty();
+		String refusal = EliteRun.refusal(elite, data.sigils.size(), atGuild, hasRoomForEgg(), fit);
+		if (refusal != null)
+		{
+			tell(refusal, Tone.BAD);
+			return null;
+		}
+
+		for (Creature creature : data.team)
+		{
+			creature.hpFraction = creature.hpFractionAt(now);
+			creature.hpStampMs = now;
+		}
+
+		run = new EliteRun(elite, species);
+		tell("The Elite challenge begins. Health carries over and nothing rests until it ends", Tone.INFO);
+		return eliteBattle();
+	}
+
+	/**
+	 * Plays the next battle of the open Elite run.
+	 *
+	 * @return the battle, or null when no run is open
+	 */
+	TeamBattleResult eliteContinue()
+	{
+		return eliteOpen() ? eliteBattle() : null;
+	}
+
+	/** Gives up the open Elite run. The team starts resting again and the next attempt begins at trainer 1. */
+	void eliteForfeit()
+	{
+		if (!eliteOpen())
+			return;
+
+		run.forfeit();
+		run = null;
+		dirty = true;
+		tell("You gave up the Elite challenge. Your team rests again", Tone.INFO);
+	}
+
+	/**
+	 * Tells the player that something they asked for cannot be done during an Elite run.
+	 *
+	 * @return true while a run is open
+	 */
+	private boolean eliteBusy()
+	{
+		if (!eliteOpen())
+			return false;
+
+		tell("Finish or give up the Elite challenge first", Tone.BAD);
+		return true;
+	}
+
+	/**
+	 * Lists the creatures that can fight, with the health they carry.
+	 *
+	 * @param fighters receives the creatures, in team order
+	 * @param now the time, for the health of a creature that is resting
+	 * @param minHealth the least share of full health a creature may have and still fight
+	 * @return the creatures as combatants, in the same order
+	 */
+	private List<Combatant> eliteFighters(List<Creature> fighters, long now, double minHealth)
+	{
+		List<Combatant> mine = new ArrayList<>();
+		for (Creature creature : data.team)
+		{
+			Species found = species.find(creature.species);
+			double health = creature.hpFractionAt(now);
+			if (found == null || health < minHealth || health <= 0.0)
+				continue;
+
+			fighters.add(creature);
+			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls())
+				.gilded(creature.gilded));
+		}
+
+		return mine;
+	}
+
+	/** Keeps the team from resting: every creature's health is stamped as of now while a run is open. */
+	private void freezeTeam(long now)
+	{
+		if (!eliteOpen())
+			return;
+
+		for (Creature creature : data.team)
+			creature.hpStampMs = now;
+	}
+
+	/**
+	 * Fights the next battle of the open run and pays what it earns.
+	 *
+	 * @return the battle
+	 */
+	private TeamBattleResult eliteBattle()
+	{
+		long now = clock.getAsLong();
+		freezeTeam(now);
+		List<Creature> fighters = new ArrayList<>();
+		List<Combatant> mine = eliteFighters(fighters, now, ELITE_MIN_HEALTH);
+		if (mine.isEmpty())
+		{
+			run.forfeit();
+			run = null;
+			tell("No creature is left to fight. The Elite run is over", Tone.BAD);
+			return null;
+		}
+
+		int number = run.stage() + 1;
+		String opponent = run.opponent();
+		Champion foe = elite.stages().get(run.stage());
+		TeamBattleResult fought = run.fight(mine, random);
+		for (int i = 0; i < fighters.size(); i++)
+		{
+			Creature fighter = fighters.get(i);
+			fighter.hpFraction = mine.get(i).hpFraction();
+			fighter.hpStampMs = now;
+		}
+
+		dirty = true;
+		List<BattleLine> lines = new ArrayList<>();
+		lines.add(new BattleLine("Elite challenge " + number + " of " + EliteTable.STAGES + ": " + opponent + "!",
+			Tone.INFO, true));
+		lines.addAll(fought.lines());
+		if (fought.won())
+		{
+			rewardEliteWin(foe);
+			boolean cleared = run.state() == EliteRun.State.CLEARED;
+			lines.add(new BattleLine(cleared ? "You beat the Grand Champion!" : opponent + " beaten. Next: "
+				+ run.opponent(), Tone.GOOD, true));
+			if (cleared)
+			{
+				payEliteClear();
+				run = null;
+			}
+		}
+		else
+		{
+			lines.add(new BattleLine(opponent + " won. The Elite challenge is over. Rest and try again", Tone.BAD,
+				true));
+			run = null;
+		}
+
+		return new TeamBattleResult(fought.won(), lines, fought.duels())
+			.withLeadFirst(fighters.get(0) == data.lead());
+	}
+
+	/**
+	 * Pays the creature XP of one won Elite battle: full for the first clear of the challenge, half after it.
+	 *
+	 * @param foe the team that was beaten
+	 */
+	private void rewardEliteWin(Champion foe)
+	{
+		data.battlesWon++;
+		long creatureXp = 0;
+		for (Champion.Member member : foe.team())
+			creatureXp += 20L + 5L * member.level();
+
+		shareXp(data.eliteClears == 0 ? creatureXp : creatureXp / 2);
+		payTasks(startTasks().battleWon());
+	}
+
+	/** Pays the clear of the whole challenge: the big reward the first time, the small one after. */
+	private void payEliteClear()
+	{
+		boolean first = data.eliteClears == 0;
+		data.eliteClears++;
+		dirty = true;
+		if (!first)
+		{
+			data.addJars(JarType.DRAGON, elite.laterDragonJars());
+			tell("Elite challenge cleared again: +" + elite.laterDragonJars() + " Dragon jars", Tone.GOOD,
+				JarType.DRAGON);
+			return;
+		}
+
+		data.addJars(JarType.DRAGON, elite.firstDragonJars());
+		for (JarType type : JarType.values())
+		{
+			if (type.specialty())
+				data.addJars(type, elite.firstSpecialtyJars());
+		}
+
+		tell("You are the Grand Champion!", Tone.FIND);
+		tell("+" + elite.firstDragonJars() + " Dragon jars, +" + elite.firstSpecialtyJars()
+			+ " of every specialty jar", Tone.FIND, JarType.DRAGON);
+		tell(eggOrJars(elite.firstEgg()), Tone.FIND);
+	}
+
+	/** @return what the Elite card on the Battle tab shows */
+	private EliteView eliteView()
+	{
+		if (!elite.available())
+			return EliteView.NONE;
+
+		int sigils = data.sigils.size();
+		boolean titled = data.eliteClears > 0;
+		String reward = titled ? elite.laterDragonJars() + " Dragon jars"
+			: elite.firstDragonJars() + " Dragon jars, " + elite.firstSpecialtyJars()
+				+ " of every specialty jar, a " + elite.firstEgg().label() + " egg";
+		if (eliteOpen())
+			return new EliteView(EliteView.Mode.RUNNING, sigils, run.stage() + 1, EliteTable.STAGES, run.opponent(),
+				run.opponentTeam(), reward, titled);
+
+		EliteView.Mode mode = sigils < EliteRun.SIGILS_NEEDED ? EliteView.Mode.LOCKED
+			: atGuild ? EliteView.Mode.HERE : EliteView.Mode.AWAY;
+		return new EliteView(mode, sigils, 0, EliteTable.STAGES, null, null, reward, titled);
 	}
 
 	/**
