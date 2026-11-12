@@ -344,6 +344,18 @@ public class GoGameTest
 		assertFalse(game.takeDirty());
 	}
 
+	@Test
+	public void theCaughtTotalIgnoresSpeciesThatNoLongerExist()
+	{
+		SaveData other = SaveData.fresh();
+		other.caught.put("chicken", 1);
+		other.caught.put("durial321", 2);
+
+		game.load(other);
+
+		assertEquals(1, game.snapshot().caughtSpecies());
+	}
+
 	private void record(Notice notice)
 	{
 		messages.add(notice.text());

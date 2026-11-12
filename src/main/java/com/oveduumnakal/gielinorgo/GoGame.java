@@ -710,7 +710,20 @@ final class GoGame
 
 		return new PanelState(trainerLevel(), XpRules.trainerProgress(data.trainerXp), data.battlesWon, jars,
 			selectedJar(), data.stepProgress, views(data.team, now), views(data.storage, now), log(),
-			data.caughtSpecies(), data.seen.size(), eggs, championViews());
+			knownCaughtSpecies(), data.seen.size(), eggs, championViews());
+	}
+
+	/** @return how many caught species the species list still knows, so removed species do not inflate the total */
+	private int knownCaughtSpecies()
+	{
+		int known = 0;
+		for (String key : data.caught.keySet())
+		{
+			if (species.find(key) != null)
+				known++;
+		}
+
+		return known;
 	}
 
 	private List<ChampionView> championViews()

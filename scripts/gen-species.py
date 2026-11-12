@@ -11,6 +11,7 @@ import urllib.request
 
 API = "https://oldschool.runescape.wiki/api.php"
 OUT = "src/main/resources/com/oveduumnakal/gielinorgo/species.json"
+BLOCKLIST = "scripts/species-blocklist.txt"
 UA = "species-data-script/1.0"
 PAGE = 500
 QUERY = ("bucket('infobox_monster').select('page_name','name','combat_level','attack_style','attribute',"
@@ -134,7 +135,16 @@ def record(entry):
     return data
 
 
+def load_blocklist():
+    """Returns the lowercase names listed in the blocklist file, skipping blank lines and # comments."""
+    with open(BLOCKLIST, encoding="utf-8") as f:
+        lines = [line.split("#")[0].strip().lower() for line in f]
+    return {line for line in lines if line}
+
+
 def main():
+    blocked_names = load_blocklist()
+    blocked = set()
     rows = []
     offset = 0
     while True:
@@ -152,6 +162,9 @@ def main():
     for row in rows:
         name = clean_name(row.get("name") or row.get("page_name"))
         page = clean_name(row.get("page_name")).lower()
+        if name.lower() in blocked_names or page in blocked_names:
+            blocked.add(name.lower() if name.lower() in blocked_names else page)
+            continue
         if name.lower() in main_names and page != name.lower():
             continue
         if re.search(r"\((unused|historical)", row.get("page_name") or "", re.I):
@@ -177,6 +190,8 @@ def main():
     for t in TRAIT_ORDER:
         print(t, sum(1 for e in entries if t in e[3]))
     print("with ids", sum(1 for e in entries if e[4]))
+    print("blocked:", len(blocked), sorted(blocked))
+    print("review:", [e[0] for e in entries if any(c.isdigit() for c in e[0]) or not e[4]])
 
 
 if __name__ == "__main__":
