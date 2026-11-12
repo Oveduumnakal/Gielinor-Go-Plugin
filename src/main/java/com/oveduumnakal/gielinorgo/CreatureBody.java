@@ -694,7 +694,7 @@ final class CreatureBody extends RuneLiteObject
 		if (faces == null)
 			throw new IllegalStateException("no transparencies for level " + wanted);
 
-		GhostMirror.fadeAll(faces, OpacityFade.opacityOf(wanted));
+		OpacityFade.fadeAll(faces, OpacityFade.opacityOf(wanted));
 		return copy;
 	}
 

@@ -57,7 +57,7 @@ final class TurnMotion
 	/** How close a melee attacker comes to the target's edge, in tiles. */
 	static final double CONTACT_TILES = 0.75;
 
-	/** How far apart the lead and the wild creature's stand-in start, edge to lead, in tiles. */
+	/** How far apart the lead and the wild creature's body start, edge to lead, in tiles. */
 	static final double GAP_TILES = 2.0;
 
 	/** The gap used when the far spot is blocked, in tiles. */

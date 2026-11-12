@@ -49,7 +49,7 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "outlineColor",
 		name = "Wild outline colour",
-		description = "Colour of the outline around monsters you can catch or battle.",
+		description = "Colour of the outline around wild creatures you can catch or battle.",
 		position = 1
 	)
 	default Color outlineColor()
@@ -65,7 +65,7 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "showResults",
 		name = "Show floating text",
-		description = "Shows catches and battles as text over the monster's head, and things you find or earn over"
+		description = "Shows catches and battles as text over the wild creature, and things you find or earn over"
 			+ " your own head.",
 		position = 2
 	)
@@ -100,8 +100,8 @@ public interface GielinorGoConfig extends Config
 		name = "Catch effects",
 		description = "Your character makes a throwing motion when you throw a jar, then cheers for a catch,"
 			+ " stamps when the creature breaks free or cries when it runs away.\nThe creature reacts too: a catch"
-			+ " shrinks it into the jar for five seconds, one that breaks free attacks you and one that"
-			+ " flees runs off.\nOnly you can see this, and the real monster is untouched.",
+			+ " shrinks it into the jar, one that breaks free attacks you and one that"
+			+ " flees runs off.\nOnly you can see this, and no real monster is changed.",
 		position = 4
 	)
 	default boolean catchEffects()
@@ -120,7 +120,7 @@ public interface GielinorGoConfig extends Config
 		name = "Battle animations",
 		description = "Your lead creature walks up to the wild creature in a battle. They attack and react to each"
 			+ " hit,\nand the loser lies down for a few seconds.\nCity Champion and friend battles are acted out too."
-			+ "\nOnly you can see this, and the real monster is untouched.",
+			+ "\nOnly you can see this, and no real monster is changed.",
 		position = 5
 	)
 	default boolean battleAnimations()
