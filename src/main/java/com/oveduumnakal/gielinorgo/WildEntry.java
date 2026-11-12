@@ -19,6 +19,7 @@ final class WildEntry
 	private final boolean roaming;
 	private boolean battled;
 	private boolean weakened;
+	private int npcId;
 
 	WildEntry(int npcIndex, Species species, int level, int combatLevel)
 	{
@@ -79,6 +80,24 @@ final class WildEntry
 			all.add(Trait.CAVE);
 
 		this.traits = Collections.unmodifiableSet(all);
+	}
+
+	/**
+	 * Notes which NPC this entry is, so a creature caught from it looks like it.
+	 *
+	 * @param id the monster's NPC id
+	 * @return this entry
+	 */
+	WildEntry withNpcId(int id)
+	{
+		this.npcId = id;
+		return this;
+	}
+
+	/** @return the monster's NPC id, or 0 when it is not known */
+	int npcId()
+	{
+		return npcId;
 	}
 
 	/** @return the game's index for the monster this entry belongs to */

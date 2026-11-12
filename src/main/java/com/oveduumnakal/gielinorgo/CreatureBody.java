@@ -144,7 +144,24 @@ final class CreatureBody extends RuneLiteObject
 	 */
 	static CreatureBody petSized(Client client, AnimationTable animations, Species species, boolean gilded)
 	{
-		for (int npcId : species.ids())
+		return petSized(client, animations, species, 0, gilded);
+	}
+
+	/**
+	 * Builds a creature as it is drawn beside the player, as the NPC variant it was caught as. That NPC id is tried
+	 * first, then the others of the species in their order, so a variant that cannot be drawn still gives a body.
+	 *
+	 * @param client the game client
+	 * @param animations the animation ids of each NPC
+	 * @param species the species
+	 * @param preferred the NPC id to draw first, or 0 for the species' first; see {@link Species#npcIdFor(int)}
+	 * @param gilded whether to paint it gold
+	 * @return the body, or null when no NPC id of the species can be drawn
+	 */
+	static CreatureBody petSized(Client client, AnimationTable animations, Species species, int preferred,
+		boolean gilded)
+	{
+		for (int npcId : PortraitService.tryOrder(species, preferred))
 		{
 			try
 			{

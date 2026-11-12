@@ -109,6 +109,30 @@ final class Species
 		return ids == null ? new int[0] : ids.clone();
 	}
 
+	/**
+	 * Picks the NPC id to draw a creature of this species with.
+	 *
+	 * @param saved the NPC id the creature was caught as, or 0 when unknown
+	 * @return the saved id when it is one of the species' ids, else the species' first id; 0 when the species has no
+	 *     ids (an id that data changes dropped from the list falls back to the first one)
+	 */
+	int npcIdFor(int saved)
+	{
+		if (ids == null || ids.length == 0)
+			return 0;
+
+		if (saved > 0)
+		{
+			for (int id : ids)
+			{
+				if (id == saved)
+					return saved;
+			}
+		}
+
+		return ids[0];
+	}
+
 	/** @return the rarity tier for this species' combat level */
 	Rarity rarity()
 	{

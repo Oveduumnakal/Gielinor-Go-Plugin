@@ -4,6 +4,7 @@ class Creature {
   hpFraction: double
   hpStampMs: long
   nickname: String
+  npcId: int
   rollAttack: int
   rollDefence: int
   rollHp: int

@@ -1120,8 +1120,9 @@ public class GielinorGoPlugin extends Plugin
 	{
 		Creature lead = config.showFollower() && !hiddenForPvp() ? game.data().lead() : null;
 		leadTag = lead != null && config.showLeadName()
-			? FollowerTagOverlay.nameFor(lead.nickname, lead.species) : null;
-		follower.gameTick(lead == null ? null : lead.species, lead != null && lead.gilded);
+			? FollowerTagOverlay.nameFor(lead.nickname, game.speciesNameOf(lead)) : null;
+		follower.gameTick(lead == null ? null : lead.species, lead == null ? 0 : lead.npcId,
+			lead != null && lead.gilded);
 	}
 
 	private void offer(NPC npc)
@@ -1588,7 +1589,8 @@ public class GielinorGoPlugin extends Plugin
 		List<Creature> fighters = battle.fighters();
 		boolean leadFirst = fighters.get(0) == game.data().lead();
 		boolean staged = config.battleAnimations() && !stage.active()
-			&& arena.startOpen(state.foe().speciesKey(), first.speciesKey(), first.isGilded(), leadFirst);
+			&& arena.startOpen(state.foe().speciesKey(), first.speciesKey(), first.isGilded(), first.npcId(),
+				leadFirst);
 		Player player = client.getLocalPlayer();
 		steerNpc = Notice.PLAYER;
 		steerHome = player == null ? null : player.getWorldLocation();

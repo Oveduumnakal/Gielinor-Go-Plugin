@@ -85,7 +85,8 @@ final class WildTracker
 		if (roaming)
 			level = Math.min(XpRules.MAX_LEVEL, level + ROAMING_LEVELS);
 
-		WildEntry entry = new WildEntry(npcIndex, species, level, combatLevel, underground, gilded, roaming);
+		WildEntry entry = new WildEntry(npcIndex, species, level, combatLevel, underground, gilded, roaming)
+			.withNpcId(npcId);
 		wild.put(npcIndex, entry);
 		rolls.put(npcIndex, new Roll(npcId, entry, nowMs));
 		lastWildMs = nowMs;

@@ -65,6 +65,7 @@ final class TeamScript
 		private final Side side;
 		private final String species;
 		private final boolean gilded;
+		private int npcId;
 		private final BattleTimeline.Step step;
 		private final BattleLine line;
 		private final int ticks;
@@ -103,6 +104,18 @@ final class TeamScript
 		boolean gilded()
 		{
 			return gilded;
+		}
+
+		/** @return the NPC id to draw the creature that fades in with, 0 for the species' first */
+		int npcId()
+		{
+			return npcId;
+		}
+
+		private Entry withNpcId(int id)
+		{
+			this.npcId = id;
+			return this;
 		}
 
 		/** @return the step of a hit, with its style and projectile, or null for any other entry */
@@ -291,7 +304,7 @@ final class TeamScript
 			boolean mineNew = before == null ? !leadFirst : duel.mineIndex() != before.mineIndex();
 			if (mineNew)
 				entries.add(new Entry(Kind.ENTER_MINE, Side.MINE, duel.mineSpecies(), duel.mineGilded(), null, null,
-					FADE_TICKS));
+					FADE_TICKS).withNpcId(duel.mineNpcId()));
 
 			for (BattleLine hit : duel.hits())
 			{
@@ -381,7 +394,20 @@ final class TeamScript
 	 */
 	static Entry enterMine(String species, boolean gilded)
 	{
-		return new Entry(Kind.ENTER_MINE, Side.MINE, species, gilded, null, null, FADE_TICKS);
+		return enterMine(species, gilded, 0);
+	}
+
+	/**
+	 * Makes the entry that brings one of the player's creatures in, drawn as the NPC it was caught as.
+	 *
+	 * @param species the species key
+	 * @param gilded whether it is drawn gold
+	 * @param npcId the NPC id to draw it with, 0 for the species' first
+	 * @return the entry
+	 */
+	static Entry enterMine(String species, boolean gilded, int npcId)
+	{
+		return new Entry(Kind.ENTER_MINE, Side.MINE, species, gilded, null, null, FADE_TICKS).withNpcId(npcId);
 	}
 
 	/**
@@ -399,7 +425,7 @@ final class TeamScript
 
 		Combatant entered = turn.enteredMine();
 		if (entered != null)
-			out.add(enterMine(entered.speciesKey(), entered.isGilded()));
+			out.add(enterMine(entered.speciesKey(), entered.isGilded(), entered.npcId()));
 
 		for (BattleLine hit : turn.hits())
 		{

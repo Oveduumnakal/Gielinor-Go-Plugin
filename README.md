@@ -74,7 +74,10 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 - **Your lead walks with you**
 
   Your lead creature follows a step behind you as a small copy of itself, so it never gets in the way. A gilded
-  lead follows in gold. Only you can see it, it cannot be clicked, and you can switch it off in the settings.
+  lead follows in gold. A creature looks like the monster you caught: the small Monkey Guard stays small, in the
+  follower, the Team card and the battle scenes. Creatures that hatch, evolve or come from a trade, and creatures
+  caught before this was added, look like the species' usual monster. Only you can see it, it cannot be clicked, and
+  you can switch it off in the settings.
 
 - **Every creature is one of a kind**
 

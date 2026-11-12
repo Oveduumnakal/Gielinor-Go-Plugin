@@ -375,7 +375,8 @@ final class GoGame
 
 			fighters.add(creature);
 			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls())
-				.gilded(creature.gilded));
+				.gilded(creature.gilded)
+				.npc(creature.npcId));
 		}
 
 		if (mine.isEmpty())
@@ -564,6 +565,7 @@ final class GoGame
 
 		Creature caught = new Creature(entry.species().key(), entry.level(), clock.getAsLong());
 		caught.gilded = entry.gilded();
+		caught.npcId = entry.npcId();
 		caught.setRolls(StatRolls.roll(random));
 		keep(caught);
 		recordOwned(caught);
@@ -755,7 +757,8 @@ final class GoGame
 
 			fighters.add(creature);
 			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls())
-				.gilded(creature.gilded));
+				.gilded(creature.gilded)
+				.npc(creature.npcId));
 		}
 
 		return mine;
@@ -1259,6 +1262,7 @@ final class GoGame
 			Species grown = species.find(step.to());
 			String before = nameOf(creature);
 			creature.species = grown.key();
+			creature.npcId = 0;
 			recordOwned(creature);
 			tell(before + " evolved into " + grown.name() + "!", Tone.GOOD);
 			step = evolutions.next(creature.species);
@@ -1484,7 +1488,8 @@ final class GoGame
 
 			fighters.add(creature);
 			mine.add(new Combatant(found, nameOf(creature), creature.level(), health, creature.rolls())
-				.gilded(creature.gilded));
+				.gilded(creature.gilded)
+				.npc(creature.npcId));
 		}
 
 		return mine;
@@ -2027,7 +2032,12 @@ final class GoGame
 		return rolls.rating().label() + " (" + rolls.temperament().label() + ")";
 	}
 
-	private String speciesNameOf(Creature creature)
+	/**
+	 * @param creature a creature the player owns
+	 * @return its species name as written for the player, such as {@code Monkey Guard}; the saved key when the
+	 *     species is no longer in the list
+	 */
+	String speciesNameOf(Creature creature)
 	{
 		Species found = species.find(creature.species);
 		return found == null ? creature.species : found.name();
@@ -2043,7 +2053,7 @@ final class GoGame
 			CombatType type = found == null ? CombatType.MELEE : found.style();
 			views.add(new CreatureView(speciesNameOf(creature), creature.level(), XpRules.progress(creature.xp),
 				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname,
-				creature.rolls()));
+				creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId)));
 		}
 
 		return views;

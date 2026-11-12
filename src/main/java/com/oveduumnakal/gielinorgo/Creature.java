@@ -48,6 +48,13 @@ final class Creature
 	/** A {@link Temperament#name()}, or null for the steady temperament, which changes nothing. */
 	String temperament;
 
+	/**
+	 * The id of the NPC this creature was caught as, so it looks like the variant that was caught. 0 means unknown:
+	 * an older save, or a creature that was hatched, evolved or received in a trade. It is shown as the species' first
+	 * NPC id then, see {@link Species#npcIdFor(int)}.
+	 */
+	int npcId;
+
 	/** Used by Gson. */
 	Creature()
 	{

@@ -21,6 +21,8 @@ final class Combatant
 	private final int speed;
 	private double hp;
 	private boolean gilded;
+	private final Species species;
+	private int npcId;
 
 	/**
 	 * Builds a fighter.
@@ -73,6 +75,7 @@ final class Combatant
 	{
 		double tier = Math.sqrt(Math.max(1, species.level()));
 		this.name = displayName;
+		this.species = species;
 		this.speciesKey = species.key();
 		this.type = species.style();
 		this.secondStyle = species.secondStyle();
@@ -107,6 +110,25 @@ final class Combatant
 	{
 		this.gilded = shining;
 		return this;
+	}
+
+	/**
+	 * Notes which NPC the creature was caught as, so it is drawn like the variant that was caught. It only changes
+	 * how the fighter is drawn, never a stat.
+	 *
+	 * @param saved the creature's saved NPC id, 0 when unknown
+	 * @return this fighter
+	 */
+	Combatant npc(int saved)
+	{
+		this.npcId = species.npcIdFor(saved);
+		return this;
+	}
+
+	/** @return the NPC id to draw the creature with, 0 when it has none: a creature with no source NPC is the first */
+	int npcId()
+	{
+		return npcId;
 	}
 
 	/** @return whether the creature is gilded, so it is drawn gold */

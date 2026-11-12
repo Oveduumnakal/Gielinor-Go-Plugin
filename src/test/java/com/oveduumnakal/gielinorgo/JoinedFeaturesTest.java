@@ -121,4 +121,16 @@ public class JoinedFeaturesTest
 		assertSame(plain.milestones(), state.milestones());
 		assertNull(plain.battle());
 	}
+
+	@Test
+	public void theFollowerTagShowsTheSpeciesNameAsWrittenNotTheSavedKey()
+	{
+		Creature lead = game.data().lead();
+		assertEquals("brute", lead.species);
+
+		assertEquals("Brute", FollowerTagOverlay.nameFor(lead.nickname, game.speciesNameOf(lead)));
+
+		lead.nickname = "Rex";
+		assertEquals("Rex", FollowerTagOverlay.nameFor(lead.nickname, game.speciesNameOf(lead)));
+	}
 }

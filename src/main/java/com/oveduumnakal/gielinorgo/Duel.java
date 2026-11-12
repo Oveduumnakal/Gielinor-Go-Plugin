@@ -19,6 +19,7 @@ final class Duel
 	private final String mineSpecies;
 	private final String theirSpecies;
 	private final boolean mineGilded;
+	private final int mineNpcId;
 	private final int mineLevel;
 	private final int theirLevel;
 	private final List<BattleLine> hits;
@@ -44,6 +45,7 @@ final class Duel
 		this.mineSpecies = mine.speciesKey();
 		this.theirSpecies = theirs.speciesKey();
 		this.mineGilded = mine.isGilded();
+		this.mineNpcId = mine.npcId();
 		this.mineLevel = mine.level();
 		this.theirLevel = theirs.level();
 		this.hits = Collections.unmodifiableList(TeamScript.cut(hits));
@@ -79,6 +81,12 @@ final class Duel
 	boolean mineGilded()
 	{
 		return mineGilded;
+	}
+
+	/** @return the NPC id to draw the player's creature with, 0 for the species' first */
+	int mineNpcId()
+	{
+		return mineNpcId;
 	}
 
 	/** @return the level of the player's creature */
