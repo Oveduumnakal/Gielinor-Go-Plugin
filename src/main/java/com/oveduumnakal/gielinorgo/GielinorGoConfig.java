@@ -191,4 +191,21 @@ public interface GielinorGoConfig extends Config
 	{
 		return true;
 	}
+
+	/**
+	 * Whether featured species, night and weekend events change what turns wild.
+	 *
+	 * @return true to use spawn events
+	 */
+	@ConfigItem(
+		keyName = "spawnEvents",
+		name = "Spawn events",
+		description = "Turns on today's featured species, night and weekend events, and stronger roaming"
+			+ " creatures.\nOff means every monster has the same odds and nothing roams.",
+		position = 10
+	)
+	default boolean spawnEvents()
+	{
+		return true;
+	}
 }

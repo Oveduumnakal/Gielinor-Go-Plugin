@@ -29,11 +29,14 @@ final class PanelState
 	private final int seenSpecies;
 	private final List<EggView> eggs;
 	private final List<ChampionView> champions;
+	private final TodayView today;
 
 	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
 		JarType selectedJar, int stepProgress, List<CreatureView> team, List<CreatureView> storage,
-		List<LogEntry> log, int caughtSpecies, int seenSpecies, List<EggView> eggs, List<ChampionView> champions)
+		List<LogEntry> log, int caughtSpecies, int seenSpecies, List<EggView> eggs, List<ChampionView> champions,
+		TodayView today)
 	{
+		this.today = today;
 		this.eggs = Collections.unmodifiableList(new ArrayList<>(eggs));
 		this.champions = Collections.unmodifiableList(new ArrayList<>(champions));
 		this.trainerLevel = trainerLevel;
@@ -130,6 +133,12 @@ final class PanelState
 	List<ChampionView> champions()
 	{
 		return champions;
+	}
+
+	/** @return what the Today section shows: the featured species, the event and night */
+	TodayView today()
+	{
+		return today;
 	}
 
 	/** @return how many species exist */

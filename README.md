@@ -113,6 +113,32 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   One wild creature in 500 is gilded: gold outline in the world, gold name in your panel. They are only for
   showing off.
 
+### Spawn variety
+
+- **Featured today**
+
+  Each day one species of every rarity is featured, the same for every player on the same plugin version, and a
+  featured species turns wild three times as often. The Today section at the top of the Log tab names them and
+  shows when they change (midnight UTC). A star marks them in the Log, and the Log's filter has a **Featured**
+  choice.
+
+- **Night**
+
+  Between 20:00 and 06:00 on your computer's clock, undead, demons and other unholy creatures turn wild twice as
+  often.
+
+- **Weekend events**
+
+  Each Saturday and Sunday (UTC) one group turns wild twice as often and is gilded twice as often: Dragons, Undead,
+  Tide, Giants, Slayer monsters or Goblins, a new one each week. When boosts overlap they multiply, up to six times.
+
+- **Roaming creatures**
+
+  One wild creature in 20 is a stronger roaming one: 10 levels higher, with "Roaming" in front of its name. Beating
+  one drops an egg 30% of the time instead of 10%, and the egg is one rarity higher.
+
+  Switch featured species, night, weekend events and roaming creatures off with **Spawn events** in the settings.
+
 ### City Champions
 
 - **Eight cities, eight champions**
@@ -151,7 +177,7 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, the creatures
   you have stored, and a Creature Log of every species in the game so you can see what you have caught, what
   you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
-  you can challenge.
+  you can challenge. The top of the Log tab shows what is featured today and which event is on.
 
 ## Links
 

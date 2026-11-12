@@ -155,6 +155,42 @@ public class GoGameExtrasTest
 	}
 
 	@Test
+	public void aRoamingWinDropsAnEggMoreOftenAndOneRarityHigher()
+	{
+		int roamingEggs = 0;
+		int plainEggs = 0;
+		for (int i = 0; i < 1000; i++)
+		{
+			game.data().team.clear();
+			game.data().team.add(new Creature("king black dragon", 40, now));
+			game.data().eggs.clear();
+			game.battle(new WildEntry(1, CHICKEN, 12, 1, false, false, true));
+			if (!game.data().eggs.isEmpty())
+			{
+				roamingEggs++;
+				assertEquals(Rarity.UNCOMMON, firstEgg().rarityTier());
+			}
+
+			game.data().team.clear();
+			game.data().team.add(new Creature("king black dragon", 40, now));
+			game.data().eggs.clear();
+			game.battle(new WildEntry(1, CHICKEN, 2, 1));
+			if (!game.data().eggs.isEmpty())
+				plainEggs++;
+		}
+
+		assertTrue("expected about 300 roaming eggs, got " + roamingEggs, roamingEggs > 240 && roamingEggs < 360);
+		assertTrue("expected about 100 plain eggs, got " + plainEggs, plainEggs > 60 && plainEggs < 140);
+	}
+
+	@Test
+	public void aRoamingLegendaryEggStaysLegendary()
+	{
+		assertEquals(Rarity.LEGENDARY, Rarity.LEGENDARY.next());
+		assertEquals(Rarity.RARE, Rarity.UNCOMMON.next());
+	}
+
+	@Test
 	public void anEggHatchesAfterEnoughWalking()
 	{
 		game.data().eggs.add(new Egg(Rarity.EPIC));
