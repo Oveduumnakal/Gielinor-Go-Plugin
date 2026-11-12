@@ -72,6 +72,15 @@ interface PanelActions
 	void answerTrade(long memberId, boolean accept);
 
 	/**
+	 * Gives a team member or stored creature a nickname. The pick is checked again on the game thread, and a
+	 * pick that no longer matches changes nothing. The nickname stays on this computer.
+	 *
+	 * @param pick the creature, as the panel showed it
+	 * @param name the typed name; an empty name goes back to the species name
+	 */
+	void rename(TradePick pick, String name);
+
+	/**
 	 * Chooses the jar thrown by the Catch option.
 	 *
 	 * @param type the jar type

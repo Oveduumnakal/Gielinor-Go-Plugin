@@ -15,6 +15,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -149,14 +150,46 @@ final class PanelUi
 	 * Names a creature for display.
 	 *
 	 * @param view the creature
-	 * @return its name, with a "Gilded " prefix for a gilded one
+	 * @return its nickname when it has one, otherwise its species name, with a "Gilded " prefix for a gilded one
 	 */
 	static String displayName(CreatureView view)
 	{
+		String shown = view.nickname() == null ? view.name() : view.nickname();
 		if (view.gilded())
-			return "Gilded " + view.name();
+			return "Gilded " + shown;
 
-		return view.name();
+		return shown;
+	}
+
+	/**
+	 * Asks the player for a creature's nickname.
+	 *
+	 * @param parent the component the window is centred on
+	 * @param view the creature
+	 * @return what the player typed, an empty string to reset the name, or null when they cancelled
+	 */
+	static String askName(Component parent, CreatureView view)
+	{
+		Object typed = JOptionPane.showInputDialog(parent,
+			"Name for your " + view.name() + " (1 to " + Nickname.MAX_LENGTH
+				+ " letters, numbers, spaces or -). Leave it empty to reset.",
+			"Rename creature", JOptionPane.PLAIN_MESSAGE, null, null,
+			view.nickname() == null ? "" : view.nickname());
+		return typed == null ? null : typed.toString();
+	}
+
+	/**
+	 * Builds the first line of a creature's tooltip: its nickname and species, safe to put in an HTML label.
+	 *
+	 * @param view the creature
+	 * @return the nickname and species for a nicknamed creature, otherwise the species name
+	 */
+	static String tooltipName(CreatureView view)
+	{
+		if (view.nickname() == null)
+			return escape(view.name());
+
+		return escape(view.nickname()) + " (" + escape(view.name()) + ")";
 	}
 
 	/**

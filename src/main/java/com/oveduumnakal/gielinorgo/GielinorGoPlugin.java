@@ -154,6 +154,9 @@ public class GielinorGoPlugin extends Plugin
 	private final NoticeBoard noticeBoard = new NoticeBoard();
 	private List<Notice> heldNotices;
 	private FloatingTextOverlay floatingText;
+	private FollowerTagOverlay followerTag;
+	/** The lead creature's nickname for the overlay, kept up to date on the game thread. Null for none. */
+	private volatile String leadTag;
 	private GoPanel panel;
 	private PortraitService portraits;
 	private FollowerService follower;
@@ -203,6 +206,8 @@ public class GielinorGoPlugin extends Plugin
 		portraits = new PortraitService(client, clientThread, game::speciesFor);
 		AnimationTable animations = loadAnimations();
 		follower = new FollowerService(client, animations, game::speciesFor);
+		followerTag = new FollowerTagOverlay(client, follower, () -> leadTag);
+		overlayManager.add(followerTag);
 		effects = new CatchEffects(client);
 		renderCallbackManager.register(effects);
 		stage = new BattleStage(client, follower, animations);
@@ -231,6 +236,8 @@ public class GielinorGoPlugin extends Plugin
 		wsClient.unregisterMessage(GielinorGoPartyMessage.class);
 		overlayManager.remove(wildOverlay);
 		overlayManager.remove(floatingText);
+		overlayManager.remove(followerTag);
+		leadTag = null;
 		noticeBoard.clear();
 		clientToolbar.removeNavigation(navButton);
 		portraits.clear();
@@ -789,6 +796,25 @@ public class GielinorGoPlugin extends Plugin
 		trades.offer(memberId, name, kept.get(give.index()), want);
 	}
 
+	/**
+	 * Renames the creature a panel pick points at, once it is checked that the same creature is still there.
+	 *
+	 * @param pick the creature as the panel showed it
+	 * @param name the typed name
+	 */
+	private void rename(TradePick pick, String name)
+	{
+		if (!pick.matches(game.snapshot()))
+		{
+			announce(Notice.player("What you picked has changed. Pick again", Tone.BAD));
+			return;
+		}
+
+		SaveData data = game.data();
+		List<Creature> kept = pick.from() == Holding.TEAM ? data.team : data.storage;
+		game.rename(kept.get(pick.index()), name);
+	}
+
 	private void answerTrade(long memberId, boolean accept)
 	{
 		trades.answer(memberId, friendName(partyService.getMemberById(memberId)), accept);
@@ -854,6 +880,7 @@ public class GielinorGoPlugin extends Plugin
 	private void updateFollower()
 	{
 		Creature lead = config.showFollower() && !hiddenForPvp() ? game.data().lead() : null;
+		leadTag = lead != null && config.showLeadName() ? lead.nickname : null;
 		follower.gameTick(lead == null ? null : lead.species, lead != null && lead.gilded);
 	}
 
@@ -1109,6 +1136,12 @@ public class GielinorGoPlugin extends Plugin
 			public void release(int storageIndex)
 			{
 				onGameThread(() -> game.release(storageIndex));
+			}
+
+			@Override
+			public void rename(TradePick pick, String name)
+			{
+				onGameThread(() -> GielinorGoPlugin.this.rename(pick, name));
 			}
 
 			@Override

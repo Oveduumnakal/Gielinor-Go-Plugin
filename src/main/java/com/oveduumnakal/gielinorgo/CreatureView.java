@@ -16,11 +16,13 @@ final class CreatureView
 	private final Rarity rarity;
 	private final CombatType type;
 	private final boolean gilded;
+	private final String nickname;
 
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
-		boolean gilded)
+		boolean gilded, String nickname)
 	{
 		this.gilded = gilded;
+		this.nickname = nickname;
 		this.name = name;
 		this.level = level;
 		this.xpProgress = xpProgress;
@@ -29,10 +31,16 @@ final class CreatureView
 		this.type = type;
 	}
 
-	/** @return the species name */
+	/** @return the species name, which stays the species name even when there is a nickname */
 	String name()
 	{
 		return name;
+	}
+
+	/** @return the nickname the player gave it, or null when it has none */
+	String nickname()
+	{
+		return nickname;
 	}
 
 	/** @return the creature level, 1 to 99 */
@@ -87,12 +95,13 @@ final class CreatureView
 			&& Double.compare(hpFraction, that.hpFraction) == 0
 			&& rarity == that.rarity
 			&& type == that.type
-			&& Objects.equals(name, that.name);
+			&& Objects.equals(name, that.name)
+			&& Objects.equals(nickname, that.nickname);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type, gilded);
+		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname);
 	}
 }

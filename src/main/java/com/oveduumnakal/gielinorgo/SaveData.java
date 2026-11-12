@@ -96,6 +96,12 @@ final class SaveData
 		eggs.removeIf(egg -> egg == null);
 		team.removeIf(creature -> creature == null || creature.species == null);
 		storage.removeIf(creature -> creature == null || creature.species == null);
+		for (Creature creature : team)
+			creature.nickname = Nickname.clean(creature.nickname);
+
+		for (Creature creature : storage)
+			creature.nickname = Nickname.clean(creature.nickname);
+
 		while (team.size() > TEAM_SIZE)
 			storage.add(team.remove(team.size() - 1));
 

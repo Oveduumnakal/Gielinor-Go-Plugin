@@ -301,7 +301,7 @@ final class GoGame
 				continue;
 
 			fighters.add(creature);
-			mine.add(new Combatant(found, creature.level(), health));
+			mine.add(new Combatant(found, nameOf(creature), creature.level(), health));
 		}
 
 		if (mine.isEmpty())
@@ -490,11 +490,11 @@ final class GoGame
 		double health = lead.hpFractionAt(now);
 		if (health < MIN_BATTLE_HP)
 		{
-			tell(leadSpecies.name() + " is too tired", Tone.BAD);
+			tell(nameOf(lead) + " is too tired", Tone.BAD);
 			return null;
 		}
 
-		Combatant mine = new Combatant(leadSpecies, lead.level(), health);
+		Combatant mine = new Combatant(leadSpecies, nameOf(lead), lead.level(), health);
 		Combatant foe = new Combatant(entry.species(), entry.level(), 1.0);
 		BattleResult result = BattleSim.fight(mine, foe, random);
 		lead.hpFraction = result.hpFractionLeft();
@@ -580,6 +580,35 @@ final class GoGame
 		Creature released = data.storage.remove(storageIndex);
 		dirty = true;
 		tell("Released " + nameOf(released), Tone.INFO);
+	}
+
+	/**
+	 * Gives a creature a nickname, or takes it away. Nicknames stay on this computer.
+	 *
+	 * @param creature the creature to rename
+	 * @param raw what the player typed; an empty name goes back to the species name
+	 */
+	void rename(Creature creature, String raw)
+	{
+		if (creature == null || !owns(creature))
+			return;
+
+		String typed = raw == null ? "" : raw.trim();
+		String cleaned = Nickname.clean(typed);
+		if (!typed.isEmpty() && cleaned == null)
+		{
+			tell("Names are 1 to " + Nickname.MAX_LENGTH + " letters, numbers, spaces or -", Tone.BAD);
+			return;
+		}
+
+		String species = speciesNameOf(creature);
+		String before = nameOf(creature);
+		creature.nickname = cleaned;
+		dirty = true;
+		if (cleaned == null)
+			tell(before + " is called " + species + " again", Tone.INFO);
+		else
+			tell("Renamed " + species + " to " + cleaned, Tone.INFO);
 	}
 
 	/**
@@ -857,7 +886,7 @@ final class GoGame
 		int before = lead.level();
 		lead.xp = XpRules.capped(lead.xp + 20L + 5L * entry.level());
 		if (lead.level() > before)
-			tell(leadSpecies.name() + " grew to Lv " + lead.level() + "!", Tone.GOOD);
+			tell(nameOf(lead) + " grew to Lv " + lead.level() + "!", Tone.GOOD);
 
 		evolveIfReady(lead);
 		addTrainerXp(5L + entry.level());
@@ -955,7 +984,18 @@ final class GoGame
 		return lower.substring(0, 1).toUpperCase(Locale.ROOT) + lower.substring(1);
 	}
 
+	/**
+	 * Names a creature for the player's lines: its nickname when it has one, otherwise its species name.
+	 *
+	 * @param creature the creature
+	 * @return the name to show
+	 */
 	private String nameOf(Creature creature)
+	{
+		return creature.nickname != null ? creature.nickname : speciesNameOf(creature);
+	}
+
+	private String speciesNameOf(Creature creature)
 	{
 		Species found = species.find(creature.species);
 		return found == null ? creature.species : found.name();
@@ -969,8 +1009,8 @@ final class GoGame
 			Species found = species.find(creature.species);
 			Rarity rarity = found == null ? Rarity.COMMON : found.rarity();
 			CombatType type = found == null ? CombatType.MELEE : found.style();
-			views.add(new CreatureView(nameOf(creature), creature.level(), XpRules.progress(creature.xp),
-				creature.hpFractionAt(now), rarity, type, creature.gilded));
+			views.add(new CreatureView(speciesNameOf(creature), creature.level(), XpRules.progress(creature.xp),
+				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname));
 		}
 
 		return views;

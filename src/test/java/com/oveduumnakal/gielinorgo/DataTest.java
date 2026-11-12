@@ -143,6 +143,55 @@ public class DataTest
 	}
 
 	@Test
+	public void aNicknameSurvivesARoundTrip()
+	{
+		GoPersistence persistence = new GoPersistence(new MapStore(), gson);
+		SaveData data = SaveData.fresh();
+		Creature goblin = new Creature("goblin", 7, 123L);
+		goblin.nickname = "Mr-Bob 2";
+		data.team.add(goblin);
+		data.storage.add(new Creature("chicken", 2, 456L));
+
+		persistence.save(data);
+		SaveData loaded = persistence.load();
+
+		assertEquals("Mr-Bob 2", loaded.team.get(0).nickname);
+		assertNull(loaded.storage.get(0).nickname);
+	}
+
+	@Test
+	public void aBadNicknameInASaveLoadsAsNone()
+	{
+		MapStore store = new MapStore();
+		GoPersistence persistence = new GoPersistence(store, gson);
+		SaveData data = SaveData.fresh();
+		Creature tagged = new Creature("goblin", 7, 123L);
+		tagged.nickname = "<b>Bob</b>";
+		Creature long40 = new Creature("goblin", 7, 123L);
+		long40.nickname = "0123456789012345678901234567890123456789";
+		data.team.add(tagged);
+		data.storage.add(long40);
+
+		persistence.save(data);
+		SaveData loaded = persistence.load();
+
+		assertNull(loaded.team.get(0).nickname);
+		assertNull(loaded.storage.get(0).nickname);
+	}
+
+	@Test
+	public void anOldSaveWithoutANicknameStillLoads()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"team\":[{\"species\":\"goblin\",\"xp\":5}]}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+
+		assertEquals("goblin", loaded.lead().species);
+		assertNull(loaded.lead().nickname);
+	}
+
+	@Test
 	public void noSaveMeansAFreshStart()
 	{
 		SaveData loaded = new GoPersistence(new MapStore(), gson).load();

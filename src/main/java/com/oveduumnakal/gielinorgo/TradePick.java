@@ -5,6 +5,7 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * What the player picked to give in the trade window: the place it was listed at and what it looked like there.
@@ -64,9 +65,9 @@ final class TradePick
 	}
 
 	/**
-	 * Checks that the same creature or egg is still at the picked place. A creature matches on name, level, XP
-	 * progress and gilded look, not on health, which recovers by itself. An egg matches on rarity and on not having
-	 * more tiles left than before, because walking wears them down.
+	 * Checks that the same creature or egg is still at the picked place. A creature matches on name, nickname,
+	 * level, XP progress and gilded look, not on health, which recovers by itself. An egg matches on rarity and on
+	 * not having more tiles left than before, because walking wears them down.
 	 *
 	 * @param state what the player owns now
 	 * @return true when the pick still points at what the player chose
@@ -88,7 +89,8 @@ final class TradePick
 			return false;
 
 		CreatureView now = kept.get(index);
-		return now.name().equals(creature.name()) && now.level() == creature.level()
+		return now.name().equals(creature.name()) && Objects.equals(now.nickname(), creature.nickname())
+			&& now.level() == creature.level()
 			&& now.gilded() == creature.gilded() && Double.compare(now.xpProgress(), creature.xpProgress()) == 0;
 	}
 }

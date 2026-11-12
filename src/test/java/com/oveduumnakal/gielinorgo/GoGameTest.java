@@ -356,6 +356,117 @@ public class GoGameTest
 		assertEquals(1, game.snapshot().caughtSpecies());
 	}
 
+	@Test
+	public void renamingSetsTheNicknameAndTellsThePlayer()
+	{
+		Creature goblin = new Creature("goblin", 5, now);
+		game.data().team.add(goblin);
+
+		game.rename(goblin, "  Bob  ");
+
+		assertEquals("Bob", goblin.nickname);
+		assertTrue(messages.contains("Renamed Goblin to Bob"));
+		assertTrue(game.takeDirty());
+		PanelState state = game.snapshot();
+		CreatureView view = state.team().get(0);
+		assertEquals("the species name stays the key for portraits", "Goblin", view.name());
+		assertEquals("Bob", view.nickname());
+	}
+
+	@Test
+	public void anEmptyNameGoesBackToTheSpeciesName()
+	{
+		Creature goblin = new Creature("goblin", 5, now);
+		game.data().team.add(goblin);
+		game.rename(goblin, "Bob");
+
+		game.rename(goblin, "");
+
+		assertNull(goblin.nickname);
+		assertTrue(messages.contains("Bob is called Goblin again"));
+		PanelState state = game.snapshot();
+		CreatureView first = state.team().get(0);
+		assertNull(first.nickname());
+	}
+
+	@Test
+	public void anInvalidNameChangesNothing()
+	{
+		Creature goblin = new Creature("goblin", 5, now);
+		game.data().team.add(goblin);
+		game.rename(goblin, "Bob");
+		game.takeDirty();
+
+		game.rename(goblin, "<b>Bob</b>");
+		game.rename(goblin, "ThisNameIsFarTooLong");
+
+		assertEquals("Bob", goblin.nickname);
+		assertFalse(game.takeDirty());
+		assertTrue(messages.contains("Names are 1 to 12 letters, numbers, spaces or -"));
+	}
+
+	@Test
+	public void aCreatureThePlayerDoesNotOwnCannotBeRenamed()
+	{
+		Creature stranger = new Creature("goblin", 5, now);
+
+		game.rename(stranger, "Bob");
+
+		assertNull(stranger.nickname);
+		assertFalse(game.takeDirty());
+		assertTrue(messages.isEmpty());
+	}
+
+	@Test
+	public void theLinesUseTheNickname()
+	{
+		Creature goblin = new Creature("goblin", 1, now);
+		game.data().team.add(goblin);
+		game.rename(goblin, "Bob");
+		messages.clear();
+
+		game.addOsrsXp(10 * (int) XpRules.xpForLevel(5));
+		goblin.hpFraction = 0.0;
+		goblin.hpStampMs = now;
+		BattleResult tired = game.battle(wild(CHICKEN, 3, 1));
+		goblin.hpFraction = 1.0;
+		BattleResult fought = game.battle(wild(CHICKEN, 3, 1));
+
+		assertTrue(goblin.level() > 1);
+		assertTrue(messages.contains("Bob grew to Lv " + goblin.level() + "!"));
+		assertTrue(messages.contains("Bob is too tired"));
+		assertNull(tired);
+		assertNotNull(fought);
+		assertTrue(fought.lines().stream().anyMatch(line -> line.text().contains("Bob")));
+		assertTrue(fought.lines().stream().noneMatch(line -> line.text().contains("Goblin")));
+	}
+
+	@Test
+	public void aPickGoesStaleWhenTheNicknameChanges()
+	{
+		Creature goblin = new Creature("goblin", 5, now);
+		game.data().team.add(goblin);
+		PanelState state = game.snapshot();
+		TradePick pick = TradePick.of(Holding.TEAM, 0, state.team().get(0));
+		assertTrue(pick.matches(game.snapshot()));
+
+		game.rename(goblin, "Bob");
+
+		assertFalse(pick.matches(game.snapshot()));
+	}
+
+	@Test
+	public void releasingNamesTheCreatureByItsNickname()
+	{
+		Creature goblin = new Creature("goblin", 1, now);
+		game.data().storage.add(goblin);
+		game.rename(goblin, "Bob");
+
+		game.release(0);
+
+		assertTrue(messages.contains("Released Bob"));
+	}
+
 	private void record(Notice notice)
 	{
 		messages.add(notice.text());

@@ -30,6 +30,9 @@ final class Creature
 	/** Whether this is a rare gilded creature. Only its looks differ. */
 	boolean gilded;
 
+	/** The name the player gave this creature, or null for none. Local only: it is never sent to other players. */
+	String nickname;
+
 	/** Used by Gson. */
 	Creature()
 	{

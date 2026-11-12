@@ -49,6 +49,7 @@ final class CreatureCard extends JPanel
 	private final BarComponent hp = new BarComponent(ColorScheme.PROGRESS_COMPLETE_COLOR, HP_BAR_HEIGHT);
 	private final BarComponent xp = new BarComponent(XP_COLOR, XP_BAR_HEIGHT);
 	private int index;
+	private CreatureView shown;
 	private String portraitOf;
 
 	CreatureCard(PanelActions actions, PortraitSource portraits)
@@ -108,11 +109,12 @@ final class CreatureCard extends JPanel
 	void update(int teamIndex, CreatureView view)
 	{
 		index = teamIndex;
+		shown = view;
 		boolean isLead = teamIndex == 0;
 		name.setText(PanelUi.displayName(view));
 		name.setForeground(PanelUi.nameColor(view));
 		level.setText("Lv " + view.level());
-		style.setText(view.type().label());
+		style.setText(view.nickname() == null ? view.type().label() : view.name() + " \u00b7 " + view.type().label());
 		lead.setVisible(isLead);
 		hp.set(view.hpFraction(), hpColor(view.hpFraction()));
 		xp.set(view.xpProgress(), XP_COLOR);
@@ -121,7 +123,8 @@ final class CreatureCard extends JPanel
 			BorderFactory.createMatteBorder(0, STRIPE, 0, 0, view.gilded() ? PanelUi.GOLD : stripe),
 			BorderFactory.createEmptyBorder(6, 6, 7, 8)));
 		setCursor(Cursor.getPredefinedCursor(isLead ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR));
-		setToolTipText("<html>Health " + Math.round(view.hpFraction() * 100) + "%<br>"
+		setToolTipText("<html>" + PanelUi.tooltipName(view) + "<br>Health "
+			+ Math.round(view.hpFraction() * 100) + "%<br>"
 			+ Math.round(view.xpProgress() * 100) + "% to level " + Math.min(XpRules.MAX_LEVEL, view.level() + 1)
 			+ "<br>" + (isLead ? "Your lead: fights battles and trains twice as fast" : "Click to make lead")
 			+ "<br>Right-click for more</html>");
@@ -155,12 +158,21 @@ final class CreatureCard extends JPanel
 				menu.add(PanelUi.menuItem("Make lead", () -> actions.setLead(index)));
 
 			menu.add(PanelUi.menuItem("Move to storage", () -> actions.moveToStorage(index)));
+			menu.add(PanelUi.menuItem("Rename...", this::rename));
 			menu.show(this, event.getX(), event.getY());
 			return;
 		}
 
 		if (SwingUtilities.isLeftMouseButton(event) && index != 0)
 			actions.setLead(index);
+	}
+
+	/** Asks for a new nickname for the creature on this card and hands it to the game. */
+	private void rename()
+	{
+		String typed = PanelUi.askName(this, shown);
+		if (typed != null)
+			actions.rename(TradePick.of(Holding.TEAM, index, shown), typed);
 	}
 
 	private static Color hpColor(double fraction)

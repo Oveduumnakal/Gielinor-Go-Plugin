@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -123,6 +124,23 @@ public class FriendTradesTest
 		assertEquals("Ann gave you gilded Imp (Lv 20)", last(bobTold));
 		assertTrue(annGame.data().team.isEmpty());
 		assertEquals(2, bobGame.data().team.size());
+	}
+
+	@Test
+	public void aTradedCreatureArrivesWithoutItsNickname()
+	{
+		annImp.nickname = "Spark";
+
+		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
+		bob.receive(last(fromAnn), BOB, "Ann");
+		bob.answer(ANN, "Ann", true);
+		ann.receive(last(fromBob), ANN, "Bob");
+		bob.receive(last(fromAnn), BOB, "Ann");
+
+		Creature bobGot = only(bobGame.data().team);
+		assertEquals("imp", bobGot.species);
+		assertNull(bobGot.nickname);
+		assertEquals("Spark", annImp.nickname);
 	}
 
 	@Test

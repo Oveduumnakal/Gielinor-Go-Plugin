@@ -58,6 +58,15 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Your lead creature follows a step behind you as a small copy of itself, so it never gets in the way. A gilded
   lead follows in gold. Only you can see it, it cannot be clicked, and you can switch it off in the settings.
 
+- **Nicknames**
+
+  Right-click a creature in Team or Storage and choose **Rename...** to give it a name of 1 to 12 letters, numbers,
+  spaces or hyphens. The nickname shows on its card (the species moves to the second line), in Storage, in battle
+  lines and in level-up and evolution lines, and a creature keeps it when it evolves. Leave the box empty to go
+  back to the species name. With **Show lead's nickname** on (the default), your lead's nickname floats above it
+  as it follows you. Nicknames stay on your computer: friends never see them, and a creature you trade away
+  arrives without one.
+
 - **Battles that play themselves**
 
   Choose **Battle** on a wild creature and your lead fights it right away. Each hit floats over the creature's
@@ -116,7 +125,7 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 - **Only your party hears about it**
 
   The only things the plugin ever sends are your team (species and levels), your trainer level, the rarities of
-  the eggs you carry and whatever you put in a trade, and only to the people in your own party. You can turn
+  the eggs you carry and whatever you put in a trade (never nicknames), and only to the people in your own party. You can turn
   battle challenges off in the settings.
 
 ### Side panel
