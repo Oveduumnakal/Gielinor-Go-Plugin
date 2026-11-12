@@ -54,7 +54,6 @@ Emissary Conjurer
 Evelot
 Evil Creature
 Evil spirit
-Experiment
 Fareed
 Fire Warrior of Lesarkus
 Flambeed

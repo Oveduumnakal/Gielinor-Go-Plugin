@@ -327,7 +327,7 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 - **Team, Storage, Creature Log and Battle**
 
   The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, your daily and weekly tasks, the
-  creatures you have stored, and a Creature Log of every species you can meet in the game (1,093) so you can see what
+  creatures you have stored, and a Creature Log of every species you can meet in the game (1,094) so you can see what
   you have caught, what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
   you can challenge. The top of the Log tab shows what is featured today and which event is on.
 

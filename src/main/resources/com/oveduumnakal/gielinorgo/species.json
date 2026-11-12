@@ -409,7 +409,7 @@
 {"name":"Evil Chicken","level":159,"style":"MAGIC","ids":[6739,1870,6367]},
 {"name":"Evil Creature","level":1,"style":"MELEE","ids":[1244,1247,1250,1253,1256,1241],"quest":true},
 {"name":"Evil spirit","level":150,"style":"MELEE","traits":["UNHOLY"],"ids":[625],"quest":true},
-{"name":"Experiment","level":51,"style":"MELEE","ids":[1273,1274,1275],"quest":true},
+{"name":"Experiment","level":51,"style":"MELEE","ids":[1273,1274,1275]},
 {"name":"Experiment No.2","level":109,"style":"MELEE","ids":[5126]},
 {"name":"Ezekiel","level":984,"style":"MAGIC","traits":["LARGE"],"ids":[16652]},
 {"name":"Famished shark","level":16,"style":"MELEE","traits":["AQUATIC"]},
