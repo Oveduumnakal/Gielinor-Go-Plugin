@@ -139,7 +139,7 @@ final class GoPanel extends PluginPanel
 		stepsLabel.setToolTipText("Walk " + (GoGame.TILES_PER_JAR - state.stepProgress())
 			+ " more tiles to find a Bronze jar");
 		showJars(state);
-		teamTab.update(state.team(), state.eggs());
+		teamTab.update(state.team(), state.eggs(), state.tasks());
 		storageTab.update(state.storage());
 		logTab.update(state);
 		championsTab.update(state.champions());

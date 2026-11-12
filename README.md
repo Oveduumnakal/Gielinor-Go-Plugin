@@ -139,6 +139,29 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 
   Switch featured species, night, weekend events and roaming creatures off with **Spawn events** in the settings.
 
+### Daily and weekly tasks
+
+- **Three daily tasks and one weekly task**
+
+  Every day at 00:00 UTC (the same moment the game's daily reset happens) three new tasks appear, and a new weekly
+  task every Monday. They are the same for every player. Daily tasks are things like catching a few creatures,
+  catching ones of one combat style, catching one underground, winning battles, walking, gaining XP in any skill or
+  hatching an egg. The weekly task is bigger: beat a City Champion, catch 25 creatures, win 15 battles or walk
+  5,000 tiles. They show on the Team tab under your eggs, with a bar for each and the time left to the reset.
+
+- **Rewards are paid for you**
+
+  When a task is done the reward is paid at once and floats over your head: 2 jars of the best tier you have
+  unlocked, or 100 trainer XP, for a daily task; 5 jars and a Rare egg for the weekly one. When you have no room
+  for an egg you get 5 jars instead.
+
+- **Login streak**
+
+  The first catch of each UTC day pays 2 Bronze jars and adds a day to your streak. Miss a day and it starts again
+  at 1. Every 7th day in a row pays an Uncommon egg. The Team tab shows your streak and how many days are left to
+  the next egg. The plugin goes by your computer's clock, so changing the clock would cheat; nothing stops that in
+  a single-player side game.
+
 ### City Champions
 
 - **Eight cities, eight champions**
@@ -174,9 +197,9 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 
 - **Team, Storage, Creature Log and Battle**
 
-  The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, the creatures
-  you have stored, and a Creature Log of every species in the game so you can see what you have caught, what
-  you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
+  The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, your daily and weekly tasks, the
+  creatures you have stored, and a Creature Log of every species in the game so you can see what you have caught,
+  what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
   you can challenge. The top of the Log tab shows what is featured today and which event is on.
 
 ## Links
