@@ -120,6 +120,7 @@ final class GoGame
 	private EliteRun run;
 	private boolean atGuild;
 	private boolean bankNear;
+	private MoveTable moves = MoveTable.empty();
 
 	/**
 	 * Creates a game with a fresh save.
@@ -179,12 +180,54 @@ final class GoGame
 	void load(SaveData loaded)
 	{
 		data = loaded.sanitized();
+		settleMoves();
 		log = null;
 		xpCarry = 0;
 		dirty = false;
 		run = null;
 		milestonesDue = true;
 		settleMilestones();
+	}
+
+	/**
+	 * Sets the moves creatures can learn. Without this call no creature has any, and every creature fights with its
+	 * one basic attack. Call it before {@link #load(SaveData)}, which gives old creatures their moves.
+	 *
+	 * @param table the moves
+	 */
+	void moves(MoveTable table)
+	{
+		moves = table == null ? MoveTable.empty() : table;
+		if (data != null)
+			settleMoves();
+	}
+
+	/** @return the moves creatures can learn */
+	MoveTable moveTable()
+	{
+		return moves;
+	}
+
+	/** Gives every owned creature the moves it should have and drops the ones the moves data no longer allows. */
+	private void settleMoves()
+	{
+		for (Creature creature : data.team)
+			settleMoves(creature);
+
+		for (Creature creature : data.storage)
+			settleMoves(creature);
+	}
+
+	private void settleMoves(Creature creature)
+	{
+		Species found = species.find(creature.species);
+		if (found == null || moves.size() == 0)
+			return;
+
+		if (creature.moves == null || creature.moves.isEmpty())
+			MoveLearning.start(creature, found, moves);
+
+		MoveLearning.settle(creature, found, moves);
 	}
 
 	/** @return whether the save changed since the last call; calling this clears the flag */
@@ -567,6 +610,7 @@ final class GoGame
 		caught.gilded = entry.gilded();
 		caught.npcId = entry.npcId();
 		caught.setRolls(StatRolls.roll(random));
+		MoveLearning.start(caught, entry.species(), moves);
 		keep(caught);
 		recordOwned(caught);
 		if (caught.gilded)
@@ -1239,6 +1283,7 @@ final class GoGame
 		Creature creature = new Creature(born.key(), 1, clock.getAsLong());
 		creature.gilded = random.nextInt(gildedOneIn()) == 0;
 		creature.setRolls(StatRolls.roll(random));
+		MoveLearning.start(creature, born, moves);
 		keep(creature);
 		recordOwned(creature);
 		tell("Egg hatched: " + (creature.gilded ? "gilded " : "") + born.name() + "!", Tone.FIND);
@@ -1264,6 +1309,7 @@ final class GoGame
 			String before = nameOf(creature);
 			creature.species = grown.key();
 			creature.npcId = 0;
+			MoveLearning.evolved(creature, grown, moves);
 			recordOwned(creature);
 			tell(before + " evolved into " + grown.name() + "!", Tone.GOOD);
 			step = evolutions.next(creature.species);
@@ -1770,6 +1816,7 @@ final class GoGame
 			tell(nameOf(lead) + " grew to Lv " + lead.level() + "!", Tone.GOOD);
 
 		evolveIfReady(lead);
+		learnMoves(lead, before);
 		addTrainerXp(5L + entry.level());
 		if (random.nextDouble() < JAR_DROP_CHANCE)
 		{
@@ -1841,7 +1888,65 @@ final class GoGame
 				tell(nameOf(creature) + " grew to Lv " + creature.level() + "!", Tone.GOOD);
 
 			evolveIfReady(creature);
+			learnMoves(creature, before[i]);
 		}
+	}
+
+	/**
+	 * Teaches a creature the moves its new levels unlock and tells the player: a move is learned while there is
+	 * room, and waits for a choice once the creature knows four.
+	 *
+	 * @param creature the creature that gained levels
+	 * @param fromLevel the level it had before
+	 */
+	private void learnMoves(Creature creature, int fromLevel)
+	{
+		Species found = species.find(creature.species);
+		if (found == null || creature.level() <= fromLevel || moves.size() == 0)
+			return;
+
+		if (creature.moves == null || creature.moves.isEmpty())
+		{
+			MoveLearning.start(creature, found, moves);
+			dirty = true;
+			return;
+		}
+
+		MoveLearning.Result result = MoveLearning.levelUp(creature, found, moves, fromLevel, creature.level());
+		for (Move move : result.learned())
+			tell(nameOf(creature) + " learned " + move.name() + "!", Tone.GOOD);
+
+		for (Move move : result.queued())
+			tell(nameOf(creature) + " wants to learn " + move.name(), Tone.FIND);
+
+		if (!result.learned().isEmpty() || !result.queued().isEmpty())
+			dirty = true;
+	}
+
+	/**
+	 * Settles the move a creature is waiting to learn: it replaces one of the four it knows, or is skipped.
+	 *
+	 * @param creature a creature of the team or storage
+	 * @param forgetIndex the place in its known moves of the one to forget, or -1 to skip the new move
+	 * @return true when a pending move was settled
+	 */
+	boolean resolveMove(Creature creature, int forgetIndex)
+	{
+		if (creature == null || !(data.team.contains(creature) || data.storage.contains(creature)))
+			return false;
+
+		MoveLearning.Resolution done = MoveLearning.resolve(creature, moves, forgetIndex);
+		if (done == null)
+			return false;
+
+		dirty = true;
+		if (done.wasLearned())
+			tell(nameOf(creature) + " forgot " + done.forgotten().name() + " and learned " + done.move().name() + "!",
+				Tone.GOOD);
+		else
+			tell(nameOf(creature) + " did not learn " + done.move().name(), Tone.INFO);
+
+		return true;
 	}
 
 	/** @return how many of each healing item the player owns, with an entry for every item */

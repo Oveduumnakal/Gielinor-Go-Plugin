@@ -219,6 +219,7 @@ public class GielinorGoPlugin extends Plugin
 		calendar = new SpawnCalendar(species);
 		game.milestones(loadMilestones(species));
 		game.elite(loadElite(species));
+		game.moves(loadMoves());
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
 		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce);
 		trades = new FriendTrades(species, game, random, System::currentTimeMillis, this::sendToParty,
@@ -774,6 +775,25 @@ public class GielinorGoPlugin extends Plugin
 		{
 			log.warn("Gielinor Go: could not read the champion list", e);
 			return ChampionTable.empty();
+		}
+	}
+
+	private MoveTable loadMoves()
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(MoveTable.RESOURCE))
+		{
+			if (in == null)
+				return MoveTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return MoveTable.load(gson, reader);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the move list", e);
+			return MoveTable.empty();
 		}
 	}
 
