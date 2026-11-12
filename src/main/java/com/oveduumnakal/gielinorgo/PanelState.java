@@ -267,9 +267,16 @@ final class PanelState
 		return items;
 	}
 
-	/** @return how many species exist */
+	/** @return how many species can be caught: the Log entries that are not retired quest-only species */
 	int totalSpecies()
 	{
-		return log.size();
+		int total = 0;
+		for (LogEntry entry : log)
+		{
+			if (!entry.retired())
+				total++;
+		}
+
+		return total;
 	}
 }

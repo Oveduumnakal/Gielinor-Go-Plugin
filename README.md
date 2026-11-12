@@ -246,6 +246,13 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Under the Log header the next goal shows with a bar (`Next: 100 species`, `87 / 100`). The **Milestones...**
   button lists every milestone and family with its bar, its reward and a tick once it is paid.
 
+- **Quest-only monsters**
+
+  A monster that only exists during a quest (a quest boss, a cutscene fight) never turns wild, never hatches from an
+  egg, is never featured or evolved into, and is not in the Creature Log total or in a family, so every species you
+  are asked to catch can be met by a player who has finished every quest. A creature of such a species that you
+  already own stays yours and is listed in the Log as quest only, outside the total. Milestones already paid stay paid.
+
 ### City Champions
 
 - **Eight cities, eight champions**
@@ -320,8 +327,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 - **Team, Storage, Creature Log and Battle**
 
   The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, your daily and weekly tasks, the
-  creatures you have stored, and a Creature Log of every species in the game so you can see what you have caught,
-  what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
+  creatures you have stored, and a Creature Log of every species you can meet in the game (1,093) so you can see what
+  you have caught, what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
   you can challenge. The top of the Log tab shows what is featured today and which event is on.
 
 ## Links

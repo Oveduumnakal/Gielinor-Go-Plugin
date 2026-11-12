@@ -200,11 +200,17 @@ final class Milestones
 		List<String> known = new ArrayList<>();
 		for (String key : family.species())
 		{
-			if (key != null && species.find(key) != null && !known.contains(key))
+			if (key != null && counts(key) && !known.contains(key))
 				known.add(key);
 		}
 
 		return known;
+	}
+
+	private boolean counts(String key)
+	{
+		Species found = species.find(key);
+		return found != null && !found.questOnly();
 	}
 
 	/** @return every milestone: the species counts first, then the families */
@@ -243,7 +249,7 @@ final class Milestones
 	}
 
 	/**
-	 * Counts the species a save has caught that the species table still knows.
+	 * Counts the species a save has caught that the species table still knows and that are not quest-only.
 	 *
 	 * @param data the save
 	 * @return the count
@@ -253,7 +259,7 @@ final class Milestones
 		int known = 0;
 		for (String key : data.caught.keySet())
 		{
-			if (species.find(key) != null)
+			if (counts(key))
 				known++;
 		}
 

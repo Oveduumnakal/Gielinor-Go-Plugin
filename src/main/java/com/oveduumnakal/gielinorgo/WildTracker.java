@@ -67,7 +67,10 @@ final class WildTracker
 		double chance, int gildedOneIn, boolean mayRoam)
 	{
 		forgetOld(nowMs);
-		if (species == null || !mayRoll(npcIndex, npcId, nowMs) || wild.size() >= MAX_WILD)
+		if (species == null || species.questOnly())
+			return null;
+
+		if (!mayRoll(npcIndex, npcId, nowMs) || wild.size() >= MAX_WILD)
 			return null;
 
 		if (nowMs - lastWildMs < COOLDOWN_MS)
@@ -104,7 +107,10 @@ final class WildTracker
 	WildEntry restore(int npcIndex, int npcId, long nowMs)
 	{
 		Roll roll = fresh(npcIndex, npcId, nowMs);
-		if (roll == null || roll.entry == null || wild.containsKey(npcIndex))
+		if (roll == null || roll.entry == null || roll.entry.species().questOnly())
+			return null;
+
+		if (wild.containsKey(npcIndex))
 			return null;
 
 		if (wild.size() >= MAX_WILD)
@@ -129,7 +135,8 @@ final class WildTracker
 	boolean canRestore(int npcIndex, int npcId, long nowMs)
 	{
 		Roll roll = fresh(npcIndex, npcId, nowMs);
-		return roll != null && roll.entry != null && !wild.containsKey(npcIndex);
+		boolean open = roll != null && roll.entry != null && !roll.entry.species().questOnly();
+		return open && !wild.containsKey(npcIndex);
 	}
 
 	/**

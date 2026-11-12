@@ -1,0 +1,162 @@
+# Species flagged quest-only by gen-species.py (see scripts/species-quest-*.txt). Generated.
+Abomination
+Abyssal antibody
+Acidic Bloodveld
+Agile Warrior
+Agrith Naar
+Agrith-Na-Na
+Alomone
+Ancient Guardian
+Angry bear
+Angry giant rat
+Angry goblin
+Angry unicorn
+Apparition
+Arrav
+Arrg
+Arzinian Avatar of Magic
+Arzinian Avatar of Ranging
+Arzinian Avatar of Strength
+Assassin
+Baby Roc
+Balance Elemental
+Bandit champion
+Barbarian Warlord
+Barrelchest
+Basilisk Youngling
+Black golem
+Black Knight Titan
+Bouncer
+Champion of Scabaras
+Chronozon
+Clivet
+Count Draynor
+Crimson sanguisphera
+Culinaromancer
+Cultist
+Cuthbert, Lord of Dread
+Dad
+Dagannoth mother
+Damien Leucurte
+Damis
+Delrith
+Dessourt
+Dessous
+Dire Wolf Alpha
+Don't Know What
+Doomion
+Duke
+Dwarf gang member
+Elvarg
+Emissary Archer
+Emissary Brawler
+Emissary Conjurer
+Evelot
+Evil Creature
+Evil spirit
+Experiment
+Fareed
+Fire Warrior of Lesarkus
+Flambeed
+Gadderanks
+Galvek
+Gelatinnoth Mother
+General Khazard
+Giant Roc
+Giant Scarab
+Giant Sea Snake
+Glod
+Golem guard
+Grey golem
+H.A.M. Archer
+H.A.M. Mage
+Head Menaphite Guard
+Holthion
+Ice block
+Ice Troll King
+Irvig Senay
+Jhallan
+Jungle Demon
+Kalrag
+Kamil
+Karamel
+Kasonde
+Kasonde the Craven
+Kebbit
+Ketla the Unworthy
+Khazard Ogre
+Khazard Scorpion
+Khazard warlord
+Kroy
+Kruk
+Lowerniel Drakan
+Me
+Menaphite Akh
+Menaphite Shadow
+Mercenary axeman
+Mercenary mage
+Moss Guardian
+Mosschin
+Mother
+Mutant tarn
+Mysterious Figure
+Nazastarool
+Nezikchened
+Othainian
+Persten the Deceitful
+Phantom Hand
+Possessed Priest
+Prince Itzla Arkan
+Radiant sanguisphera
+Ranalph Devere
+Ranis Drakan
+Redeyes
+Robert the Strong
+San Tojalon
+Scarred black demon
+Scarred greater demon
+Scarred hellhound
+Scarred imp
+Scarred lesser demon
+Sea troll
+Sea Troll Queen
+Shadow Keeper
+Sigmund
+Sir Leye
+Skeleton Hellhound
+Skoblin
+Slagilith
+Slash Bash
+Slug Prince
+Snothead
+Stone Guardian
+Stranger
+Strong Warrior
+Strongbones
+Surok Magis
+Tanglefoot
+Target
+Tarn
+Temple Guardian
+The Draugen
+The Everlasting
+The Forsaken Assassin
+The Illusive
+The Inadequacy
+The Jormungand
+The Kendal
+The Untouchable
+Tolna
+Tough Guy
+Treus Dayth
+Typhor
+Ulfric
+Ungadulu
+Vanstrom Klause
+Viyeldi
+Vorkath
+White golem
+Wighted Leech
+Witch's experiment
+Xamphur
+Zombified Spawn

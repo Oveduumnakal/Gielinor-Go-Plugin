@@ -1,0 +1,4 @@
+# Names gen-species.py flags as quest-only although the wiki's quest monster category does not list the species.
+# One lowercase name per line, # starts a comment. Ignored when the name is also in species-quest-keep.txt.
+ice block  # Desert Treasure I only: smashed at the end of the Ice Path, and not a monster that attacks
+ancient guardian  # Below Ice Mountain and Desert Treasure II only

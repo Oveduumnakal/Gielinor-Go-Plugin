@@ -14,10 +14,18 @@ final class LogEntry
 	private final int caughtCount;
 	private final boolean seen;
 	private final boolean gilded;
+	private final boolean retired;
 
 	LogEntry(String name, int speciesLevel, Rarity rarity, CombatType type, int caughtCount, boolean seen,
 		boolean gilded)
 	{
+		this(name, speciesLevel, rarity, type, caughtCount, seen, gilded, false);
+	}
+
+	LogEntry(String name, int speciesLevel, Rarity rarity, CombatType type, int caughtCount, boolean seen,
+		boolean gilded, boolean retired)
+	{
+		this.retired = retired;
 		this.gilded = gilded;
 		this.name = name;
 		this.speciesLevel = speciesLevel;
@@ -67,6 +75,17 @@ final class LogEntry
 	boolean gilded()
 	{
 		return gilded;
+	}
+
+	/**
+	 * Tells whether this is a quest-only species the player owns: it is listed as caught, can no longer be caught and
+	 * does not count toward the Log total.
+	 *
+	 * @return true for a retired species
+	 */
+	boolean retired()
+	{
+		return retired;
 	}
 
 	/** @return whether the player has caught this species at least once */

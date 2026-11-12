@@ -29,6 +29,7 @@ final class SpeciesTable
 
 	private final Map<String, Species> byKey = new HashMap<>();
 	private final List<Species> ordered;
+	private final List<Species> catchable;
 
 	SpeciesTable(List<Species> species)
 	{
@@ -44,6 +45,14 @@ final class SpeciesTable
 
 		kept.sort(Comparator.comparingInt(Species::level).thenComparing(Species::key));
 		ordered = Collections.unmodifiableList(kept);
+		List<Species> open = new ArrayList<>();
+		for (Species entry : kept)
+		{
+			if (!entry.questOnly())
+				open.add(entry);
+		}
+
+		catchable = Collections.unmodifiableList(open);
 	}
 
 	/**
@@ -77,7 +86,24 @@ final class SpeciesTable
 		return byKey.get(Species.keyFor(name));
 	}
 
-	/** @return every species, weakest first */
+	/**
+	 * Lists the species a player can still meet in the open world: every species that is not quest-only. Every pool
+	 * that makes or asks for a creature draws from this list.
+	 *
+	 * @return the catchable species, weakest first
+	 */
+	List<Species> catchable()
+	{
+		return catchable;
+	}
+
+	/** @return how many species can be caught, the total of the Creature Log */
+	int catchableSize()
+	{
+		return catchable.size();
+	}
+
+	/** @return every species, quest-only ones included, weakest first; creatures already owned may belong to them */
 	List<Species> all()
 	{
 		return ordered;

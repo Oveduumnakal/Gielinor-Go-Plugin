@@ -979,17 +979,19 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
-	 * Works out which species a monster is.
+	 * Works out which species a monster is, for turning it wild.
 	 *
 	 * @param npc the monster
-	 * @return the species, or null when the monster cannot be fought or is not in the species list
+	 * @return the species, or null when the monster cannot be fought, is not in the species list or is a quest-only
+	 *     species (those never turn wild)
 	 */
 	private Species speciesOf(NPC npc)
 	{
 		if (npc == null || npc.getName() == null || npc.getCombatLevel() < 1 || game == null)
 			return null;
 
-		return game.speciesFor(Text.removeTags(npc.getName()));
+		Species found = game.speciesFor(Text.removeTags(npc.getName()));
+		return found == null || found.questOnly() ? null : found;
 	}
 
 	/** @return whether wild creatures may appear where the player is right now */
