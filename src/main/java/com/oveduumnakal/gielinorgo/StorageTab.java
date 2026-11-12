@@ -9,7 +9,9 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.swing.Box;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -31,6 +33,7 @@ final class StorageTab extends JPanel
 	private final JPanel stack;
 	private final JLabel header;
 	private List<CreatureView> shown;
+	private Map<ItemType, Integer> items = Collections.emptyMap();
 
 	StorageTab(PanelActions actions)
 	{
@@ -129,6 +132,8 @@ final class StorageTab extends JPanel
 			JPopupMenu menu = new JPopupMenu();
 			menu.add(PanelUi.menuItem("Move to team", () -> actions.moveToTeam(index)));
 			menu.add(PanelUi.menuItem("Rename...", () -> rename(index, view)));
+			ItemMenu.addTo(menu, items, view.hpFraction(),
+				type -> actions.useItem(TradePick.of(Holding.STORAGE, index, view), type));
 			menu.add(PanelUi.menuItem("Release...", () -> confirmRelease(index, PanelUi.displayName(view))));
 			menu.show(row, event.getX(), event.getY());
 			return;
@@ -136,6 +141,16 @@ final class StorageTab extends JPanel
 
 		if (SwingUtilities.isLeftMouseButton(event))
 			actions.moveToTeam(index);
+	}
+
+	/**
+	 * Tells the tab which healing items the player owns, for the {@code Use} menu of each row.
+	 *
+	 * @param owned how many of each item the player owns
+	 */
+	void items(Map<ItemType, Integer> owned)
+	{
+		items = owned;
 	}
 
 	private void rename(int index, CreatureView view)

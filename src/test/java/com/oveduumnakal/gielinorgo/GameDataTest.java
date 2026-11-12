@@ -201,4 +201,80 @@ public class GameDataTest
 		assertNotNull(resource + " is missing from the resources", in);
 		return new InputStreamReader(in, StandardCharsets.UTF_8);
 	}
+
+	@Test
+	public void everyFamilyIsMadeOfRealSpeciesAndBigEnough() throws IOException
+	{
+		List<Family> families;
+		try (Reader reader = open(Family.RESOURCE))
+		{
+			families = Family.load(gson, reader);
+		}
+
+		assertTrue("expected about 10 families, got " + families.size(), families.size() >= 8);
+		Set<String> ids = new HashSet<>();
+		for (Family family : families)
+		{
+			assertTrue(family.id() + " is listed twice", ids.add(family.id()));
+			assertTrue(family.id() + ": jar must be a specialty jar", family.jar().specialty());
+			assertTrue(family.id() + ": too few species", family.species().size() >= 3);
+			for (String key : family.species())
+				assertNotNull(family.id() + ": unknown species " + key, species.find(key));
+		}
+
+		Milestones milestones = new Milestones(species, families);
+		assertEquals(5 + families.size(), milestones.all().size());
+	}
+
+	@Test
+	public void theEliteChallengeIsMadeOfRealStrongSpeciesAndGetsHarder() throws IOException
+	{
+		EliteTable elite;
+		try (Reader reader = open(EliteTable.RESOURCE))
+		{
+			elite = EliteTable.load(gson, reader, species);
+		}
+
+		assertTrue("elite.json did not load: every species must exist and there must be 5 teams", elite.available());
+		int previousTop = 0;
+		for (int i = 0; i < elite.stages().size(); i++)
+		{
+			Champion stage = elite.stages().get(i);
+			boolean grand = i == elite.stages().size() - 1;
+			assertEquals(stage.id() + ": team size", grand ? 6 : 5, stage.team().size());
+			int last = 0;
+			for (Champion.Member member : stage.team())
+			{
+				Species found = species.find(member.species());
+				assertEquals(member.species(), found.name());
+				assertTrue(member.species() + " must be Epic or Legendary",
+					found.rarity().ordinal() >= Rarity.EPIC.ordinal());
+				assertTrue(stage.id() + ": levels must not fall within a team", member.level() >= last);
+				assertTrue(stage.id() + ": level range", grand ? member.level() >= 85 && member.level() <= 99
+					: member.level() >= 70 && member.level() <= 85);
+				last = member.level();
+			}
+
+			assertTrue(stage.id() + ": must be stronger than the one before", stage.topLevel() > previousTop);
+			previousTop = stage.topLevel();
+		}
+	}
+
+	@Test
+	public void theEliteRectangleOverlapsNoCityAndCoversTheGuildDoor() throws IOException
+	{
+		EliteTable elite;
+		try (Reader reader = open(EliteTable.RESOURCE))
+		{
+			elite = EliteTable.load(gson, reader, species);
+		}
+
+		for (Champion city : champions)
+			assertFalse("the Elite rectangle overlaps " + city.id(), elite.overlaps(city));
+
+		assertTrue(elite.contains(3191, 3357, 0));
+		assertTrue(elite.contains(3191, 3367, 0));
+		assertTrue(elite.contains(3185, 3352, 0));
+		assertTrue(elite.contains(3197, 3366, 0));
+	}
 }

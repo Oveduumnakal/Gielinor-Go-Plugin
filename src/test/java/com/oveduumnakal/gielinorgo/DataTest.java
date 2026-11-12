@@ -180,6 +180,17 @@ public class DataTest
 	}
 
 	@Test
+	public void anOldSaveLoadsWithNoMilestonesPaid()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"team\":[{\"species\":\"goblin\",\"xp\":5}]}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+
+		assertTrue(loaded.milestones.isEmpty());
+	}
+
+	@Test
 	public void anOldSaveWithoutANicknameStillLoads()
 	{
 		MapStore store = new MapStore();
@@ -322,6 +333,40 @@ public class DataTest
 		assertNotNull(loaded.caught);
 		assertNotNull(loaded.seen);
 		assertEquals(JarType.BRONZE.name(), loaded.selectedJar);
+	}
+
+	@Test
+	public void anOldSaveWithoutItemsLoadsWithNone()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"team\":[],\"jars\":{\"BRONZE\":3}}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+
+		assertNotNull(loaded.items);
+		for (ItemType type : ItemType.values())
+			assertEquals(0, loaded.itemCount(type));
+
+		store.set(GoPersistence.KEY_SAVE, "{\"team\":[],\"items\":null}");
+		assertNotNull(new GoPersistence(store, gson).load().items);
+	}
+
+	@Test
+	public void itemCountsSurviveARoundTrip()
+	{
+		MapStore store = new MapStore();
+		GoPersistence persistence = new GoPersistence(store, gson);
+		SaveData data = SaveData.fresh();
+		data.addItems(ItemType.LARGE_SALVE, 4);
+		data.addItems(ItemType.REVIVE, 1);
+		data.addItems(ItemType.REVIVE, -3);
+
+		persistence.save(data);
+		SaveData loaded = persistence.load();
+
+		assertEquals(4, loaded.itemCount(ItemType.LARGE_SALVE));
+		assertEquals(0, loaded.itemCount(ItemType.REVIVE));
+		assertEquals(0, loaded.itemCount(ItemType.SMALL_SALVE));
 	}
 
 	private SpeciesTable bundled() throws IOException

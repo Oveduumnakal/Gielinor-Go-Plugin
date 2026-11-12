@@ -7,7 +7,9 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -34,6 +36,7 @@ final class TeamTab extends JPanel
 	private final List<EggRow> rows = new ArrayList<>();
 	private final List<CreatureCard> slots = new ArrayList<>();
 	private final TasksSection taskSection = new TasksSection();
+	private Map<ItemType, Integer> items = Collections.emptyMap();
 	private final JLabel hint = PanelUi.hint("Click a creature to make it your lead. Right-click for more.");
 
 	TeamTab(PanelActions actions, PortraitSource portraits)
@@ -112,7 +115,21 @@ final class TeamTab extends JPanel
 		}
 
 		for (int i = 0; i < team.size(); i++)
+		{
+			slots.get(i).items(items);
 			slots.get(i).update(i, team.get(i));
+		}
+	}
+
+	/**
+	 * Tells the tab which healing items the player owns, for the {@code Use} menu of each card. Call it before
+	 * {@link #update(List, List, TaskView)}.
+	 *
+	 * @param owned how many of each item the player owns
+	 */
+	void items(Map<ItemType, Integer> owned)
+	{
+		items = owned;
 	}
 
 	private void updateEggs(List<EggView> eggs)

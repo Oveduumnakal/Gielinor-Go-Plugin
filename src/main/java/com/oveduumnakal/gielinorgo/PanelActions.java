@@ -45,6 +45,15 @@ interface PanelActions
 	 */
 	void challenge(String championId);
 
+	/** Starts the Elite challenge and fights its first battle. It only starts at the Champions' Guild. */
+	void eliteChallenge();
+
+	/** Fights the next battle of the Elite run that is open. */
+	void eliteContinue();
+
+	/** Gives up the Elite run that is open. */
+	void eliteForfeit();
+
 	/**
 	 * Challenges a friend in the player's RuneLite party to a battle between the two teams.
 	 *
@@ -79,6 +88,15 @@ interface PanelActions
 	 * @param name the typed name; an empty name goes back to the species name
 	 */
 	void rename(TradePick pick, String name);
+
+	/**
+	 * Uses a healing item on a team member or stored creature outside battle. The pick is checked again on the game
+	 * thread, and a pick that no longer matches uses nothing.
+	 *
+	 * @param pick the creature, as the panel showed it
+	 * @param type the item to use
+	 */
+	void useItem(TradePick pick, ItemType type);
 
 	/**
 	 * Chooses the jar thrown by the Catch option.
