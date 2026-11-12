@@ -473,7 +473,8 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
-	 * Adds the Catch and Battle options to the right-click menu of a wild monster. Both are client-side entries.
+	 * Adds the Catch and Battle options to the right-click menu of a wild monster, and the Catch options to the menu
+	 * of a battle's stand-in while the mouse is over it. All are client-side entries.
 	 *
 	 * @param event the menu that just opened
 	 */
@@ -491,8 +492,13 @@ public class GielinorGoPlugin extends Plugin
 				wildInMenu.add(npc.getIndex());
 		}
 
+		int standIn = stage.stagedIndex();
+		boolean overStandIn = standIn >= 0 && tracker.get(standIn) != null && stage.mouseOverStandIn();
 		for (int index : wildInMenu)
-			addWildOptions(tracker.get(index));
+			addWildOptions(tracker.get(index), true);
+
+		if (overStandIn && !wildInMenu.contains(standIn))
+			addWildOptions(tracker.get(standIn), false);
 	}
 
 	private void startOnClientThread()
@@ -948,7 +954,7 @@ public class GielinorGoPlugin extends Plugin
 			refreshPanel();
 	}
 
-	private void addWildOptions(WildEntry entry)
+	private void addWildOptions(WildEntry entry, boolean withBattle)
 	{
 		Species species = entry.species();
 		Rarity rarity = species.rarity();
@@ -960,7 +966,7 @@ public class GielinorGoPlugin extends Plugin
 			addCatchOption(entry, target, specialty);
 
 		addCatchOption(entry, target, standard);
-		if (entry.battled())
+		if (!withBattle || entry.battled())
 			return;
 
 		client.getMenu()
@@ -984,7 +990,8 @@ public class GielinorGoPlugin extends Plugin
 		String odds = " - no jars";
 		if (jar != null)
 		{
-			double chance = CatchRules.chance(jar, entry.combatLevel(), entry.weakened(), entry.traits());
+			double chance = CatchRules.chance(jar, entry.combatLevel(), entry.weakened(), entry.traits(),
+				stage.knockedOut(candidates.get(index)));
 			odds = " - " + jar.label() + " jar " + percent(chance);
 		}
 
@@ -1007,7 +1014,7 @@ public class GielinorGoPlugin extends Plugin
 		if (entry == null)
 			return;
 
-		CatchOutcome outcome = game.tryCatch(entry, jar);
+		CatchOutcome outcome = game.tryCatch(entry, jar, stage.knockedOut(candidates.get(npcIndex)));
 		if (outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED)
 			tracker.remove(npcIndex, System.currentTimeMillis());
 

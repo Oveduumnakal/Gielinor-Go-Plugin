@@ -72,6 +72,34 @@ public class GoGameTest
 	}
 
 	@Test
+	public void aKnockedOutCreatureIsCaughtOnARollThatFailsOnceItIsBackUp()
+	{
+		double roll = new Random(11).nextDouble();
+		double standing = CatchRules.chance(JarType.BRONZE, 90, true, CHICKEN.traits());
+		double down = CatchRules.chance(JarType.BRONZE, 90, true, CHICKEN.traits(), true);
+		assertTrue("the first roll fails at the weakened odds", roll >= standing);
+		assertTrue("and succeeds at the knocked-out odds", roll < down);
+
+		WildEntry beaten = wild(CHICKEN, 3, 90);
+		beaten.markBattled(true);
+
+		assertEquals(CatchOutcome.CAUGHT, game.tryCatch(beaten, JarType.BRONZE, true));
+		assertEquals(1, game.data().team.size());
+	}
+
+	@Test
+	public void theSameRollFailsOnABeatenCreatureThatHasGotUp()
+	{
+		WildEntry beaten = wild(CHICKEN, 3, 90);
+		beaten.markBattled(true);
+
+		CatchOutcome outcome = game.tryCatch(beaten, JarType.BRONZE);
+
+		assertTrue(outcome == CatchOutcome.BROKE_FREE || outcome == CatchOutcome.FLED);
+		assertTrue(game.data().team.isEmpty());
+	}
+
+	@Test
 	public void noJarsMeansNoThrow()
 	{
 		game.data().addJars(JarType.BRONZE, -SaveData.STARTING_JARS);

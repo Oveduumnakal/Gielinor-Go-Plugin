@@ -4,6 +4,9 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.awt.Polygon;
+import java.awt.Shape;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -11,7 +14,10 @@ import org.slf4j.LoggerFactory;
 
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.Model;
 import net.runelite.api.NPC;
+import net.runelite.api.Perspective;
+import net.runelite.api.Point;
 import net.runelite.api.Renderable;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.LocalPoint;
@@ -65,6 +71,7 @@ final class BattleStage implements RenderCallback, StageAnchors
 	private int plane;
 	private int facing;
 	private int foeHeight;
+	private int foeTiles = 1;
 	private volatile Spot foeSpot;
 
 	/**
@@ -131,6 +138,7 @@ final class BattleStage implements RenderCallback, StageAnchors
 			centerY = y;
 			plane = view.getPlane();
 			facing = wild.getCurrentOrientation();
+			foeTiles = Math.max(1, (int) Math.round(parts.size() * WILD_SIZE));
 			foeHeight = (int) Math.round(FollowerService.heightOf(parts.data()) * shrunk(parts.heightScale())
 				/ NpcModels.NORMAL_SCALE);
 			timeline = new BattleTimeline(BattleTimeline.beatsOf(lines), leadWon);
@@ -248,6 +256,76 @@ final class BattleStage implements RenderCallback, StageAnchors
 	{
 		if (gone == npc)
 			finish();
+	}
+
+	/**
+	 * @param other a monster
+	 * @return whether it lies knocked out: the lead beat it in the battle on stage and the stand-in is down, until it
+	 *     starts to fade back
+	 */
+	boolean knockedOut(NPC other)
+	{
+		return other != null && other == npc && timeline != null && timeline.knockedOut()
+			&& fades != null && !fades.ending();
+	}
+
+	/** @return the game's index of the monster whose stand-in is on stage, or -1 when no battle is on stage */
+	int stagedIndex()
+	{
+		NPC staged = npc;
+		return timeline == null || staged == null ? -1 : staged.getIndex();
+	}
+
+	/**
+	 * Tells whether the mouse is over the stand-in, so its right-click menu can offer a catch. The stand-in is not
+	 * known to the game, so this is worked out here: the mouse counts as over it when it is inside the outline of
+	 * the model as drawn (see {@link #hitShapes(LocalPoint)}) or inside the ground tiles it stands on. Any failure
+	 * counts as "not over it".
+	 *
+	 * @return true when a battle is on stage, its stand-in is drawn, and the mouse is over it
+	 */
+	boolean mouseOverStandIn()
+	{
+		try
+		{
+			Spot spot = foeSpot;
+			Point mouse = client.getMouseCanvasPosition();
+			if (timeline == null || standIn == null || spot == null || mouse == null)
+				return false;
+
+			return ShapeHits.anyContains(hitShapes(spot.point()), mouse.getX(), mouse.getY());
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not test the mouse against the stand-in", e);
+			return false;
+		}
+	}
+
+	/**
+	 * Builds the canvas shapes the stand-in covers: the outline of its model at its drawn place and facing
+	 * ({@link Perspective#getClickbox}), and the polygon of the ground tiles under it, which also covers a model
+	 * that lies flat or whose death animation is not followed.
+	 *
+	 * @param at where the stand-in is drawn
+	 * @return the shapes; an entry that cannot be built is left out
+	 */
+	private List<Shape> hitShapes(LocalPoint at)
+	{
+		List<Shape> shapes = new ArrayList<>();
+		WorldView view = client.getTopLevelWorldView();
+		Model model = standIn.hitModel();
+		if (view != null && model != null)
+		{
+			int z = Perspective.getTileHeight(client, at, plane);
+			shapes.add(Perspective.getClickbox(client, view, model, facing, at.getX(), at.getY(), z));
+		}
+
+		Polygon ground = Perspective.getCanvasTileAreaPoly(client, at, foeTiles);
+		if (ground != null)
+			shapes.add(ground);
+
+		return shapes;
 	}
 
 	/**
