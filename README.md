@@ -103,7 +103,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 
   Choose **Battle** on a wild creature and your lead fights it right away. Each hit floats over the creature's
   head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. Melee beats Ranged, Ranged beats Magic, and Magic beats
-  Melee. A creature that loses to you is easier to catch. Dragons and wyverns bite in melee but about one hit in
+  Melee. A creature's card tooltip reminds you of its style's match-up. There is no opening line: the fight goes
+  straight from the face-off to the first blow. A creature that loses to you is easier to catch. Dragons and wyverns bite in melee but about one hit in
   four is a fire or ice breath, which counts as Magic for that hit and says so ("Green dragon breathes fire for 12").
 
   With **Battle animations** on (the default), your lead walks up to the wild creature and they face each other

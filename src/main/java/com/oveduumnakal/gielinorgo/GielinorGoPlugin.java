@@ -1204,7 +1204,7 @@ public class GielinorGoPlugin extends Plugin
 
 		heldNotices = new ArrayList<>();
 		BattleResult result = game.battle(entry);
-		List<BattleLine> lines = result == null ? null : result.summary(BATTLE_LINES);
+		List<BattleLine> lines = result == null ? null : result.playbackSummary(BATTLE_LINES);
 		boolean staged = lines != null && config.battleAnimations()
 			&& !arena.active() && stage.start(candidates.get(npcIndex), lines, result.won());
 		playBack(lines, npcIndex, staged);
@@ -1368,6 +1368,9 @@ public class GielinorGoPlugin extends Plugin
 		List<Notice> queue = new ArrayList<>();
 		for (BattleLine line : lines)
 		{
+			if (line.kind() == BattleLine.Kind.OPENING)
+				continue;
+
 			if (staged && npcIndex != Notice.PLAYER && line.overPlayer())
 				queue.add(Notice.stageLead(line.text(), line.tone()));
 			else if (staged && npcIndex != Notice.PLAYER)
