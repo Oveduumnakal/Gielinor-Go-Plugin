@@ -30,6 +30,9 @@ final class ChampionsTab extends JPanel
 	private final JPanel stack = new JPanel();
 	private final JLabel header;
 	private List<ChampionView> shown;
+	private final JLabel eliteHeader = PanelUi.caption("ELITE CHALLENGE");
+	private final JPanel eliteStack = new JPanel(new BorderLayout());
+	private EliteView eliteShown;
 
 	ChampionsTab(PanelActions actions, Consumer<FriendView> trader)
 	{
@@ -42,7 +45,9 @@ final class ChampionsTab extends JPanel
 		stack.setLayout(new BoxLayout(stack, BoxLayout.Y_AXIS));
 		stack.setOpaque(false);
 		PanelColumn column = new PanelColumn();
-		for (JComponent part : new JComponent[] {friends, header, stack})
+		eliteHeader.setBorder(new EmptyBorder(10, 8, 6, 8));
+		eliteStack.setOpaque(false);
+		for (JComponent part : new JComponent[] {friends, header, stack, eliteHeader, eliteStack})
 		{
 			part.setAlignmentX(Component.LEFT_ALIGNMENT);
 			column.stack().add(part);
@@ -59,6 +64,28 @@ final class ChampionsTab extends JPanel
 	void updateFriends(FriendsState state)
 	{
 		friends.update(state);
+	}
+
+	/**
+	 * Shows the Elite challenge card under the champions, unless it equals the one already shown.
+	 *
+	 * @param view the card; hidden when the challenge does not exist
+	 */
+	void updateElite(EliteView view)
+	{
+		if (view.equals(eliteShown))
+			return;
+
+		eliteShown = view;
+		boolean visible = view.mode() != EliteView.Mode.HIDDEN;
+		eliteHeader.setVisible(visible);
+		eliteStack.setVisible(visible);
+		eliteStack.removeAll();
+		if (visible)
+			eliteStack.add(new EliteCard(view, actions), BorderLayout.CENTER);
+
+		eliteStack.revalidate();
+		eliteStack.repaint();
 	}
 
 	/**

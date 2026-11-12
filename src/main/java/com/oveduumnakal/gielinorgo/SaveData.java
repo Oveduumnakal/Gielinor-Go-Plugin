@@ -73,6 +73,12 @@ final class SaveData
 	/** Progress on the daily and weekly tasks and the login streak. Null in saves from before tasks existed. */
 	TaskProgress tasks = new TaskProgress();
 
+	/** Ids of the Creature Log milestones whose reward has been paid. Null in saves from before milestones. */
+	Set<String> milestones = new LinkedHashSet<>();
+
+	/** How many times the player has cleared the Elite challenge. 0 in saves from before it existed. */
+	int eliteClears;
+
 	/** @return a save for a player who has never played, with the starting jars */
 	static SaveData fresh()
 	{
@@ -97,6 +103,7 @@ final class SaveData
 		gilded = gilded == null ? new LinkedHashSet<>() : new LinkedHashSet<>(gilded);
 		sigils = sigils == null ? new LinkedHashSet<>() : new LinkedHashSet<>(sigils);
 		tasks = tasks == null ? new TaskProgress() : tasks.sanitized();
+		milestones = milestones == null ? new LinkedHashSet<>() : new LinkedHashSet<>(milestones);
 		eggs.removeIf(egg -> egg == null);
 		team.removeIf(creature -> creature == null || creature.species == null);
 		storage.removeIf(creature -> creature == null || creature.species == null);

@@ -212,6 +212,22 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   the next egg. The plugin goes by your computer's clock, so changing the clock would cheat; nothing stops that in
   a single-player side game.
 
+### Creature Log milestones
+
+- **Rewards for a growing Log**
+
+  Catching new species pays rewards once each, at 25, 50, 100, 250 and 500 species: 5 Iron jars; 5 Rune jars and a
+  Rare egg; 5 Dragon jars and an Epic egg; the **Gilded charm**; then 10 Dragon jars and a Legendary egg. The charm
+  is not an item: from then on gilded creatures turn up twice as often (1 in 250 instead of 1 in 500), in the wild
+  and from eggs. Completing a family, such as every goblin or every dragon, pays 3 jars of the family's specialty
+  type and an egg of the rarest creature in it. Milestones you had already reached are paid when you log in. When
+  your egg bag is full an egg reward waits until you have a free slot.
+
+- **Progress on the Log tab**
+
+  Under the Log header the next goal shows with a bar (`Next: 100 species`, `87 / 100`). The **Milestones...**
+  button lists every milestone and family with its bar, its reward and a tick once it is paid.
+
 ### City Champions
 
 - **Eight cities, eight champions**
@@ -228,6 +244,30 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   battle of three creatures against three takes about 45 seconds at most. Creatures are drawn small, like your
   follower. The result is decided before the scene starts, so nothing in it can change the outcome. With the setting
   off, or when there is no room or no follower on screen, the battle is text only.
+
+### Elite challenge
+
+- **For Grand Champions to be**
+
+  Once you hold all eight City Champion sigils, the Battle tab shows an **Elite challenge** card under the
+  champions. Go to the Champions' Guild south-west of Varrock (the ground in front of its door counts, so you do not
+  need the quest points the real guild asks for) and press **Challenge**. You fight four Elite trainers with five
+  creatures each at levels 70 to 85, then the Grand Champion with six at levels 85 to 99, all Epic or Legendary
+  creatures, back to back with your whole team.
+
+- **No resting**
+
+  Your creatures' health carries from one battle to the next and nothing rests until the run ends. Between battles the
+  card shows `Elite 3 of 5` with **Continue** and **Forfeit**. While a run is open you cannot change your team or
+  battle anything else. Lose a battle, forfeit or log out and the run is over; the next attempt starts at the first
+  trainer. You cannot start with a full egg bag (`Free an egg slot first`). The battles are acted out like a City
+  Champion battle and are decided automatically.
+
+- **Rewards**
+
+  The first clear earns the title **Grand Champion** (shown in the panel header), 10 Dragon jars, 3 of every
+  specialty jar and a Legendary egg. Clearing it again pays 2 Dragon jars. Beating Elite trainers pays creature XP,
+  half as much once you have cleared the challenge.
 
 ### Friends
 

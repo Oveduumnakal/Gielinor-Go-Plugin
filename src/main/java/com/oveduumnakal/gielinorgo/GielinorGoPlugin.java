@@ -210,6 +210,8 @@ public class GielinorGoPlugin extends Plugin
 		game = new GoGame(species, loadEvolutions(species), loadChampions(species), random,
 			System::currentTimeMillis, this::announce);
 		calendar = new SpawnCalendar(species);
+		game.milestones(loadMilestones(species));
+		game.elite(loadElite(species));
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
 		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce);
 		trades = new FriendTrades(species, game, random, System::currentTimeMillis, this::sendToParty,
@@ -616,6 +618,44 @@ public class GielinorGoPlugin extends Plugin
 		}
 	}
 
+	private Milestones loadMilestones(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(Family.RESOURCE))
+		{
+			if (in == null)
+				return new Milestones(species, Collections.emptyList());
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return new Milestones(species, Family.load(gson, reader));
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the family list", e);
+			return new Milestones(species, Collections.emptyList());
+		}
+	}
+
+	private EliteTable loadElite(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(EliteTable.RESOURCE))
+		{
+			if (in == null)
+				return EliteTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return EliteTable.load(gson, reader, species);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the Elite challenge", e);
+			return EliteTable.empty();
+		}
+	}
+
 	private ChampionTable loadChampions(SpeciesTable species)
 	{
 		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(ChampionTable.RESOURCE))
@@ -973,7 +1013,7 @@ public class GielinorGoPlugin extends Plugin
 		boolean events = config.spawnEvents();
 		WildEntry entry = tracker.offer(npc.getIndex(), npc.getId(), species, npc.getCombatLevel(), underground,
 			now, calendar.chance(species, config.wildChance(), events, spawnClock),
-			calendar.gildedOneIn(species, events, spawnClock), events);
+			game.gildedOneIn(calendar.gildedOneIn(species, events, spawnClock)), events);
 		if (entry == null)
 			return;
 
@@ -1191,6 +1231,25 @@ public class GielinorGoPlugin extends Plugin
 
 		heldNotices = new ArrayList<>();
 		playTeamBattle(game.challenge(championId), true);
+	}
+
+	private void eliteChallenge()
+	{
+		heldNotices = new ArrayList<>();
+		playTeamBattle(game.eliteChallenge(), true);
+	}
+
+	private void eliteContinue()
+	{
+		heldNotices = new ArrayList<>();
+		playTeamBattle(game.eliteContinue(), true);
+	}
+
+	private void eliteForfeit()
+	{
+		heldNotices = new ArrayList<>();
+		game.eliteForfeit();
+		playBack(null, Notice.PLAYER);
 	}
 
 	/**
@@ -1671,6 +1730,24 @@ public class GielinorGoPlugin extends Plugin
 			public void challenge(String championId)
 			{
 				onGameThread(() -> GielinorGoPlugin.this.challenge(championId));
+			}
+
+			@Override
+			public void eliteChallenge()
+			{
+				onGameThread(GielinorGoPlugin.this::eliteChallenge);
+			}
+
+			@Override
+			public void eliteContinue()
+			{
+				onGameThread(GielinorGoPlugin.this::eliteContinue);
+			}
+
+			@Override
+			public void eliteForfeit()
+			{
+				onGameThread(GielinorGoPlugin.this::eliteForfeit);
 			}
 
 			@Override

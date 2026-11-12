@@ -63,6 +63,7 @@ final class LogTab extends JPanel
 	private final JLabel todayEvent;
 	private final JLabel todayNight;
 	private final JLabel header;
+	private final MilestoneStrip milestones = new MilestoneStrip();
 	private final IconTextField search;
 	private final JComboBox<LogFilter> filter;
 	private final DefaultListModel<LogEntry> model = new DefaultListModel<>();
@@ -131,6 +132,9 @@ final class LogTab extends JPanel
 		top.add(todayBody);
 		top.add(Box.createVerticalStrut(6));
 		top.add(header);
+		milestones.setAlignmentX(Component.LEFT_ALIGNMENT);
+		top.add(Box.createVerticalStrut(4));
+		top.add(milestones);
 		top.add(Box.createVerticalStrut(4));
 		top.add(search);
 		top.add(Box.createVerticalStrut(4));
@@ -155,6 +159,7 @@ final class LogTab extends JPanel
 	void update(PanelState state)
 	{
 		updateToday(state.today());
+		milestones.update(state.milestones());
 		header.setText("CAUGHT  " + state.caughtSpecies() + " / " + state.totalSpecies() + "   SEEN  "
 			+ state.seenSpecies());
 		if (state.log() == shown)

@@ -45,6 +45,15 @@ interface PanelActions
 	 */
 	void challenge(String championId);
 
+	/** Starts the Elite challenge and fights its first battle. It only starts at the Champions' Guild. */
+	void eliteChallenge();
+
+	/** Fights the next battle of the Elite run that is open. */
+	void eliteContinue();
+
+	/** Gives up the Elite run that is open. */
+	void eliteForfeit();
+
 	/**
 	 * Challenges a friend in the player's RuneLite party to a battle between the two teams.
 	 *

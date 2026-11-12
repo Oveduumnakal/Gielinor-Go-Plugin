@@ -1,0 +1,11 @@
+{
+"minX":3180,"minY":3346,"maxX":3202,"maxY":3372,
+"firstDragonJars":10,"firstSpecialtyJars":3,"firstEgg":"LEGENDARY","laterDragonJars":2,
+"stages":[
+{"id":"elite-1","city":"Elite of Fire","team":[{"species":"Red dragon","level":70},{"species":"Frost dragon","level":71},{"species":"Iron dragon","level":72},{"species":"Lava dragon","level":73},{"species":"Brutal red dragon","level":74}]},
+{"id":"elite-2","city":"Elite of Magic","team":[{"species":"Smoke devil","level":74},{"species":"Spiritual Mage","level":75},{"species":"Dagannoth Prime","level":76},{"species":"Kraken","level":77},{"species":"Nuclear smoke devil","level":78}]},
+{"id":"elite-3","city":"Elite of the Bow","team":[{"species":"Chimalli","level":77},{"species":"Crystalline Dark Beast","level":78},{"species":"Dagannoth Supreme","level":79},{"species":"Corrupted Dark Beast","level":81},{"species":"Jal-Xil","level":82}]},
+{"id":"elite-4","city":"Elite of Might","team":[{"species":"Dagannoth Rex","level":80},{"species":"Sarachnis","level":81},{"species":"Cerberus","level":83},{"species":"Skotizo","level":84},{"species":"Abyssal Sire","level":85}]},
+{"id":"grand-champion","city":"Grand Champion","team":[{"species":"Corrupted Dragon","level":85},{"species":"Greater abyssal demon","level":87},{"species":"Colossal Hydra","level":90},{"species":"Guardian Drake","level":93},{"species":"King Black Dragon","level":96},{"species":"Rune dragon","level":99}]}
+]
+}
