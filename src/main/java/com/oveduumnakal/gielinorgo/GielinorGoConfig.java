@@ -335,4 +335,22 @@ public interface GielinorGoConfig extends Config
 	{
 		return Keybind.NOT_SET;
 	}
+
+	/**
+	 * When a plain left click on a wild creature is ours.
+	 *
+	 * @return the choice, not while in combat by default
+	 */
+	@ConfigItem(
+		keyName = "leftClickWild",
+		name = "Left-click wild creatures",
+		description = "Always: a left click on a wild creature battles or catches it.\nNot while in combat: while you"
+			+ " fight a real monster the left click goes to the game, and Battle and Catch stay in the right-click"
+			+ " menu.\nNever: Battle and Catch are in the right-click menu only.",
+		position = 18
+	)
+	default LeftClickMode leftClickWild()
+	{
+		return LeftClickMode.OUT_OF_COMBAT;
+	}
 }

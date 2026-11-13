@@ -105,4 +105,15 @@ public class WildMenuTest
 		assertFalse(WildMenu.isOurs(null));
 		assertEquals(Arrays.asList("Catch", "Battle"), Arrays.asList(WildMenu.CATCH, WildMenu.BATTLE));
 	}
+
+	@Test
+	public void theSettingDecidesWhoGetsTheLeftClick()
+	{
+		assertTrue(WildMenu.leftClickAllowed(LeftClickMode.ALWAYS, false));
+		assertTrue(WildMenu.leftClickAllowed(LeftClickMode.ALWAYS, true));
+		assertTrue(WildMenu.leftClickAllowed(LeftClickMode.OUT_OF_COMBAT, false));
+		assertFalse(WildMenu.leftClickAllowed(LeftClickMode.OUT_OF_COMBAT, true));
+		assertFalse(WildMenu.leftClickAllowed(LeftClickMode.NEVER, false));
+		assertFalse(WildMenu.leftClickAllowed(LeftClickMode.NEVER, true));
+	}
 }
