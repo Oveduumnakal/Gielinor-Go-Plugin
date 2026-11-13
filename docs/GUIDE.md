@@ -13,9 +13,12 @@ Every feature and every number, in detail. For the short version, see the [READM
   over 2 seconds when its time is up, when you walk more than 25 tiles away or change floors. If there is no free
   tile you can walk to, no wild creature appears. Click it to **Battle** it (a plain left click does that), or
   right-click it for **Battle** and **Catch**. Once your lead has beaten it and it lies knocked out, a plain left
-  click throws your selected jar instead. A click on the copy never walks you to the tile behind it. Any monster you
-  can fight can turn wild, from chickens to bosses, and stronger monsters are rarer finds. At most three wild
-  creatures exist at once.
+  click throws your selected jar instead. When no creature can fight (your team is empty, or your lead is too tired),
+  Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
+  behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
+  finds. At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
+  the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
+  seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
 - **Catch them with jars**
 
@@ -393,6 +396,18 @@ Every feature and every number, in detail. For the short version, see the [READM
   10 tiles of a banker, a bank booth or a bank chest. Anywhere else the panel says "Go to a city or a bank to change
   your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
   your team is full, a creature you receive in a trade, a hatched egg and releasing a stored creature.
+
+- **Change log**
+
+  The button at the bottom of the panel opens the change log: every release, newest first, with a short overview and
+  the changes by area. After the plugin updates, the button reads **What's New** in orange until you open it. A
+  first install does not show the badge.
+
+- **Feedback**
+
+  The **Feedback** button at the bottom of the panel offers **Report a bug** and **Request a feature**. Each opens a
+  short form; **Submit** opens GitHub's new-issue page in your browser with what you wrote already filled in. You
+  review it and post it there. The plugin sends nothing itself, and a bug report adds the plugin version for you.
 
 ## Links
 
