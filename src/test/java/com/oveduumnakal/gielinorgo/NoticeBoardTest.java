@@ -166,6 +166,25 @@ public class NoticeBoardTest
 		assertTrue(noticeAt(board.visible(due), 1).overPlayer());
 	}
 
+	@Test
+	public void aStretchedLineDelaysTheNextOne()
+	{
+		NoticeBoard board = new NoticeBoard();
+		board.queue(Arrays.asList(Notice.player("first", Tone.GOOD), Notice.player("second", Tone.BAD)));
+		board.stretch(2);
+		board.tick(0);
+
+		int second = NoticeBoard.LINE_TICKS + 2;
+		for (int tick = 1; tick < second; tick++)
+		{
+			board.tick(tick * 600L);
+			assertEquals(1, board.visible(tick * 600L).size());
+		}
+
+		board.tick(second * 600L);
+		assertEquals(2, board.visible(second * 600L).size());
+	}
+
 	private static Notice noticeAt(List<NoticeBoard.Shown> lines, int index)
 	{
 		return lines.get(index).notice();

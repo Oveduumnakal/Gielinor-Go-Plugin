@@ -244,7 +244,6 @@ public class GielinorGoPlugin extends Plugin
 		trades = new FriendTrades(species, game, random, System::currentTimeMillis, this::sendToParty,
 			this::announce);
 		game.tradeLocks(trades);
-		trades.battleOn(director::active);
 		wsClient.registerMessage(GielinorGoPartyMessage.class);
 		lastHelloTick = -HELLO_TICKS;
 		persistence = new GoPersistence(configManager, gson);
@@ -266,6 +265,7 @@ public class GielinorGoPlugin extends Plugin
 		stage = new BattleStage(client, follower, System::currentTimeMillis);
 		arena = new ArenaStage(client, follower, animations, game::speciesFor);
 		director = new BattleDirector(game, config::turnSeconds, battleListener());
+		trades.battleOn(director::active);
 		promptOverlay = new BattlePromptOverlay();
 		overlayManager.add(promptOverlay);
 		hotkeys = new BattleHotkeys(config::attackKey, config::switchKey, config::catchKey, config::runKey,
@@ -1838,6 +1838,7 @@ public class GielinorGoPlugin extends Plugin
 			arena.clear();
 
 		stage.gameTick();
+		noticeBoard.stretch(stage.takeExtraTicks());
 		if (pendingTicks > 0 && --pendingTicks == 0)
 		{
 			noticeBoard.queue(pendingLines);

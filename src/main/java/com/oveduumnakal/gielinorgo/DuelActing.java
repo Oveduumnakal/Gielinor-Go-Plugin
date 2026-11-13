@@ -42,6 +42,17 @@ final class DuelActing
 		 */
 		void meleeTurn(double distance, CreatureBody.Act act);
 
+		/**
+		 * Tells how long the animation of a move runs.
+		 *
+		 * @param act the move
+		 * @return its length in client ticks, 0 when it has none
+		 */
+		default int actTicks(CreatureBody.Act act)
+		{
+			return 0;
+		}
+
 		/** @return the body's world x, in tiles */
 		double x();
 
@@ -89,6 +100,12 @@ final class DuelActing
 		public void meleeTurn(double distance, CreatureBody.Act act)
 		{
 			follower.meleeTurn(distance, act);
+		}
+
+		@Override
+		public int actTicks(CreatureBody.Act act)
+		{
+			return follower.actTicks(act);
 		}
 
 		@Override
@@ -241,6 +258,53 @@ final class DuelActing
 			leadTag = null;
 			foeTag = null;
 		}
+	}
+
+	/**
+	 * Tells how many game ticks the beat that {@link #play} just started lasts: {@link BattleTimeline#BEAT_TICKS},
+	 * or longer when the attack or the reaction to it takes longer. Call it right after {@link #play}.
+	 *
+	 * @param step the beat that was played
+	 * @return game ticks, never less than {@link BattleTimeline#BEAT_TICKS}
+	 */
+	int beatTicks(BattleTimeline.Step step)
+	{
+		try
+		{
+			switch (step.beat())
+			{
+				case LEAD_ATTACKS:
+					return attackBeat(step, lead, foe, CreatureBody.Act.ATTACK);
+
+				case FOE_ATTACKS:
+					return attackBeat(step, foe, lead, CreatureBody.Act.ATTACK);
+
+				case LEAD_SPECIAL:
+					return attackBeat(step, lead, foe, CreatureBody.Act.SPECIAL);
+
+				case FOE_SPECIAL:
+					return attackBeat(step, foe, lead, CreatureBody.Act.SPECIAL);
+
+				case DOT:
+				case SKIP:
+					Side flinching = step.onLead() ? lead : foe;
+					return AttackLength.flinchTicks(flinching.actTicks(CreatureBody.Act.HIT));
+
+				default:
+					return BattleTimeline.BEAT_TICKS;
+			}
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not time a beat", e);
+			return BattleTimeline.BEAT_TICKS;
+		}
+	}
+
+	private static int attackBeat(BattleTimeline.Step step, Side attacker, Side target, CreatureBody.Act act)
+	{
+		return AttackLength.beatTicks(step.melee(), attacker.actTicks(act), target.actTicks(CreatureBody.Act.HIT),
+			!step.missed());
 	}
 
 	/**

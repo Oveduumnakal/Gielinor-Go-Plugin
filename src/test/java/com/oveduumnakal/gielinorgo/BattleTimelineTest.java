@@ -135,6 +135,19 @@ public class BattleTimelineTest
 	}
 
 	@Test
+	public void aStretchedBeatDelaysTheNextOne()
+	{
+		BattleTimeline timeline = new BattleTimeline(TWO_HITS, true);
+		assertEquals(BattleTimeline.Beat.LEAD_ATTACKS, beatOf(timeline.tick(true)));
+		timeline.stretch(2);
+
+		for (int tick = 1; tick < BattleTimeline.BEAT_TICKS + 2; tick++)
+			assertNull(timeline.tick(true));
+
+		assertEquals(BattleTimeline.Beat.FOE_ATTACKS, beatOf(timeline.tick(true)));
+	}
+
+	@Test
 	public void theLoserStaysDownThenEverythingIsOver()
 	{
 		BattleTimeline timeline = new BattleTimeline(TWO_HITS, false);

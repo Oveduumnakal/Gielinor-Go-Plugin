@@ -102,6 +102,12 @@ final class ArenaStage implements StageAnchors
 		}
 
 		@Override
+		public int actTicks(CreatureBody.Act act)
+		{
+			return foe == null ? 0 : foe.actTicks(act);
+		}
+
+		@Override
 		public double x()
 		{
 			return centerX;
@@ -415,6 +421,9 @@ final class ArenaStage implements StageAnchors
 
 			case HIT:
 				acting.play(entry.step(), false);
+				if (run != null)
+					run.stretch(acting.beatTicks(entry.step()) - BattleTimeline.BEAT_TICKS);
+
 				break;
 
 			case DOWN:
