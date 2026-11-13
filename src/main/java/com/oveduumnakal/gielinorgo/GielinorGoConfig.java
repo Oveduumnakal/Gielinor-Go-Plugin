@@ -405,6 +405,8 @@ public interface GielinorGoConfig extends Config
 		position = 19
 	)
 	default boolean skillingEncounters()
+	{
+		return true;
 	}
 
 	/**
