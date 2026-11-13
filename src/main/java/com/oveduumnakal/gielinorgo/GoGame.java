@@ -2774,7 +2774,7 @@ final class GoGame
 				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname,
 				creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId),
 				found == null ? Collections.emptyList() : MoveLearning.known(creature, found, moves),
-				MoveLearning.pending(creature, moves), waitingText(creature)));
+				MoveLearning.pending(creature, moves), waitingText(creature)).withSpecies(found));
 		}
 
 		return views;

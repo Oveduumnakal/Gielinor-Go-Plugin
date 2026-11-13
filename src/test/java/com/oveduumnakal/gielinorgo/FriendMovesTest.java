@@ -102,7 +102,7 @@ public class FriendMovesTest
 		assertEquals(1, hello.moves().length);
 		assertArrayEquals(new String[] {"bite", "fire", "claw"}, hello.moves()[0]);
 		assertEquals(GielinorGoPartyMessage.PROTOCOL, hello.version());
-		assertEquals(6, GielinorGoPartyMessage.PROTOCOL);
+		assertEquals(7, GielinorGoPartyMessage.PROTOCOL);
 	}
 
 	@Test

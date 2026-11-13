@@ -159,6 +159,15 @@ Every feature and every number, in detail. For the short version, see the [READM
   you had before this update keep exactly the strength they had: average rolls and the Steady temperament. A
   creature keeps its rolls when it evolves, moves to Storage or is traded.
 
+  On top of that, every species has its own make-up, taken from the real monster in the wiki: its hitpoints, its
+  strongest hit, its defence level and how fast it attacks, each compared with what is usual for its combat level.
+  A species is up to 25% stronger or weaker than the baseline in health, attack, defence and speed, and the four
+  are balanced against each other, so a tough species pays for it somewhere else. A monster that attacks every
+  three ticks or faster really is fast and strikes first. When a stat is 12% or more away from the baseline the
+  card names it beside the style: Tough or Frail (health), Hits hard or Hits soft (attack), Sturdy or Brittle
+  (defence), Fast or Slow (speed). Hover the card for all four percentages. A creature that evolves is never worse
+  in any stat than the stage before it, and wild creatures have the species' make-up too.
+
 - **Nicknames**
 
   Right-click a creature in Team or Storage and choose **Rename...** to give it a name of 1 to 12 letters, numbers,
