@@ -1855,10 +1855,10 @@ final class GoGame
 		long now = clock.getAsLong();
 		long today = taskCalendar.dayOf(now);
 		Long paid = data.rematchDay.get(champion.id());
-		if (paid == null || paid.longValue() != today)
+		if (paid == null || paid.longValue() < today)
 			return "Reward ready";
 
-		long left = (today + 1) * DAY_MILLIS - now;
+		long left = (paid.longValue() + 1) * DAY_MILLIS - now;
 		return "Reward again in " + Math.max(1L, (left + HOUR_MILLIS - 1) / HOUR_MILLIS) + " h";
 	}
 
@@ -2191,7 +2191,7 @@ final class GoGame
 		long today = taskCalendar.dayOf(clock.getAsLong());
 		boolean first = data.goldSigils.add(foe.id());
 		Long paid = data.rematchDay.get(foe.id());
-		boolean daily = paid == null || paid.longValue() != today;
+		boolean daily = paid == null || paid.longValue() < today;
 		dirty = true;
 		shareXp(daily ? creatureXp : creatureXp / 2);
 		if (!daily)
