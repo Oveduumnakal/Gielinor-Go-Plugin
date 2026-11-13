@@ -439,25 +439,27 @@ public class BattleSimTest
 
 	/**
 	 * Battles recorded before rolls existed: seed, species, levels, winner, turns and the hash of the log. An
-	 * unrolled battle must still come out exactly the same.
+	 * unrolled battle must still come out exactly the same. Re-recorded for issue 85: the logs name a style, and
+	 * Melee is now Stab, so seven of the twelve hashes changed; hashing the new logs with "Stab" turned back into
+	 * "Melee" gives the old values, so nothing but that word moved.
 	 */
 	@Test
 	public void unrolledBattlesMatchTheOnesRecordedBeforeRollsExisted()
 	{
 		Species[] species = {GOBLIN, DRAGON, WIZARD};
 		int[][] recorded = {
-			{0, 0, 8, -1277317425},
+			{0, 0, 8, 1618297563},
 			{1, 1, 5, 266527838},
-			{2, 0, 5, 1740425804},
+			{2, 0, 5, -690367402},
 			{3, 1, 15, -104490119},
-			{4, 1, 12, -1868845961},
-			{5, 1, 6, -1565569272},
-			{6, 1, 5, 104386038},
-			{7, 0, 10, -60745422},
+			{4, 1, 12, -69464885},
+			{5, 1, 6, -1892739012},
+			{6, 1, 5, -189094218},
+			{7, 0, 10, -490844800},
 			{8, 1, 13, 145099186},
 			{9, 0, 5, 2032157480},
 			{10, 0, 15, -129741735},
-			{11, 1, 12, -92214220}
+			{11, 1, 12, -1721383970}
 		};
 		for (int[] row : recorded)
 		{
