@@ -20,6 +20,21 @@ Every feature and every number, in detail. For the short version, see the [READM
   the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
   seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
+- **While skilling**
+
+  Fishing, Woodcutting, Mining, Farming and Hunter XP drops sometimes bring a wild creature to a free tile one or
+  two tiles from you: "A wild Crab surfaced!" (Woodcutting: "dropped from the branches", Mining: "crawled out of the
+  rock", Farming: "came out of the patch", Hunter: "broke cover"). It is an ordinary wild creature: Battle, Catch,
+  about 3 minutes, and it counts toward the limit of three. The bigger the XP drop, the likelier the creature, so
+  fast small drops and slow big ones find creatures at about the same rate per XP: about one every 6 to 10 minutes
+  of steady skilling at the default **Wild creature rarity**, never two within 3 minutes. Each skill has its own
+  species (Fishing water creatures, Woodcutting birds and tree dwellers, Mining cave and rock creatures, Farming
+  pests and field animals, Hunter prey). The species follows your level in the skill: a level 90 fisher meets
+  stronger creatures than a level 20 one. Three species are met **only** this way, one time in 20 and from skill
+  level 40: the River troll while Fishing, the Rock Golem while Mining and the Tree spirit while Woodcutting. Nothing
+  appears with the **Skilling encounters** setting off, in an instance or in a PvP area, or when there is no free
+  tile.
+
 - **Catch them with jars**
 
   Throwing a jar has a chance to catch the creature. The menu shows your odds before you click. Stronger monsters
