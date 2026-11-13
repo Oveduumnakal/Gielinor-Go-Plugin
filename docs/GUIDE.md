@@ -401,6 +401,18 @@ Every feature and every number, in detail. For the short version, see the [READM
   your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
   your team is full, a creature you receive in a trade, a hatched egg and releasing a stored creature.
 
+- **Change log**
+
+  The button at the bottom of the panel opens the change log: every release, newest first, with a short overview and
+  the changes by area. After the plugin updates, the button reads **What's New** in orange until you open it. A
+  first install does not show the badge.
+
+- **Feedback**
+
+  The **Feedback** button at the bottom of the panel offers **Report a bug** and **Request a feature**. Each opens a
+  short form; **Submit** opens GitHub's new-issue page in your browser with what you wrote already filled in. You
+  review it and post it there. The plugin sends nothing itself, and a bug report adds the plugin version for you.
+
 ## Links
 
 - [Report a bug](https://github.com/Oveduumnakal/Gielinor-Go-Plugin/issues/new?template=bug_report.yml)
