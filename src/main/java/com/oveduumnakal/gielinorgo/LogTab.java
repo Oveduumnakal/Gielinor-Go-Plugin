@@ -24,6 +24,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.ListCellRenderer;
@@ -38,6 +39,7 @@ import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 import net.runelite.client.ui.components.IconTextField;
+import net.runelite.client.util.LinkBrowser;
 
 /**
  * The Log tab: the Creature Log as one scrolling list with a search box and a filter. The list uses a single
@@ -69,6 +71,12 @@ final class LogTab extends JPanel
 	private final DefaultListModel<LogEntry> model = new DefaultListModel<>();
 	private final JList<LogEntry> list;
 	private final JScrollPane scroll;
+	private final JPanel detail = new JPanel();
+	private final JLabel detailName = PanelUi.caption("");
+	private final JLabel detailExamine = PanelUi.wrapped("", ColorScheme.LIGHT_GRAY_COLOR);
+	private final JLabel detailLine = PanelUi.wrapped("", ColorScheme.LIGHT_GRAY_COLOR);
+	private final JLabel detailRecord = PanelUi.caption("");
+	private String detailKey;
 	private List<LogEntry> shown;
 	private Set<String> featured = Collections.emptySet();
 	private TodayView today = TodayView.NONE;
@@ -149,6 +157,22 @@ final class LogTab extends JPanel
 		ToolTipManager.sharedInstance().registerComponent(list);
 		scroll = PanelUi.scroll(list);
 		add(scroll, BorderLayout.CENTER);
+		buildDetail();
+		list.addListSelectionListener(e -> showDetail());
+		list.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				maybePopup(e);
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e)
+			{
+				maybePopup(e);
+			}
+		});
 	}
 
 	/**
@@ -167,6 +191,70 @@ final class LogTab extends JPanel
 
 		shown = state.log();
 		refill(true);
+	}
+
+	private void buildDetail()
+	{
+		detail.setLayout(new BoxLayout(detail, BoxLayout.Y_AXIS));
+		detail.setBackground(ColorScheme.DARKER_GRAY_COLOR);
+		detail.setBorder(new EmptyBorder(6, 8, 6, 8));
+		detailExamine.setFont(detailExamine.getFont().deriveFont(Font.ITALIC));
+		JLabel[] parts = {detailName, detailExamine, detailLine, detailRecord};
+		for (JLabel part : parts)
+		{
+			part.setAlignmentX(Component.LEFT_ALIGNMENT);
+			detail.add(part);
+		}
+
+		detail.setVisible(false);
+		add(detail, BorderLayout.SOUTH);
+	}
+
+	private void showDetail()
+	{
+		LogEntry entry = list.getSelectedValue();
+		if (entry == null)
+			return;
+
+		if (!isKnown(entry))
+		{
+			detailKey = null;
+			detail.setVisible(false);
+			return;
+		}
+
+		detailKey = Species.keyFor(entry.name());
+		detailName.setText(entry.name());
+		detailName.setForeground(entry.rarity().color());
+		boolean hasExamine = entry.examine() != null;
+		detailExamine.setVisible(hasExamine);
+		detailExamine.setText(PanelUi.wrappedHtml(hasExamine ? entry.examine() : ""));
+		String line = entry.lineText();
+		detailLine.setVisible(!line.isEmpty());
+		detailLine.setText(PanelUi.wrappedHtml(line));
+		detailRecord.setText(entry.recordText());
+		detailRecord.setForeground(entry.gilded() ? PanelUi.GOLD : ColorScheme.LIGHT_GRAY_COLOR);
+		detail.setVisible(true);
+		detail.revalidate();
+	}
+
+	private void maybePopup(MouseEvent event)
+	{
+		if (!event.isPopupTrigger())
+			return;
+
+		int index = list.locationToIndex(event.getPoint());
+		if (index < 0 || !list.getCellBounds(index, index).contains(event.getPoint()))
+			return;
+
+		LogEntry entry = model.getElementAt(index);
+		if (!isKnown(entry))
+			return;
+
+		list.setSelectedIndex(index);
+		JPopupMenu menu = new JPopupMenu();
+		menu.add(PanelUi.menuItem("Open wiki", () -> LinkBrowser.browse(WikiLinks.urlFor(entry.name()))));
+		menu.show(list, event.getX(), event.getY());
 	}
 
 	private void updateToday(TodayView view)
@@ -228,8 +316,27 @@ final class LogTab extends JPanel
 
 		model.clear();
 		model.addAll(matches);
+		reselectDetail();
 		if (keepScroll)
 			SwingUtilities.invokeLater(() -> bar.setValue(position));
+	}
+
+	private void reselectDetail()
+	{
+		if (detailKey == null)
+			return;
+
+		for (int i = 0; i < model.size(); i++)
+		{
+			if (Species.keyFor(model.get(i).name()).equals(detailKey))
+			{
+				list.setSelectedIndex(i);
+				return;
+			}
+		}
+
+		detailKey = null;
+		detail.setVisible(false);
 	}
 
 	private static boolean matchesQuery(LogEntry entry, String query)

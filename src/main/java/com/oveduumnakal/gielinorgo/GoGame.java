@@ -7,11 +7,14 @@ package com.oveduumnakal.gielinorgo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
@@ -101,6 +104,7 @@ final class GoGame
 
 	private final SpeciesTable species;
 	private final EvolutionTable evolutions;
+	private ExamineTable examine = ExamineTable.empty();
 	private final ChampionTable champions;
 	private final Random random;
 	private final LongSupplier clock;
@@ -158,6 +162,17 @@ final class GoGame
 		this.random = random;
 		this.clock = clock;
 		this.notices = notices;
+	}
+
+	/**
+	 * Sets the examine lines the Creature Log shows.
+	 *
+	 * @param table the wiki's examine line for each species
+	 */
+	void examine(ExamineTable table)
+	{
+		this.examine = table;
+		this.log = null;
 	}
 
 	/**
@@ -2437,6 +2452,48 @@ final class GoGame
 		return views;
 	}
 
+	private List<LogEntry.Stage> evolutionLine(Species entry)
+	{
+		LinkedList<Species> stages = new LinkedList<>();
+		stages.add(entry);
+		Set<String> visited = new HashSet<>();
+		visited.add(entry.key());
+		EvolutionTable.Step step = evolutions.previous(entry.key());
+		while (step != null)
+		{
+			Species before = species.find(step.from());
+			if (before == null || !visited.add(before.key()))
+				break;
+
+			stages.addFirst(before);
+			step = evolutions.previous(before.key());
+		}
+
+		step = evolutions.next(entry.key());
+		while (step != null)
+		{
+			Species after = species.find(step.to());
+			if (after == null || !visited.add(after.key()))
+				break;
+
+			stages.addLast(after);
+			step = evolutions.next(after.key());
+		}
+
+		if (stages.size() < 2)
+			return Collections.emptyList();
+
+		List<LogEntry.Stage> line = new ArrayList<>(stages.size());
+		for (Species stage : stages)
+		{
+			Integer count = data.caught.get(stage.key());
+			boolean known = data.seen.contains(stage.key()) || count != null && count > 0;
+			line.add(new LogEntry.Stage(stage.name(), known));
+		}
+
+		return line;
+	}
+
 	private List<LogEntry> log()
 	{
 		if (log != null)
@@ -2451,7 +2508,7 @@ final class GoGame
 
 			entries.add(new LogEntry(entry.name(), entry.level(), entry.rarity(), entry.style(),
 				count == null ? 0 : count, data.seen.contains(entry.key()), data.gilded.contains(entry.key()),
-				entry.questOnly()));
+				entry.questOnly(), examine.textFor(entry.key()), evolutionLine(entry)));
 		}
 
 		log = Collections.unmodifiableList(entries);
