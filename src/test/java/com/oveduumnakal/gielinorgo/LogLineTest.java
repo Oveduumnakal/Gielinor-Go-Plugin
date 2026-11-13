@@ -77,4 +77,22 @@ public class LogLineTest
 		assertEquals("Caught 4 · gilded owned", entry("Imp").recordText());
 		assertEquals("Seen, not caught yet", entry("Rat").recordText());
 	}
+
+	@Test
+	public void aConditionAndABranchShowBesideKnownStages()
+	{
+		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Wolf", 64, CombatType.MELEE),
+			new Species("Dire Wolf", 88, CombatType.MELEE), new Species("Werewolf", 93, CombatType.MELEE)));
+		EvolutionTable evolutions = new EvolutionTable(Arrays.asList(
+			new EvolutionTable.Step("Wolf", "Dire Wolf", 55, EvolutionCondition.DAY),
+			new EvolutionTable.Step("Wolf", "Werewolf", 55, EvolutionCondition.NIGHT)), species);
+		GoGame wolves = new GoGame(species, evolutions, ChampionTable.empty(), new Random(1), () -> 0L, notice ->
+		{
+		});
+		wolves.data().seen.add("wolf");
+		wolves.data().seen.add("werewolf");
+		LogEntry wolf = wolves.snapshot().log().stream().filter(e -> e.name().equals("Wolf")).findFirst().get();
+
+		assertEquals("Wolf → ??? / Werewolf (at night)", wolf.lineText());
+	}
 }
