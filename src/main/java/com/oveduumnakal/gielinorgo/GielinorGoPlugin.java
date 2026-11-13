@@ -56,6 +56,7 @@ import net.runelite.client.callback.RenderCallbackManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.Keybind;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ClientShutdown;
 import net.runelite.client.events.PartyChanged;
 import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.input.KeyManager;
@@ -355,6 +356,27 @@ public class GielinorGoPlugin extends Plugin
 	public void onRuneScapeProfileChanged(RuneScapeProfileChanged event)
 	{
 		clientThread.invoke(this::loadSave);
+	}
+
+	/**
+	 * Saves when the client is closed, because RuneLite does not stop plugins then. The event does not arrive on the
+	 * client thread, so the save is written here and the config is flushed to disk afterwards: the config manager's
+	 * own handler may have run first, and without the flush the save would stay in memory.
+	 *
+	 * @param event the shutdown
+	 */
+	@Subscribe
+	public void onClientShutdown(ClientShutdown event)
+	{
+		try
+		{
+			saveNow();
+			configManager.sendConfig();
+		}
+		catch (RuntimeException e)
+		{
+			log.warn("Gielinor Go: could not save on shutdown", e);
+		}
 	}
 
 	/**
