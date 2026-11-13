@@ -131,7 +131,8 @@ final class CreatureCard extends JPanel
 		name.setText(PanelUi.displayName(view));
 		name.setForeground(PanelUi.nameColor(view));
 		level.setText("Lv " + view.level());
-		style.setText(view.type().label() + " \u00b7 " + view.temperamentLabel());
+		style.setText(view.type().label() + (view.speciesWord().isEmpty() ? "" : " \u00b7 " + view.speciesWord())
+			+ " \u00b7 " + view.temperamentLabel());
 		showBadge(view, isLead);
 		newMove.setVisible(!view.pending().isEmpty());
 		newMove.setToolTipText(view.pending().isEmpty() ? null : "Wants to learn "
@@ -143,7 +144,8 @@ final class CreatureCard extends JPanel
 			BorderFactory.createMatteBorder(0, STRIPE, 0, 0, view.gilded() ? PanelUi.GOLD : stripe),
 			BorderFactory.createEmptyBorder(6, 6, 7, 8)));
 		setCursor(Cursor.getPredefinedCursor(isLead ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR));
-		setToolTipText("<html>" + PanelUi.tooltipName(view) + "<br>" + PanelUi.tooltipRolls(view) + "<br>Health "
+		setToolTipText("<html>" + PanelUi.tooltipName(view) + PanelUi.tooltipSpecies(view) + "<br>"
+			+ PanelUi.tooltipRolls(view) + "<br>Health "
 			+ Math.round(view.hpFraction() * 100) + "%<br>"
 			+ Math.round(view.xpProgress() * 100) + "% to level " + Math.min(XpRules.MAX_LEVEL, view.level() + 1)
 			+ "<br>" + (isLead ? "Your lead: fights battles and trains twice as fast" : "Click to make lead")

@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -74,6 +75,71 @@ final class Species
 			return 1.0;
 
 		return Math.max(MIN_FACTOR, Math.min(MAX_FACTOR, stats[stat.ordinal()]));
+	}
+
+	/**
+	 * The words that say what this species is good or bad at: a factor of 1.12 or more names it ({@code Tough},
+	 * {@code Hits hard}, {@code Sturdy}, {@code Fast}), 0.88 or less names the opposite ({@code Frail},
+	 * {@code Hits soft}, {@code Brittle}, {@code Slow}). The two stats furthest from 1.0 come first.
+	 *
+	 * @param limit the most words to return
+	 * @return the words, strongest first; empty for a species near the baseline in every stat
+	 */
+	List<String> words(int limit)
+	{
+		List<Stat> stats = new ArrayList<>();
+		for (Stat stat : Stat.values())
+		{
+			if (Math.abs(factor(stat) - 1.0) >= WORD_AT - 1e-9)
+				stats.add(stat);
+		}
+
+		stats.sort((a, b) -> Double.compare(Math.abs(factor(b) - 1.0), Math.abs(factor(a) - 1.0)));
+		List<String> words = new ArrayList<>();
+		for (Stat stat : stats)
+		{
+			if (words.size() < limit)
+				words.add(word(stat, factor(stat) > 1.0));
+		}
+
+		return words;
+	}
+
+	private static String word(Stat stat, boolean high)
+	{
+		switch (stat)
+		{
+			case HEALTH:
+				return high ? "Tough" : "Frail";
+			case ATTACK:
+				return high ? "Hits hard" : "Hits soft";
+			case DEFENCE:
+				return high ? "Sturdy" : "Brittle";
+			default:
+				return high ? "Fast" : "Slow";
+		}
+	}
+
+	/**
+	 * Lists what this species does to each stat, for a tooltip.
+	 *
+	 * @return the four stats with their percentage, such as {@code Health +12% · Attack -5% · Defence 0% · Speed +25%}
+	 */
+	String describeFactors()
+	{
+		StringBuilder text = new StringBuilder();
+		for (Stat stat : Stat.values())
+		{
+			long percent = Math.round((factor(stat) - 1.0) * 100);
+			text.append(text.length() == 0 ? "" : " \u00b7 ")
+				.append(stat.label())
+				.append(' ')
+				.append(percent > 0 ? "+" : "")
+				.append(percent)
+				.append('%');
+		}
+
+		return text.toString();
 	}
 
 	/**

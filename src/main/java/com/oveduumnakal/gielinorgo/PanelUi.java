@@ -230,6 +230,21 @@ final class PanelUi
 	}
 
 	/**
+	 * Says what a creature's species is good or bad at, for its tooltip.
+	 *
+	 * @param view the creature
+	 * @return HTML lines starting with a line break, or an empty text when the species is not known
+	 */
+	static String tooltipSpecies(CreatureView view)
+	{
+		if (view.speciesFactors().isEmpty())
+			return "";
+
+		String words = view.speciesWords();
+		return "<br>Species: " + (words.isEmpty() ? "all-round" : words) + " (" + view.speciesFactors() + ")";
+	}
+
+	/**
 	 * Lists a creature's moves for its tooltip, one line each.
 	 *
 	 * @param view the creature

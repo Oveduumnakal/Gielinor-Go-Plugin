@@ -90,7 +90,8 @@ Then replace this comment with:
 - **Every creature is one of a kind**
 
   Each creature rolls hidden bonuses for health, attack, defence and speed, and one of ten temperaments. The best
-  are rated Strong or Exceptional. You can give any of them a nickname.
+  are rated Strong or Exceptional. Each species also has its own strengths, from the real monster (Tough, Fast, ...).
+  You can give any of them a nickname.
 
 - **Moves and evolutions**
 
