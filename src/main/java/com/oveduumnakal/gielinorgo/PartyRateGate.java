@@ -8,11 +8,20 @@ package com.oveduumnakal.gielinorgo;
  * Decides which party messages are handled and which are dropped before they cost the player any work. A message
  * addressed to another player is none of this player's business: it is dropped without being counted, so other
  * people's traffic cannot use up a sender's share. A reply the player is waiting for in a trade they agreed to
- * always gets through, since losing it leaves half a trade. Everything else is held to {@link MessageRate}.
+ * always gets through, since losing it leaves half a trade. The turns of the player's battle partner have a generous
+ * limit of their own, so a flood of them cannot queue work without end. Everything else is held to
+ * {@link MessageRate}.
  */
 final class PartyRateGate
 {
+	/** Turn and leave messages the player in a steered battle may send in {@link #TURN_WINDOW_MS}. */
+	static final int TURN_LIMIT = 5;
+
+	/** Length of the window for turn and leave messages, in milliseconds. */
+	static final long TURN_WINDOW_MS = 1_000L;
+
 	private final MessageRate rate = new MessageRate();
+	private final MessageRate turnRate = new MessageRate(TURN_LIMIT, TURN_WINDOW_MS);
 
 	/**
 	 * Says whether a message may be handled, and counts it when it is held to the limit.
@@ -33,12 +42,16 @@ final class PartyRateGate
 		if (tradeReply)
 			return true;
 
-		return turnPartner || rate.allow(message.getMemberId(), nowMs);
+		if (turnPartner)
+			return turnRate.allow(message.getMemberId(), nowMs);
+
+		return rate.allow(message.getMemberId(), nowMs);
 	}
 
 	/** Forgets every sender, for when the player joins or leaves a party. */
 	void clear()
 	{
 		rate.clear();
+		turnRate.clear();
 	}
 }

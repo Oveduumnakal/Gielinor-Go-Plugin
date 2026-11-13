@@ -1003,6 +1003,28 @@ public class FriendTradesTest
 	}
 
 	@Test
+	public void anOfferNobodyAnsweredDoesNotBlockAReset()
+	{
+		assertTrue(bob.receive(offerOf(Item.creature("imp", 20, XpRules.xpForLevel(20), false)), BOB, "Ann"));
+		assertTrue(bob.open());
+
+		assertFalse(bob.blocksReset());
+		assertNull(bobGame.resetBlocker());
+	}
+
+	@Test
+	public void anAgreedTradeAndAnOfferOfMyOwnBlockAReset()
+	{
+		ann.offer(BOB, "Bob", annImp, null);
+		assertTrue("my open offer blocks", ann.blocksReset());
+		bob.receive(last(fromAnn), BOB, "Ann");
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
+
+		assertTrue("a trade I agreed to blocks", bob.blocksReset());
+		assertEquals("Finish or cancel the trade first", bobGame.resetBlocker());
+	}
+
+	@Test
 	public void aNewOfferFromSomeoneWithAnOpenOfferIsIgnored()
 	{
 		long xp = XpRules.xpForLevel(20);
