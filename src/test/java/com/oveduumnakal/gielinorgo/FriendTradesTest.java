@@ -985,6 +985,24 @@ public class FriendTradesTest
 	}
 
 	@Test
+	public void onlyTheConfirmOfAnAgreedOfferIsAwaited()
+	{
+		ann.offer(BOB, "Bob", annImp, null);
+		bob.receive(last(fromAnn), BOB, "Ann");
+		GielinorGoPartyMessage early = new GielinorGoPartyMessage(GielinorGoPartyMessage.CONFIRM, BOB,
+			bob.offerId(ANN), 0, 0, new String[0], new int[0]);
+		sentBy(early, ANN);
+		assertFalse("not agreed yet", bob.awaitsReply(early, BOB));
+
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
+		ann.receive(last(fromBob), ANN, "Bob");
+
+		assertTrue(bob.awaitsReply(last(fromAnn), BOB));
+		assertFalse("another member's confirm", bob.awaitsReply(sentBy(copyOf(last(fromAnn)), CAT), BOB));
+		assertFalse("not addressed to Bob", bob.awaitsReply(last(fromAnn), CAT));
+	}
+
+	@Test
 	public void aNewOfferFromSomeoneWithAnOpenOfferIsIgnored()
 	{
 		long xp = XpRules.xpForLevel(20);
@@ -1195,6 +1213,12 @@ public class FriendTradesTest
 		GielinorGoPartyMessage offer = new GielinorGoPartyMessage(GielinorGoPartyMessage.OFFER, BOB, 9, 0, 0,
 			new String[0], new int[0]);
 		return sentBy(offer.giving(item), ANN);
+	}
+
+	private static GielinorGoPartyMessage copyOf(GielinorGoPartyMessage message)
+	{
+		return new GielinorGoPartyMessage(message.kind(), message.to(), message.battle(), 0, 0, new String[0],
+			new int[0]);
 	}
 
 	private static GielinorGoPartyMessage sentBy(GielinorGoPartyMessage message, long memberId)

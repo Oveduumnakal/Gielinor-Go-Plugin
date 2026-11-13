@@ -254,6 +254,26 @@ final class FriendTrades implements GoGame.TradeLocks
 	}
 
 	/**
+	 * Tells whether a message is the answer the player is waiting for in a trade they agreed to: a confirmation or
+	 * a refusal, addressed to them, from that friend, for that offer. Such a message must not be dropped, since
+	 * losing it leaves half a trade.
+	 *
+	 * @param message the message; nothing in it is trusted
+	 * @param myId this player's party member id
+	 * @return true when the player agreed to the offer the message names
+	 */
+	boolean awaitsReply(GielinorGoPartyMessage message, long myId)
+	{
+		String kind = message.kind();
+		if (message.to() != myId
+			|| !GielinorGoPartyMessage.CONFIRM.equals(kind) && !GielinorGoPartyMessage.REFUSE.equals(kind))
+			return false;
+
+		Incoming offer = incoming.get(message.getMemberId());
+		return offer != null && offer.agreedMs != 0 && offer.id == message.battle();
+	}
+
+	/**
 	 * Gives up on trades that waited too long. Called once per game tick.
 	 *
 	 * @return true when an offer just ran out of time, so the panel needs a refresh
