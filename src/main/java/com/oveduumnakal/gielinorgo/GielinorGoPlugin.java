@@ -1057,6 +1057,8 @@ public class GielinorGoPlugin extends Plugin
 
 		director.end();
 		game.load(persistence.load());
+		long account = client.getAccountHash();
+		game.starterSeed(account == -1L ? null : Long.valueOf(account));
 		saveProfileKey = configManager.getRSProfileKey();
 		loaded = true;
 		helloDue = true;
