@@ -53,6 +53,66 @@ public class FollowerPathTest
 	}
 
 	@Test
+	public void aTileBehindAWallIsSkippedWhenPuttingItDown()
+	{
+		path.playerAt(3200, 3200, 0, wallOnTheSouthSide());
+
+		assertAt(3199, 3200);
+		assertEquals(EAST, path.orientation());
+	}
+
+	@Test
+	public void withEveryNeighbourBehindAWallItStandsOnThePlayersTile()
+	{
+		path.playerAt(3200, 3200, 0, new FollowerPath.Ground()
+		{
+			@Override
+			public boolean free(int x, int y)
+			{
+				return true;
+			}
+
+			@Override
+			public boolean reachable(int fromX, int fromY, int toX, int toY)
+			{
+				return false;
+			}
+		});
+
+		assertAt(3200, 3200);
+	}
+
+	@Test
+	public void theWalkBackFromAnErrandIgnoresATileBehindAWall()
+	{
+		path.playerAt(3200, 3200, 0, OPEN);
+		path.goTo(3200, 3198, 3200, 3198);
+		path.endErrand(wallOnTheSouthSide());
+		for (int tick = 0; tick < 8; tick++)
+			gameTick();
+
+		assertTrue(path.y() >= 3200 - CLOSE);
+	}
+
+	private static FollowerPath.Ground wallOnTheSouthSide()
+	{
+		return new FollowerPath.Ground()
+		{
+			@Override
+			public boolean free(int x, int y)
+			{
+				return true;
+			}
+
+			@Override
+			public boolean reachable(int fromX, int fromY, int toX, int toY)
+			{
+				return toY >= fromY;
+			}
+		};
+	}
+
+	@Test
 	public void withNoFreeTileItStandsOnThePlayersTile()
 	{
 		path.playerAt(3200, 3200, 0, WALLED_IN);

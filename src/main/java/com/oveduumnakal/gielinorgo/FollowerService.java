@@ -160,7 +160,7 @@ final class FollowerService
 		int plane = view.getPlane();
 		double tileX = view.getBaseX() + (double) drawn.getX() / TILE - 0.5;
 		double tileY = view.getBaseY() + (double) drawn.getY() / TILE - 0.5;
-		path.playerAt(tileX, tileY, plane, (x, y) -> free(view, plane, x, y));
+		path.playerAt(tileX, tileY, plane, ground(view, plane));
 	}
 
 	/**
@@ -533,7 +533,26 @@ final class FollowerService
 		if (view == null)
 			path.reset();
 		else
-			path.endErrand((x, y) -> free(view, path.plane(), x, y), routerOver(view));
+			path.endErrand(ground(view, path.plane()), routerOver(view));
+	}
+
+	private static FollowerPath.Ground ground(WorldView view, int plane)
+	{
+		CollisionGround walls = new CollisionGround(view, plane);
+		return new FollowerPath.Ground()
+		{
+			@Override
+			public boolean free(int x, int y)
+			{
+				return FollowerService.free(view, plane, x, y);
+			}
+
+			@Override
+			public boolean reachable(int fromX, int fromY, int toX, int toY)
+			{
+				return walls.canStep(fromX, fromY, toX, toY);
+			}
+		};
 	}
 
 	private FollowerPath.Router routerOver(WorldView view)
