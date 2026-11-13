@@ -1098,7 +1098,8 @@ public class GielinorGoPlugin extends Plugin
 
 		List<FriendView> views = new ArrayList<>();
 		for (FriendView view : friends.views(names))
-			views.add(view.withTrade(trades.offerFrom(view.memberId()), trades.waitingOn(view.memberId())));
+			views.add(view.withTrade(trades.offerFrom(view.memberId()), trades.offerId(view.memberId()),
+				trades.waitingOn(view.memberId())));
 
 		return new FriendsState(true, views);
 	}
@@ -1417,10 +1418,12 @@ public class GielinorGoPlugin extends Plugin
 		game.useItem(kept.get(pick.index()), type);
 	}
 
-	private void answerTrade(long memberId, boolean accept)
+	private void answerTrade(long memberId, long offerId, boolean accept)
 	{
-		trades.answer(memberId, friendName(partyService.getMemberById(memberId)), accept);
+		trades.answer(memberId, friendName(partyService.getMemberById(memberId)), offerId, accept);
 		saveNow();
+		if (loaded)
+			refreshPanel();
 	}
 
 	/**
@@ -2560,9 +2563,9 @@ public class GielinorGoPlugin extends Plugin
 			}
 
 			@Override
-			public void answerTrade(long memberId, boolean accept)
+			public void answerTrade(long memberId, long offerId, boolean accept)
 			{
-				onGameThread(() -> GielinorGoPlugin.this.answerTrade(memberId, accept));
+				onGameThread(() -> GielinorGoPlugin.this.answerTrade(memberId, offerId, accept));
 			}
 		};
 	}

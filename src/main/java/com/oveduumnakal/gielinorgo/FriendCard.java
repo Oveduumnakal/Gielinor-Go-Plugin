@@ -51,8 +51,8 @@ final class FriendCard extends JPanel
 		{
 			body.add(Box.createVerticalStrut(6));
 			body.add(PanelUi.wrapped("Offers " + view.offer(), PanelUi.GOLD));
-			body.add(row(PanelUi.button("Accept", e -> actions.answerTrade(view.memberId(), true)),
-				PanelUi.button("Decline", e -> actions.answerTrade(view.memberId(), false))));
+			body.add(row(PanelUi.button("Accept", e -> actions.answerTrade(view.memberId(), view.offerId(), true)),
+				PanelUi.button("Decline", e -> actions.answerTrade(view.memberId(), view.offerId(), false))));
 		}
 
 		for (Component child : body.getComponents())
