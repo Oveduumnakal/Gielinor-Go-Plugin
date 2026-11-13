@@ -42,6 +42,19 @@ final class GoPersistence
 		 * @param value the text to store
 		 */
 		void set(String key, String value);
+
+		/**
+		 * Writes a value for a named account, whichever account is current now. A store that has only one account
+		 * writes to it.
+		 *
+		 * @param profileKey the config key of the account's profile
+		 * @param key the config key
+		 * @param value the text to store
+		 */
+		default void setIn(String profileKey, String key, String value)
+		{
+			set(key, value);
+		}
 	}
 
 	private final Store store;
@@ -78,6 +91,12 @@ final class GoPersistence
 			public void set(String key, String value)
 			{
 				configManager.setRSProfileConfiguration(GielinorGoConfig.GROUP, key, value);
+			}
+
+			@Override
+			public void setIn(String profileKey, String key, String value)
+			{
+				configManager.setConfiguration(GielinorGoConfig.GROUP, profileKey, key, value);
 			}
 		};
 	}
@@ -129,5 +148,20 @@ final class GoPersistence
 	void save(SaveData data)
 	{
 		store.set(KEY_SAVE, gson.toJson(data));
+	}
+
+	/**
+	 * Saves progress for a named account, which may no longer be the current one: the save made as the account
+	 * changes must land in the account that is being left.
+	 *
+	 * @param data the save to write
+	 * @param profileKey the config key of the account's profile, or null for the current account
+	 */
+	void save(SaveData data, String profileKey)
+	{
+		if (profileKey == null)
+			save(data);
+		else
+			store.setIn(profileKey, KEY_SAVE, gson.toJson(data));
 	}
 }
