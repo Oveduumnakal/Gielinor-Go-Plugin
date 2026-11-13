@@ -392,6 +392,12 @@ Every feature and every number, in detail. For the short version, see the [READM
   the changes by area. After the plugin updates, the button reads **What's New** in orange until you open it. A
   first install does not show the badge.
 
+- **Feedback**
+
+  The **Feedback** button at the bottom of the panel offers **Report a bug** and **Request a feature**. Each opens a
+  short form; **Submit** opens GitHub's new-issue page in your browser with what you wrote already filled in. You
+  review it and post it there. The plugin sends nothing itself, and a bug report adds the plugin version for you.
+
 ## Links
 
 - [Report a bug](https://github.com/Oveduumnakal/Gielinor-Go-Plugin/issues/new?template=bug_report.yml)

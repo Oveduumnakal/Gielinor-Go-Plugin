@@ -56,4 +56,6 @@ A Creature Log, daily tasks and daily events give you goals.
   (#82)
 - **Left-click setting.** Choose whether a left click on a wild creature is yours always, never, or only out of
   combat. (#87)
+- **Report a bug and Request a feature.** The Feedback button in the panel opens GitHub with your text filled in.
+  (#81)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
