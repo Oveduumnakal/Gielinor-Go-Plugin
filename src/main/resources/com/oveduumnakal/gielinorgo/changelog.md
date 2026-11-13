@@ -90,3 +90,23 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Choose your turns against friends.** When you both have Choose battle actions on, a friend battle is played
   turn by turn. (#98)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
+
+### Fixes
+
+- **Start-up.** The plugin starts again, and the client no longer stops near a wild creature. (#152)
+- **Saves.** Closing the client, switching profile or turning the plugin off no longer loses progress or writes
+  into the wrong save, and a waiting boss egg stays with its own save. (#126, #127, #131, #132)
+- **Daily rules.** Setting the clock back no longer resets daily tasks or rematch rewards, the starter offer stays
+  the same after a relog, and the first XP drop after turning the plugin on trains your team. (#141, #142, #149)
+- **Friend battles.** A chosen-turns battle no longer stops at the start, a late accept no longer ends the battle
+  you are in, items are never used up, both sides share one turn clock, and a friend's switch shows before your
+  hit. (#123, #124, #136, #143, #144, #145, #148)
+- **Trades.** Accept agrees only to the offer you saw, a busy party no longer drops a confirm, a trade that
+  confirms mid-battle waits for the battle to end, and a friend can no longer block a reset. (#122, #128, #146,
+  #147)
+- **Panel and team.** Release and team moves act on the creature you clicked, Storage ticks stay, new creatures go
+  to storage during an Elite run, and Battle shows whenever a battle can start. (#125, #129, #130, #139)
+- **Battle scenes.** A map load no longer forfeits a battle, and status tags sit on the right creature and clear
+  when the status ends. (#133, #137, #138)
+- **World.** The follower and the arena foe stay on your side of walls, projectile colours no longer change other
+  models, floating text stays on its tile, and a model loads once. (#134, #135, #140, #150, #151)

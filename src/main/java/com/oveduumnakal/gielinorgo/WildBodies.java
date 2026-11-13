@@ -292,10 +292,13 @@ final class WildBodies
 			reload.loading();
 
 		WorldView view = client.getTopLevelWorldView();
-		if (bodies.isEmpty() || view == null || client.getGameState() != GameState.LOGGED_IN)
+		if (view == null || client.getGameState() != GameState.LOGGED_IN)
 			return;
 
-		SceneReload.Step step = reload.next(true);
+		SceneReload.Step step = reload.next(true, !bodies.isEmpty());
+		if (bodies.isEmpty())
+			return;
+
 		for (WildBody body : all())
 		{
 			try
