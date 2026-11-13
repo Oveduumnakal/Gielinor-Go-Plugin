@@ -3,8 +3,10 @@ class Creature {
   gilded: boolean
   hpFraction: double
   hpStampMs: long
+  moves: List<String>
   nickname: String
   npcId: int
+  pendingMoves: List<String>
   rollAttack: int
   rollDefence: int
   rollHp: int

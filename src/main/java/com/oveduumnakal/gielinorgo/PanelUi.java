@@ -230,6 +230,24 @@ final class PanelUi
 	}
 
 	/**
+	 * Lists a creature's moves for its tooltip, one line each.
+	 *
+	 * @param view the creature
+	 * @return HTML lines starting with a line break, or an empty text when the creature has no moves
+	 */
+	static String tooltipMoves(CreatureView view)
+	{
+		StringBuilder text = new StringBuilder();
+		for (Move move : view.moves())
+			text.append("<br>" + escape(move.name()) + ": " + move.describe());
+
+		if (!view.pending().isEmpty())
+			text.append("<br>Wants to learn " + escape(view.pending().get(0).name()));
+
+		return text.toString();
+	}
+
+	/**
 	 * Picks the colour of a creature's name.
 	 *
 	 * @param view the creature

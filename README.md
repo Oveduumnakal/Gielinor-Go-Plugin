@@ -111,6 +111,21 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   without one) floats above it at half opacity as it follows you. Nicknames stay on your computer: friends never see them, and a creature you trade away
   arrives without one.
 
+- **Moves**
+
+  Every creature knows up to four moves. A move has a style (Melee, Ranged or Magic), a power (1 is a plain
+  attack), an accuracy (a move below 100% can miss and does no damage then) and sometimes an effect. A creature
+  starts with the newest four moves its level has unlocked. New moves unlock at set levels: a dragon bites at level
+  1, claws at 10, uses Dragonfire at 20 and Inferno at 40, a wizard goes from a strike to a bind to a blast, a spider
+  adds a venom bite, and about twenty families have a pool of their own, written in the table
+  `scripts/move-pools.json`. A new move is learned at once while the creature knows fewer than four ("Bob learned
+  Dragonfire!"). With four known it waits ("Bob wants to learn Dragonfire"): a gold **New move** line shows on the
+  creature's card, and clicking it (or **Moves...** in the card's right-click menu) lets you pick a move to forget
+  or skip the new one. Hover a card to see its moves with their power and accuracy. An evolved creature keeps the
+  moves its new species can still know. A wild creature has the newest four moves its level unlocks, and an
+  automatic battle picks a move for your creature by power, accuracy and the style match-up. Friends see the same
+  moves, and a friend's creature can only use moves its species could really know.
+
 - **Battles that play themselves**
 
   Choose **Battle** on a wild creature and your lead fights it right away. When it faints, the next creature of
@@ -119,8 +134,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   creature opens. A win pays once and the creature that lands the last blow gets the creature XP. Each hit floats over the creature's
   head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. Melee beats Ranged, Ranged beats Magic, and Magic beats
   Melee. A creature's card tooltip reminds you of its style's match-up. There is no opening line: the fight goes
-  straight from the face-off to the first blow. A creature that loses to you is easier to catch. Dragons and wyverns bite in melee but about one hit in
-  four is a fire or ice breath, which counts as Magic for that hit and says so ("Green dragon breathes fire for 12").
+  straight from the face-off to the first blow. A creature that loses to you is easier to catch. Every attack is one of the creature's moves, and the
+  line says which ("Bob uses Dragonfire: -14" or "Bob's Bite missed"); see **Moves** below.
 
   With **Battle animations** on (the default), your lead walks up to the wild creature and they face each other
   two tiles apart (one tile when the far spot cannot be reached). The lead walks round walls and objects, and
@@ -128,7 +143,9 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   stands behind a fence), the battle is shown as text and says so once. Each hit plays as an attack by one and a flinch by the
   other, one every 3 game ticks, and the flinch and the floating line come at the same moment of the turn for every
   attack. A Melee attacker steps up, strikes and steps back. A Ranged or Magic attacker stays where it is and an
-  arrow or a bolt flies from one body to the other, at the height each is drawn at; a dragon steps in to bite but stays put to breathe fire, and a wyvern breathes ice.
+  arrow or a bolt flies from one body to the other, at the height each is drawn at; a dragon steps in to bite but
+  stays put to use Dragonfire, and a wyvern uses Icy breath. A move that misses is acted out like a hit, but the
+  other creature does not flinch.
   The arrow, bolt and breath are drawn on your own screen only, they are not real game projectiles, so other plugins
   do not see them. The loser lies down for a few seconds before getting up. Your lead then walks back to you. The fight is
   played on the wild copy itself, which turns to face your lead. Only you see any of this, and the real monster is
@@ -152,7 +169,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   countdown bar and four buttons:
 
   - **Attack**: your creature attacks, then the other one does (or the other way round: the faster creature is
-    first, and a level tie is a coin toss).
+    first, and a level tie is a coin toss). A creature that knows more than one move opens the list of its moves
+    under the button; pick one. The Attack hotkey and the 10-second timeout let the creature pick for itself.
   - **Switch**: pick any other creature of your team that can still fight. It costs your turn, so the other creature
     attacks the one that steps in. When your creature faints you must pick the next one, and that switch is free.
     The battle is lost when your whole team is down. Only creatures rested to a quarter of their health or more
@@ -316,8 +334,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   drawn from the teams you both already showed each other: nothing extra is sent. A battle a friend starts with you
   is only acted out when you are not busy fighting or talking to something, so it never takes over a boss fight; you
   then get the text only. A friend's gilded creature is drawn plain.
-  Both players need the same version of the plugin: a battle with a player on another version is turned away with
-  a line saying so.
+  Both players need the same version of the plugin (moves changed the battle rules, so a build from before moves
+  cannot battle one with them): a battle with a player on another version is turned away with a line saying so.
 
 - **Trade creatures and eggs**
 

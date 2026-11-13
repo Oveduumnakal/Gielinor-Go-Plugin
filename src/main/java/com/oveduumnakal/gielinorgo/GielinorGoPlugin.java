@@ -221,8 +221,10 @@ public class GielinorGoPlugin extends Plugin
 		calendar = new SpawnCalendar(species);
 		game.milestones(loadMilestones(species));
 		game.elite(loadElite(species));
+		game.moves(loadMoves());
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
-		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce);
+		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce)
+			.withMoves(game.moveTable());
 		trades = new FriendTrades(species, game, random, System::currentTimeMillis, this::sendToParty,
 			this::announce);
 		game.tradeLocks(trades);
@@ -783,6 +785,25 @@ public class GielinorGoPlugin extends Plugin
 		}
 	}
 
+	private MoveTable loadMoves()
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(MoveTable.RESOURCE))
+		{
+			if (in == null)
+				return MoveTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return MoveTable.load(gson, reader);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the move list", e);
+			return MoveTable.empty();
+		}
+	}
+
 	private AnimationTable loadAnimations()
 	{
 		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(AnimationTable.RESOURCE))
@@ -1035,6 +1056,26 @@ public class GielinorGoPlugin extends Plugin
 		SaveData data = game.data();
 		List<Creature> kept = pick.from() == Holding.TEAM ? data.team : data.storage;
 		game.rename(kept.get(pick.index()), name);
+	}
+
+	/**
+	 * Settles the move the creature a panel pick points at waits to learn, once it is checked that the same creature
+	 * is still there. A battle the player steers keeps the moves it started with.
+	 *
+	 * @param pick the creature as the panel showed it
+	 * @param forgetIndex the place of the known move to forget, or -1 to skip the new move
+	 */
+	private void resolveMove(TradePick pick, int forgetIndex)
+	{
+		if (!pick.matches(game.snapshot()))
+		{
+			announce(Notice.player("What you picked has changed. Pick again", Tone.BAD));
+			return;
+		}
+
+		SaveData data = game.data();
+		List<Creature> kept = pick.from() == Holding.TEAM ? data.team : data.storage;
+		game.resolveMove(kept.get(pick.index()), forgetIndex);
 	}
 
 	/**
@@ -1950,6 +1991,12 @@ public class GielinorGoPlugin extends Plugin
 			public void useItem(TradePick pick, ItemType type)
 			{
 				onGameThread(() -> GielinorGoPlugin.this.useItem(pick, type));
+			}
+
+			@Override
+			public void resolveMove(TradePick pick, int forgetIndex)
+			{
+				onGameThread(() -> GielinorGoPlugin.this.resolveMove(pick, forgetIndex));
 			}
 
 			@Override

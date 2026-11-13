@@ -51,12 +51,6 @@ AQUATIC_WORDS = re.compile(
     r"dagannoth|lobstrosity|leech|squid|octopus|whirlpool|mogre|newt|penguin|seagull|river|troll fisher|"
     r"wave|tempoross|hydra|crocodile|ammonite|pirate|mermaid|merfolk|ray|eels|snail|sea snake|sea troll)\b",
     re.I)
-# A melee species whose wiki attack styles list a breath attack also fights with a second style now and then: magic,
-# on this share of its hits. The wiki lists "Dragonfire" for the dragons and "Icy breath" for the wyverns. The primary
-# style stays as it is, so this adds to the battle sim and does not replace the style.
-BREATH_STYLES = ("dragonfire", "icy breath")
-SECOND_STYLE = "MAGIC"
-SECOND_CHANCE = 0.25
 TRAIT_ORDER = ("FAST", "UNHOLY", "FIERY", "LARGE", "POISONOUS", "SLAYER", "AQUATIC")
 
 
@@ -99,14 +93,6 @@ def style_of(styles):
     if "range" in first or "ranging" in first:
         return "RANGED"
     return "MELEE"
-
-
-def second_style_of(style, row):
-    """Returns (second style, chance of using it per hit), or None when the species has no second style."""
-    listed = " ".join(str(a).lower() for a in as_list(row.get("attack_style")))
-    if style == "MELEE" and any(word in listed for word in BREATH_STYLES):
-        return SECOND_STYLE, SECOND_CHANCE
-    return None
 
 
 def as_list(value):
@@ -174,15 +160,13 @@ def clean_name(name):
 
 
 def record(entry):
-    name, level, style, traits, ids, second = entry[:6]
+    name, level, style, traits, ids = entry[:5]
     data = {"name": name, "level": level, "style": style}
-    if second:
-        data["secondStyle"], data["secondChance"] = second
     if traits:
         data["traits"] = traits
     if ids:
         data["ids"] = ids
-    if len(entry) > 6 and entry[6]:
+    if len(entry) > 5 and entry[5]:
         data["quest"] = True
     return data
 
@@ -265,9 +249,9 @@ def main():
         if key not in best or level > best[key][1]:
             kept = best[key][4] if key in best else []
             best[key] = (name, level, style_of(row.get("attack_style")), traits_of(name, row),
-                           merge_ids(row_ids, kept), second_style_of(style_of(row.get("attack_style")), row))
+                           merge_ids(row_ids, kept))
         else:
-            best[key] = best[key][:4] + (merge_ids(best[key][4], row_ids),) + best[key][5:]
+            best[key] = best[key][:4] + (merge_ids(best[key][4], row_ids),)
     entries = sorted(best.values(), key=lambda e: e[0].lower())
     entries = [e + (is_quest(e[0].lower(), row_pages, quest_titles, quest_add, quest_keep),) for e in entries]
     if len(sys.argv) > 1:
@@ -278,7 +262,7 @@ def main():
         f.write("[\n")
         f.write(",\n".join(json.dumps(record(e), separators=(",", ":"), ensure_ascii=False) for e in entries))
         f.write("\n]\n")
-    quest = [e[0] for e in entries if e[6]]
+    quest = [e[0] for e in entries if e[5]]
     with open(QUEST_LIST, "w", encoding="utf-8") as f:
         f.write("# Species flagged quest-only by gen-species.py (see scripts/species-quest-*.txt). Generated.\n")
         f.write("".join(name + "\n" for name in quest))

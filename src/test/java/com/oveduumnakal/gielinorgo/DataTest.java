@@ -10,6 +10,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -177,6 +179,48 @@ public class DataTest
 
 		assertNull(loaded.team.get(0).nickname);
 		assertNull(loaded.storage.get(0).nickname);
+	}
+
+	@Test
+	public void anOldSaveLoadsWithNoMovesAndNoneWaiting()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"team\":[{\"species\":\"goblin\",\"xp\":5}]}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+
+		assertNull("Gson leaves the new fields empty; GoGame.load fills them", loaded.lead().moves);
+		assertNull(loaded.lead().pendingMoves);
+	}
+
+	@Test
+	public void aSavedCreatureKeepsItsMovesAndTheOnesWaiting()
+	{
+		GoPersistence persistence = new GoPersistence(new MapStore(), gson);
+		SaveData data = SaveData.fresh();
+		Creature goblin = new Creature("goblin", 7, 123L);
+		goblin.moves = new ArrayList<>(Arrays.asList("punch", "stab"));
+		goblin.pendingMoves = new ArrayList<>(Arrays.asList("smash"));
+		data.team.add(goblin);
+
+		persistence.save(data);
+		Creature loaded = persistence.load().lead();
+
+		assertEquals(Arrays.asList("punch", "stab"), loaded.moves);
+		assertEquals(Arrays.asList("smash"), loaded.pendingMoves);
+	}
+
+	@Test
+	public void tooManyMovesBlankOnesAndRepeatsAreTrimmedOnLoad()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"team\":[{\"species\":\"goblin\",\"xp\":5,"
+			+ "\"moves\":[\"a\",null,\"a\",\"\",\"b\",\"c\",\"d\",\"e\"],\"pendingMoves\":[\"b\",\"f\",null]}]}");
+
+		Creature lead = new GoPersistence(store, gson).load().lead();
+
+		assertEquals(Arrays.asList("a", "b", "c", "d"), lead.moves);
+		assertEquals("a pending move is never one already known", Arrays.asList("f"), lead.pendingMoves);
 	}
 
 	@Test

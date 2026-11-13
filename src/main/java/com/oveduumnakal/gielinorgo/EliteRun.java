@@ -60,6 +60,7 @@ final class EliteRun
 	private final Fight fighter;
 	private int stage;
 	private State state = State.OPEN;
+	private MoveTable moves = MoveTable.empty();
 
 	/**
 	 * Opens a run that plays its battles automatically.
@@ -84,6 +85,18 @@ final class EliteRun
 		this.table = table;
 		this.species = species;
 		this.fighter = fight;
+	}
+
+	/**
+	 * Gives the opposing creatures their moves. Without this call they fight with one basic attack.
+	 *
+	 * @param table the moves
+	 * @return this run
+	 */
+	EliteRun withMoves(MoveTable table)
+	{
+		this.moves = table == null ? MoveTable.empty() : table;
+		return this;
 	}
 
 	/**
@@ -168,7 +181,10 @@ final class EliteRun
 
 		List<Combatant> theirs = new ArrayList<>();
 		for (Champion.Member member : table.stages().get(stage).team())
-			theirs.add(new Combatant(species.find(member.species()), member.level(), 1.0));
+		{
+			Species found = species.find(member.species());
+			theirs.add(new Combatant(found, member.level(), 1.0).moves(moves.movesAt(found, member.level())));
+		}
 
 		TeamBattleResult fought = fighter.play(mine, theirs, random);
 		if (!fought.won())

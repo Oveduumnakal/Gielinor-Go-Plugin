@@ -17,9 +17,13 @@ import java.util.Random;
  *
  * <p>A turn is a round: the faster creature attacks, then the other, and the round stops early when one of them
  * faints or when {@link BattleSim#MAX_TURNS} attacks have been made against the same opponent. Who is faster is
- * decided once for each pairing of two creatures, by {@link BattleSim#movesFirst}, the first time they attack. Every
- * attack makes the same random calls in the same order as the battles that were resolved in one go before this
- * class existed: the style roll of a creature with a second style, then the damage spread.
+ * decided once for each pairing of two creatures, by {@link BattleSim#movesFirst}, the first time they attack.
+ *
+ * <p>Every attack makes its random calls in this fixed order, and a call that has nothing to decide is not made, so
+ * a creature with one move of accuracy 1 makes exactly the calls battles made before moves existed: (1) the pick of
+ * the move, one draw, only when the attacker has more than one move and was not told which to use; (2) the accuracy
+ * roll, one draw, only when the move's accuracy is below 1; (3) the damage spread, one draw, only when the move
+ * hits. The pick is weighted by power times accuracy times the combat triangle against the opposing creature.
  *
  * <p>The other choices come first in their turn: a switch, a jar or a run happens before the opposing creature
  * attacks, whoever is faster. A switch costs the turn: the opposing creature attacks the one that stepped in. A
@@ -247,7 +251,10 @@ final class BattleState
 		switch (choice.kind())
 		{
 			case ATTACK:
-				attackRound(turn);
+				if (choice.moveIndex() >= mine().moves().size())
+					throw new IllegalArgumentException("No such move: " + choice.moveIndex());
+
+				attackRound(turn, choice.moveIndex());
 				break;
 
 			case SWITCH:
@@ -293,11 +300,11 @@ final class BattleState
 		}
 	}
 
-	private void attackRound(Turn turn)
+	private void attackRound(Turn turn, int moveIndex)
 	{
 		decideOrder();
-		attackIfAble(mineFirst, turn);
-		attackIfAble(!mineFirst, turn);
+		attackIfAble(mineFirst, turn, moveIndex);
+		attackIfAble(!mineFirst, turn, moveIndex);
 		settle(turn);
 	}
 
@@ -310,22 +317,73 @@ final class BattleState
 		orderKnown = true;
 	}
 
-	private void attackIfAble(boolean mineAttacks, Turn turn)
+	/**
+	 * Makes one creature's attack, if both can still fight.
+	 *
+	 * @param mineAttacks whether the player's creature attacks
+	 * @param turn the turn to record it in
+	 * @param moveIndex the move the player chose, used only when the player's creature attacks; -1 lets it pick
+	 */
+	private void attackIfAble(boolean mineAttacks, Turn turn, int moveIndex)
 	{
 		if (mine().fainted() || foe().fainted() || attacks >= BattleSim.MAX_TURNS)
 			return;
 
 		Combatant attacker = mineAttacks ? mine() : foe();
 		Combatant defender = mineAttacks ? foe() : mine();
-		CombatType style = attacker.rollStyle(random);
-		int damage = BattleSim.damage(attacker, style, defender, random);
-		defender.hit(damage);
-		BattleLine line = BattleSim.strike(attacker, defender, damage, mineAttacks == mode.mineFirstWording, style);
+		Move move = pick(attacker, defender, mineAttacks ? moveIndex : -1);
+		boolean wording = mineAttacks == mode.mineFirstWording;
+		BattleLine line;
+		if (move.accuracy() < 1.0 && random.nextDouble() >= move.accuracy())
+		{
+			line = BattleSim.miss(attacker, wording, move);
+		}
+		else
+		{
+			int damage = BattleSim.damage(attacker, move, defender, random);
+			defender.hit(damage);
+			line = BattleSim.strike(attacker, defender, damage, wording, move);
+		}
+
 		turn.hits.add(line);
 		turn.lines.add(line);
 		duelHits.add(line);
 		attacks++;
 		totalAttacks++;
+	}
+
+	/**
+	 * Picks the move an attacker uses. A move the player chose is used as it is; a creature with one move uses it; any
+	 * other picks by one weighted draw, so the stronger and the more accurate moves, and those the combat triangle
+	 * favours against the defender, come up more often.
+	 */
+	private Move pick(Combatant attacker, Combatant defender, int chosen)
+	{
+		List<Move> known = attacker.moves();
+		if (chosen >= 0 && chosen < known.size())
+			return known.get(chosen);
+
+		if (known.size() == 1)
+			return known.get(0);
+
+		double[] weights = new double[known.size()];
+		double total = 0;
+		for (int i = 0; i < weights.length; i++)
+		{
+			Move move = known.get(i);
+			weights[i] = move.power() * move.accuracy() * move.style().multiplierAgainst(defender.type());
+			total += weights[i];
+		}
+
+		double roll = random.nextDouble() * total;
+		for (int i = 0; i < weights.length; i++)
+		{
+			roll -= weights[i];
+			if (roll < 0)
+				return known.get(i);
+		}
+
+		return known.get(known.size() - 1);
 	}
 
 	private void switchTo(int place, Turn turn)
@@ -353,7 +411,7 @@ final class BattleState
 		if (free)
 			return;
 
-		attackIfAble(false, turn);
+		attackIfAble(false, turn, -1);
 		settle(turn);
 	}
 
@@ -375,7 +433,7 @@ final class BattleState
 				break;
 
 			case BROKE_FREE:
-				attackIfAble(false, turn);
+				attackIfAble(false, turn, -1);
 				settle(turn);
 				break;
 

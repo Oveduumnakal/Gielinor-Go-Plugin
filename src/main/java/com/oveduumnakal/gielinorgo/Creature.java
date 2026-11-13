@@ -4,6 +4,8 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.List;
+
 /**
  * One creature the player owns. Saved to the profile as JSON, so every field here is part of the persisted schema.
  */
@@ -54,6 +56,18 @@ final class Creature
 	 * NPC id then, see {@link Species#npcIdFor(int)}.
 	 */
 	int npcId;
+
+	/**
+	 * The ids of the moves the creature knows, at most {@value MoveTable#MAX_KNOWN}, in the order learned. Null in an
+	 * older save: {@link GoGame#load(SaveData)} then gives it the newest moves its level has unlocked.
+	 */
+	List<String> moves;
+
+	/**
+	 * The ids of moves the creature could learn but has no room for, oldest first. Each waits until the player picks a
+	 * move to forget or skips it. Null or empty when nothing waits.
+	 */
+	List<String> pendingMoves;
 
 	/** Used by Gson. */
 	Creature()

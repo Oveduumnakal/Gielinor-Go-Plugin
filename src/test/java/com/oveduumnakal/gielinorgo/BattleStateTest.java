@@ -26,8 +26,7 @@ public class BattleStateTest
 	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
 	private static final Species ARCHER = new Species("Archer", 13, CombatType.RANGED);
 	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
-	private static final Species TANK_MAGE = new Species("Tank mage", 1, CombatType.MELEE)
-		.withSecondStyle(CombatType.MAGIC, 1.0);
+	private static final Species TANK_MAGE = new Species("Tank mage", 1, CombatType.MELEE);
 	private static final Species TANK_ARCHER = new Species("Tank archer", 1, CombatType.RANGED);
 
 	private static List<Combatant> team(Combatant... members)
@@ -357,7 +356,8 @@ public class BattleStateTest
 	{
 		for (long seed = 0; seed < 4; seed++)
 		{
-			Combatant mine = new Combatant(TANK_MAGE, "Mage", 2, 1.0, StatRolls.of(new int[]{5, -5, 5, 0}, "HARDY"));
+			Combatant mine = new Combatant(TANK_MAGE, "Mage", 2, 1.0, StatRolls.of(new int[]{5, -5, 5, 0}, "HARDY"))
+				.moves(TestMoves.alwaysMagic());
 			Combatant foe = new Combatant(TANK_ARCHER, "Archer", 2, 1.0,
 				StatRolls.of(new int[]{5, -5, 5, 0}, "HARDY"));
 			BattleState state = new BattleState(team(mine), team(foe), new Random(seed), BattleState.Mode.SINGLE);

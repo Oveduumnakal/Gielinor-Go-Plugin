@@ -23,6 +23,9 @@ final class SaveData
 	/** Most creatures a team can hold. */
 	static final int TEAM_SIZE = 6;
 
+	/** Most moves that can wait for a choice on one creature. */
+	static final int MAX_PENDING_MOVES = 8;
+
 	/** Most creatures storage can hold. */
 	static final int STORAGE_SIZE = 300;
 
@@ -142,6 +145,33 @@ final class SaveData
 		creature.rollSpeed = StatRolls.clamp(creature.rollSpeed);
 		if (Temperament.named(creature.temperament) == null)
 			creature.temperament = null;
+
+		creature.moves = trimmed(creature.moves, MoveTable.MAX_KNOWN, null);
+		creature.pendingMoves = trimmed(creature.pendingMoves, MAX_PENDING_MOVES, creature.moves);
+	}
+
+	/**
+	 * Cuts a list of move ids to a length, dropping nulls, blanks and repeats.
+	 *
+	 * @param ids the ids as saved, or null
+	 * @param most the most ids to keep
+	 * @param apart ids the result must not repeat, or null
+	 * @return a list the caller owns; null when the save had none, so a creature with no moves stays recognisable
+	 */
+	private static List<String> trimmed(List<String> ids, int most, List<String> apart)
+	{
+		if (ids == null)
+			return null;
+
+		List<String> kept = new ArrayList<>();
+		for (String id : ids)
+		{
+			if (id != null && !id.trim().isEmpty() && !kept.contains(id) && (apart == null || !apart.contains(id))
+				&& kept.size() < most)
+				kept.add(id);
+		}
+
+		return kept;
 	}
 
 	/**

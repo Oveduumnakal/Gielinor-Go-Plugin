@@ -76,6 +76,7 @@ final class BattleView
 	private final int secondsLeft;
 	private final double timeLeft;
 	private final List<Option> options;
+	private final List<Move> moves;
 
 	/**
 	 * Describes the battle at one moment.
@@ -106,6 +107,19 @@ final class BattleView
 		this.secondsLeft = secondsLeft;
 		this.timeLeft = timeLeft;
 		this.options = Collections.unmodifiableList(new ArrayList<>(options));
+		this.moves = mine.moves();
+	}
+
+	/** @return the moves the player's creature in the fight can use, in the order it knows them; never empty */
+	List<Move> moves()
+	{
+		return moves;
+	}
+
+	/** @return whether there is a real choice of move: the creature knows more than one */
+	boolean canChooseMove()
+	{
+		return moves.size() > 1;
 	}
 
 	/** @return the name of the player's creature in the fight */
