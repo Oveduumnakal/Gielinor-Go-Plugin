@@ -120,6 +120,8 @@ final class BattleView
 	private final List<Option> options;
 	private final List<Move> moves;
 	private final List<ItemOption> items;
+	private String friendName;
+	private boolean waitingForFriend;
 
 	/**
 	 * Describes the battle at one moment.
@@ -175,6 +177,32 @@ final class BattleView
 		this.timeLeft = timeLeft;
 		this.options = Collections.unmodifiableList(new ArrayList<>(options));
 		this.moves = mine.moves();
+	}
+
+	/**
+	 * Marks the view as one of a battle against a friend.
+	 *
+	 * @param name the friend's name
+	 * @param waiting whether the battle waits for the friend, with nothing left for the player to choose
+	 * @return this view
+	 */
+	BattleView againstFriend(String name, boolean waiting)
+	{
+		this.friendName = name;
+		this.waitingForFriend = waiting;
+		return this;
+	}
+
+	/** @return the friend the battle is against, or null when it is not a battle against a friend */
+	String friendName()
+	{
+		return friendName;
+	}
+
+	/** @return whether the battle waits for the friend, so no choice can be made now */
+	boolean waitingForFriend()
+	{
+		return waitingForFriend;
 	}
 
 	/** @return the owned items that would do something now, in item order; empty when none would */

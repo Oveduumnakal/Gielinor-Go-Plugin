@@ -403,4 +403,78 @@ public class BattleDirectorTest
 		assertEquals(Arrays.asList("append 1", "finish true"), scene.told);
 		assertEquals(1, game.data().battlesWon);
 	}
+
+	private FriendTurnBattle friendBattle(List<Combatant> mine, List<Combatant> theirs, boolean first,
+		List<GielinorGoPartyMessage> sent)
+	{
+		return new FriendTurnBattle(5L, first ? 2L : 1L, first ? "Bob" : "Ann", first, mine, theirs, 99L, sent::add);
+	}
+
+	@Test
+	public void aBattleWithAFriendWaitsForTheFriendThenShowsTheTurn()
+	{
+		game.data().team.add(creature("king black dragon", 60));
+		List<GielinorGoPartyMessage> fromMe = new ArrayList<>();
+		List<GielinorGoPartyMessage> fromFriend = new ArrayList<>();
+		List<Combatant> mine = new ArrayList<>(Arrays.asList(new Combatant(DRAGON, 60, 1.0)));
+		List<Combatant> theirs = new ArrayList<>(Arrays.asList(new Combatant(CHICKEN, 2, 1.0)));
+		FriendTurnBattle mineBattle = friendBattle(mine, theirs, true, fromMe);
+		FriendTurnBattle friendSide = friendBattle(
+			new ArrayList<>(Arrays.asList(new Combatant(CHICKEN, 2, 1.0))),
+			new ArrayList<>(Arrays.asList(new Combatant(DRAGON, 60, 1.0))), false, fromFriend);
+		director.begin(game.startFriendBattle(mineBattle), null);
+
+		director.gameTick(false);
+		assertTrue(director.promptOpen());
+		assertFalse(director.view().waitingForFriend());
+		assertEquals("Bob", director.view().friendName());
+
+		assertTrue(director.choose(BattleChoice.attack()));
+		assertEquals(1, fromMe.size());
+		assertTrue(shown.isEmpty());
+		director.gameTick(false);
+		assertTrue(director.view().waitingForFriend());
+		assertFalse(director.choose(BattleChoice.attack()));
+
+		friendSide.opened(now);
+		friendSide.local(BattleChoice.attack(), now);
+		GielinorGoPartyMessage reply = fromFriend.get(0);
+		reply.setMemberId(2L);
+		mineBattle.remote(reply, now);
+		director.gameTick(false);
+
+		assertEquals(1, shown.size());
+		assertFalse(director.active());
+	}
+
+	@Test
+	public void leavingABattleWithAFriendTellsTheFriendAndEndsItWithNoResult()
+	{
+		game.data().team.add(creature("king black dragon", 60));
+		List<GielinorGoPartyMessage> sent = new ArrayList<>();
+		FriendTurnBattle battle = friendBattle(new ArrayList<>(Arrays.asList(new Combatant(DRAGON, 60, 1.0))),
+			new ArrayList<>(Arrays.asList(new Combatant(CHICKEN, 2, 1.0))), true, sent);
+		director.begin(game.startFriendBattle(battle), null);
+
+		assertTrue(director.choose(BattleChoice.run()));
+
+		assertFalse(director.active());
+		assertEquals(GielinorGoPartyMessage.LEAVE, sent.get(0).kind());
+		assertEquals(0, game.data().battlesWon);
+		assertTrue(shown.isEmpty());
+	}
+
+	@Test
+	public void aFriendWhoLeavesEndsTheBattleOnTheNextTick()
+	{
+		game.data().team.add(creature("king black dragon", 60));
+		FriendTurnBattle battle = friendBattle(new ArrayList<>(Arrays.asList(new Combatant(DRAGON, 60, 1.0))),
+			new ArrayList<>(Arrays.asList(new Combatant(CHICKEN, 2, 1.0))), true, new ArrayList<>());
+		director.begin(game.startFriendBattle(battle), null);
+		battle.end(FriendTurnBattle.End.LEFT);
+
+		director.gameTick(false);
+
+		assertFalse(director.active());
+	}
 }

@@ -432,4 +432,76 @@ public class BattleStateTest
 
 		assertEquals(TurnResult.Status.WON, second.status());
 	}
+
+	private static BattleState match(List<Combatant> mine, List<Combatant> theirs, boolean iAmFirst)
+	{
+		return new BattleState(mine, theirs, new Random(9), BattleState.Mode.CHAMPION).friendMatch(iAmFirst);
+	}
+
+	@Test
+	public void aTwoSidedStepPlaysBothChoicesWhicheverSideIsFaster()
+	{
+		BattleState mineFaster = match(team(new Combatant(GOBLIN, 30, 1.0)), team(new Combatant(GOBLIN, 10, 1.0)),
+			true);
+		BattleState foeFaster = match(team(new Combatant(GOBLIN, 10, 1.0)), team(new Combatant(GOBLIN, 30, 1.0)),
+			true);
+
+		TurnResult one = mineFaster.step(BattleChoice.attack(), BattleChoice.attack());
+		TurnResult other = foeFaster.step(BattleChoice.attack(), BattleChoice.attack());
+
+		assertEquals(BattleLine.Kind.LEAD_HIT, hitKind(one, 0));
+		assertEquals(BattleLine.Kind.FOE_HIT, hitKind(other, 0));
+		assertEquals(2, one.hits().size());
+		assertEquals(2, other.hits().size());
+	}
+
+	@Test
+	public void bothPlayersOfAFriendMatchGetTheSameBattle()
+	{
+		BattleState ann = match(team(new Combatant(GOBLIN, 20, 1.0)), team(new Combatant(ARCHER, 20, 1.0)), true);
+		BattleState bob = match(team(new Combatant(ARCHER, 20, 1.0)), team(new Combatant(GOBLIN, 20, 1.0)), false);
+
+		for (int i = 0; i < 3; i++)
+		{
+			ann.step(BattleChoice.attack(), BattleChoice.attack());
+			bob.step(BattleChoice.attack(), BattleChoice.attack());
+
+			assertEquals(ann.stateHash(), bob.stateHash());
+		}
+	}
+
+	@Test
+	public void anItemOnEachSideIsUsedBeforeTheAttacks()
+	{
+		Combatant hurtMine = new Combatant(GOBLIN, 20, 0.4);
+		Combatant hurtTheirs = new Combatant(GOBLIN, 20, 0.4);
+		BattleState state = match(team(hurtMine), team(hurtTheirs), true);
+
+		TurnResult turn = state.step(BattleChoice.item(ItemType.LARGE_SALVE, 0),
+			BattleChoice.item(ItemType.SMALL_SALVE, 0));
+
+		assertTrue(turn.turnUsed());
+		assertTrue(hurtMine.hpFraction() > 0.9);
+		assertTrue(hurtTheirs.hpFraction() > 0.6);
+		assertTrue(hurtMine.hpFraction() > hurtTheirs.hpFraction());
+		assertEquals(0, turn.hits().size());
+	}
+
+	@Test
+	public void aTwoSidedStepRefusesAChoiceThatCannotBeMade()
+	{
+		BattleState state = match(team(new Combatant(GOBLIN, 20, 1.0)), team(new Combatant(GOBLIN, 20, 1.0)), true);
+
+		try
+		{
+			state.step(BattleChoice.attack(5), BattleChoice.attack());
+			fail("an unknown move must be refused");
+		}
+		catch (IllegalArgumentException expected)
+		{
+			assertNull(state.ended());
+		}
+
+		assertEquals(0, state.attacks());
+	}
 }

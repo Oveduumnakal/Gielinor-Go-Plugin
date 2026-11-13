@@ -22,6 +22,7 @@ final class BattleSession
 	private final WildEntry entry;
 	private final Champion champion;
 	private final BattleLine opening;
+	private FriendTurnBattle friend;
 	private int eliteNumber;
 	private List<BattleLine> verdict = Collections.emptyList();
 
@@ -44,6 +45,25 @@ final class BattleSession
 		this.startHealth = new double[fighters.size()];
 		for (int i = 0; i < startHealth.length; i++)
 			startHealth[i] = fighter(i).hpFraction();
+	}
+
+	/**
+	 * Marks the battle as one played turn by turn against a friend, whose choices arrive through the given battle.
+	 * Such a battle pays nothing, writes nothing back to the save but the items used, and has no catch.
+	 *
+	 * @param battle the battle shared with the friend
+	 * @return this session
+	 */
+	BattleSession friend(FriendTurnBattle battle)
+	{
+		this.friend = battle;
+		return this;
+	}
+
+	/** @return the battle shared with a friend, or null when the battle is not one against a friend */
+	FriendTurnBattle friendTurn()
+	{
+		return friend;
 	}
 
 	/**

@@ -5,6 +5,7 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -108,6 +109,10 @@ final class BattleState
 	private int attacks;
 	private int totalAttacks;
 	private boolean needsSwitch;
+	private boolean foeNeedsSwitch;
+	private boolean friendTurns;
+	private boolean mineIsFirst = true;
+	private int foeMoveChoice = NONE;
 	private TurnResult.Status over;
 	private List<BattleLine> duelHits = new ArrayList<>();
 
@@ -185,6 +190,18 @@ final class BattleState
 	boolean needsSwitch()
 	{
 		return needsSwitch;
+	}
+
+	/**
+	 * Tells whether the opposing side must pick its next creature, because the one in the fight fainted. Only a
+	 * battle played with {@link #step(BattleChoice, BattleChoice)} ever says so; an opposing team of a battle with
+	 * one choice a turn steps in by itself.
+	 *
+	 * @return true while the opposing side owes a free switch
+	 */
+	boolean foeNeedsSwitch()
+	{
+		return foeNeedsSwitch;
 	}
 
 	/** @return where the battle ended, or null while it goes on */
@@ -299,6 +316,7 @@ final class BattleState
 		private boolean mineFainted;
 		private boolean foeFainted;
 		private boolean voluntary;
+		private boolean voluntaryFoe;
 		private CatchOutcome thrown;
 
 		private TurnResult result()
@@ -306,7 +324,7 @@ final class BattleState
 			TurnResult.Status status = over != null ? over
 				: needsSwitch ? TurnResult.Status.NEEDS_SWITCH : TurnResult.Status.ONGOING;
 			return new TurnResult(status, lines, hits, duel, used, enteredMine, enteredFoe, mineFainted, foeFainted,
-				voluntary, thrown);
+				voluntary, thrown, voluntaryFoe);
 		}
 	}
 
@@ -324,7 +342,8 @@ final class BattleState
 		if (orderKnown)
 			return;
 
-		mineFirst = BattleSim.movesFirst(mine(), foe(), random);
+		mineFirst = mineIsFirst ? BattleSim.movesFirst(mine(), foe(), random)
+			: !BattleSim.movesFirst(foe(), mine(), random);
 		orderKnown = true;
 	}
 
@@ -355,7 +374,7 @@ final class BattleState
 		if (held != null && attacker.status() == null)
 			note(turn, BattleSim.shookOff(attacker, wordingOf(mineAttacks)), mineAttacks, null);
 
-		Move move = pick(attacker, defender, mineAttacks ? moveIndex : -1);
+		Move move = pick(attacker, defender, mineAttacks ? moveIndex : foeMoveChoice);
 		boolean wording = mineAttacks == mode.mineFirstWording;
 		BattleLine line;
 		Status inflicted = null;
@@ -440,7 +459,7 @@ final class BattleState
 
 		Combatant mineNow = mine();
 		Combatant foeNow = foe();
-		boolean quicker = mineNow.speed() >= foeNow.speed();
+		boolean quicker = mineNow.speed() == foeNow.speed() ? mineIsFirst : mineNow.speed() > foeNow.speed();
 		boolean mineFirstNow = orderKnown ? mineFirst : quicker;
 		hurtByStatus(turn, mineFirstNow);
 		if (!mine().fainted() && !foe().fainted())
@@ -534,22 +553,38 @@ final class BattleState
 	 */
 	List<Integer> itemTargets(ItemType type)
 	{
+		return itemTargets(type, true);
+	}
+
+	/**
+	 * Finds the creatures of one side an item would do something for right now.
+	 *
+	 * @param type the item
+	 * @param forMine whether the item is for the player's side, rather than the opposing one
+	 * @return the places, in that side's team order; empty when the item would do nothing, or when that side must
+	 *     pick its next creature first
+	 */
+	private List<Integer> itemTargets(ItemType type, boolean forMine)
+	{
 		List<Integer> places = new ArrayList<>();
-		if (type == null || over != null || needsSwitch)
+		List<Combatant> side = forMine ? mine : theirs;
+		int active = forMine ? myIndex : foeIndex;
+		boolean picking = forMine ? needsSwitch : foeNeedsSwitch;
+		if (type == null || over != null || picking)
 			return places;
 
 		if (type.cures())
 		{
-			Status held = mine().status();
+			Status held = side.get(active).status();
 			if (held != null && held.curable())
-				places.add(myIndex);
+				places.add(active);
 
 			return places;
 		}
 
-		for (int i = 0; i < mine.size(); i++)
+		for (int i = 0; i < side.size(); i++)
 		{
-			Combatant one = mine.get(i);
+			Combatant one = side.get(i);
 			boolean fits = type.revives() ? one.fainted() : !one.fainted() && one.hpFraction() < 1.0;
 			if (fits)
 				places.add(i);
@@ -572,30 +607,41 @@ final class BattleState
 		if (!itemTargets(type).contains(place))
 			throw new IllegalArgumentException(itemRefusal(type, place));
 
-		Combatant target = mine.get(place);
+		applyItem(type, mine.get(place), true, turn);
+		attackIfAble(false, turn, -1);
+		endRound(turn);
+		settle(turn);
+	}
+
+	/**
+	 * Does what an item does to the creature it is used on, and says so in the turn's lines.
+	 *
+	 * @param type the item
+	 * @param target the creature it is used on
+	 * @param aboutMine whether the creature is the player's, so its lines show over the player
+	 * @param turn the turn to record it in
+	 */
+	private void applyItem(ItemType type, Combatant target, boolean aboutMine, Turn turn)
+	{
 		if (type.cures())
 		{
 			Status cured = target.status();
 			target.clearStatus();
-			note(turn, new BattleLine(target.name() + " is cured of " + cured.noun(), Tone.GOOD, true,
-				BattleLine.Kind.STATUS), true, null);
+			note(turn, new BattleLine(target.name() + " is cured of " + cured.noun(), Tone.GOOD, aboutMine,
+				BattleLine.Kind.STATUS), aboutMine, null);
 		}
 		else if (type.revives())
 		{
 			target.revive(ItemRules.REVIVE_TO);
 			turn.lines.add(new BattleLine(target.name() + " is back on their feet (" + (int) Math.ceil(target.hp())
-				+ "/" + target.maxHp() + ")", Tone.GOOD, true));
+				+ "/" + target.maxHp() + ")", Tone.GOOD, aboutMine));
 		}
 		else
 		{
 			int healed = target.heal(type.heal());
 			turn.lines.add(new BattleLine(target.name() + " is healed +" + healed + " (" + (int) Math.ceil(target.hp())
-				+ "/" + target.maxHp() + ")", Tone.GOOD, true));
+				+ "/" + target.maxHp() + ")", Tone.GOOD, aboutMine));
 		}
-
-		attackIfAble(false, turn, -1);
-		endRound(turn);
-		settle(turn);
 	}
 
 	private String itemRefusal(ItemType type, int place)
@@ -652,7 +698,7 @@ final class BattleState
 		if (!mine().fainted() && !foe().fainted() && !capped)
 			return;
 
-		boolean won = BattleSim.ahead(mine(), foe());
+		boolean won = mineIsFirst ? BattleSim.ahead(mine(), foe()) : !BattleSim.ahead(foe(), mine());
 		Combatant fighter = mine();
 		Combatant opponent = foe();
 		fighter.clearStatus();
@@ -678,6 +724,12 @@ final class BattleState
 		duelHits = new ArrayList<>();
 		attacks = 0;
 		orderKnown = false;
+		if (friendTurns)
+		{
+			settleFriend(turn, won);
+			return;
+		}
+
 		if (won && foeIndex + 1 < theirs.size())
 		{
 			foeIndex++;
@@ -700,6 +752,286 @@ final class BattleState
 		needsSwitch = true;
 		if (mode.switchLines)
 			turn.lines.add(new BattleLine("Choose your next creature", Tone.INFO, true));
+	}
+
+	/**
+	 * Turns the battle into one in which both sides choose, as a battle between two players does. Each side picks
+	 * its own creature in the fight, its own moves and its own items, and a side whose creature fainted picks the
+	 * next one, while the other side waits. Both players run the same battle from their own side; the draws, the
+	 * order of a tie and the winner of a duel that stops level are decided from the point of view of the side that
+	 * is first, so both players get the same battle.
+	 *
+	 * @param iAmFirst whether the player's side is the first one of the pair, the challenger
+	 * @return this battle
+	 */
+	BattleState friendMatch(boolean iAmFirst)
+	{
+		friendTurns = true;
+		mineIsFirst = iAmFirst;
+		return this;
+	}
+
+	/**
+	 * Tells whether the battle is played with a choice for each side.
+	 *
+	 * @return true after {@link #friendMatch(boolean)}
+	 */
+	boolean friendMatch()
+	{
+		return friendTurns;
+	}
+
+	/**
+	 * Lists the places of the opposing creatures that could step in.
+	 *
+	 * @return the places, in the order the opposing team was given, of every creature that has not fainted and is not
+	 *     in the fight
+	 */
+	List<Integer> foeSwitchTargets()
+	{
+		List<Integer> places = new ArrayList<>();
+		for (int i = 0; i < theirs.size(); i++)
+		{
+			if (i != foeIndex && !theirs.get(i).fainted())
+				places.add(i);
+		}
+
+		return places;
+	}
+
+	/**
+	 * Checks the choice of one side of a battle with a choice for each side, changing nothing.
+	 *
+	 * @param forMine whether the choice is the player's, rather than the opposing side's
+	 * @param choice the choice; null when that side owes none this turn
+	 * @return null when the choice can be made now, or why it cannot
+	 */
+	String refusal(boolean forMine, BattleChoice choice)
+	{
+		boolean picking = forMine ? needsSwitch : foeNeedsSwitch;
+		boolean idle = forMine ? foeNeedsSwitch : needsSwitch;
+		if (over != null)
+			return "The battle is over";
+
+		if (idle)
+			return choice == null ? null : "Nothing to choose now";
+
+		if (choice == null)
+			return "No choice made";
+
+		List<Combatant> side = forMine ? mine : theirs;
+		int active = forMine ? myIndex : foeIndex;
+		BattleChoice.Kind kind = choice.kind();
+		if (picking && kind != BattleChoice.Kind.SWITCH)
+			return "A creature must be picked first";
+
+		switch (kind)
+		{
+			case ATTACK:
+				List<Move> known = side.get(active).moves();
+				return choice.moveIndex() >= known.size() ? "No such move" : null;
+
+			case SWITCH:
+				int place = choice.teamIndex();
+				boolean fine = place >= 0 && place < side.size() && place != active && !side.get(place).fainted();
+				return fine ? null : "Cannot switch to " + place;
+
+			case ITEM:
+				return choice.itemType() != null && itemTargets(choice.itemType(), forMine).contains(choice.teamIndex())
+					? null : "That item would do nothing";
+
+			default:
+				return "Not a choice in a battle between players";
+		}
+	}
+
+	/**
+	 * Plays one turn of a battle with a choice for each side. Both choices are checked before anything changes.
+	 * Switches and items come first, the first side's before the second's, then the sides that attack do so, the
+	 * faster first. A side that owes a free switch, because its creature fainted, picks the creature alone; the other
+	 * side makes no choice that turn.
+	 *
+	 * @param mineChoice the player's choice, or null when the opposing side owes a free switch
+	 * @param theirChoice the opposing side's choice, or null when the player owes a free switch
+	 * @return what happened, from the player's side
+	 * @throws IllegalStateException when the battle is over or is not a battle between players
+	 * @throws IllegalArgumentException when either choice cannot be made now
+	 */
+	TurnResult step(BattleChoice mineChoice, BattleChoice theirChoice)
+	{
+		if (over != null || !friendTurns)
+			throw new IllegalStateException("Not a battle between players that is still on");
+
+		String mineWhy = refusal(true, mineChoice);
+		String theirWhy = refusal(false, theirChoice);
+		if (mineWhy != null || theirWhy != null)
+			throw new IllegalArgumentException(mineWhy != null ? mineWhy : theirWhy);
+
+		Turn turn = new Turn();
+		if (needsSwitch || foeNeedsSwitch)
+		{
+			if (needsSwitch)
+				switchSide(true, mineChoice.teamIndex(), turn, true);
+			else
+				switchSide(false, theirChoice.teamIndex(), turn, true);
+
+			return turn.result();
+		}
+
+		if (mineIsFirst)
+		{
+			actApart(true, mineChoice, turn);
+			actApart(false, theirChoice, turn);
+		}
+		else
+		{
+			actApart(false, theirChoice, turn);
+			actApart(true, mineChoice, turn);
+		}
+
+		boolean mineAttacks = mineChoice.kind() == BattleChoice.Kind.ATTACK;
+		boolean foeAttacks = theirChoice.kind() == BattleChoice.Kind.ATTACK;
+		foeMoveChoice = foeAttacks ? theirChoice.moveIndex() : NONE;
+		if (mineAttacks && foeAttacks)
+		{
+			decideOrder();
+			attackIfAble(mineFirst, turn, mineChoice.moveIndex());
+			attackIfAble(!mineFirst, turn, mineChoice.moveIndex());
+		}
+		else if (mineAttacks)
+		{
+			attackIfAble(true, turn, mineChoice.moveIndex());
+		}
+		else if (foeAttacks)
+		{
+			attackIfAble(false, turn, NONE);
+		}
+
+		foeMoveChoice = NONE;
+		endRound(turn);
+		settle(turn);
+		return turn.result();
+	}
+
+	/** Makes the choice of one side that is not an attack: a switch or an item. An attack does nothing here. */
+	private void actApart(boolean forMine, BattleChoice choice, Turn turn)
+	{
+		if (choice.kind() == BattleChoice.Kind.SWITCH)
+		{
+			switchSide(forMine, choice.teamIndex(), turn, false);
+		}
+		else if (choice.kind() == BattleChoice.Kind.ITEM)
+		{
+			List<Combatant> side = forMine ? mine : theirs;
+			applyItem(choice.itemType(), side.get(choice.teamIndex()), forMine, turn);
+		}
+	}
+
+	/**
+	 * Steps in another creature for one side of a battle between players. The creature that leaves loses its status
+	 * and the pairing starts again, as it does when the player switches in any other battle.
+	 *
+	 * @param forMine whether it is the player's side
+	 * @param place the place of the creature that steps in
+	 * @param turn the turn to record it in
+	 * @param free whether the switch is free, after a faint, rather than a turn spent
+	 */
+	private void switchSide(boolean forMine, int place, Turn turn, boolean free)
+	{
+		List<Combatant> side = forMine ? mine : theirs;
+		Combatant before = side.get(forMine ? myIndex : foeIndex);
+		before.clearStatus();
+		if (forMine)
+		{
+			myIndex = place;
+			needsSwitch = false;
+			turn.enteredMine = mine();
+			turn.voluntary = !free;
+		}
+		else
+		{
+			foeIndex = place;
+			foeNeedsSwitch = false;
+			turn.enteredFoe = foe();
+			turn.voluntaryFoe = !free;
+		}
+
+		orderKnown = false;
+		attacks = 0;
+		duelHits = new ArrayList<>();
+		Combatant entered = side.get(place);
+		if (forMine)
+		{
+			if (!free)
+				turn.lines.add(new BattleLine(before.name() + " comes back", Tone.INFO, true));
+
+			turn.lines.add(new BattleLine("Go, " + entered.name() + "!", Tone.INFO, true));
+		}
+		else
+		{
+			if (!free)
+				turn.lines.add(new BattleLine("Their " + before.name() + " comes back", Tone.INFO, false));
+
+			turn.lines.add(new BattleLine("Their " + entered.name() + " steps in!", Tone.INFO, false));
+		}
+	}
+
+	/**
+	 * Ends the pairing of a battle between players: the loser is already knocked out, and its side either has no
+	 * creature left, which ends the battle, or owes the choice of the next one.
+	 */
+	private void settleFriend(Turn turn, boolean won)
+	{
+		if (won)
+		{
+			if (foeSwitchTargets().isEmpty())
+				over = TurnResult.Status.WON;
+			else
+				foeNeedsSwitch = true;
+
+			return;
+		}
+
+		if (firstOther() == NONE)
+		{
+			over = TurnResult.Status.LOST;
+			return;
+		}
+
+		needsSwitch = true;
+		turn.lines.add(new BattleLine("Choose your next creature", Tone.INFO, true));
+	}
+
+	/**
+	 * Boils the state of a battle between players down to one number, the same for both players whichever side they
+	 * are: the health, status and fainting of every creature, which creature of each side is in the fight, who owes a
+	 * switch, and how many attacks the pairing has seen. Two players whose battles went out of step get different
+	 * numbers.
+	 *
+	 * @return the hash
+	 */
+	int stateHash()
+	{
+		List<Combatant> first = mineIsFirst ? mine : theirs;
+		List<Combatant> second = mineIsFirst ? theirs : mine;
+		int hash = 17;
+		for (List<Combatant> side : Arrays.asList(first, second))
+		{
+			hash = hash * 31 + side.size();
+			for (Combatant one : side)
+			{
+				Status held = one.status();
+				hash = hash * 31 + (int) Math.round(one.hp() * 100);
+				hash = hash * 31 + (one.fainted() ? 1 : 0);
+				hash = hash * 31 + (held == null ? -1 : held.ordinal());
+			}
+		}
+
+		hash = hash * 31 + (mineIsFirst ? myIndex : foeIndex);
+		hash = hash * 31 + (mineIsFirst ? foeIndex : myIndex);
+		hash = hash * 31 + ((mineIsFirst ? needsSwitch : foeNeedsSwitch) ? 1 : 0);
+		hash = hash * 31 + ((mineIsFirst ? foeNeedsSwitch : needsSwitch) ? 1 : 0);
+		return hash * 31 + attacks;
 	}
 
 	private int firstOther()

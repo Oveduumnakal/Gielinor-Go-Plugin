@@ -166,6 +166,12 @@ final class BattleDirector
 			return;
 		}
 
+		if (session.friendTurn() != null)
+		{
+			friendTick();
+			return;
+		}
+
 		if (!promptOpen)
 		{
 			if (scene == null || scene.waiting())
@@ -199,6 +205,9 @@ final class BattleDirector
 	{
 		if (session == null || !promptOpen)
 			return false;
+
+		if (session.friendTurn() != null)
+			return chooseForFriend(choice);
 
 		BattleSession played = session;
 		JarType jar = choice.kind() == BattleChoice.Kind.CATCH && choice.jar() == null ? game.jarToThrow()
@@ -236,6 +245,79 @@ final class BattleDirector
 			open();
 
 		return true;
+	}
+
+	private boolean chooseForFriend(BattleChoice choice)
+	{
+		if (choice.kind() == BattleChoice.Kind.RUN)
+		{
+			giveUp();
+			return true;
+		}
+
+		if (!game.actFriend(session, choice))
+			return false;
+
+		friendPlayed();
+		return true;
+	}
+
+	/**
+	 * Moves a battle against a friend on by one game tick: ends it when the friend left or stopped answering, shows
+	 * the turns that were played, and keeps the choice on screen once the scene has caught up. The time to choose
+	 * is kept by the battle itself, which chooses for the player when it runs out.
+	 */
+	private void friendTick()
+	{
+		BattleSession battle = session;
+		game.friendEnded(battle);
+		if (battle.friendTurn().ended() != null)
+		{
+			Scene stage = scene;
+			session = null;
+			scene = null;
+			promptOpen = false;
+			clock.close();
+			if (stage != null)
+				stage.end();
+
+			return;
+		}
+
+		friendPlayed();
+		if (session == null || promptOpen || (scene != null && !scene.waiting()))
+			return;
+
+		promptOpen = true;
+		clock = new TurnClock(FriendTurnBattle.TURN_SECONDS);
+		clock.open();
+		game.friendOpened(session);
+	}
+
+	private void friendPlayed()
+	{
+		BattleSession played = session;
+		TurnResult turn = game.friendTurn(played);
+		while (turn != null && session != null)
+		{
+			promptOpen = false;
+			clock.close();
+			Scene stage = scene;
+			TurnResult.Status status = turn.status();
+			List<BattleLine> closing = game.closingLines(played, turn);
+			if (stage != null)
+				playOnScene(stage, turn, status);
+
+			listener.turn(played, turn, closing, stage != null);
+			if (status.over())
+			{
+				session = null;
+				scene = null;
+				return;
+			}
+
+			turn = game.friendTurn(played);
+		}
 	}
 
 	private void playOnScene(Scene stage, TurnResult turn, TurnResult.Status status)

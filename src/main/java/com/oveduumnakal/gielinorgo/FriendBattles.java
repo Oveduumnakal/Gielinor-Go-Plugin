@@ -73,6 +73,7 @@ final class FriendBattles
 		private final int[][] rolls;
 		private final String[] temperaments;
 		private final String[][] moves;
+		private final boolean steered;
 		private final long sentMs;
 
 		private Pending(long friendId, GielinorGoPartyMessage sent, long sentMs)
@@ -85,6 +86,7 @@ final class FriendBattles
 			this.rolls = sent.rolls();
 			this.temperaments = sent.temperaments();
 			this.moves = sent.moves();
+			this.steered = sent.steered();
 			this.sentMs = sentMs;
 		}
 	}
@@ -97,6 +99,8 @@ final class FriendBattles
 	private final Consumer<Notice> notices;
 	private final Map<Long, Friend> friends = new LinkedHashMap<>();
 	private Pending pending;
+	private FriendTurnBattle turnBattle;
+	private FriendTurnBattle started;
 	private boolean helloWanted;
 	private boolean changed;
 	private long lastBattleMs = -REST_MS;
@@ -197,6 +201,26 @@ final class FriendBattles
 	 */
 	void challenge(long friendId, String friendName, SaveData data)
 	{
+		challenge(friendId, friendName, data, false);
+	}
+
+	/**
+	 * Challenges a friend with the whole team, saying whether this player wants to choose the turns. The battle is
+	 * played turn by turn only when the friend wants that too.
+	 *
+	 * @param friendId the friend's party member id
+	 * @param friendName the friend's name
+	 * @param data the player's save
+	 * @param steering whether this player has Choose battle actions on
+	 */
+	void challenge(long friendId, String friendName, SaveData data, boolean steering)
+	{
+		if (busy())
+		{
+			tell("Finish your battle first", Tone.BAD);
+			return;
+		}
+
 		Friend friend = friends.get(friendId);
 		if (friend == null || friend.species.length == 0)
 		{
@@ -218,7 +242,7 @@ final class FriendBattles
 		}
 
 		GielinorGoPartyMessage sent = message(GielinorGoPartyMessage.CHALLENGE, friendId, random.nextLong(),
-			random.nextLong(), data);
+			random.nextLong(), data).steering(steering);
 		pending = new Pending(friendId, sent, now);
 		outbox.accept(sent);
 		tell("Challenged " + friendName + "!", Tone.INFO);
@@ -237,6 +261,26 @@ final class FriendBattles
 	TeamBattleResult receive(GielinorGoPartyMessage message, long myId, String senderName, SaveData data,
 		boolean accepting)
 	{
+		return receive(message, myId, senderName, data, accepting, false);
+	}
+
+	/**
+	 * Handles a message from another party member, for a player who may want to choose the turns of a battle. A
+	 * battle that both players want to choose is not played here: it is handed over by {@link #takeStarted()}, and
+	 * this returns null for it.
+	 *
+	 * @param message the message; nothing in it is trusted
+	 * @param myId this player's party member id
+	 * @param senderName the sender's name, as the party service knows it
+	 * @param data the player's save
+	 * @param accepting whether the player takes battles from friends
+	 * @param steering whether the player has Choose battle actions on
+	 * @return the battle the message led to, seen from this player's side, or null when it led to none or to a battle
+	 *     that is played turn by turn
+	 */
+	TeamBattleResult receive(GielinorGoPartyMessage message, long myId, String senderName, SaveData data,
+		boolean accepting, boolean steering)
+	{
 		long sender = message.getMemberId();
 		String kind = message.kind();
 		if (kind == null || sender == myId)
@@ -251,6 +295,12 @@ final class FriendBattles
 		if (message.to() != myId)
 			return null;
 
+		if (kind.equals(GielinorGoPartyMessage.TURN) || kind.equals(GielinorGoPartyMessage.LEAVE))
+		{
+			steer(message);
+			return null;
+		}
+
 		boolean fights = kind.equals(GielinorGoPartyMessage.CHALLENGE) || kind.equals(GielinorGoPartyMessage.ACCEPT);
 		if (fights && message.version() != GielinorGoPartyMessage.PROTOCOL)
 		{
@@ -259,7 +309,7 @@ final class FriendBattles
 		}
 
 		if (kind.equals(GielinorGoPartyMessage.CHALLENGE))
-			return challenged(message, senderName, data, accepting);
+			return challenged(message, senderName, data, accepting, steering);
 
 		if (pending == null || pending.friendId != sender || pending.battle != message.battle()
 			|| !waiting(clock.getAsLong()))
@@ -282,8 +332,15 @@ final class FriendBattles
 
 		remember(message);
 		lastBattleMs = clock.getAsLong();
+		long seed = answered.seed ^ message.seed();
+		if (answered.steered && message.steered())
+		{
+			begin(new FriendTurnBattle(answered.battle, sender, senderName, true, mine, theirs, seed, outbox));
+			return null;
+		}
+
 		boolean leadFirst = leadIsFirst(mine, data);
-		return fight(mine, theirs, answered.seed ^ message.seed(), true, senderName).withLeadFirst(leadFirst);
+		return fight(mine, theirs, seed, true, senderName).withLeadFirst(leadFirst);
 	}
 
 	/**
@@ -296,6 +353,9 @@ final class FriendBattles
 		friends.remove(memberId);
 		if (pending != null && pending.friendId == memberId)
 			pending = null;
+
+		if (turnBattle != null && turnBattle.friendId() == memberId)
+			turnBattle.end(FriendTurnBattle.End.LEFT);
 	}
 
 	/** Forgets every friend, for when the player joins or leaves a party. */
@@ -303,6 +363,83 @@ final class FriendBattles
 	{
 		friends.clear();
 		pending = null;
+		if (turnBattle != null)
+			turnBattle.end(FriendTurnBattle.End.LEFT);
+	}
+
+	/**
+	 * Hands over the battle that both players want to choose the turns of, once, as soon as it starts.
+	 *
+	 * @return the battle, or null when none started since the last call
+	 */
+	FriendTurnBattle takeStarted()
+	{
+		FriendTurnBattle taken = started;
+		started = null;
+		return taken;
+	}
+
+	/**
+	 * Moves the clocks of the battle played turn by turn on. Called once per game tick.
+	 *
+	 * @return the battle that is on, or null when none is
+	 */
+	FriendTurnBattle tickTurnBattle()
+	{
+		if (turnBattle == null || turnBattle.over())
+			return null;
+
+		turnBattle.timeout(clock.getAsLong());
+		return turnBattle;
+	}
+
+	/**
+	 * Tells whether a battle played turn by turn is on against the given player, so its messages are not held to the
+	 * rate limit of ordinary ones. The battle itself refuses a turn that is not due.
+	 *
+	 * @param memberId the other player's party member id
+	 * @return true while such a battle is on
+	 */
+	boolean inTurnBattleWith(long memberId)
+	{
+		return busy() && turnBattle.friendId() == memberId;
+	}
+
+	/**
+	 * Tells whether a battle played turn by turn is still on, so no other battle starts beside it.
+	 *
+	 * @return true while it is
+	 */
+	private boolean busy()
+	{
+		return turnBattle != null && !turnBattle.over();
+	}
+
+	private void begin(FriendTurnBattle battle)
+	{
+		turnBattle = battle;
+		started = battle;
+		changed = true;
+	}
+
+	/**
+	 * Passes a message about the battle played turn by turn to that battle. A message from a different version, or
+	 * one for no battle that is on, is dropped, except that a different version ends the battle.
+	 *
+	 * @param message a message of kind TURN or LEAVE addressed to this player
+	 */
+	private void steer(GielinorGoPartyMessage message)
+	{
+		if (turnBattle == null || turnBattle.over() || turnBattle.friendId() != message.getMemberId())
+			return;
+
+		if (message.version() != GielinorGoPartyMessage.PROTOCOL)
+		{
+			turnBattle.end(FriendTurnBattle.End.OUT_OF_STEP);
+			return;
+		}
+
+		turnBattle.remote(message, clock.getAsLong());
 	}
 
 	/**
@@ -375,7 +512,7 @@ final class FriendBattles
 	 * @return the battle seen from this player's side, or null when the challenge was turned down or made no sense
 	 */
 	private TeamBattleResult challenged(GielinorGoPartyMessage message, String senderName, SaveData data,
-		boolean accepting)
+		boolean accepting, boolean steering)
 	{
 		List<Combatant> theirs = fighters(message);
 		if (theirs == null || theirs.isEmpty())
@@ -383,9 +520,9 @@ final class FriendBattles
 
 		long now = clock.getAsLong();
 		GielinorGoPartyMessage answer = message(GielinorGoPartyMessage.ACCEPT, message.getMemberId(),
-			message.battle(), random.nextLong(), data);
+			message.battle(), random.nextLong(), data).steering(steering);
 		List<Combatant> mine = fighters(answer);
-		if (!accepting || mine == null || mine.isEmpty() || now - lastBattleMs < REST_MS)
+		if (!accepting || busy() || mine == null || mine.isEmpty() || now - lastBattleMs < REST_MS)
 		{
 			outbox.accept(new GielinorGoPartyMessage(GielinorGoPartyMessage.DECLINE, message.getMemberId(),
 				message.battle(), 0, 0, new String[0], new int[0]));
@@ -395,8 +532,16 @@ final class FriendBattles
 		remember(message);
 		lastBattleMs = now;
 		outbox.accept(answer);
+		long seed = message.seed() ^ answer.seed();
+		if (steering && message.steered())
+		{
+			begin(new FriendTurnBattle(message.battle(), message.getMemberId(), senderName, false, mine, theirs, seed,
+				outbox));
+			return null;
+		}
+
 		boolean leadFirst = leadIsFirst(mine, data);
-		return fight(theirs, mine, message.seed() ^ answer.seed(), false, senderName).withLeadFirst(leadFirst);
+		return fight(theirs, mine, seed, false, senderName).withLeadFirst(leadFirst);
 	}
 
 	/**
