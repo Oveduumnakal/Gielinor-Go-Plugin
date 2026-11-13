@@ -181,6 +181,10 @@ Then replace this comment with:
   Hold all eight sigils, then fight five trainers back to back with no resting to earn the title **Grand
   Champion**.
 
+- **A rival**
+
+  Bryn picks the starter that beats yours and challenges you five times as you earn sigils, from the Battle tab.
+
 - **Daily events**
 
   A few featured species turn wild more often each day, unholy creatures do at night, and every weekend boosts one

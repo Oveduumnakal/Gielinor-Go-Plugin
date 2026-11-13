@@ -82,4 +82,5 @@ A Creature Log, daily tasks and daily events give you goals.
   Defence XP. (#85)
 - **Species stats.** Every species has its own health, attack, defence and speed from the real monster, within 25%,
   and evolving never lowers one. (#86)
+- **A rival.** Bryn takes the starter that beats yours and challenges you five times from the Battle tab. (#95)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

@@ -82,6 +82,9 @@ final class SaveData
 	/** How many times the player has cleared the Elite challenge. 0 in saves from before it existed. */
 	int eliteClears;
 
+	/** The rival's starter and how many of the rival's battles are won. Null until the rival is first needed. */
+	RivalProgress rival;
+
 	/**
 	 * The title the panel header shows, {@code GRAND_CHAMPION} or {@code MASTER_COLLECTOR}, or null to show the newest
 	 * title earned. Null in saves from before it existed.
@@ -135,6 +138,13 @@ final class SaveData
 
 		while (team.size() > TEAM_SIZE)
 			storage.add(team.remove(team.size() - 1));
+
+		if (rival != null)
+		{
+			rival.won = Math.max(0, Math.min(RivalRules.BATTLES, rival.won));
+			if (rival.starter == null)
+				rival = null;
+		}
 
 		splitWarriorJars();
 		if (selectedJar == null || selectedJar.equals(OLD_WARRIOR))

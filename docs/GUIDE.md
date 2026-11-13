@@ -415,6 +415,32 @@ Every feature and every number, in detail. For the short version, see the [READM
   follower. The result is decided before the scene starts, so nothing in it can change the outcome. With the setting
   off, or when there is no room or no follower on screen, the battle is text only.
 
+### Your rival
+
+- **Bryn, from the Battle tab**
+
+  A rival trainer named Bryn has a card above the City Champions on the Battle tab. Nothing is drawn in the game
+  world: the card shows what Bryn says, the team for the next battle, and what a win pays. When you pick a starter,
+  Bryn takes the one that beats it: the Wizard against your Imp, the Gnome Archer against your Wizard and the Imp
+  against your Gnome Archer. A save that never picked a starter gets the one that beats the style of your lead, or
+  the Imp when none matches. The choice is saved the first time it is needed and never changes.
+
+- **Five battles**
+
+  Battle 1 opens with 2 sigils, battle 2 with 4, battle 3 with 6, battle 4 with 8, and battle 5 after your first
+  Elite clear. Bryn brings 2 creatures, then 3, 4, 5 and 6, from level 15 up to levels 85 to 99, and the starter
+  evolves along the way. The teams are fixed for each starter and are picked to answer its weak style. You can fight
+  anywhere, with your whole team, and the battle plays like a City Champion battle: automatic, or turn by turn with
+  **Choose battle actions**. It cannot be started during an Elite run. Bryn speaks before and after each battle,
+  and the lines float up with the result.
+
+- **Rewards**
+
+  The first win of each battle pays creature XP, trainer XP, jars of the best tier you have unlocked (3, 4, 5, 6 and
+  8) and an egg (Rare, Rare, Epic, Epic, Legendary), as jars when you have no room for an egg. A loss costs nothing
+  except the health your creatures lost; rest and challenge again. After battle 5 the card stays, marked beaten.
+  Nothing Bryn gives needs another player.
+
 ### Elite challenge
 
 - **For Grand Champions to be**
