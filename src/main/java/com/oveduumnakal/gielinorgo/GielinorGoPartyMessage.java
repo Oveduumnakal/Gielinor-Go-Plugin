@@ -46,6 +46,12 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	static final String LEAVE = "LEAVE";
 
 	/**
+	 * Kind of a message that tells the other player the sender's choice for a turn of a battle both players steer is
+	 * now open, so both sides start the wait for the other's choice from the later of the two openings.
+	 */
+	static final String READY = "READY";
+
+	/**
 	 * The version of the battle rules and message layout this build speaks. Two players can only fight each other
 	 * when it matches, since a different rule would give each of them a different winner. A message from a build
 	 * that sends no version reads as 0. Version 3 added the moves of each creature and the moves of a traded one, and
@@ -55,9 +61,10 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	 * Stab, Slash and Crush, with a new chart of five styles. Version 7 gave every species its own stat factors, so the
 	 * same species at the same level has other health, attack, defence and speed. Version 8 added battles that both
 	 * players steer turn by turn, with the messages {@link #TURN} and {@link #LEAVE} and the {@code steered} flag of a
-	 * challenge and its answer.
+	 * challenge and its answer. Version 9 added the {@link #READY} message, which lets both players time a turn of
+	 * such a battle from the same moment, and made every ending of it send {@link #LEAVE}.
 	 */
-	static final int PROTOCOL = 8;
+	static final int PROTOCOL = 9;
 
 	/** One creature or one egg named in a trade. Exactly one of the species and the egg rarity is set. */
 	static final class Item
@@ -293,6 +300,22 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 		message.turn = turn;
 		message.choice = choice;
 		message.hash = hash;
+		return message;
+	}
+
+	/**
+	 * Makes the message that tells the other player the sender's choice for a turn is now open.
+	 *
+	 * @param to the other player's party member id
+	 * @param battle the battle's number
+	 * @param turn the number of the turn that is open, from 1
+	 * @return the message
+	 */
+	static GielinorGoPartyMessage ready(long to, long battle, int turn)
+	{
+		GielinorGoPartyMessage message = new GielinorGoPartyMessage(READY, to, battle, 0, 0, new String[0],
+			new int[0]);
+		message.turn = turn;
 		return message;
 	}
 
