@@ -95,6 +95,19 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 ### Your team
 
+- **Your first creature**
+
+  A new player sees **Choose your first creature** at the top of the Team tab: an Imp (Melee), a Gnome Archer
+  (Ranged) or a Wizard (Magic), one of each style. Each card shows the portrait, the style, the temperament and
+  rating it rolled (rolled like a catch, so two Imps differ) and what it grows into. Click a card, then **Yes**: the
+  creature joins as your lead at level 5 and starts following you. The three are rolled once and stay the same while
+  you look at them. It is an ordinary creature from then on, never gilded. It counts in the Creature Log, but not
+  for the daily tasks, the login streak or trainer XP, because it is not a catch.
+
+  The offer shows only while your team and Storage are empty and you have caught nothing. You can ignore it and
+  catch a wild creature instead; your first catch ends the offer. The Gnome Archer starts a new line: Gnome Archer,
+  Archer (Lv 20), Tower Archer (Lv 40), Elf Archer (Lv 60).
+
 - **Your XP trains your creatures**
 
   Every XP drop you earn, in any skill, also trains your team of up to six creatures. The creature in the lead
@@ -440,6 +453,15 @@ Every feature and every number, in detail. For the short version, see the [READM
   10 tiles of a banker, a bank booth or a bank chest. Anywhere else the panel says "Go to a city or a bank to change
   your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
   your team is full, a creature you receive in a trade, a hatched egg and releasing a stored creature.
+
+- **Starting over**
+
+  **Reset progress...** is a small link at the very bottom of the Team tab. It asks once, listing what you would lose
+  (team, Storage, Log species, sigils, eggs), and only the **Yes, reset** button goes ahead; **No** is the default. A
+  reset puts your whole save back to a new player's, with 10 Bronze jars. Settings and hotkeys are kept, and other
+  accounts are not touched. It is refused with a reason while a battle, a trade or an Elite run is on, and while you
+  are logged out. The old save is copied aside first as a safety net. There is no button to bring it back, so if you
+  reset by mistake, ask for help and it can be copied back by hand.
 
 - **Change log**
 

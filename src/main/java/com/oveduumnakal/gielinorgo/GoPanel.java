@@ -180,6 +180,8 @@ final class GoPanel extends PluginPanel
 		itemsRow.update(state.items());
 		teamTab.items(state.items());
 		storageTab.items(state.items());
+		teamTab.resetSummary(state.resetSummary());
+		teamTab.starters(state.starters());
 		teamTab.update(state.team(), state.eggs(), state.tasks());
 		storageTab.update(state.storage());
 		logTab.update(state);

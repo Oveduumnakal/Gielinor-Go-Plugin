@@ -68,6 +68,10 @@ A Creature Log, daily tasks and daily events give you goals.
   big moments, with a setting to turn them off. (#94)
 - **A reward for releasing.** Releasing creatures pays creature XP to your lead, and Storage can release several
   at once. (#92)
+- **Reset progress.** A link at the bottom of the Team tab starts you over after two clicks; the old save is kept
+  aside. (#84)
+- **Starter creatures.** New players pick an Imp, a Gnome Archer or a Wizard at level 5; the Gnome Archer starts a
+  new evolution line. (#83)
 - **Richer Log entries.** Click a species in the Creature Log for its examine text, evolution line and how many
   you caught; right-click it to open its wiki page. (#93)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
