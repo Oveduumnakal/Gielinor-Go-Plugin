@@ -161,6 +161,7 @@ final class GoGame
 	private MoveTable moves = MoveTable.empty();
 	private Random starterRandom = new Random();
 	private List<Creature> starters;
+	private Long starterSeed;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -254,8 +255,21 @@ final class GoGame
 	}
 
 	/**
+	 * Sets a stable seed for the starter rolls, usually one made from the account. With a seed, every roll of the
+	 * offer starts from it, so the same account is offered the same three starters after a relog, a profile switch or
+	 * a reset, and a pick always means the starter that was shown.
+	 *
+	 * @param seed the seed, or null to roll from the random source of {@link #starterRandom(Random)}
+	 */
+	void starterSeed(Long seed)
+	{
+		starterSeed = seed;
+	}
+
+	/**
 	 * Gives the starters on offer. They are rolled when first asked for and kept until picked or the offer ends,
-	 * so closing and opening the panel never rerolls them.
+	 * so closing and opening the panel never rerolls them. With a seed from {@link #starterSeed(Long)} a roll after a
+	 * load gives the same three again.
 	 *
 	 * @return the three starters with what they grow into; empty when no starter is offered
 	 */
@@ -274,7 +288,8 @@ final class GoGame
 		}
 
 		if (starters == null)
-			starters = StarterRules.roll(starterRandom, clock.getAsLong());
+			starters = StarterRules.roll(starterSeed == null ? starterRandom : new Random(starterSeed),
+				clock.getAsLong());
 
 		List<CreatureView> shown = views(starters, clock.getAsLong());
 		List<StarterView> offer = new ArrayList<>();
