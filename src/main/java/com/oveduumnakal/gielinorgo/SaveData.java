@@ -85,6 +85,9 @@ final class SaveData
 	/** Healing items owned, keyed by {@link ItemType#name()}. Null in saves from before items existed. */
 	Map<String, Integer> items = new HashMap<>();
 
+	/** Species keys of the bosses that have already paid their sure first-kill egg. Null in older saves. */
+	Set<String> bossKills = new LinkedHashSet<>();
+
 	/** @return a save for a player who has never played, with the starting jars */
 	static SaveData fresh()
 	{
@@ -111,6 +114,7 @@ final class SaveData
 		sigils = sigils == null ? new LinkedHashSet<>() : new LinkedHashSet<>(sigils);
 		tasks = tasks == null ? new TaskProgress() : tasks.sanitized();
 		milestones = milestones == null ? new LinkedHashSet<>() : new LinkedHashSet<>(milestones);
+		bossKills = bossKills == null ? new LinkedHashSet<>() : new LinkedHashSet<>(bossKills);
 		eggs.removeIf(egg -> egg == null);
 		team.removeIf(creature -> creature == null || creature.species == null);
 		storage.removeIf(creature -> creature == null || creature.species == null);

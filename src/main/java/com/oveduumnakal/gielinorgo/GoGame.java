@@ -8,10 +8,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
@@ -119,6 +121,8 @@ final class GoGame
 	private Milestones milestoneTable = Milestones.NONE;
 	private boolean milestonesDue;
 	private boolean walking;
+	private BossTable bossTable = BossTable.empty();
+	private final Set<String> bossEggsWaiting = new LinkedHashSet<>();
 	private EliteTable elite = EliteTable.empty();
 	private EliteRun run;
 	private boolean atGuild;
@@ -344,6 +348,7 @@ final class GoGame
 
 		walking = false;
 		settleMilestones();
+		settleBossEggs();
 	}
 
 	/**
@@ -1345,6 +1350,13 @@ final class GoGame
 		return true;
 	}
 
+	/** @return the name of the species a boss egg holds, or null for an ordinary egg */
+	private String eggName(Egg egg)
+	{
+		Species fixed = egg.species == null ? null : species.find(egg.species);
+		return fixed == null ? null : fixed.name();
+	}
+
 	/** @return a copy of everything the side panel shows, safe to hand to the UI thread */
 	PanelState snapshot()
 	{
@@ -1355,7 +1367,7 @@ final class GoGame
 
 		List<EggView> eggs = new ArrayList<>();
 		for (Egg egg : data.eggs)
-			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal));
+			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal, eggName(egg)));
 
 		freezeTeam(now);
 		TaskView tasks = startTasks().view(now, bestUnlockedJar());
@@ -1414,7 +1426,8 @@ final class GoGame
 	}
 
 	/**
-	 * Hatches an egg into a level 1 creature of a random species of the egg's rarity.
+	 * Hatches an egg into a level 1 creature: of the egg's own species for a boss egg, otherwise of a random species
+	 * of the egg's rarity.
 	 *
 	 * @param egg the egg whose walking is done
 	 * @return true when the egg is used up; false when there is no room, so it waits
@@ -1424,17 +1437,22 @@ final class GoGame
 		if (!hasRoomForCreature())
 			return false;
 
-		List<Species> pool = new ArrayList<>();
-		for (Species candidate : species.catchable())
+		Species born = egg.species == null ? null : species.find(egg.species);
+		if (born == null)
 		{
-			if (candidate.rarity() == egg.rarityTier())
-				pool.add(candidate);
+			List<Species> pool = new ArrayList<>();
+			for (Species candidate : species.catchable())
+			{
+				if (candidate.rarity() == egg.rarityTier())
+					pool.add(candidate);
+			}
+
+			if (pool.isEmpty())
+				return true;
+
+			born = pool.get(random.nextInt(pool.size()));
 		}
 
-		if (pool.isEmpty())
-			return true;
-
-		Species born = pool.get(random.nextInt(pool.size()));
 		Creature creature = new Creature(born.key(), 1, clock.getAsLong());
 		creature.gilded = random.nextInt(gildedOneIn()) == 0;
 		creature.setRolls(StatRolls.roll(random));
@@ -1515,6 +1533,64 @@ final class GoGame
 	{
 		milestoneTable = table == null ? Milestones.NONE : table;
 		milestonesDue = true;
+	}
+
+	/**
+	 * Sets the bosses whose kills give an egg. Without this call there are none.
+	 *
+	 * @param table the boss table
+	 */
+	void bosses(BossTable table)
+	{
+		bossTable = table == null ? BossTable.empty() : table;
+	}
+
+	/** @return the bosses whose kills give an egg */
+	BossTable bossTable()
+	{
+		return bossTable;
+	}
+
+	/**
+	 * Handles a boss kill the game reported in the chat. The first kill of a boss always gives its egg, later kills
+	 * give it {@link BossRules#LATER_CHANCE} of the time. With a full egg bag the egg waits, one place per boss,
+	 * until a slot is free; a first-kill egg is only counted as paid once it is in the bag.
+	 *
+	 * @param chatName the boss or raid name from the kill-count line
+	 */
+	void bossKilled(String chatName)
+	{
+		Species boss = bossTable.speciesFor(chatName);
+		if (boss == null)
+			return;
+
+		boolean first = !data.bossKills.contains(boss.key());
+		if (!BossRules.eggDrops(first, random))
+			return;
+
+		bossEggsWaiting.add(boss.key());
+		settleBossEggs();
+	}
+
+	/** Gives the boss eggs that wait for a slot, as far as there are slots, unless the egg list is being walked. */
+	private void settleBossEggs()
+	{
+		if (walking)
+			return;
+
+		Iterator<String> waiting = bossEggsWaiting.iterator();
+		while (waiting.hasNext() && hasRoomForEgg())
+		{
+			Species boss = species.find(waiting.next());
+			waiting.remove();
+			if (boss == null)
+				continue;
+
+			data.eggs.add(new Egg(boss));
+			data.bossKills.add(boss.key());
+			dirty = true;
+			tell("You found a " + boss.name() + " egg!", Tone.FIND);
+		}
 	}
 
 	/** @return whether the Gilded charm is owned, which is milestone {@link Milestones#CHARM_ID} being paid */

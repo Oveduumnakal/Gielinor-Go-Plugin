@@ -41,6 +41,7 @@ import net.runelite.api.Skill;
 import net.runelite.api.WorldType;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameObjectDespawned;
 import net.runelite.api.events.GameObjectSpawned;
@@ -227,6 +228,7 @@ public class GielinorGoPlugin extends Plugin
 			System::currentTimeMillis, this::announce);
 		calendar = new SpawnCalendar(species);
 		game.milestones(loadMilestones(species));
+		game.bosses(loadBosses(species));
 		game.setCues(this::playCue);
 		game.elite(loadElite(species));
 		game.moves(loadMoves());
@@ -520,6 +522,30 @@ public class GielinorGoPlugin extends Plugin
 		int index = event.getNpc().getIndex();
 		candidates.remove(index);
 		tracker.leftView(index, System.currentTimeMillis());
+	}
+
+	/**
+	 * Reads the game's kill-count lines. A boss or raid the table knows can give its egg. Only game messages are
+	 * read, and nothing about the loot is looked at.
+	 *
+	 * @param event the chat message
+	 */
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		if (!loaded || game == null || event.getType() != ChatMessageType.GAMEMESSAGE)
+			return;
+
+		try
+		{
+			String name = BossRules.killedName(Text.removeTags(event.getMessage()));
+			if (name != null)
+				game.bossKilled(name);
+		}
+		catch (RuntimeException e)
+		{
+			log.warn("Gielinor Go: could not read a kill-count line", e);
+		}
 	}
 
 	/**
@@ -823,6 +849,25 @@ public class GielinorGoPlugin extends Plugin
 		{
 			log.warn("Gielinor Go: could not read the family list", e);
 			return new Milestones(species, Collections.emptyList());
+		}
+	}
+
+	private BossTable loadBosses(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(BossTable.RESOURCE))
+		{
+			if (in == null)
+				return BossTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return BossTable.load(gson, reader, species);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the boss list", e);
+			return BossTable.empty();
 		}
 	}
 
