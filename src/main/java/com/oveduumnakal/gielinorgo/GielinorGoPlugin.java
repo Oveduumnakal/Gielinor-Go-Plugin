@@ -168,6 +168,7 @@ public class GielinorGoPlugin extends Plugin
 	private WildOverlay wildOverlay;
 	private WildBodies bodies;
 	private final NoticeBoard noticeBoard = new NoticeBoard();
+	private final CueGate cueGate = new CueGate();
 	private List<Notice> heldNotices;
 	private FloatingTextOverlay floatingText;
 	private FollowerTagOverlay followerTag;
@@ -220,6 +221,7 @@ public class GielinorGoPlugin extends Plugin
 			System::currentTimeMillis, this::announce);
 		calendar = new SpawnCalendar(species);
 		game.milestones(loadMilestones(species));
+		game.setCues(this::playCue);
 		game.elite(loadElite(species));
 		game.moves(loadMoves());
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
@@ -1142,6 +1144,28 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
+	 * Plays the game sound for a cue, on the client thread, when sounds are on, the plugin is not hidden for PvP and
+	 * no other sound played a moment ago. The game's own sound effect volume applies.
+	 *
+	 * @param cue the moment that happened
+	 */
+	private void playCue(Cue cue)
+	{
+		clientThread.invoke(() ->
+		{
+			try
+			{
+				if (config.sounds() && !hiddenForPvp() && cueGate.allow(cue, System.currentTimeMillis()))
+					client.playSoundEffect(cue.soundId());
+			}
+			catch (RuntimeException e)
+			{
+				log.debug("Could not play a sound", e);
+			}
+		});
+	}
+
+	/**
 	 * Works out which species a monster is, for turning it wild.
 	 *
 	 * @param npc the monster
@@ -1211,6 +1235,9 @@ public class GielinorGoPlugin extends Plugin
 		}
 
 		game.markSeen(entry);
+		if (entry.gilded())
+			playCue(Cue.GILDED);
+
 		String kind = entry.gilded() ? "A gilded " : entry.roaming() ? "A roaming " : "A wild ";
 		announce(Notice.creature(entry.wildId(), kind + species.name() + " appeared!",
 			entry.gilded() || entry.roaming() ? Tone.FIND : Tone.INFO));
