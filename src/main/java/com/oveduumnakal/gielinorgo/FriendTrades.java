@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 
@@ -99,6 +100,8 @@ final class FriendTrades implements GoGame.TradeLocks
 		private final long receivedMs;
 		private long agreedMs;
 		private Item askedAtAgreement;
+		private boolean confirmHeld;
+		private String heldFrom;
 
 		private Incoming(long id, Item theirs, Mine asked, long receivedMs)
 		{
@@ -117,6 +120,7 @@ final class FriendTrades implements GoGame.TradeLocks
 	private final Consumer<Notice> notices;
 	private final Map<Long, Incoming> incoming = new HashMap<>();
 	private final Map<Long, Long> noticedMs = new HashMap<>();
+	private BooleanSupplier battleOn = () -> false;
 	private Outgoing outgoing;
 	private boolean traded;
 
@@ -139,6 +143,17 @@ final class FriendTrades implements GoGame.TradeLocks
 		this.clock = clock;
 		this.outbox = outbox;
 		this.notices = notices;
+	}
+
+	/**
+	 * Tells the service how to find out whether a battle is on. A confirmation that arrives while one is on is held
+	 * until it ends, so the creature does not leave the save in the middle of the fight it is in.
+	 *
+	 * @param battle true while the player is in a battle
+	 */
+	void battleOn(BooleanSupplier battle)
+	{
+		this.battleOn = battle;
 	}
 
 	/**
@@ -276,12 +291,13 @@ final class FriendTrades implements GoGame.TradeLocks
 	/**
 	 * Gives up on trades that waited too long. Called once per game tick.
 	 *
-	 * @return true when an offer just ran out of time, so the panel needs a refresh
+	 * @return true when an offer just ran out of time or a held confirmation was applied, so the panel needs a
+	 *     refresh
 	 */
 	boolean expire()
 	{
 		long now = clock.getAsLong();
-		boolean changed = false;
+		boolean changed = applyHeld();
 		if (outgoing != null && now - outgoing.sentMs > OFFER_TIMEOUT_MS)
 		{
 			outgoing = null;
@@ -594,7 +610,8 @@ final class FriendTrades implements GoGame.TradeLocks
 	 * Makes the player's half of a swap the friend has just confirmed. The asked creature may have gained XP or
 	 * evolved since the player agreed: the friend already holds the agreed description, so the swap goes ahead as
 	 * long as the player still owns it. A promised item cannot be released and its room is reserved, so the checks
-	 * here are a last guard.
+	 * here are a last guard. The friend has already swapped, so the swap is never refused for a battle: while one
+	 * is on it is held, and {@link #expire()} makes it once the battle ends.
 	 *
 	 * @param message the confirmation
 	 * @param senderName the friend's name
@@ -607,6 +624,44 @@ final class FriendTrades implements GoGame.TradeLocks
 		if (offer == null || offer.id != message.battle() || offer.agreedMs == 0)
 			return false;
 
+		if (battleOn.getAsBoolean())
+		{
+			offer.confirmHeld = true;
+			offer.heldFrom = senderName;
+			return false;
+		}
+
+		return swapConfirmed(sender, offer, senderName);
+	}
+
+	/**
+	 * Makes the swaps held back while a battle was on, once it is over.
+	 *
+	 * @return true when at least one was made
+	 */
+	private boolean applyHeld()
+	{
+		if (battleOn.getAsBoolean())
+			return false;
+
+		List<Long> ready = new ArrayList<>();
+		for (Map.Entry<Long, Incoming> entry : incoming.entrySet())
+		{
+			if (entry.getValue().confirmHeld)
+				ready.add(entry.getKey());
+		}
+
+		for (long sender : ready)
+		{
+			Incoming offer = incoming.get(sender);
+			swapConfirmed(sender, offer, offer.heldFrom);
+		}
+
+		return !ready.isEmpty();
+	}
+
+	private boolean swapConfirmed(long sender, Incoming offer, String senderName)
+	{
 		incoming.remove(sender);
 		boolean kept = offer.asked == null || owns(offer.asked);
 		if (!kept || !roomFor(offer.theirs, offer.asked))
@@ -845,6 +900,9 @@ final class FriendTrades implements GoGame.TradeLocks
 
 	private static boolean stale(Incoming offer, long now)
 	{
+		if (offer.confirmHeld)
+			return false;
+
 		return offer.agreedMs == 0
 			? now - offer.receivedMs > OFFER_TIMEOUT_MS
 			: now - offer.agreedMs > CONFIRM_TIMEOUT_MS;

@@ -244,6 +244,7 @@ public class GielinorGoPlugin extends Plugin
 		trades = new FriendTrades(species, game, random, System::currentTimeMillis, this::sendToParty,
 			this::announce);
 		game.tradeLocks(trades);
+		trades.battleOn(director::active);
 		wsClient.registerMessage(GielinorGoPartyMessage.class);
 		lastHelloTick = -HELLO_TICKS;
 		persistence = new GoPersistence(configManager, gson);

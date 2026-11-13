@@ -1025,6 +1025,33 @@ public class FriendTradesTest
 	}
 
 	@Test
+	public void aConfirmDuringABattleWaitsForTheBattleToEnd()
+	{
+		boolean[] battle = {false};
+		bob.battleOn(() -> battle[0]);
+		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
+		bob.receive(last(fromAnn), BOB, "Ann");
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
+		ann.receive(last(fromBob), ANN, "Bob");
+		battle[0] = true;
+
+		bob.receive(last(fromAnn), BOB, "Ann");
+		now += FriendTrades.CONFIRM_TIMEOUT_MS + 1_000L;
+		bobCow.xp += 50;
+		assertFalse("nothing to refresh yet", bob.expire());
+
+		assertSame("the creature stays in the save during the battle", bobCow, only(bobGame.data().team));
+		battle[0] = false;
+		assertTrue(bob.expire());
+
+		Creature got = only(bobGame.data().team);
+		assertEquals("imp", got.species);
+		assertEquals("Traded Cow (Lv 5) for Ann's gilded Imp (Lv 20)", last(bobTold));
+		assertTrue(bob.takeTraded());
+		assertFalse(bob.expire());
+	}
+
+	@Test
 	public void aNewOfferFromSomeoneWithAnOpenOfferIsIgnored()
 	{
 		long xp = XpRules.xpForLevel(20);
