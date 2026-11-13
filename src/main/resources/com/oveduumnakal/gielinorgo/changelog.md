@@ -60,4 +60,6 @@ A Creature Log, daily tasks and daily events give you goals.
   (#81)
 - **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
   beside you, and three species are only met this way. (#90)
+- **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final
+  boss. (#91)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
