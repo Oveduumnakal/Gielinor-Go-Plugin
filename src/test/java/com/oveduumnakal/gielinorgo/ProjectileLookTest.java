@@ -71,4 +71,55 @@ public class ProjectileLookTest
 		assertEquals(ProjectileLook.FIRE, ProjectileLook.of(CombatType.MAGIC, true, false));
 		assertEquals(ProjectileLook.ICE, ProjectileLook.of(CombatType.MAGIC, true, true));
 	}
+
+	@Test
+	public void aSpellShowsItsOwnProjectile()
+	{
+		assertEquals(ProjectileLook.WIND_STRIKE, ProjectileLook.of(CombatType.MAGIC, false, false, "wind_strike"));
+		assertEquals(ProjectileLook.FIRE_BLAST, ProjectileLook.of(CombatType.MAGIC, false, false, "fire_blast"));
+		assertEquals(ProjectileLook.EARTH_WAVE, ProjectileLook.of(CombatType.MAGIC, false, false, "earth_surge"));
+	}
+
+	@Test
+	public void aSpellWithNoMatchKeepsTheGenericBolt()
+	{
+		assertEquals(ProjectileLook.SPELL, ProjectileLook.of(CombatType.MAGIC, false, false, "magic_bolt"));
+		assertEquals(ProjectileLook.SPELL, ProjectileLook.of(CombatType.MAGIC, false, false, "unknown"));
+		assertEquals(ProjectileLook.SPELL, ProjectileLook.of(CombatType.MAGIC, false, false, null));
+	}
+
+	@Test
+	public void theMoveDoesNotChangeABreathOrAnArrow()
+	{
+		assertEquals(ProjectileLook.FIRE, ProjectileLook.of(CombatType.MAGIC, true, false, "wind_strike"));
+		assertEquals(ProjectileLook.ARROW, ProjectileLook.of(CombatType.RANGED, false, false, "wind_strike"));
+		assertNull(ProjectileLook.of(CombatType.CRUSH, false, false, "wind_strike"));
+	}
+
+	@Test
+	public void theSpellLooksAreTheOnesReadFromTheCache()
+	{
+		assertEquals(SpotanimID.WINDSTRIKE_TRAVEL, ProjectileLook.WIND_STRIKE.spotAnimId());
+		assertEquals(3081, ProjectileLook.WIND_STRIKE.modelId());
+		assertEquals(659, ProjectileLook.WIND_STRIKE.animationId());
+		assertEquals(3, ProjectileLook.WIND_STRIKE.recolorFrom().length);
+		assertEquals(SpotanimID.FIREBLAST_TRAVEL, ProjectileLook.FIRE_BLAST.spotAnimId());
+		assertEquals(3087, ProjectileLook.FIRE_BLAST.modelId());
+		assertEquals(663, ProjectileLook.FIRE_BLAST.animationId());
+		assertEquals(SpotanimID.EARTHWAVE_TRAVEL, ProjectileLook.EARTH_WAVE.spotAnimId());
+		assertEquals(3115, ProjectileLook.EARTH_WAVE.modelId());
+		assertEquals(692, ProjectileLook.EARTH_WAVE.animationId());
+	}
+
+	@Test
+	public void theSizeFollowsTheCasterScale()
+	{
+		assertEquals(128, ProjectileLook.SPELL.sizeFor(1.0));
+		assertEquals(48, ProjectileLook.SPELL.sizeFor(0.375));
+		assertEquals(96, ProjectileLook.SPELL.sizeFor(0.75));
+		assertEquals(51, ProjectileLook.FIRE.sizeFor(1.0));
+		assertEquals(38, ProjectileLook.FIRE.sizeFor(0.75));
+		assertEquals(1, ProjectileLook.SPELL.sizeFor(0.0));
+		assertEquals(ProjectileLook.SPELL.size(), ProjectileLook.SPELL.sizeFor(1.0));
+	}
 }

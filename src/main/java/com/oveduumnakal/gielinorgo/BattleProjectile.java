@@ -53,11 +53,13 @@ final class BattleProjectile extends RuneLiteObject
 	 *
 	 * @param flight which look
 	 * @param route the way it flies
+	 * @param casterScale how large the caster is drawn compared with the real monster, where 1.0 is as modelled
 	 * @return false when the look has no model, so this attack shows no projectile
 	 */
-	boolean launch(ProjectileLook flight, ProjectilePath route)
+	boolean launch(ProjectileLook flight, ProjectilePath route, double casterScale)
 	{
-		Model model = models.modelOf(flight);
+		int drawn = flight.sizeFor(casterScale);
+		Model model = models.modelOf(flight, drawn);
 		if (model == null)
 			return false;
 
@@ -65,7 +67,7 @@ final class BattleProjectile extends RuneLiteObject
 		look = flight;
 		path = route;
 		shown = model;
-		size = flight.size();
+		size = drawn;
 		Animation animation = flight.animated() ? client.loadAnimation(flight.animationId()) : null;
 		controller.setAnimation(animation);
 		setModel(model);

@@ -281,4 +281,19 @@ public class BattleTimelineTest
 	{
 		return new BattleLine("x", Tone.INFO, false, kind);
 	}
+
+	@Test
+	public void aSpellStepShowsTheLookOfItsMove()
+	{
+		List<BattleLine> lines = Arrays.asList(
+			new BattleLine("x", Tone.GOOD, false, BattleLine.Kind.LEAD_HIT, false, CombatType.MAGIC, false, false,
+				"wind_strike"),
+			new BattleLine("x", Tone.BAD, true, BattleLine.Kind.FOE_HIT, false, CombatType.MAGIC, false, false,
+				"fire_blast"));
+
+		List<BattleTimeline.Step> steps = BattleTimeline.stepsOf(lines);
+
+		assertEquals(ProjectileLook.WIND_STRIKE, steps.get(0).look());
+		assertEquals(ProjectileLook.FIRE_BLAST, steps.get(1).look());
+	}
 }

@@ -4,8 +4,8 @@
  */
 package com.oveduumnakal.gielinorgo;
 
-import java.util.EnumMap;
-import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,8 +33,8 @@ final class ProjectileModels
 	private static final int LIGHT_Z = -30;
 
 	private final Client client;
-	private final Map<ProjectileLook, Model> built = new EnumMap<>(ProjectileLook.class);
-	private final Set<ProjectileLook> failed = EnumSet.noneOf(ProjectileLook.class);
+	private final Map<String, Model> built = new HashMap<>();
+	private final Set<String> failed = new HashSet<>();
 
 	/**
 	 * Creates the cache with nothing built.
@@ -54,15 +54,28 @@ final class ProjectileModels
 	 */
 	Model modelOf(ProjectileLook look)
 	{
-		Model model = built.get(look);
-		if (model != null || failed.contains(look))
+		return modelOf(look, look.size());
+	}
+
+	/**
+	 * Gives the model of a look for a caster of a given size, building it the first time that pair is asked for.
+	 *
+	 * @param look the look
+	 * @param size the size to draw it at, see {@link ProjectileLook#sizeFor(double)}
+	 * @return the lit model, or null when it cannot be built, so no projectile is shown for that look
+	 */
+	Model modelOf(ProjectileLook look, int size)
+	{
+		String key = look.name() + ":" + size;
+		Model model = built.get(key);
+		if (model != null || failed.contains(key))
 			return model;
 
-		model = build(look);
+		model = build(look, size);
 		if (model == null)
-			failed.add(look);
+			failed.add(key);
 		else
-			built.put(look, model);
+			built.put(key, model);
 
 		return model;
 	}
@@ -73,9 +86,10 @@ final class ProjectileModels
 	 * {@link BattleProjectile}), light.
 	 *
 	 * @param look the look
+	 * @param size the size to draw it at
 	 * @return the model, or null when the cache has no such model or building it fails
 	 */
-	private Model build(ProjectileLook look)
+	private Model build(ProjectileLook look, int size)
 	{
 		try
 		{
@@ -91,10 +105,10 @@ final class ProjectileModels
 			for (int i = 0; i < Math.min(from.length, to.length); i++)
 				data.recolor(from[i], to[i]);
 
-			if (!look.animated() && look.size() != ProjectileLook.NORMAL_SIZE)
+			if (!look.animated() && size != ProjectileLook.NORMAL_SIZE)
 			{
 				data.cloneVertices();
-				data.scale(look.size(), look.size(), look.size());
+				data.scale(size, size, size);
 			}
 
 			return data.light(look.ambient(), look.contrast(), LIGHT_X, LIGHT_Y, LIGHT_Z);

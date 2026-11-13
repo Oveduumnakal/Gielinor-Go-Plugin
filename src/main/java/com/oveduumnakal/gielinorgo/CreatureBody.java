@@ -258,6 +258,15 @@ final class CreatureBody extends RuneLiteObject
 		return animations.walk(npcId, liveWalk, liveIdle);
 	}
 
+	/**
+	 * @return how large the body is drawn compared with the real monster, as its width scale over
+	 *     {@link NpcModels#NORMAL_SCALE}: the shrink it is shown at times its species' size
+	 */
+	double drawScale()
+	{
+		return (double) widthScale / NpcModels.NORMAL_SCALE;
+	}
+
 	/** @return how tall the body is drawn, in scene units, when it was made by {@link #petSized}; else 0 */
 	int drawnHeight()
 	{

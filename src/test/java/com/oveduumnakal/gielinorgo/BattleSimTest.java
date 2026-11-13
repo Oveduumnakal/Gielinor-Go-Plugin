@@ -527,4 +527,16 @@ public class BattleSimTest
 		assertEquals(0, first.mineIndex());
 		assertEquals(0, first.theirIndex());
 	}
+
+	@Test
+	public void aHitAndAMissCarryTheIdOfTheMove()
+	{
+		Combatant attacker = new Combatant(GOBLIN, 50, 1.0);
+		Combatant target = new Combatant(GOBLIN, 50, 1.0);
+		Move wind = new Move("wind_strike", "Wind strike", CombatType.MAGIC, 1.0, 1.0);
+
+		assertEquals("wind_strike", BattleSim.strike(attacker, target, 3, true, wind).move());
+		assertEquals("wind_strike", BattleSim.strike(attacker, target, 3, false, wind).move());
+		assertEquals("wind_strike", BattleSim.miss(attacker, true, wind).move());
+	}
 }

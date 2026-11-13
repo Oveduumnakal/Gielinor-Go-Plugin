@@ -97,6 +97,12 @@ final class BattleStage implements StageAnchors
 		}
 
 		@Override
+		public double drawScale()
+		{
+			return foe == null || foe.body() == null ? 1.0 : foe.body().drawScale();
+		}
+
+		@Override
 		public double groundZ()
 		{
 			return foe == null ? Double.NaN : foe.groundZ();
