@@ -23,6 +23,12 @@ public interface GielinorGoConfig extends Config
 	/** Config group key, shared with the plugin so both agree on where settings and progress are stored. */
 	String GROUP = "gielinorgo";
 
+	/** Key of the hidden item that stores the version the change log was last opened for. */
+	String LAST_SEEN_VERSION = "lastSeenVersion";
+
+	/** Key of the hidden item that stores whether What's New was cleared. */
+	String WHATS_NEW_DISMISSED = "whatsNewDismissed";
+
 	/**
 	 * How rare wild creatures are.
 	 *
@@ -334,5 +340,55 @@ public interface GielinorGoConfig extends Config
 	default Keybind itemKey()
 	{
 		return Keybind.NOT_SET;
+	}
+
+	/**
+	 * When a plain left click on a wild creature is ours.
+	 *
+	 * @return the choice, not while in combat by default
+	 */
+	@ConfigItem(
+		keyName = "leftClickWild",
+		name = "Left-click wild creatures",
+		description = "Always: a left click on a wild creature battles or catches it.\nNot while in combat: while you"
+			+ " fight a real monster the left click goes to the game, and Battle and Catch stay in the right-click"
+			+ " menu.\nNever: Battle and Catch are in the right-click menu only.",
+		position = 18
+	)
+	default LeftClickMode leftClickWild()
+	{
+		return LeftClickMode.OUT_OF_COMBAT;
+	}
+
+	/**
+	 * The version the change log was last opened for. Empty on a first install. Not shown in the settings.
+	 *
+	 * @return the version, or an empty text
+	 */
+	@ConfigItem(
+		keyName = GielinorGoConfig.LAST_SEEN_VERSION,
+		name = "Last seen version",
+		description = "The plugin version the change log was last opened for.",
+		hidden = true
+	)
+	default String lastSeenVersion()
+	{
+		return "";
+	}
+
+	/**
+	 * Whether the player already opened the change log for the current version. Not shown in the settings.
+	 *
+	 * @return true once the change log was opened
+	 */
+	@ConfigItem(
+		keyName = GielinorGoConfig.WHATS_NEW_DISMISSED,
+		name = "What's New dismissed",
+		description = "Whether the What's New badge was cleared for the current version.",
+		hidden = true
+	)
+	default boolean whatsNewDismissed()
+	{
+		return false;
 	}
 }
