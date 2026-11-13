@@ -234,6 +234,7 @@ final class GoGame
 		settleMoves();
 		log = null;
 		starters = null;
+		bossEggsWaiting.clear();
 		xpCarry = 0;
 		dirty = false;
 		run = null;
