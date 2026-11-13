@@ -1,4 +1,5 @@
 class Creature {
+  bond: int
   caughtAtMs: long
   gilded: boolean
   hpFraction: double

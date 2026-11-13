@@ -72,4 +72,6 @@ A Creature Log, daily tasks and daily events give you goals.
   aside. (#84)
 - **Starter creatures.** New players pick an Imp, a Gnome Archer or a Wizard at level 5; the Gnome Archer starts a
   new evolution line. (#83)
+- **Bond.** Your lead earns hearts as it walks and wins with you: a heart on its name tag, and up to 5% more XP.
+  (#96)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

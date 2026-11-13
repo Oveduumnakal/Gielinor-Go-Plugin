@@ -24,6 +24,7 @@ final class CreatureView
 	private final int npcId;
 	private final List<Move> moves;
 	private final List<Move> pending;
+	private final int hearts;
 
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname)
@@ -44,6 +45,12 @@ final class CreatureView
 			Collections.emptyList(), Collections.emptyList());
 	}
 
+	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
+		boolean gilded, String nickname, StatRolls rolls, int npcId, List<Move> moves, List<Move> pending)
+	{
+		this(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId, moves, pending, 0);
+	}
+
 	/**
 	 * Describes a creature with its moves.
 	 *
@@ -59,10 +66,13 @@ final class CreatureView
 	 * @param npcId the NPC id its portrait is drawn from, or 0
 	 * @param moves the moves it knows, in the order learned
 	 * @param pending the moves that wait for a choice, oldest first
+	 * @param hearts its bond hearts, 0 to {@value BondRules#MAX_HEARTS}
 	 */
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
-		boolean gilded, String nickname, StatRolls rolls, int npcId, List<Move> moves, List<Move> pending)
+		boolean gilded, String nickname, StatRolls rolls, int npcId, List<Move> moves, List<Move> pending,
+		int hearts)
 	{
+		this.hearts = hearts;
 		this.moves = Collections.unmodifiableList(new ArrayList<>(moves));
 		this.pending = Collections.unmodifiableList(new ArrayList<>(pending));
 		this.npcId = npcId;
@@ -75,6 +85,12 @@ final class CreatureView
 		this.hpFraction = hpFraction;
 		this.rarity = rarity;
 		this.type = type;
+	}
+
+	/** @return its bond hearts, 0 to {@value BondRules#MAX_HEARTS} */
+	int hearts()
+	{
+		return hearts;
 	}
 
 	/** @return the species name, which stays the species name even when there is a nickname */
@@ -198,6 +214,7 @@ final class CreatureView
 			&& Objects.equals(name, that.name)
 			&& Objects.equals(nickname, that.nickname)
 			&& npcId == that.npcId
+			&& hearts == that.hearts
 			&& moves.equals(that.moves)
 			&& pending.equals(that.pending)
 			&& rolls.equals(that.rolls);
@@ -207,6 +224,6 @@ final class CreatureView
 	public int hashCode()
 	{
 		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId, moves,
-			pending);
+			pending, hearts);
 	}
 }

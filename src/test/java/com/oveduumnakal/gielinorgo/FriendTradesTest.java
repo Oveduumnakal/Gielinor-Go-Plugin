@@ -58,6 +58,7 @@ public class FriendTradesTest
 		bobGame.tradeLocks(bob);
 		annImp = new Creature("imp", 20, now);
 		annImp.gilded = true;
+		annImp.bond = 4000;
 		annGame.data().team.add(annImp);
 		bobCow = new Creature("cow", 5, now);
 		bobGame.data().team.add(bobCow);
@@ -96,6 +97,7 @@ public class FriendTradesTest
 		assertEquals("imp", bobGot.species);
 		assertEquals(annImp.xp, bobGot.xp);
 		assertTrue("a gilded creature stays gilded", bobGot.gilded);
+		assertEquals("a traded creature arrives with no bond", 0, bobGot.bond);
 		assertTrue(annGame.takeDirty());
 		assertTrue(bobGame.takeDirty());
 		assertTrue(ann.takeTraded());

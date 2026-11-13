@@ -128,6 +128,8 @@ final class GoGame
 	private Milestones milestoneTable = Milestones.NONE;
 	private boolean milestonesDue;
 	private boolean walking;
+	private Creature bondLead;
+	private int bondTiles;
 	private BossTable bossTable = BossTable.empty();
 	private final Set<String> bossEggsWaiting = new LinkedHashSet<>();
 	private EliteTable elite = EliteTable.empty();
@@ -461,6 +463,7 @@ final class GoGame
 			return;
 
 		payTasks(startTasks().walked(tiles));
+		walkWithLead(tiles);
 		data.stepProgress += tiles;
 		dirty = true;
 		while (data.stepProgress >= TILES_PER_JAR)
@@ -492,6 +495,48 @@ final class GoGame
 		walking = false;
 		settleMilestones();
 		settleBossEggs();
+	}
+
+	/**
+	 * Gives the lead a bond point for every {@link BondRules#TILES_PER_POINT} tiles walked. The part of a point
+	 * walked so far is kept in memory only, and starts again when another creature takes the lead.
+	 *
+	 * @param tiles tiles walked since the last call
+	 */
+	private void walkWithLead(int tiles)
+	{
+		Creature lead = data.lead();
+		if (lead != bondLead)
+		{
+			bondLead = lead;
+			bondTiles = 0;
+		}
+
+		if (lead == null)
+			return;
+
+		bondTiles += tiles;
+		int points = bondTiles / BondRules.TILES_PER_POINT;
+		bondTiles -= points * BondRules.TILES_PER_POINT;
+		addBond(lead, points);
+	}
+
+	/**
+	 * Adds bond points to a creature, and tells the player when that earns a heart.
+	 *
+	 * @param creature the creature
+	 * @param points the points to add; nothing happens for 0 or less
+	 */
+	private void addBond(Creature creature, int points)
+	{
+		if (creature == null || points <= 0)
+			return;
+
+		int before = BondRules.hearts(creature.bond);
+		creature.bond = (int) Math.min(Integer.MAX_VALUE, (long) creature.bond + points);
+		dirty = true;
+		if (BondRules.hearts(creature.bond) > before)
+			tell(nameOf(creature) + "'s bond grew", Tone.GOOD);
 	}
 
 	/**
@@ -1714,6 +1759,7 @@ final class GoGame
 			creatureXp += 20L + 5L * member.level();
 
 		shareXp(first ? creatureXp : creatureXp / 2);
+		addBond(data.lead(), BondRules.CHAMPION_POINTS);
 		if (!first)
 			return;
 
@@ -2110,6 +2156,7 @@ final class GoGame
 			creatureXp += 20L + 5L * member.level();
 
 		shareXp(data.eliteClears == 0 ? creatureXp : creatureXp / 2);
+		addBond(data.lead(), BondRules.CHAMPION_POINTS);
 		payTasks(startTasks().battleWon());
 	}
 
@@ -2298,7 +2345,11 @@ final class GoGame
 	{
 		data.battlesWon++;
 		int before = lead.level();
-		lead.xp = XpRules.capped(lead.xp + 20L + 5L * entry.level());
+		long won = BondRules.withBonus(20L + 5L * entry.level(), BondRules.hearts(lead.bond));
+		lead.xp = XpRules.capped(lead.xp + won);
+		if (lead == data.lead())
+			addBond(lead, BondRules.WIN_POINTS);
+
 		if (lead.level() > before)
 			tell(nameOf(lead) + " grew to Lv " + lead.level() + "!", Tone.GOOD);
 
@@ -2370,7 +2421,18 @@ final class GoGame
 		for (int i = 0; i < before.length; i++)
 			before[i] = data.team.get(i).level();
 
+		long[] xpBefore = new long[before.length];
+		for (int i = 0; i < before.length; i++)
+			xpBefore[i] = data.team.get(i).xp;
+
 		XpRules.share(data.team, creatureXp);
+		for (int i = 0; i < before.length; i++)
+		{
+			Creature member = data.team.get(i);
+			long gained = member.xp - xpBefore[i];
+			member.xp = XpRules.capped(xpBefore[i] + BondRules.withBonus(gained, BondRules.hearts(member.bond)));
+		}
+
 		dirty = true;
 		Cue loudest = null;
 		for (int i = 0; i < before.length; i++)
@@ -2665,7 +2727,7 @@ final class GoGame
 				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname,
 				creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId),
 				found == null ? Collections.emptyList() : MoveLearning.known(creature, found, moves),
-				MoveLearning.pending(creature, moves)));
+				MoveLearning.pending(creature, moves), BondRules.hearts(creature.bond)));
 		}
 
 		return views;
