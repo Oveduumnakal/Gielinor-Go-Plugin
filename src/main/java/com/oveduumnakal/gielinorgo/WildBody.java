@@ -64,7 +64,7 @@ final class WildBody
 	private boolean fadeBroken;
 	private boolean unreachableNoted;
 	private volatile StageAnchors.Spot spot;
-	private volatile StageAnchors.Spot lastSpot;
+	private volatile LastPlace lastSpot;
 	private BodyCatch scene;
 	private boolean turningAway;
 	private double runFromX;
@@ -251,7 +251,7 @@ final class WildBody
 	}
 
 	/** @return where the body was last drawn, kept while it is out of sight, for text floating over it */
-	StageAnchors.Spot lastSpot()
+	LastPlace lastSpot()
 	{
 		return lastSpot;
 	}
@@ -478,6 +478,13 @@ final class WildBody
 		}
 	}
 
+	private LastPlace lastPlace(WorldView view, int sceneX, int sceneY)
+	{
+		double worldX = sceneX / (double) TILE + view.getBaseX() - 0.5;
+		double worldY = sceneY / (double) TILE + view.getBaseY() - 0.5;
+		return new LastPlace(worldX, worldY, plane, drawnHeight);
+	}
+
 	private void place(WorldView view)
 	{
 		double push = body.push();
@@ -493,14 +500,14 @@ final class WildBody
 
 			spot = null;
 			if (inScene && lastSpot != null)
-				lastSpot = new StageAnchors.Spot(new LocalPoint(sceneX, sceneY, view), plane, drawnHeight);
+				lastSpot = lastPlace(view, sceneX, sceneY);
 
 			return;
 		}
 
 		LocalPoint at = new LocalPoint(sceneX, sceneY, view);
 		spot = new StageAnchors.Spot(at, plane, drawnHeight);
-		lastSpot = spot;
+		lastSpot = lastPlace(view, sceneX, sceneY);
 		body.setLocation(at, plane);
 		body.setOrientation(facing);
 		if (!body.isActive())
