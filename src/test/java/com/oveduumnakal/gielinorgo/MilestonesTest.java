@@ -219,7 +219,7 @@ public class MilestonesTest
 		assertEquals("Next: 100 species", view.nextLabel());
 		assertEquals(87, view.nextCurrent());
 		assertEquals(100, view.nextTarget());
-		assertEquals(6, view.rows().size());
+		assertEquals(7, view.rows().size());
 		MilestoneView.Row first = view.rows().get(0);
 		MilestoneView.Row third = view.rows().get(2);
 		assertTrue(first.paid());

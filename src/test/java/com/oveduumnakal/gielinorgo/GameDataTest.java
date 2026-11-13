@@ -226,7 +226,7 @@ public class GameDataTest
 		}
 
 		Milestones milestones = new Milestones(species, families);
-		assertEquals(5 + families.size(), milestones.all().size());
+		assertEquals(6 + families.size(), milestones.all().size());
 	}
 
 	@Test

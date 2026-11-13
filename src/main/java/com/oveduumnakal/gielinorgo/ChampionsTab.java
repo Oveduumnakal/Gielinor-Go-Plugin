@@ -102,7 +102,15 @@ final class ChampionsTab extends JPanel
 				beaten++;
 		}
 
-		header.setText("CITY CHAMPIONS  " + beaten + " / " + champions.size() + " sigils");
+		int gold = 0;
+		for (ChampionView champion : champions)
+		{
+			if (champion.gold())
+				gold++;
+		}
+
+		header.setText("CITY CHAMPIONS  " + beaten + " / " + champions.size() + " sigils"
+			+ (gold > 0 ? ", " + gold + " gold" : ""));
 		if (champions.equals(shown))
 			return;
 

@@ -27,6 +27,15 @@ final class Milestones
 	/** Jars paid for completing a family. */
 	static final int FAMILY_JARS = 3;
 
+	/** The id of the milestone for holding a gold sigil in every city. */
+	static final String GOLD_SIGILS_ID = "gold-sigils";
+
+	/** Gold sigils, one for every City Champion, that pay the {@link #GOLD_SIGILS_ID} milestone. */
+	static final int GOLD_SIGILS_NEEDED = 8;
+
+	/** Jars of every specialty type the gold sigils milestone pays. */
+	static final int GOLD_SIGILS_SPECIALTY_JARS = 3;
+
 	/** Milestones with nothing in them, the default before the game is given its tables. */
 	static final Milestones NONE = new Milestones(new SpeciesTable(Collections.emptyList()), Collections.emptyList());
 
@@ -37,13 +46,26 @@ final class Milestones
 		private final int jars;
 		private final Rarity egg;
 		private final boolean charm;
+		private final int specialtyJars;
 
 		Reward(JarType jar, int jars, Rarity egg, boolean charm)
+		{
+			this(jar, jars, egg, charm, 0);
+		}
+
+		Reward(JarType jar, int jars, Rarity egg, boolean charm, int specialtyJars)
 		{
 			this.jar = jar;
 			this.jars = jars;
 			this.egg = egg;
 			this.charm = charm;
+			this.specialtyJars = specialtyJars;
+		}
+
+		/** @return how many jars of every specialty type are paid, 0 for none */
+		int specialtyJars()
+		{
+			return specialtyJars;
 		}
 
 		/** @return the jar type paid, or null when no jars are */
@@ -79,6 +101,9 @@ final class Milestones
 
 			if (egg != null)
 				parts.add(egg.label() + " egg");
+
+			if (specialtyJars > 0)
+				parts.add(specialtyJars + " of every specialty jar");
 
 			if (charm)
 				parts.add("Gilded charm");
@@ -175,6 +200,8 @@ final class Milestones
 				new Reward(family.jar(), FAMILY_JARS, top, false)));
 		}
 
+		built.add(new Milestone(GOLD_SIGILS_ID, "Gold sigils in all " + GOLD_SIGILS_NEEDED + " cities",
+			GOLD_SIGILS_NEEDED, null, new Reward(null, 0, Rarity.EPIC, false, GOLD_SIGILS_SPECIALTY_JARS)));
 		all = Collections.unmodifiableList(built);
 	}
 
@@ -271,10 +298,13 @@ final class Milestones
 	 *
 	 * @param milestone the milestone
 	 * @param data the save
-	 * @return the species caught, or for a family the members caught, never above the target
+	 * @return the species caught, or for a family the members caught, or the gold sigils held, never above the target
 	 */
 	int progressOf(Milestone milestone, SaveData data)
 	{
+		if (GOLD_SIGILS_ID.equals(milestone.id()))
+			return Math.min(milestone.target(), data.goldSigils.size());
+
 		if (milestone.family() == null)
 			return Math.min(milestone.target(), caughtCount(data));
 

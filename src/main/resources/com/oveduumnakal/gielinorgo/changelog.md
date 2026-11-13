@@ -72,4 +72,6 @@ A Creature Log, daily tasks and daily events give you goals.
   aside. (#84)
 - **Starter creatures.** New players pick an Imp, a Gnome Archer or a Wizard at level 5; the Gnome Archer starts a
   new evolution line. (#83)
+- **Champion rematches.** After the Elite clear each City Champion fights again with six creatures at levels 80 to 99,
+  for a gold sigil and a daily reward. (#97)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

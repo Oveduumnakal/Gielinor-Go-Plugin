@@ -231,6 +231,7 @@ public class GielinorGoPlugin extends Plugin
 		game.bosses(loadBosses(species));
 		game.setCues(this::playCue);
 		game.elite(loadElite(species));
+		game.rematches(loadRematches(species));
 		game.moves(loadMoves());
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
 		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce)
@@ -906,6 +907,25 @@ public class GielinorGoPlugin extends Plugin
 		{
 			log.warn("Gielinor Go: could not read the champion list", e);
 			return ChampionTable.empty();
+		}
+	}
+
+	private RematchTable loadRematches(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(RematchTable.RESOURCE))
+		{
+			if (in == null)
+				return RematchTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return RematchTable.load(gson, reader, species);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the champion rematch teams", e);
+			return RematchTable.empty();
 		}
 	}
 

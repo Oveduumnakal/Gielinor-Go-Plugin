@@ -23,6 +23,7 @@ final class BattleSession
 	private final Champion champion;
 	private final BattleLine opening;
 	private int eliteNumber;
+	private boolean rematch;
 	private List<BattleLine> verdict = Collections.emptyList();
 
 	/**
@@ -56,6 +57,23 @@ final class BattleSession
 	{
 		this.eliteNumber = number;
 		return this;
+	}
+
+	/**
+	 * Marks the battle as a rematch with a City Champion, fought with the champion's second team.
+	 *
+	 * @return this session
+	 */
+	BattleSession rematch()
+	{
+		this.rematch = true;
+		return this;
+	}
+
+	/** @return whether the battle is a rematch with a City Champion */
+	boolean isRematch()
+	{
+		return rematch;
 	}
 
 	/** @return whether the battle is a battle of the Elite challenge */
