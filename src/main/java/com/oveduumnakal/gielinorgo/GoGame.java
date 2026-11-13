@@ -106,6 +106,9 @@ final class GoGame
 	private final Random random;
 	private final LongSupplier clock;
 	private final Consumer<Notice> notices;
+	private Consumer<Cue> cues = cue ->
+	{
+	};
 	private SaveData data = SaveData.fresh();
 	private List<LogEntry> log;
 	private long xpCarry;
@@ -371,6 +374,16 @@ final class GoGame
 	}
 
 	/**
+	 * Sets where the game's sound cues go. Without this call they are dropped.
+	 *
+	 * @param sink receives each cue as it happens; the caller decides whether and how to play it
+	 */
+	void setCues(Consumer<Cue> sink)
+	{
+		this.cues = sink;
+	}
+
+	/**
 	 * Tells the game whether a bank is near the player, so the team may be changed there.
 	 *
 	 * @param near true when a banker, bank booth or bank chest is within {@link BankSpots#NEAR_TILES} tiles
@@ -605,10 +618,12 @@ final class GoGame
 			if (random.nextDouble() < CatchRules.FLEE_CHANCE)
 			{
 				tell(entry, "Broke free and ran away!", Tone.BAD);
+				cues.accept(Cue.BROKE_FREE);
 				return CatchOutcome.FLED;
 			}
 
 			tell(entry, "Broke free!", Tone.BAD);
+			cues.accept(Cue.BROKE_FREE);
 			return CatchOutcome.BROKE_FREE;
 		}
 
@@ -624,6 +639,7 @@ final class GoGame
 		else
 			tell(entry, "Caught " + name + " (Lv " + entry.level() + ")!", Tone.GOOD);
 
+		cues.accept(Cue.CATCH);
 		String rating = ratingNote(caught);
 		if (!rating.isEmpty())
 			tell(entry, rating, Tone.FIND);
@@ -1444,6 +1460,7 @@ final class GoGame
 		keep(creature);
 		recordOwned(creature);
 		tell("Egg hatched: " + (creature.gilded ? "gilded " : "") + born.name() + "!", Tone.FIND);
+		cues.accept(Cue.HATCH);
 		String rating = ratingNote(creature);
 		if (!rating.isEmpty())
 			tell(rating, Tone.FIND);
@@ -1456,9 +1473,11 @@ final class GoGame
 	 * Turns a creature into the next species of its line for every evolution level it has reached.
 	 *
 	 * @param creature the creature that just gained XP
+	 * @return whether it evolved at least once
 	 */
-	private void evolveIfReady(Creature creature)
+	private boolean evolveIfReady(Creature creature)
 	{
+		boolean evolved = false;
 		EvolutionTable.Step step = evolutions.next(creature.species);
 		for (int i = 0; i < MAX_EVOLUTIONS_AT_ONCE && step != null && creature.level() >= step.level(); i++)
 		{
@@ -1469,10 +1488,12 @@ final class GoGame
 			MoveLearning.evolved(creature, grown, moves);
 			recordOwned(creature);
 			tell(before + " evolved into " + grown.name() + "!", Tone.GOOD);
+			evolved = true;
 			step = evolutions.next(creature.species);
 		}
 
 		settleMilestones();
+		return evolved;
 	}
 
 	/**
@@ -1494,6 +1515,7 @@ final class GoGame
 			return;
 
 		tell("Sigil of " + champion.city() + " earned!", Tone.FIND);
+		cues.accept(Cue.SIGIL);
 		data.addJars(champion.rewardJar(), champion.rewardJars());
 		tell(foundJars(champion.rewardJar(), champion.rewardJars(), "champion"), Tone.FIND,
 			champion.rewardJar());
@@ -1608,6 +1630,7 @@ final class GoGame
 	private void payMilestones()
 	{
 		milestonesDue = false;
+		boolean paid = false;
 		for (String id : milestoneTable.reached(data))
 		{
 			if (data.milestones.contains(id))
@@ -1623,6 +1646,7 @@ final class GoGame
 
 			data.milestones.add(id);
 			dirty = true;
+			paid = true;
 			List<String> parts = new ArrayList<>();
 			if (reward.jars() > 0)
 			{
@@ -1645,6 +1669,9 @@ final class GoGame
 			else
 				tell(line, Tone.FIND, reward.jar());
 		}
+
+		if (paid)
+			cues.accept(Cue.MILESTONE);
 	}
 
 	/**
@@ -2072,7 +2099,11 @@ final class GoGame
 		if (lead.level() > before)
 			tell(nameOf(lead) + " grew to Lv " + lead.level() + "!", Tone.GOOD);
 
-		evolveIfReady(lead);
+		if (evolveIfReady(lead))
+			cues.accept(Cue.EVOLVE);
+		else if (lead.level() > before)
+			cues.accept(Cue.LEVEL_UP);
+
 		learnMoves(lead, before);
 		addTrainerXp(5L + entry.level());
 		if (random.nextDouble() < JAR_DROP_CHANCE)
@@ -2138,15 +2169,23 @@ final class GoGame
 
 		XpRules.share(data.team, creatureXp);
 		dirty = true;
+		Cue loudest = null;
 		for (int i = 0; i < before.length; i++)
 		{
 			Creature creature = data.team.get(i);
 			if (creature.level() > before[i])
 				tell(nameOf(creature) + " grew to Lv " + creature.level() + "!", Tone.GOOD);
 
-			evolveIfReady(creature);
+			if (evolveIfReady(creature))
+				loudest = Cue.stronger(loudest, Cue.EVOLVE);
+			else if (creature.level() > before[i])
+				loudest = Cue.stronger(loudest, Cue.LEVEL_UP);
+
 			learnMoves(creature, before[i]);
 		}
+
+		if (loudest != null)
+			cues.accept(loudest);
 	}
 
 	/**

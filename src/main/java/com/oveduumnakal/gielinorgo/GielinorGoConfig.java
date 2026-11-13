@@ -408,4 +408,22 @@ public interface GielinorGoConfig extends Config
 	{
 		return true;
 	}
+
+	/**
+	 * Whether short game sounds play for catches, level-ups and other big moments.
+	 *
+	 * @return true to play them
+	 */
+	@ConfigItem(
+		keyName = "sounds",
+		name = "Sounds",
+		description = "Plays a short game sound for a catch, a creature breaking free, a level-up, an evolution, a"
+			+ " hatched egg,\na gilded creature appearing, a sigil or a milestone. They use the game's sound effect"
+			+ " volume.",
+		position = 20
+	)
+	default boolean sounds()
+	{
+		return true;
+	}
 }

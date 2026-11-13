@@ -400,6 +400,17 @@ Every feature and every number, in detail. For the short version, see the [READM
   the eggs you carry and whatever you put in a trade (never nicknames), and only to the people in your own party. You can turn
   battle challenges off in the settings.
 
+### Sounds
+
+- **Game sounds**
+
+  A short sound from the game itself plays for a catch, a creature breaking free, a creature gaining a level, an
+  evolution, an egg hatching, a gilded creature appearing, a sigil and a Creature Log milestone. No sound file is
+  added: the plugin asks the game to play one of its own sound effects, so the game's sound effect volume applies
+  and muting the game mutes them. Only one sound plays at a time (a second one within 0.6 seconds is dropped),
+  except the gilded creature's sound, which always plays. Battle hits, jar finds and task progress are silent, and
+  so is everything while the plugin is hidden in PvP areas. Switch them off with **Sounds** in the settings.
+
 ### Side panel
 
 - **Team, Storage, Creature Log and Battle**

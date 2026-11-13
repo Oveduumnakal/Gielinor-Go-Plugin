@@ -238,6 +238,7 @@ Then replace this comment with:
 | Battle animations | On | Battles are acted out in the game view. Off shows them as floating text. |
 | Lead creature follows you | On | Your lead walks a step behind you. |
 | Also print to chat | Off | Writes catches, battles and rewards to your chatbox as well. Only you see them. |
+| Sounds | On | A short game sound for a catch, a level-up, an evolution and other big moments. Uses the game's sound effect volume. |
 
 The rest of the settings are described in the [full guide](docs/GUIDE.md).
 
