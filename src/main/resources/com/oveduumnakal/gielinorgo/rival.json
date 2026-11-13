@@ -1,0 +1,28 @@
+{
+"name":"Bryn",
+"before":["So you made it this far. Let's see what your team can do.","Four sigils already. I have been training too.","Six sigils. Everyone talks about you now. Don't slow down.","Eight sigils, and the Guild is open. I came to see if you are ready.","Grand Champion. I have waited for this one. No holding back."],
+"after":["Not bad. I will be back when you have more to show.","Hm. You are quicker than I thought.","Fine. You earned that one.","Good. You are ready. Go on, the Elite are waiting.","You win. We are even now. Thanks for the road."],
+"teams":{
+"wizard":[
+[{"species":"Wizard","level":15},{"species":"Goblin","level":14}],
+[{"species":"Dark wizard","level":30},{"species":"Hill Giant","level":29},{"species":"Skeleton","level":28}],
+[{"species":"Elite Dark Mage","level":50},{"species":"Moss giant","level":48},{"species":"Ogre","level":47},{"species":"Ice warrior","level":46}],
+[{"species":"Elite Dark Mage","level":70},{"species":"Ice giant","level":68},{"species":"Fire giant","level":67},{"species":"Dagannoth","level":69},{"species":"Werewolf","level":66}],
+[{"species":"Elite Dark Mage","level":96},{"species":"Fire giant","level":85},{"species":"Troll","level":87},{"species":"Dagannoth","level":89},{"species":"Kurask","level":91},{"species":"Mummy","level":93}]
+],
+"imp":[
+[{"species":"Imp","level":15},{"species":"Guard","level":14}],
+[{"species":"Lesser demon","level":30},{"species":"Gnome troop","level":28},{"species":"Guard","level":29}],
+[{"species":"Greater demon","level":50},{"species":"Guard","level":48},{"species":"Monkey Archer","level":47},{"species":"Archer","level":46}],
+[{"species":"Black demon","level":70},{"species":"Monkey Archer","level":68},{"species":"Tower Archer","level":67},{"species":"Dust devil","level":69},{"species":"Aviansie","level":66}],
+[{"species":"Black demon","level":96},{"species":"Dust devil","level":85},{"species":"Aviansie","level":87},{"species":"Skeletal Wyvern","level":89},{"species":"Drake","level":91},{"species":"Rock Golem","level":93}]
+],
+"gnome archer":[
+[{"species":"Gnome Archer","level":15},{"species":"Gnome Mage","level":14}],
+[{"species":"Archer","level":30},{"species":"Banshee","level":28},{"species":"Gnome Mage","level":27}],
+[{"species":"Tower Archer","level":50},{"species":"Pyrefiend","level":48},{"species":"Banshee","level":47},{"species":"Battle mage","level":46}],
+[{"species":"Elf Archer","level":70},{"species":"Battle mage","level":68},{"species":"Zamorak wizard","level":69},{"species":"Pyrefiend","level":67},{"species":"Jelly","level":66}],
+[{"species":"Elf Archer","level":96},{"species":"Spiritual Mage","level":85},{"species":"Smoke devil","level":87},{"species":"Wyrm","level":89},{"species":"Hydra","level":91},{"species":"Wallasalki","level":93}]
+]
+}
+}

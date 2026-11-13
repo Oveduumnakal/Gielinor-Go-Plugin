@@ -21,11 +21,11 @@ import static org.junit.Assert.assertTrue;
 /** Checks what the panel shows of moves: the view, the tooltip lines and the words of the moves dialog. */
 public class MovePanelTest
 {
-	private static final Move CLAW = new Move("claw", "Claw", CombatType.MELEE, 1.25, 0.95);
+	private static final Move CLAW = new Move("claw", "Claw", CombatType.STAB, 1.25, 0.95);
 
 	private static CreatureView view(List<Move> moves, List<Move> pending)
 	{
-		return new CreatureView("Green dragon", 30, 0.5, 1.0, Rarity.RARE, CombatType.MELEE, false, "Smaug",
+		return new CreatureView("Green dragon", 30, 0.5, 1.0, Rarity.RARE, CombatType.STAB, false, "Smaug",
 			StatRolls.AVERAGE, 0, moves, pending);
 	}
 
@@ -54,8 +54,8 @@ public class MovePanelTest
 
 		String tip = PanelUi.tooltipMoves(waiting);
 
-		assertTrue(tip, tip.contains("<br>Bite: Melee, power 1, accuracy 100%"));
-		assertTrue(tip, tip.contains("<br>Claw: Melee, power 1.25, accuracy 95%"));
+		assertTrue(tip, tip.contains("<br>Bite: Stab, power 1, accuracy 100%"));
+		assertTrue(tip, tip.contains("<br>Claw: Stab, power 1.25, accuracy 95%"));
 		assertTrue(tip, tip.endsWith("<br>Wants to learn Dragonfire"));
 		assertEquals("", PanelUi.tooltipMoves(view(Collections.emptyList(), Collections.emptyList())));
 	}
@@ -84,14 +84,14 @@ public class MovePanelTest
 	@Test
 	public void theGameShowsMovesAndPendingMovesInTheTeamView()
 	{
-		GoGame game = new GoGame(new SpeciesTable(Arrays.asList(new Species("Cub", 5, CombatType.MELEE))),
+		GoGame game = new GoGame(new SpeciesTable(Arrays.asList(new Species("Cub", 5, CombatType.STAB))),
 			new Random(1), () -> 1L, notice ->
 			{
 			});
 		game.moves(MoveTable.load(new Gson(), new StringReader(
-			"{\"moves\":[{\"id\":\"a\",\"name\":\"Aa\",\"style\":\"MELEE\",\"power\":1.0,\"accuracy\":1.0},"
-			+ "{\"id\":\"b\",\"name\":\"Bb\",\"style\":\"MELEE\",\"power\":1.2,\"accuracy\":0.9}],"
-			+ "\"defaults\":{\"MELEE\":\"p\"},\"pools\":{\"p\":{\"styles\":[\"MELEE\"],"
+			"{\"moves\":[{\"id\":\"a\",\"name\":\"Aa\",\"style\":\"STAB\",\"power\":1.0,\"accuracy\":1.0},"
+			+ "{\"id\":\"b\",\"name\":\"Bb\",\"style\":\"STAB\",\"power\":1.2,\"accuracy\":0.9}],"
+			+ "\"defaults\":{\"STAB\":\"p\"},\"pools\":{\"p\":{\"styles\":[\"STAB\"],"
 			+ "\"learns\":[[\"a\",1],[\"b\",5]]}},\"species\":{}}")));
 		Creature cub = new Creature("cub", 6, 1L);
 		cub.moves = new ArrayList<>(Collections.singletonList("a"));

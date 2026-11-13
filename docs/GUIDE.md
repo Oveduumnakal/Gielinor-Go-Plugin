@@ -62,6 +62,29 @@ Every feature and every number, in detail. For the short version, see the [READM
   you, it shows up as its own **Catch** option with its odds. Every jar has its own small picture, in the jar list on
   the panel, on the champion cards and beside the "Found a ... jar" lines that float over your head.
 
+  The Attack, Strength and Defence skills find their own jars: **Stab** jars (Attack), **Slash** jars (Strength)
+  and **Crush** jars (Defence), each ×2.5 on creatures of that style. A save from before the split turns its old
+  Warrior jars into the three, a third each, with any left over going to Crush.
+
+- **Combat styles**
+
+  Every creature has one of five styles, taken from how the monster really fights on the wiki; monsters the wiki
+  does not give a style (an Imp, a Chompy bird, a Void Flare) have one picked by hand. An attack of the right style
+  does 25% more damage and the wrong one 20% less.
+
+  | Style  | Strong against | Weak against  |
+  |--------|----------------|---------------|
+  | Stab   | Slash, Ranged  | Crush, Magic  |
+  | Slash  | Crush, Ranged  | Stab, Magic   |
+  | Crush  | Stab, Magic    | Slash, Ranged |
+  | Ranged | Crush, Magic   | Stab, Slash   |
+  | Magic  | Stab, Slash    | Crush, Ranged |
+
+  To remember it: Stab and Slash beat Ranged, Ranged beats Magic, Magic beats Stab and Slash. Crush is the odd one
+  out: it beats Magic and falls to Ranged. Among the melee styles, Stab beats Slash, Slash beats Crush and Crush
+  beats Stab. The starters hold the old triangle: Imp (Slash) beats Gnome Archer (Ranged), which beats Wizard
+  (Magic), which beats Imp. Friends on an older version cannot battle or trade with you.
+
 - **Healing items**
 
   Four items help a hurt creature. A **Small salve** restores 25% health and a **Large salve** 60%. A **Revive
@@ -147,7 +170,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Moves**
 
-  Every creature knows up to four moves. A move has a style (Melee, Ranged or Magic), a power (1 is a plain
+  Every creature knows up to four moves. A move has a style (Stab, Slash, Crush, Ranged or Magic), a power (1 is a plain
   attack), an accuracy (a move below 100% can miss and does no damage then) and sometimes an effect. A creature
   starts with the newest four moves its level has unlocked. New moves unlock at set levels: a dragon bites at level
   1, claws at 10, uses Dragonfire at 20 and Inferno at 40, a wizard goes from a strike to a bind to a blast, a spider
@@ -180,8 +203,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   your team that can fight steps in by itself ("Go, Bob!") and the battle goes on; it is lost only when your whole
   team is down. Creatures below a quarter of their health sit out, so when the lead is too tired the first rested
   creature opens. A win pays once and the creature that lands the last blow gets the creature XP. Each hit floats over the creature's
-  head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. Melee beats Ranged, Ranged beats Magic, and Magic beats
-  Melee. A creature's card tooltip reminds you of its style's match-up. There is no opening line: the fight goes
+  head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. There are five styles and each beats two and loses to two (see the chart below). A creature's
+  card tooltip reminds you of its style's match-up. There is no opening line: the fight goes
   straight from the face-off to the first blow. A creature that loses to you is easier to catch. Every attack is one of the creature's moves, and the
   line says which ("Bob uses Dragonfire: -14" or "Bob's Bite missed"); see **Moves** below.
 
@@ -190,7 +213,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   every step of a melee attacker is over open ground. When the lead has no way to get to the wild creature (it
   stands behind a fence), the battle is shown as text and says so once. Each hit plays as an attack by one and a flinch by the
   other, one every 3 game ticks, and the flinch and the floating line come at the same moment of the turn for every
-  attack. A Melee attacker steps up, strikes and steps back. A Ranged or Magic attacker stays where it is and an
+  attack. A Stab, Slash or Crush attacker steps up, strikes and steps back. A Ranged or Magic attacker stays where it is and an
   arrow or a bolt flies from one body to the other, at the height each is drawn at; a dragon steps in to bite but
   stays put to use Dragonfire, and a wyvern uses Icy breath. A move that misses is acted out like a hit, but the
   other creature does not flinch.
@@ -254,6 +277,15 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Many creatures grow into a stronger relative when they reach a certain level: an Imp becomes a Lesser demon,
   then a Greater demon, then a Black demon. There are over 150 evolutions to find.
+
+  A few evolutions ask for more than a level. A Zombie, Skeleton, Ghost, Banshee or Vampyre only grows **at night**
+  (20:00 to 06:00 on your computer's clock), and a Giant bat, Rockslug, Bloodveld, Crypt rat and other cave dwellers
+  only grow **underground**. A creature that has the level but not the moment waits, and its card says what for, for
+  example `Evolves at night`. It evolves as soon as the night falls or you walk into a cave, with no XP needed. Only
+  your team evolves; creatures in Storage wait. Some species grow into different creatures depending on the
+  condition: a Rat becomes a Giant rat on the surface but a Crypt rat underground, and a Wolf becomes a Dire Wolf by
+  day but a Werewolf at night. Each Creature Log entry shows these conditions beside the stages you know. Every
+  condition can be met alone, and no creature needs a trade to evolve.
 
 - **Releasing creatures**
 
@@ -338,10 +370,12 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Rewards for a growing Log**
 
-  Catching new species pays rewards once each, at 25, 50, 100, 250 and 500 species: 5 Iron jars; 5 Rune jars and a
-  Rare egg; 5 Dragon jars and an Epic egg; the **Gilded charm**; then 10 Dragon jars and a Legendary egg. The charm
+  Catching new species pays rewards once each, at 25, 50, 100, 250, 500, 750 and 1,000 species: 5 Iron jars; 5 Rune
+  jars and a Rare egg; 5 Dragon jars and an Epic egg; the **Gilded charm**; 10 Dragon jars and a Legendary egg; 10
+  Dragon jars and an Epic egg; then 3 of every specialty jar and a Legendary egg. The charm
   is not an item: from then on gilded creatures turn up twice as often (1 in 250 instead of 1 in 500), in the wild
-  and from eggs. Completing a family, such as every goblin or every dragon, pays 3 jars of the family's specialty
+  and from eggs. A **complete Log** (every species that is not quest only) pays a Legendary egg and the title
+  **Master Collector**. Completing a family, such as every goblin or every dragon, pays 3 jars of the family's specialty
   type and an egg of the rarest creature in it. Milestones you had already reached are paid when you log in. When
   your egg bag is full an egg reward waits until you have a free slot.
 
@@ -349,6 +383,13 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Under the Log header the next goal shows with a bar (`Next: 100 species`, `87 / 100`). The **Milestones...**
   button lists every milestone and family with its bar, its reward and a tick once it is paid.
+
+- **Titles**
+
+  The panel header shows your title next to your trainer level: **Grand Champion** after the Elite challenge and
+  **Master Collector** for a complete Log. When you hold both, click the title in the header to switch between
+  them. The one you pick is saved; until you pick, the header shows the one you earned last of the two in that
+  order (Master Collector).
 
 - **Quest-only monsters**
 
@@ -373,6 +414,32 @@ Every feature and every number, in detail. For the short version, see the [READM
   battle of three creatures against three takes about 45 seconds at most. Creatures are drawn small, like your
   follower. The result is decided before the scene starts, so nothing in it can change the outcome. With the setting
   off, or when there is no room or no follower on screen, the battle is text only.
+
+### Your rival
+
+- **Bryn, from the Battle tab**
+
+  A rival trainer named Bryn has a card above the City Champions on the Battle tab. Nothing is drawn in the game
+  world: the card shows what Bryn says, the team for the next battle, and what a win pays. When you pick a starter,
+  Bryn takes the one that beats it: the Wizard against your Imp, the Gnome Archer against your Wizard and the Imp
+  against your Gnome Archer. A save that never picked a starter gets the one that beats the style of your lead, or
+  the Imp when none matches. The choice is saved the first time it is needed and never changes.
+
+- **Five battles**
+
+  Battle 1 opens with 2 sigils, battle 2 with 4, battle 3 with 6, battle 4 with 8, and battle 5 after your first
+  Elite clear. Bryn brings 2 creatures, then 3, 4, 5 and 6, from level 15 up to levels 85 to 99, and the starter
+  evolves along the way. The teams are fixed for each starter and are picked to answer its weak style. You can fight
+  anywhere, with your whole team, and the battle plays like a City Champion battle: automatic, or turn by turn with
+  **Choose battle actions**. It cannot be started during an Elite run. Bryn speaks before and after each battle,
+  and the lines float up with the result.
+
+- **Rewards**
+
+  The first win of each battle pays creature XP, trainer XP, jars of the best tier you have unlocked (3, 4, 5, 6 and
+  8) and an egg (Rare, Rare, Epic, Epic, Legendary), as jars when you have no room for an egg. A loss costs nothing
+  except the health your creatures lost; rest and challenge again. After battle 5 the card stays, marked beaten.
+  Nothing Bryn gives needs another player.
 
 ### Elite challenge
 
@@ -452,6 +519,11 @@ Every feature and every number, in detail. For the short version, see the [READM
   creatures you have stored, and a Creature Log of every species you can meet in the game (1,096) so you can see what
   you have caught, what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
   you can challenge. The top of the Log tab shows what is featured today and which event is on.
+
+  Click a species you have seen or caught and a box under the list shows the monster's examine text, its evolution
+  line (stages you have not met yet show as `???`), how many you have caught and whether you own a gilded one.
+  Right-click a species you have seen or caught and choose **Open wiki** to open its page on the Old School RuneScape
+  Wiki in your browser. A species you have never met shows neither the box nor the menu.
 
   You can move a creature between your team and Storage only inside a city (any City Champion's area) or within
   10 tiles of a banker, a bank booth or a bank chest. Anywhere else the panel says "Go to a city or a bank to change

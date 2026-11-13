@@ -45,9 +45,10 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	 * that sends no version reads as 0. Version 3 added the moves of each creature and the moves of a traded one, and
 	 * changed how a creature attacks (accuracy, power, no second style, a move picked at random). Version 4 added
 	 * status effects (poison, venom, burn, freeze and stun), so a battle draws more random numbers and ends
-	 * differently. Version 5 added the species of a boss egg in a trade.
+	 * differently. Version 5 added the species of a boss egg in a trade. Version 6 split Melee into
+	 * Stab, Slash and Crush, with a new chart of five styles.
 	 */
-	static final int PROTOCOL = 5;
+	static final int PROTOCOL = 6;
 
 	/** One creature or one egg named in a trade. Exactly one of the species and the egg rarity is set. */
 	static final class Item

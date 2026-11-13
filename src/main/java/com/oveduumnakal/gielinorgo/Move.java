@@ -122,10 +122,10 @@ final class Move
 		return id == null;
 	}
 
-	/** @return the style, melee when the data leaves it out */
+	/** @return the style, Crush when the data leaves it out */
 	CombatType style()
 	{
-		return style == null ? CombatType.MELEE : style;
+		return style == null ? CombatType.CRUSH : style;
 	}
 
 	/** @return the damage factor, 1.0 being a plain attack; at least 0.1 */

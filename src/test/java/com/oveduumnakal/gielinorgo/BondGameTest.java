@@ -20,8 +20,8 @@ import static org.junit.Assert.assertTrue;
 /** Plays the bond rules through the game service: who earns bond, and what the hearts give. */
 public class BondGameTest
 {
-	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.MELEE);
-	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
+	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.STAB);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.STAB);
 
 	private final List<String> messages = new ArrayList<>();
 	private long now = 1_000_000L;

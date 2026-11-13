@@ -20,12 +20,12 @@ import static org.junit.Assert.assertEquals;
  */
 public class RecordedBattlesTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 	private static final Species ARCHER = new Species("Archer", 13, CombatType.RANGED);
 	private static final Species WIZARD = new Species("Wizard", 13, CombatType.MAGIC);
-	private static final Species GREEN = new Species("Green dragon", 88, CombatType.MELEE);
-	private static final Species IMP = new Species("Imp", 7, CombatType.MELEE);
-	private static final Species KBD = new Species("King Black Dragon", 276, CombatType.MELEE);
+	private static final Species GREEN = new Species("Green dragon", 88, CombatType.STAB);
+	private static final Species IMP = new Species("Imp", 7, CombatType.STAB);
+	private static final Species KBD = new Species("King Black Dragon", 276, CombatType.STAB);
 	private static final long ANN = 11L;
 	private static final long BOB = 22L;
 

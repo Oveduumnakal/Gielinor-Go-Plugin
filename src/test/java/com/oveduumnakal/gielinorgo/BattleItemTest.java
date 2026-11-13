@@ -28,7 +28,7 @@ import static org.junit.Assert.fail;
 /** Healing items as the turn's action: salves, Revive draughts and Antidotes, in the engine, the game and the box. */
 public class BattleItemTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 
 	/** A random source that counts every draw. */
 	private static final class Counting extends Random
@@ -237,7 +237,7 @@ public class BattleItemTest
 		assertEquals("Switch F2", BattlePrompt.hotkeys("F1", "F2", "F3", "F5", "F4", true, true));
 	}
 
-	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.MELEE);
+	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.STAB);
 
 	private GoGame newGame()
 	{

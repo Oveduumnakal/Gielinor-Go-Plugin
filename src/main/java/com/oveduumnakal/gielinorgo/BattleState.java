@@ -397,7 +397,7 @@ final class BattleState
 			&& random.nextDouble() < effect.chance() && defender.afflict(wanted, random))
 			return wanted;
 
-		if (move.style() == CombatType.MELEE && attacker.traits().contains(Trait.POISONOUS)
+		if (move.style().melee() && attacker.traits().contains(Trait.POISONOUS)
 			&& defender.canAfflict(Status.POISON) && random.nextDouble() < Status.POISONOUS_HIT_CHANCE
 			&& defender.afflict(Status.POISON, random))
 			return Status.POISON;

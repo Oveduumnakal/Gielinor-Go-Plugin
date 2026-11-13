@@ -231,7 +231,9 @@ public class GielinorGoPlugin extends Plugin
 		game.bosses(loadBosses(species));
 		game.setCues(this::playCue);
 		game.elite(loadElite(species));
+		game.rival(loadRival(species));
 		game.moves(loadMoves());
+		game.examine(loadExamine());
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
 		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce)
 			.withMoves(game.moveTable());
@@ -833,6 +835,25 @@ public class GielinorGoPlugin extends Plugin
 		}
 	}
 
+	private ExamineTable loadExamine()
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(ExamineTable.RESOURCE))
+		{
+			if (in == null)
+				return ExamineTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return ExamineTable.load(gson, reader);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the examine lines", e);
+			return ExamineTable.empty();
+		}
+	}
+
 	private Milestones loadMilestones(SpeciesTable species)
 	{
 		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(Family.RESOURCE))
@@ -887,6 +908,25 @@ public class GielinorGoPlugin extends Plugin
 		{
 			log.warn("Gielinor Go: could not read the Elite challenge", e);
 			return EliteTable.empty();
+		}
+	}
+
+	private RivalTable loadRival(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(RivalTable.RESOURCE))
+		{
+			if (in == null)
+				return RivalTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return RivalTable.load(gson, reader, species);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the rival", e);
+			return RivalTable.empty();
 		}
 	}
 
@@ -1461,6 +1501,11 @@ public class GielinorGoPlugin extends Plugin
 		WorldPoint point = player.getWorldLocation();
 		game.addSteps(stepCounter.advance(point.getX(), point.getY(), point.getPlane()));
 		if (game.moveTo(point.getX(), point.getY(), point.getPlane()))
+			refreshPanel();
+
+		Conditions world = Conditions.of(SpawnCalendar.isNight(spawnClock.localTime()),
+			Terrain.underground(point.getX(), point.getY()));
+		if (game.setConditions(world))
 			refreshPanel();
 
 		bankSpots.forgetFar(point.getX(), point.getY());
@@ -2387,6 +2432,12 @@ public class GielinorGoPlugin extends Plugin
 			public void challenge(String championId)
 			{
 				onGameThread(() -> GielinorGoPlugin.this.challenge(championId));
+			}
+
+			@Override
+			public void pickTitle(String title)
+			{
+				onGameThread(() -> game.pickTitle(title));
 			}
 
 			@Override

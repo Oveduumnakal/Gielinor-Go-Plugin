@@ -22,8 +22,8 @@ import static org.junit.Assert.assertTrue;
 /** Plays the healing items through the game with a scripted or seeded roll and a fake clock. */
 public class ItemGameTest
 {
-	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.MELEE);
-	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
+	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.STAB);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.STAB);
 	private static final double EPSILON = 1e-9;
 
 	/** Answers {@code nextDouble} from a script, then from a seeded stream. */

@@ -22,6 +22,10 @@ class Egg {
   tilesLeft: int
   tilesTotal: int
 }
+class RivalProgress {
+  starter: String
+  won: int
+}
 class SaveData {
   battlesWon: int
   bossKills: Set<String>
@@ -32,6 +36,7 @@ class SaveData {
   items: Map<String, Integer>
   jars: Map<String, Integer>
   milestones: Set<String>
+  rival: RivalProgress
   seen: Set<String>
   selectedJar: String
   sigils: Set<String>
@@ -39,6 +44,7 @@ class SaveData {
   storage: List<Creature>
   tasks: TaskProgress
   team: List<Creature>
+  title: String
   trainerXp: long
   version: int
 }

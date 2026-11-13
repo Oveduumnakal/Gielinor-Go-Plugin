@@ -77,7 +77,7 @@ final class Family
 		return label == null ? id : label;
 	}
 
-	/** @return the specialty jar paid for completing the family, Warrior when the data names none the game knows */
+	/** @return the specialty jar paid for completing the family, Crush when the data names none the game knows */
 	JarType jar()
 	{
 		for (JarType type : JarType.values())
@@ -86,7 +86,7 @@ final class Family
 				return type;
 		}
 
-		return JarType.WARRIOR;
+		return JarType.CRUSH;
 	}
 
 	/** @return the species keys of the members, as {@link Species#key()} writes them */

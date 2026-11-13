@@ -17,7 +17,7 @@ import java.util.Random;
  */
 final class StarterRules
 {
-	/** The species offered, by name: one Slash-or-Melee, one Ranged and one Magic. */
+	/** The species offered, by name: one Slash, one Ranged and one Magic. */
 	static final List<String> STARTERS = Collections.unmodifiableList(Arrays.asList("Imp", "Gnome Archer", "Wizard"));
 
 	/** The level a starter joins at. */

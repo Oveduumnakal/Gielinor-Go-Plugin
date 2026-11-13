@@ -49,8 +49,8 @@ public class JoinedFeaturesTest
 	@Before
 	public void setUp()
 	{
-		species = new SpeciesTable(Arrays.asList(new Species("Mite", 1, CombatType.MELEE),
-			new Species("Brute", 200, CombatType.MELEE)));
+		species = new SpeciesTable(Arrays.asList(new Species("Mite", 1, CombatType.STAB),
+			new Species("Brute", 200, CombatType.STAB)));
 		game = new GoGame(species, new Random(7), () -> now, notice -> messages.add(notice.text()));
 		game.elite(EliteTable.load(new Gson(), new StringReader(elite()), species));
 		game.data().team.add(new Creature("brute", 60, now));

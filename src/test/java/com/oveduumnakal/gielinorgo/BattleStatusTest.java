@@ -22,10 +22,10 @@ import static org.junit.Assert.assertTrue;
 /** Checks statuses inside the turn engine: where they are rolled, when they bite, the lines and the random draws. */
 public class BattleStatusTest
 {
-	private static final Species FIGHTER = new Species("Fighter", 20, CombatType.MELEE);
-	private static final Species DUMMY = new Species("Dummy", 20, CombatType.MELEE);
-	private static final Species SPIDER = new Species("Spider", 20, CombatType.MELEE, Trait.POISONOUS);
-	private static final Move WEAK = new Move("weak", "Weak", CombatType.MELEE, 1.0, 1.0);
+	private static final Species FIGHTER = new Species("Fighter", 20, CombatType.STAB);
+	private static final Species DUMMY = new Species("Dummy", 20, CombatType.STAB);
+	private static final Species SPIDER = new Species("Spider", 20, CombatType.STAB, Trait.POISONOUS);
+	private static final Move WEAK = new Move("weak", "Weak", CombatType.STAB, 1.0, 1.0);
 
 	/** A random source that returns scripted values first and counts every draw. */
 	private static final class Scripted extends Random
@@ -232,7 +232,7 @@ public class BattleStatusTest
 	public void aCreatureCanFaintFromPoisonAndThatEndsTheDuelNormally()
 	{
 		Combatant mine = new Combatant(FIGHTER, "Fighter", 99, 1.0)
-			.moves(Collections.singletonList(new Move("tap", "Tap", CombatType.MELEE, 0.1, 1.0)));
+			.moves(Collections.singletonList(new Move("tap", "Tap", CombatType.STAB, 0.1, 1.0)));
 		Combatant foe = new Combatant(DUMMY, "Dummy", 60, 0.04);
 		foe.afflict(Status.POISON, new Random(1));
 		BattleState state = new BattleState(Collections.singletonList(mine), Collections.singletonList(foe),

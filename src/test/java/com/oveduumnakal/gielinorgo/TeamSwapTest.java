@@ -19,8 +19,8 @@ import static org.junit.Assert.assertTrue;
 /** Checks that the team is only changed inside a city or near a bank, and the spots a bank is found by. */
 public class TeamSwapTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
-	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
+	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.STAB);
 
 	private final List<String> messages = new ArrayList<>();
 	private GoGame game;
