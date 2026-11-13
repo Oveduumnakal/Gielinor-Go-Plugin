@@ -289,7 +289,12 @@ public class GielinorGoPlugin extends Plugin
 		overlayManager.remove(promptOverlay);
 		choiceOpen = false;
 		clientThread.invoke(director::end);
-		clientThread.invoke(this::saveNow);
+		GoGame endingGame = loaded ? game : null;
+		GoPersistence endingPersistence = persistence;
+		String endingProfile = saveProfileKey;
+		boolean endingUnsaved = unsaved;
+		loaded = false;
+		clientThread.invoke(() -> SaveFlush.write(endingGame, endingPersistence, endingProfile, endingUnsaved));
 		clientThread.invoke(stage::clear);
 		clientThread.invoke(arena::clear);
 		clientThread.invoke(bodies::clear);
