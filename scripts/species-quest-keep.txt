@@ -6,3 +6,5 @@ jail guard  # aggressive bandits around the Draynor Village jail, always there
 foreman  # walks the southern docks of the Karamja Ship Yard, attackable at any time
 weaponsmaster  # stands upstairs in the southern alley of Varrock, attackable at any time
 experiment  # the Experiment Cave stays open after Creature of Fenkenstrain and its experiments respawn (a common training spot)
+vorkath  # re-fightable instance boss: never wild, but its kill-count line gives its egg (#91)
+galvek  # re-fightable instance boss: never wild, but its kill-count line gives its egg (#91)

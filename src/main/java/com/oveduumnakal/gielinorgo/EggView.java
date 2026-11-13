@@ -12,12 +12,31 @@ final class EggView
 	private final Rarity rarity;
 	private final int tilesLeft;
 	private final int tilesTotal;
+	private final String bossName;
 
 	EggView(Rarity rarity, int tilesLeft, int tilesTotal)
+	{
+		this(rarity, tilesLeft, tilesTotal, null);
+	}
+
+	EggView(Rarity rarity, int tilesLeft, int tilesTotal, String bossName)
 	{
 		this.rarity = rarity;
 		this.tilesLeft = tilesLeft;
 		this.tilesTotal = tilesTotal;
+		this.bossName = bossName;
+	}
+
+	/** @return the species name of a boss egg, or null for an ordinary egg */
+	String bossName()
+	{
+		return bossName;
+	}
+
+	/** @return what to call the egg: {@code Vorkath egg} for a boss egg, {@code Rare egg} for an ordinary one */
+	String label()
+	{
+		return (bossName == null ? rarity.label() : bossName) + " egg";
 	}
 
 	/** @return the rarity of the creature inside */
@@ -57,12 +76,13 @@ final class EggView
 			return false;
 
 		EggView that = (EggView) other;
-		return rarity == that.rarity && tilesLeft == that.tilesLeft && tilesTotal == that.tilesTotal;
+		return rarity == that.rarity && tilesLeft == that.tilesLeft && tilesTotal == that.tilesTotal
+			&& Objects.equals(bossName, that.bossName);
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(rarity, tilesLeft, tilesTotal);
+		return Objects.hash(rarity, tilesLeft, tilesTotal, bossName);
 	}
 }

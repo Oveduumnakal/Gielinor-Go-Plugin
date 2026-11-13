@@ -62,6 +62,19 @@ Every feature and every number, in detail. For the short version, see the [READM
   News about a creature floats over that creature: it appeared, you caught it, it broke free. Things you find or
   earn, such as jars and level-ups, float over your own head.
 
+- **Boss eggs from real kills**
+
+  When the game tells you a boss kill count (`Your Vorkath kill count is: 12.`), you may find that boss's egg. The
+  first kill of each boss the plugin sees always gives its egg, and after that one kill in 20 does. A completed
+  raid counts as one kill of its final boss: the Great Olm for the Chambers of Xeric, Verzik Vitur for the Theatre
+  of Blood and Elidinis' Warden for the Tombs of Amascut, solo or in a group. The egg appears after the fight
+  (`You found a Vorkath egg!`) and works in instances, where no wild creature ever turns up. It shows on the Team
+  tab as `Vorkath egg` and hatches by walking into a level 1 creature of that exact boss, rolled and gilded like any
+  other egg. Nothing about loot is read, only the kill-count line. With three eggs already carried the new one
+  waits, one per boss, and arrives when a slot frees up (a waiting egg is lost if you log out, and the first-kill
+  egg is then given again at the next kill). Re-fightable instance bosses such as Vorkath are in the Creature Log
+  because of this, though they never turn wild. A boss egg can be given to a friend in a trade.
+
 ### Your team
 
 - **Your XP trains your creatures**
@@ -374,7 +387,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Team, Storage, Creature Log and Battle**
 
   The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, your daily and weekly tasks, the
-  creatures you have stored, and a Creature Log of every species you can meet in the game (1,094) so you can see what
+  creatures you have stored, and a Creature Log of every species you can meet in the game (1,096) so you can see what
   you have caught, what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
   you can challenge. The top of the Log tab shows what is featured today and which event is on.
 
