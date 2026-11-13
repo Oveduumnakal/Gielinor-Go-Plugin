@@ -179,6 +179,18 @@ final class EliteRun
 		if (!open())
 			return null;
 
+		TeamBattleResult fought = fighter.play(mine, opponents(), random);
+		record(fought.won());
+		return fought;
+	}
+
+	/**
+	 * Builds the opposing creatures of the next battle, with their moves.
+	 *
+	 * @return the creatures in the order they fight
+	 */
+	List<Combatant> opponents()
+	{
 		List<Combatant> theirs = new ArrayList<>();
 		for (Champion.Member member : table.stages().get(stage).team())
 		{
@@ -186,8 +198,28 @@ final class EliteRun
 			theirs.add(new Combatant(found, member.level(), 1.0).moves(moves.movesAt(found, member.level())));
 		}
 
-		TeamBattleResult fought = fighter.play(mine, theirs, random);
-		if (!fought.won())
+		return theirs;
+	}
+
+	/** @return the Elite team of the next battle */
+	Champion foe()
+	{
+		return table.stages().get(stage);
+	}
+
+	/**
+	 * Notes how a battle played outside {@link #fight} ended, such as one the player steered. Winning moves the run
+	 * on, and winning the last one clears it. Losing, or running, ends it and sets the next attempt back to the
+	 * first trainer. Nothing happens when the run is already over.
+	 *
+	 * @param won whether the player beat the Elite team
+	 */
+	void record(boolean won)
+	{
+		if (!open())
+			return;
+
+		if (!won)
 		{
 			state = State.LOST;
 			stage = 0;
@@ -200,8 +232,6 @@ final class EliteRun
 		{
 			stage++;
 		}
-
-		return fought;
 	}
 
 	/** Gives the run up. The next attempt starts at the first trainer. */

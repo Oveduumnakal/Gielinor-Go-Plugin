@@ -861,14 +861,21 @@ final class GoGame
 
 	/**
 	 * Ends a battle the player steers because the player left it: logging out, hopping, walking away or the creature
-	 * going away. It counts as running.
+	 * going away. It counts as running, and in an Elite battle that ends the run: it counts as a loss.
 	 *
 	 * @param session the battle
 	 * @return the turn that ended it, or null when the battle was over already
 	 */
 	TurnResult forfeit(BattleSession session)
 	{
-		return act(session, BattleChoice.run());
+		TurnResult turn = act(session, BattleChoice.run());
+		if (turn != null && session.isElite())
+		{
+			for (BattleLine line : session.verdict())
+				tell(line.text(), line.tone());
+		}
+
+		return turn;
 	}
 
 	/**
@@ -876,11 +883,15 @@ final class GoGame
 	 *
 	 * @param session the battle
 	 * @param turn the turn that ended it
-	 * @return the closing lines; none when the turn did not end the battle, or the player ran or caught
+	 * @return the closing lines; none when the turn did not end the battle, or the player ran or caught (an Elite
+	 * battle always closes, a run included)
 	 */
 	List<BattleLine> closingLines(BattleSession session, TurnResult turn)
 	{
 		TurnResult.Status status = turn.status();
+		if (session.isElite() && status.over())
+			return session.verdict();
+
 		if (status != TurnResult.Status.WON && status != TurnResult.Status.LOST)
 			return Collections.emptyList();
 
@@ -991,6 +1002,13 @@ final class GoGame
 	private void settle(BattleSession session, TurnResult.Status status)
 	{
 		BattleState state = session.state();
+		if (session.isElite())
+		{
+			settleElite(session, status == TurnResult.Status.WON);
+			dirty = true;
+			return;
+		}
+
 		if (session.wild())
 		{
 			WildEntry entry = session.entry();
@@ -1017,6 +1035,47 @@ final class GoGame
 		}
 
 		dirty = true;
+	}
+
+	/**
+	 * Settles a steered Elite battle that is over. A win pays the battle and moves the run on, clearing it after the
+	 * Grand Champion. A loss, or running, ends the run. The closing lines are kept on the session.
+	 *
+	 * @param session the battle
+	 * @param won whether the player won
+	 */
+	private void settleElite(BattleSession session, boolean won)
+	{
+		List<BattleLine> lines = new ArrayList<>();
+		String opponent = session.champion().city();
+		if (run == null || !run.open())
+		{
+			session.verdict(lines);
+			return;
+		}
+
+		run.record(won);
+		if (won)
+		{
+			rewardEliteWin(session.champion());
+			boolean cleared = run.state() == EliteRun.State.CLEARED;
+			lines.add(new BattleLine(cleared ? "You beat the Grand Champion!" : opponent + " beaten. Next: "
+				+ run.opponent(), Tone.GOOD, true));
+			if (cleared)
+			{
+				payEliteClear();
+				run = null;
+			}
+		}
+		else
+		{
+			lines.add(new BattleLine(session.state().ended() == TurnResult.Status.RAN
+				? "You left the battle. The Elite challenge is over. Rest and try again"
+				: opponent + " won. The Elite challenge is over. Rest and try again", Tone.BAD, true));
+			run = null;
+		}
+
+		session.verdict(lines);
 	}
 
 	/**
@@ -1522,16 +1581,57 @@ final class GoGame
 	 */
 	TeamBattleResult eliteChallenge()
 	{
-		if (eliteOpen())
-			return eliteBattle();
+		if (!eliteOpen() && !eliteBegin())
+			return null;
 
+		return eliteBattle();
+	}
+
+	/**
+	 * Starts an Elite run, or finds the next battle of the one that is open, as a battle the player steers turn by
+	 * turn. The team keeps the health it carries and the battle is paid when it ends ({@link #act}): winning moves
+	 * the run on, losing or running ends it. There is no catching, and the creatures too tired to fight sit out.
+	 *
+	 * @return the battle, or null when the challenge cannot start; the reason is told to the player
+	 */
+	BattleSession eliteSteered()
+	{
+		if (!eliteOpen() && !eliteBegin())
+			return null;
+
+		long now = clock.getAsLong();
+		freezeTeam(now);
+		List<Creature> fighters = new ArrayList<>();
+		List<Combatant> mine = eliteFighters(fighters, now, ELITE_MIN_HEALTH);
+		if (mine.isEmpty())
+		{
+			run.forfeit();
+			run = null;
+			tell("No creature is left to fight. The Elite run is over", Tone.BAD);
+			return null;
+		}
+
+		int number = run.stage() + 1;
+		BattleState state = new BattleState(mine, run.opponents(), random, BattleState.Mode.CHAMPION);
+		BattleLine opening = new BattleLine("Elite challenge " + number + " of " + EliteTable.STAGES + ": "
+			+ run.opponent() + "!", Tone.INFO, true);
+		return new BattleSession(state, fighters, null, run.foe(), opening).elite(number);
+	}
+
+	/**
+	 * Starts a run after checking that it may start.
+	 *
+	 * @return false when the challenge cannot start; the reason is told to the player
+	 */
+	private boolean eliteBegin()
+	{
 		long now = clock.getAsLong();
 		boolean fit = !eliteFighters(new ArrayList<>(), now, MIN_BATTLE_HP).isEmpty();
 		String refusal = EliteRun.refusal(elite, data.sigils.size(), atGuild, hasRoomForEgg(), fit);
 		if (refusal != null)
 		{
 			tell(refusal, Tone.BAD);
-			return null;
+			return false;
 		}
 
 		for (Creature creature : data.team)
@@ -1542,7 +1642,7 @@ final class GoGame
 
 		run = new EliteRun(elite, species).withMoves(moves);
 		tell("The Elite challenge begins. Health carries over and nothing rests until it ends", Tone.INFO);
-		return eliteBattle();
+		return true;
 	}
 
 	/**
