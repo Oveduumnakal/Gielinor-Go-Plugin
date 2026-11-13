@@ -88,6 +88,9 @@ final class SaveData
 	/** Species keys of the bosses that have already paid their sure first-kill egg. Null in older saves. */
 	Set<String> bossKills = new LinkedHashSet<>();
 
+	/** The key the Warrior jar was saved under before it became the Stab, Slash and Crush jars. */
+	private static final String OLD_WARRIOR = "WARRIOR";
+
 	/** @return a save for a player who has never played, with the starting jars */
 	static SaveData fresh()
 	{
@@ -127,11 +130,28 @@ final class SaveData
 		while (team.size() > TEAM_SIZE)
 			storage.add(team.remove(team.size() - 1));
 
-		if (selectedJar == null)
+		splitWarriorJars();
+		if (selectedJar == null || selectedJar.equals(OLD_WARRIOR))
 			selectedJar = JarType.BRONZE.name();
 
 		version = VERSION;
 		return this;
+	}
+
+	/**
+	 * Turns the Warrior jars of an old save into Stab, Slash and Crush jars, a third each with the remainder going to
+	 * Crush, and removes the old key, so no jar is lost.
+	 */
+	private void splitWarriorJars()
+	{
+		Integer old = jars.remove(OLD_WARRIOR);
+		if (old == null || old <= 0)
+			return;
+
+		int third = old / 3;
+		jars.merge(JarType.STAB.name(), third, Integer::sum);
+		jars.merge(JarType.SLASH.name(), third, Integer::sum);
+		jars.merge(JarType.CRUSH.name(), old - 2 * third, Integer::sum);
 	}
 
 	/**

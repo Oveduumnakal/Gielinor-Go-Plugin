@@ -30,9 +30,9 @@ public class FriendBattlesTest
 	private static final long ANN = 11L;
 	private static final long BOB = 22L;
 	private static final long CAT = 33L;
-	private static final Species IMP = new Species("Imp", 7, CombatType.MELEE);
-	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.MELEE);
-	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
+	private static final Species IMP = new Species("Imp", 7, CombatType.STAB);
+	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.STAB);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.STAB);
 
 	private final SpeciesTable table = new SpeciesTable(Arrays.asList(IMP, CHICKEN, DRAGON));
 	private final List<GielinorGoPartyMessage> fromAnn = new ArrayList<>();
@@ -190,7 +190,7 @@ public class FriendBattlesTest
 	@Test
 	public void bothPlayersSeeTheSameBattleWhenADragonBreathes()
 	{
-		Species green = new Species("Green dragon", 88, CombatType.MELEE);
+		Species green = new Species("Green dragon", 88, CombatType.STAB);
 		SpeciesTable dragons = new SpeciesTable(Arrays.asList(IMP, CHICKEN, green));
 		annData.team.clear();
 		bobData.team.clear();
@@ -577,6 +577,7 @@ public class FriendBattlesTest
 		assertEquals("Ann runs a different version of Gielinor Go", last(bobTold));
 		assertTrue("nothing is sent back to a different version", fromBob.size() == 1);
 		assertNull(bob.receive(otherVersion(last(fromAnn), 0), BOB, "Ann", bobData, true));
+		assertNull(bob.receive(otherVersion(last(fromAnn), 5), BOB, "Ann", bobData, true));
 	}
 
 	@Test

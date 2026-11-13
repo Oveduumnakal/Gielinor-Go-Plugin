@@ -22,18 +22,18 @@ public class FriendStatusTest
 {
 	private static final long ANN = 11L;
 	private static final long BOB = 22L;
-	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
-	private static final Species SPIDER = new Species("Spider", 40, CombatType.MELEE, Trait.POISONOUS);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.STAB);
+	private static final Species SPIDER = new Species("Spider", 40, CombatType.STAB, Trait.POISONOUS);
 	private static final String MOVES = "{\"moves\":["
-		+ "{\"id\":\"bite\",\"name\":\"Bite\",\"style\":\"MELEE\",\"power\":1.0,\"accuracy\":1.0},"
-		+ "{\"id\":\"venom\",\"name\":\"Venom\",\"style\":\"MELEE\",\"power\":1.2,\"accuracy\":0.9,"
+		+ "{\"id\":\"bite\",\"name\":\"Bite\",\"style\":\"STAB\",\"power\":1.0,\"accuracy\":1.0},"
+		+ "{\"id\":\"venom\",\"name\":\"Venom\",\"style\":\"STAB\",\"power\":1.2,\"accuracy\":0.9,"
 		+ "\"effect\":{\"status\":\"VENOM\",\"chance\":0.5}},"
 		+ "{\"id\":\"ice\",\"name\":\"Ice\",\"style\":\"MAGIC\",\"power\":1.4,\"accuracy\":0.9,\"slot\":\"SECOND\","
 		+ "\"effect\":{\"status\":\"FREEZE\",\"chance\":0.4}},"
 		+ "{\"id\":\"bind\",\"name\":\"Bind\",\"style\":\"MAGIC\",\"power\":0.8,\"accuracy\":1.0,"
 		+ "\"effect\":{\"status\":\"STUN\",\"chance\":0.5}}],"
-		+ "\"defaults\":{\"MELEE\":\"all\"},"
-		+ "\"pools\":{\"all\":{\"styles\":[\"MELEE\"],"
+		+ "\"defaults\":{\"STAB\":\"all\"},"
+		+ "\"pools\":{\"all\":{\"styles\":[\"STAB\"],"
 		+ "\"learns\":[[\"bite\",1],[\"venom\",5],[\"ice\",10],[\"bind\",15]]}},"
 		+ "\"species\":{}}";
 

@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-/** Checks the 15 bundled jar pictures: every jar has one, in the agreed size, with a clear margin, all different. */
+/** Checks the 17 bundled jar pictures: every jar has one, in the agreed size, with a clear margin, all different. */
 public class JarIconsTest
 {
 	private static final int SIDE = 32;
@@ -52,13 +52,13 @@ public class JarIconsTest
 	}
 
 	@Test
-	public void allFifteenPicturesDiffer() throws IOException
+	public void allSeventeenPicturesDiffer() throws IOException
 	{
 		Set<String> seen = new HashSet<>();
 		for (JarType type : JarType.values())
 			assertTrue(type.name() + " matches another jar", seen.add(pixels(read(type))));
 
-		assertEquals(15, seen.size());
+		assertEquals(17, seen.size());
 	}
 
 	@Test

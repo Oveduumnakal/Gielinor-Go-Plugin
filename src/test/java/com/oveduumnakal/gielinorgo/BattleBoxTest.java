@@ -23,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 /** Draws the battle box offline: it fits the panel, updates in place and reports the player's choices. */
 public class BattleBoxTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 	private static final int PANEL_WIDTH = 225;
 
 	private static BattleView view(boolean forced, boolean canCatch, List<BattleView.Option> options, int seconds)
@@ -88,7 +88,7 @@ public class BattleBoxTest
 
 		JPopupMenu menu = box.moveMenu();
 		assertEquals(2, menu.getComponentCount());
-		assertEquals("Bite \u00b7 Melee, power 1, accuracy 100%", ((JMenuItem) menu.getComponent(0)).getText());
+		assertEquals("Bite \u00b7 Stab, power 1, accuracy 100%", ((JMenuItem) menu.getComponent(0)).getText());
 		assertEquals("Dragonfire \u00b7 Magic, power 1.6, accuracy 90%",
 			((JMenuItem) menu.getComponent(1)).getText());
 

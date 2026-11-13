@@ -23,24 +23,24 @@ import static org.junit.Assert.assertTrue;
 public class MoveLearningTest
 {
 	private static final String MOVES = "{\"moves\":["
-		+ "{\"id\":\"a\",\"name\":\"Aa\",\"style\":\"MELEE\",\"power\":1.0,\"accuracy\":1.0},"
-		+ "{\"id\":\"b\",\"name\":\"Bb\",\"style\":\"MELEE\",\"power\":1.2,\"accuracy\":0.9},"
-		+ "{\"id\":\"c\",\"name\":\"Cc\",\"style\":\"MELEE\",\"power\":1.4,\"accuracy\":0.9},"
-		+ "{\"id\":\"d\",\"name\":\"Dd\",\"style\":\"MELEE\",\"power\":1.6,\"accuracy\":0.8},"
-		+ "{\"id\":\"e\",\"name\":\"Ee\",\"style\":\"MELEE\",\"power\":1.8,\"accuracy\":0.8},"
-		+ "{\"id\":\"f\",\"name\":\"Ff\",\"style\":\"MELEE\",\"power\":2.0,\"accuracy\":0.7},"
+		+ "{\"id\":\"a\",\"name\":\"Aa\",\"style\":\"STAB\",\"power\":1.0,\"accuracy\":1.0},"
+		+ "{\"id\":\"b\",\"name\":\"Bb\",\"style\":\"STAB\",\"power\":1.2,\"accuracy\":0.9},"
+		+ "{\"id\":\"c\",\"name\":\"Cc\",\"style\":\"STAB\",\"power\":1.4,\"accuracy\":0.9},"
+		+ "{\"id\":\"d\",\"name\":\"Dd\",\"style\":\"STAB\",\"power\":1.6,\"accuracy\":0.8},"
+		+ "{\"id\":\"e\",\"name\":\"Ee\",\"style\":\"STAB\",\"power\":1.8,\"accuracy\":0.8},"
+		+ "{\"id\":\"f\",\"name\":\"Ff\",\"style\":\"STAB\",\"power\":2.0,\"accuracy\":0.7},"
 		+ "{\"id\":\"g\",\"name\":\"Gg\",\"style\":\"MAGIC\",\"power\":1.0,\"accuracy\":1.0}],"
-		+ "\"defaults\":{\"MELEE\":\"long\",\"MAGIC\":\"magic\"},"
-		+ "\"pools\":{\"long\":{\"styles\":[\"MELEE\"],"
+		+ "\"defaults\":{\"STAB\":\"long\",\"MAGIC\":\"magic\"},"
+		+ "\"pools\":{\"long\":{\"styles\":[\"STAB\"],"
 		+ "\"learns\":[[\"a\",1],[\"b\",5],[\"c\",10],[\"d\",20],[\"e\",30],[\"f\",40]]},"
 		+ "\"magic\":{\"styles\":[\"MAGIC\"],\"learns\":[[\"g\",1]]},"
-		+ "\"short\":{\"styles\":[\"MELEE\"],\"learns\":[[\"a\",1],[\"b\",5]]}},"
+		+ "\"short\":{\"styles\":[\"STAB\"],\"learns\":[[\"a\",1],[\"b\",5]]}},"
 		+ "\"species\":{\"pup\":\"long\",\"cub\":\"long\",\"lad\":\"long\",\"odd\":\"short\"}}";
 
-	private static final Species CUB = new Species("Cub", 5, CombatType.MELEE);
-	private static final Species PUP = new Species("Pup", 5, CombatType.MELEE);
-	private static final Species LAD = new Species("Lad", 20, CombatType.MELEE);
-	private static final Species ODD = new Species("Odd", 20, CombatType.MELEE);
+	private static final Species CUB = new Species("Cub", 5, CombatType.STAB);
+	private static final Species PUP = new Species("Pup", 5, CombatType.STAB);
+	private static final Species LAD = new Species("Lad", 20, CombatType.STAB);
+	private static final Species ODD = new Species("Odd", 20, CombatType.STAB);
 
 	private final List<String> messages = new ArrayList<>();
 	private GoGame game;

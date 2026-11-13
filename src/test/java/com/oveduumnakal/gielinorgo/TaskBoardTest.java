@@ -74,7 +74,7 @@ public class TaskBoardTest
 		startOn(day);
 		int style = slot(TaskKind.CATCH_STYLE);
 		CombatType wanted = board.daily().get(style).style();
-		CombatType other = wanted == CombatType.MELEE ? CombatType.MAGIC : CombatType.MELEE;
+		CombatType other = wanted == CombatType.STAB ? CombatType.MAGIC : CombatType.STAB;
 
 		board.caught(other, false);
 		board.battleWon();
@@ -91,11 +91,11 @@ public class TaskBoardTest
 		startOn(dayWith(TaskKind.CATCH_UNDERGROUND, 20_000L));
 		int slot = slot(TaskKind.CATCH_UNDERGROUND);
 
-		List<Task> surface = board.caught(CombatType.MELEE, false);
+		List<Task> surface = board.caught(CombatType.STAB, false);
 		assertTrue(surface.stream().noneMatch(task -> task.kind() == TaskKind.CATCH_UNDERGROUND));
 		assertEquals(0, progress.daily[slot]);
 
-		List<Task> done = board.caught(CombatType.MELEE, true);
+		List<Task> done = board.caught(CombatType.STAB, true);
 		assertTrue(done.stream().anyMatch(t -> t.kind() == TaskKind.CATCH_UNDERGROUND));
 		assertTrue(progress.dailyPaid[slot]);
 	}
@@ -158,7 +158,7 @@ public class TaskBoardTest
 		long monday = mondayOnOrAfter(20_000L);
 		startOn(monday);
 		board.walked(30);
-		board.caught(CombatType.MELEE, false);
+		board.caught(CombatType.STAB, false);
 		progress.weekly = 4;
 
 		assertTrue(board.rollover((monday + 1) * DAY + 5L));

@@ -35,13 +35,13 @@ public class BattleGoldensTest
 	private static final String RESOURCE = "/battle-goldens.txt";
 	private static final String CASE = "== ";
 
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 	private static final Species ARCHER = new Species("Archer", 13, CombatType.RANGED);
 	private static final Species WIZARD = new Species("Wizard", 13, CombatType.MAGIC);
-	private static final Species GREEN = new Species("Green dragon", 88, CombatType.MELEE);
-	private static final Species WYVERN = new Species("Spitting Wyvern", 139, CombatType.MELEE);
-	private static final Species KBD = new Species("King Black Dragon", 276, CombatType.MELEE);
-	private static final Species TANK_MAGE = new Species("Tank mage", 1, CombatType.MELEE);
+	private static final Species GREEN = new Species("Green dragon", 88, CombatType.STAB);
+	private static final Species WYVERN = new Species("Spitting Wyvern", 139, CombatType.STAB);
+	private static final Species KBD = new Species("King Black Dragon", 276, CombatType.STAB);
+	private static final Species TANK_MAGE = new Species("Tank mage", 1, CombatType.STAB);
 	private static final StatRolls HARDY = StatRolls.of(new int[]{5, -5, 5, 0}, "HARDY");
 	private static final Species TANK_ARCHER = new Species("Tank archer", 1, CombatType.RANGED);
 

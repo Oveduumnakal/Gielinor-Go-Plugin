@@ -20,13 +20,13 @@ import static org.junit.Assert.assertTrue;
 /** Checks that battles are repeatable, always finish, and respect the type triangle. */
 public class BattleSimTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 	private static final Species ARCHER = new Species("Archer", 13, CombatType.RANGED);
 	private static final Species WIZARD = new Species("Wizard", 13, CombatType.MAGIC);
-	private static final Species FIRE_DRAGON = new Species("Green dragon", 88, CombatType.MELEE);
-	private static final Species SURE_BREATH = new Species("Test dragon", 88, CombatType.MELEE);
-	private static final Species ICE_WYVERN = new Species("Spitting Wyvern", 139, CombatType.MELEE);
-	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
+	private static final Species FIRE_DRAGON = new Species("Green dragon", 88, CombatType.STAB);
+	private static final Species SURE_BREATH = new Species("Test dragon", 88, CombatType.STAB);
+	private static final Species ICE_WYVERN = new Species("Spitting Wyvern", 139, CombatType.STAB);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.STAB);
 
 	@Test
 	public void sameSeedGivesTheSameBattle()
@@ -221,7 +221,7 @@ public class BattleSimTest
 				if (line.overPlayer())
 					continue;
 
-				assertEquals(line.text(), line.special() ? CombatType.MAGIC : CombatType.MELEE, line.style());
+				assertEquals(line.text(), line.special() ? CombatType.MAGIC : CombatType.STAB, line.style());
 				sawBite |= !line.special();
 				sawBreath |= line.special();
 			}
@@ -323,11 +323,11 @@ public class BattleSimTest
 		Combatant archer = new Combatant(ARCHER, 50, 1.0);
 		Combatant goblin = new Combatant(GOBLIN, 50, 1.0);
 
-		int bite = BattleSim.damage(dragon, CombatType.MELEE, archer, new Random(3));
+		int bite = BattleSim.damage(dragon, CombatType.STAB, archer, new Random(3));
 		int breath = BattleSim.damage(dragon, CombatType.MAGIC, archer, new Random(3));
 		assertTrue("melee beats ranged, magic loses to it", bite > breath);
 
-		int bitten = BattleSim.damage(dragon, CombatType.MELEE, goblin, new Random(3));
+		int bitten = BattleSim.damage(dragon, CombatType.STAB, goblin, new Random(3));
 		int breathed = BattleSim.damage(dragon, CombatType.MAGIC, goblin, new Random(3));
 		assertTrue("magic beats melee", breathed > bitten);
 		assertEquals(bite, BattleSim.damage(dragon, archer, new Random(3)));
@@ -338,8 +338,8 @@ public class BattleSimTest
 	{
 		Combatant attacker = new Combatant(GOBLIN, 50, 1.0);
 		Combatant target = new Combatant(GOBLIN, 50, 1.0);
-		Move plain = new Move("a", "A", CombatType.MELEE, 1.0, 1.0);
-		Move strong = new Move("b", "B", CombatType.MELEE, 2.0, 1.0);
+		Move plain = new Move("a", "A", CombatType.STAB, 1.0, 1.0);
+		Move strong = new Move("b", "B", CombatType.STAB, 2.0, 1.0);
 
 		assertEquals(BattleSim.damage(attacker, target, new Random(3)), BattleSim.damage(attacker, plain, target,
 			new Random(3)));

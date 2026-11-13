@@ -29,7 +29,9 @@ enum JarType
 	EMBER("Ember", 2.5, Trait.FIERY, "FIREMAKING", "SMITHING", "COOKING"),
 	GIANT("Giant", 2.5, Trait.LARGE, "WOODCUTTING", "CONSTRUCTION"),
 	TIDE("Tide", 2.5, Trait.AQUATIC, "FISHING", "SAILING"),
-	WARRIOR("Warrior", 1.75, Trait.MELEE, "ATTACK", "STRENGTH", "DEFENCE"),
+	STAB("Stab", 2.5, Trait.STAB, "ATTACK"),
+	SLASH("Slash", 2.5, Trait.SLASH, "STRENGTH"),
+	CRUSH("Crush", 2.5, Trait.CRUSH, "DEFENCE"),
 	ARCHER("Archer", 2.5, Trait.RANGED, "RANGED", "FLETCHING"),
 	MYSTIC("Mystic", 2.5, Trait.MAGIC, "MAGIC", "RUNECRAFT", "CRAFTING");
 

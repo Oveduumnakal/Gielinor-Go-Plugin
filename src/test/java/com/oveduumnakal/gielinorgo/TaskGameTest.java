@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 public class TaskGameTest
 {
 	private static final long DAY = 86_400_000L;
-	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.MELEE);
+	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.STAB);
 
 	private final TaskCalendar calendar = new TaskCalendar();
 	private final List<String> messages = new ArrayList<>();
@@ -30,7 +30,7 @@ public class TaskGameTest
 	@Before
 	public void setUp()
 	{
-		SpeciesTable table = new SpeciesTable(Arrays.asList(CHICKEN, new Species("Imp", 7, CombatType.MELEE)));
+		SpeciesTable table = new SpeciesTable(Arrays.asList(CHICKEN, new Species("Imp", 7, CombatType.STAB)));
 		game = new GoGame(table, new Random(5), () -> now, notice -> messages.add(notice.text()));
 		now = 20_000L * DAY + 1000L;
 		game.data().addJars(JarType.BRONZE, 500);

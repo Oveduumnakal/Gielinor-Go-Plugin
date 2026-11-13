@@ -23,10 +23,10 @@ import static org.junit.Assert.fail;
 /** Checks the turn engine: each choice, the order of a round, forced switches, the team wipe and the limits. */
 public class BattleStateTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 	private static final Species ARCHER = new Species("Archer", 13, CombatType.RANGED);
-	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
-	private static final Species TANK_MAGE = new Species("Tank mage", 1, CombatType.MELEE);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.STAB);
+	private static final Species TANK_MAGE = new Species("Tank mage", 1, CombatType.STAB);
 	private static final Species TANK_ARCHER = new Species("Tank archer", 1, CombatType.RANGED);
 
 	private static List<Combatant> team(Combatant... members)
@@ -336,7 +336,7 @@ public class BattleStateTest
 	public void theCatchChanceGrowsWithTheHealthTheFoeHasLost()
 	{
 		int level = 120;
-		Species species = new Species("Test", 20, CombatType.MELEE);
+		Species species = new Species("Test", 20, CombatType.STAB);
 		double plain = CatchRules.chance(JarType.BRONZE, level, false, species.traits());
 
 		double full = CatchRules.inBattle(JarType.BRONZE, level, species.traits(), 1.0);

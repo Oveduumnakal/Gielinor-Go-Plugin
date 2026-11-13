@@ -35,7 +35,7 @@ public class MilestonesTest
 	{
 		List<Species> all = new ArrayList<>();
 		for (int i = 0; i < SPECIES; i++)
-			all.add(new Species(String.format("Beast %03d", i), 1 + i, CombatType.MELEE));
+			all.add(new Species(String.format("Beast %03d", i), 1 + i, CombatType.STAB));
 
 		table = new SpeciesTable(all);
 		Family twins = new Family("twins", "Twins", JarType.EMBER,

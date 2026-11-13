@@ -21,9 +21,9 @@ import static org.junit.Assert.assertTrue;
 /** Runs steered battles through the director with a fake scene: prompts, timeouts, forfeits and hand-overs. */
 public class BattleDirectorTest
 {
-	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.MELEE);
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
-	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
+	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.STAB);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.STAB);
 
 	/** A scene that records what it is told. */
 	private static final class FakeScene implements BattleDirector.Scene
