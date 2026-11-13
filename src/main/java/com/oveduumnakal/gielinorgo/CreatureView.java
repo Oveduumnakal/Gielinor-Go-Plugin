@@ -26,6 +26,7 @@ final class CreatureView
 	private final List<Move> pending;
 	private final int hearts;
 	private final String evolvesWhen;
+	private final Species species;
 
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname)
@@ -99,8 +100,17 @@ final class CreatureView
 		boolean gilded, String nickname, StatRolls rolls, int npcId, List<Move> moves, List<Move> pending,
 		int hearts, String evolvesWhen)
 	{
+		this(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId, moves, pending, hearts,
+			evolvesWhen, null);
+	}
+
+	private CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
+		boolean gilded, String nickname, StatRolls rolls, int npcId, List<Move> moves, List<Move> pending,
+		int hearts, String evolvesWhen, Species species)
+	{
 		this.hearts = hearts;
 		this.evolvesWhen = evolvesWhen;
+		this.species = species;
 		this.moves = Collections.unmodifiableList(new ArrayList<>(moves));
 		this.pending = Collections.unmodifiableList(new ArrayList<>(pending));
 		this.npcId = npcId;
@@ -119,6 +129,36 @@ final class CreatureView
 	int hearts()
 	{
 		return hearts;
+	}
+
+	/**
+	 * Attaches the species, so the card can say what it is good at.
+	 *
+	 * @param shaped the species of the creature, or null
+	 * @return a copy of this view that knows its species
+	 */
+	CreatureView withSpecies(Species shaped)
+	{
+		return new CreatureView(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId,
+			moves, pending, hearts, evolvesWhen, shaped);
+	}
+
+	/** @return up to two words for what the species is good or bad at, such as {@code Tough, Fast}; may be empty */
+	String speciesWords()
+	{
+		return species == null ? "" : String.join(", ", species.words(2));
+	}
+
+	/** @return the species' first word, for the cramped card line; empty when it has none */
+	String speciesWord()
+	{
+		return species == null || species.words(1).isEmpty() ? "" : species.words(1).get(0);
+	}
+
+	/** @return what the species does to each stat, such as {@code Health +12% · Attack -5%}; empty without data */
+	String speciesFactors()
+	{
+		return species == null ? "" : species.describeFactors();
 	}
 
 	/** @return the species name, which stays the species name even when there is a nickname */
