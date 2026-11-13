@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -167,7 +168,8 @@ final class TeamTab extends JPanel
 
 		for (int i = 0; i < eggs.size(); i++)
 		{
-			if (eggs.get(i).rarity() != rows.get(i).rarity())
+			if (eggs.get(i).rarity() != rows.get(i).rarity()
+				|| !Objects.equals(eggs.get(i).bossName(), rows.get(i).bossName()))
 				return false;
 		}
 

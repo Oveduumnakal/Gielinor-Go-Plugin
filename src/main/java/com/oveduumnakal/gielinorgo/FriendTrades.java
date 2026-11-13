@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -227,6 +228,12 @@ final class FriendTrades implements GoGame.TradeLocks
 		if (kind == null || message.getMemberId() == myId || message.to() != myId)
 			return false;
 
+		if (kind.equals(GielinorGoPartyMessage.OFFER) && message.version() != GielinorGoPartyMessage.PROTOCOL)
+		{
+			tell(senderName + " runs a different version of Gielinor Go", Tone.BAD);
+			return false;
+		}
+
 		if (kind.equals(GielinorGoPartyMessage.OFFER))
 			return offered(message, senderName);
 
@@ -369,7 +376,11 @@ final class FriendTrades implements GoGame.TradeLocks
 	{
 		if (item.egg() != null)
 		{
+			Species boss = item.eggSpecies() == null ? null : species.find(item.eggSpecies());
 			Rarity rarity = rarityNamed(item.egg());
+			if (boss != null)
+				return boss.name() + " egg";
+
 			return (rarity == null ? "Unknown" : rarity.label()) + " egg";
 		}
 
@@ -588,12 +599,29 @@ final class FriendTrades implements GoGame.TradeLocks
 		{
 			Rarity rarity = rarityNamed(item.egg());
 			return item.species() == null && rarity != null && item.tilesLeft() >= 0
-				&& item.tilesLeft() <= rarity.eggTiles();
+				&& item.tilesLeft() <= rarity.eggTiles() && validBossEgg(item, rarity);
 		}
 
 		return item.species() != null && species.find(item.species()) != null && item.rolls() != null
 			&& item.xp() >= 0 && item.xp() <= XpRules.xpForLevel(XpRules.MAX_LEVEL)
 			&& XpRules.levelForXp(item.xp()) == item.level() && validMoves(item);
+	}
+
+	/**
+	 * Checks the fixed species of an egg in a message: none, or a species that boss kills give an egg of, whose
+	 * rarity is the egg's.
+	 *
+	 * @param item an egg whose rarity is already checked
+	 * @param rarity the egg's rarity
+	 * @return true when the egg is ordinary or a real boss egg
+	 */
+	private boolean validBossEgg(Item item, Rarity rarity)
+	{
+		if (item.eggSpecies() == null)
+			return true;
+
+		Species boss = species.find(item.eggSpecies());
+		return boss != null && game.bossTable().isBoss(boss) && boss.rarity() == rarity;
 	}
 
 	/**
@@ -633,7 +661,7 @@ final class FriendTrades implements GoGame.TradeLocks
 	private static boolean sameThing(Item want, Item got)
 	{
 		if (want.egg() != null)
-			return want.egg().equals(got.egg());
+			return want.egg().equals(got.egg()) && Objects.equals(want.eggSpecies(), got.eggSpecies());
 
 		return got.egg() == null && Species.keyFor(want.species()).equals(Species.keyFor(got.species()))
 			&& XpRules.levelForXp(got.xp()) == want.level() && sameRolls(want, got) && sameMoves(want, got);
@@ -679,7 +707,7 @@ final class FriendTrades implements GoGame.TradeLocks
 		{
 			for (Egg egg : game.data().eggs)
 			{
-				if (egg.rarityTier().name().equals(want.egg()))
+				if (egg.rarityTier().name().equals(want.egg()) && Objects.equals(egg.species, want.eggSpecies()))
 					return new Mine(null, egg);
 			}
 
@@ -793,7 +821,7 @@ final class FriendTrades implements GoGame.TradeLocks
 
 		Item now = describe(mine);
 		if (before.egg() != null)
-			return before.egg().equals(now.egg());
+			return before.egg().equals(now.egg()) && Objects.equals(before.eggSpecies(), now.eggSpecies());
 
 		return now.egg() == null && Species.keyFor(before.species()).equals(Species.keyFor(now.species()))
 			&& before.xp() == now.xp() && before.gilded() == now.gilded() && before.rolls().equals(now.rolls())
@@ -847,6 +875,7 @@ final class FriendTrades implements GoGame.TradeLocks
 		if (item.egg() != null)
 		{
 			Egg egg = new Egg(rarityNamed(item.egg()));
+			egg.species = item.eggSpecies() == null ? null : species.find(item.eggSpecies()).key();
 			egg.tilesLeft = item.tilesLeft();
 			return game.receive(egg);
 		}
@@ -873,7 +902,7 @@ final class FriendTrades implements GoGame.TradeLocks
 				moves);
 		}
 
-		return Item.egg(mine.egg.rarityTier().name(), mine.egg.tilesLeft);
+		return Item.egg(mine.egg.rarityTier().name(), mine.egg.tilesLeft, mine.egg.species);
 	}
 
 	private static GielinorGoPartyMessage bare(String kind, long to, long id)
