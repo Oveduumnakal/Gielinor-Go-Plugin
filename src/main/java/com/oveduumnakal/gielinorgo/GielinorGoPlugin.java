@@ -2410,6 +2410,12 @@ public class GielinorGoPlugin extends Plugin
 			}
 
 			@Override
+			public void pickTitle(String title)
+			{
+				onGameThread(() -> game.pickTitle(title));
+			}
+
+			@Override
 			public void eliteChallenge()
 			{
 				onGameThread(GielinorGoPlugin.this::eliteChallenge);

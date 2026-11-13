@@ -329,10 +329,12 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Rewards for a growing Log**
 
-  Catching new species pays rewards once each, at 25, 50, 100, 250 and 500 species: 5 Iron jars; 5 Rune jars and a
-  Rare egg; 5 Dragon jars and an Epic egg; the **Gilded charm**; then 10 Dragon jars and a Legendary egg. The charm
+  Catching new species pays rewards once each, at 25, 50, 100, 250, 500, 750 and 1,000 species: 5 Iron jars; 5 Rune
+  jars and a Rare egg; 5 Dragon jars and an Epic egg; the **Gilded charm**; 10 Dragon jars and a Legendary egg; 10
+  Dragon jars and an Epic egg; then 3 of every specialty jar and a Legendary egg. The charm
   is not an item: from then on gilded creatures turn up twice as often (1 in 250 instead of 1 in 500), in the wild
-  and from eggs. Completing a family, such as every goblin or every dragon, pays 3 jars of the family's specialty
+  and from eggs. A **complete Log** (every species that is not quest only) pays a Legendary egg and the title
+  **Master Collector**. Completing a family, such as every goblin or every dragon, pays 3 jars of the family's specialty
   type and an egg of the rarest creature in it. Milestones you had already reached are paid when you log in. When
   your egg bag is full an egg reward waits until you have a free slot.
 
@@ -340,6 +342,13 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Under the Log header the next goal shows with a bar (`Next: 100 species`, `87 / 100`). The **Milestones...**
   button lists every milestone and family with its bar, its reward and a tick once it is paid.
+
+- **Titles**
+
+  The panel header shows your title next to your trainer level: **Grand Champion** after the Elite challenge and
+  **Master Collector** for a complete Log. When you hold both, click the title in the header to switch between
+  them. The one you pick is saved; until you pick, the header shows the one you earned last of the two in that
+  order (Master Collector).
 
 - **Quest-only monsters**
 

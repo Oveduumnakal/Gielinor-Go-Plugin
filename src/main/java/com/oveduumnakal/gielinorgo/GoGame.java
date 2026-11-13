@@ -28,6 +28,12 @@ import java.util.function.Supplier;
  */
 final class GoGame
 {
+	/** The title for clearing the Elite challenge. */
+	static final String TITLE_GRAND_CHAMPION = "GRAND_CHAMPION";
+
+	/** The title for a complete Creature Log. */
+	static final String TITLE_MASTER_COLLECTOR = "MASTER_COLLECTOR";
+
 	/** Tiles the player walks to find one Bronze jar. */
 	static final int TILES_PER_JAR = 150;
 
@@ -1591,7 +1597,8 @@ final class GoGame
 			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get(), tasks, itemCounts())
 			.withGoals(milestoneTable.progress(data), eliteView())
 			.withResetSummary(resetSummary())
-			.withStarters(starterOffer());
+			.withStarters(starterOffer())
+			.withTitle(shownTitle(), titles());
 	}
 
 	/** @return how many caught species count toward the Log: known ones that are not quest-only */
@@ -1871,6 +1878,17 @@ final class GoGame
 				parts.add("+" + reward.jars() + " " + reward.jar().label() + " jars");
 			}
 
+			if (reward.specialtyJars() > 0)
+			{
+				for (JarType type : JarType.values())
+				{
+					if (type.specialty())
+						data.addJars(type, reward.specialtyJars());
+				}
+
+				parts.add("+" + reward.specialtyJars() + " of every specialty jar");
+			}
+
 			if (reward.egg() != null)
 			{
 				data.eggs.add(new Egg(reward.egg()));
@@ -1879,6 +1897,9 @@ final class GoGame
 
 			if (reward.charm())
 				parts.add("Gilded charm: gilded odds doubled");
+
+			if (reward.title())
+				parts.add("Title: Master Collector");
 
 			String line = "Milestone: " + milestone.label() + "! " + String.join(", ", parts);
 			if (reward.jar() == null)
@@ -1889,6 +1910,46 @@ final class GoGame
 
 		if (paid)
 			cues.accept(Cue.MILESTONE);
+	}
+
+	/** @return the titles the player has earned, Grand Champion first and Master Collector second */
+	List<String> titles()
+	{
+		List<String> earned = new ArrayList<>();
+		if (data.eliteClears > 0)
+			earned.add(TITLE_GRAND_CHAMPION);
+
+		if (data.milestones.contains(Milestones.COMPLETE_ID))
+			earned.add(TITLE_MASTER_COLLECTOR);
+
+		return earned;
+	}
+
+	/** @return the title the header shows: the one picked if it is earned, else the newest earned, or null for none */
+	String shownTitle()
+	{
+		List<String> earned = titles();
+		if (earned.isEmpty())
+			return null;
+
+		if (data.title != null && earned.contains(data.title))
+			return data.title;
+
+		return earned.get(earned.size() - 1);
+	}
+
+	/**
+	 * Picks which earned title the header shows. A title that is not earned is ignored.
+	 *
+	 * @param title {@link #TITLE_GRAND_CHAMPION} or {@link #TITLE_MASTER_COLLECTOR}
+	 */
+	void pickTitle(String title)
+	{
+		if (!titles().contains(title))
+			return;
+
+		data.title = title;
+		dirty = true;
 	}
 
 	/**
