@@ -82,8 +82,8 @@ final class StorageTab extends JPanel
 		if (storage.equals(shown))
 			return;
 
+		ticked.retainAll(StorageTicks.kept(shown, storage, ticked));
 		shown = storage;
-		ticked.clear();
 		refreshSelection();
 		stack.removeAll();
 		if (storage.isEmpty())
