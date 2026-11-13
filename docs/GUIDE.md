@@ -16,7 +16,9 @@ Every feature and every number, in detail. For the short version, see the [READM
   click throws your selected jar instead. When no creature can fight (your team is empty, or your lead is too tired),
   Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
   behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
-  finds. At most three wild creatures exist at once.
+  finds. At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
+  the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
+  seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
 - **Catch them with jars**
 

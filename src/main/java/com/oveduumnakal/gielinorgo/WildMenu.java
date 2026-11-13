@@ -76,6 +76,26 @@ final class WildMenu
 	}
 
 	/**
+	 * Tells whether a wild creature's entries may take the plain left click under a setting.
+	 *
+	 * @param mode the player's setting
+	 * @param inCombat whether the player is fighting a real monster now
+	 * @return true when the entries go on top of the menu, false when they go below the game's own entries
+	 */
+	static boolean leftClickAllowed(LeftClickMode mode, boolean inCombat)
+	{
+		switch (mode)
+		{
+			case ALWAYS:
+				return true;
+			case NEVER:
+				return false;
+			default:
+				return !inCombat;
+		}
+	}
+
+	/**
 	 * Tells whether a menu entry's words are one of this plugin's wild creature entries.
 	 *
 	 * @param option the entry's words

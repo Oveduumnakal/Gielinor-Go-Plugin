@@ -227,6 +227,7 @@ Then replace this comment with:
 | Setting | Default | What it does |
 |---|---|---|
 | Wild creature rarity | 1 in 8 | How often a nearby monster turns wild. Lower numbers mean more wild creatures. |
+| Left-click wild creatures | Not while in combat | Whether a left click on a wild creature battles or catches it. |
 | Choose battle actions | Off | Each battle turn waits for you instead of playing itself. |
 | Battle animations | On | Battles are acted out in the game view. Off shows them as floating text. |
 | Lead creature follows you | On | Your lead walks a step behind you. |
