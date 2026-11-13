@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -85,6 +86,12 @@ final class GoGame
 			return false;
 		}
 
+		/** @return whether any trade is open, offered or waiting to be confirmed */
+		default boolean open()
+		{
+			return false;
+		}
+
 		/** @return creature slots, in the team and storage together, that open trades will need */
 		default int reservedCreatureSlots()
 		{
@@ -125,11 +132,15 @@ final class GoGame
 	private Milestones milestoneTable = Milestones.NONE;
 	private boolean milestonesDue;
 	private boolean walking;
+	private BossTable bossTable = BossTable.empty();
+	private final Set<String> bossEggsWaiting = new LinkedHashSet<>();
 	private EliteTable elite = EliteTable.empty();
 	private EliteRun run;
 	private boolean atGuild;
 	private boolean bankNear;
 	private MoveTable moves = MoveTable.empty();
+	private Random starterRandom = new Random();
+	private List<Creature> starters;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -202,11 +213,145 @@ final class GoGame
 		data = loaded.sanitized();
 		settleMoves();
 		log = null;
+		starters = null;
 		xpCarry = 0;
 		dirty = false;
 		run = null;
 		milestonesDue = true;
 		settleMilestones();
+	}
+
+	/**
+	 * Sets the random source of the starter rolls. It is separate from the game's own, so showing the offer never
+	 * moves the rolls of a catch.
+	 *
+	 * @param random the source
+	 */
+	void starterRandom(Random random)
+	{
+		starterRandom = random;
+	}
+
+	/**
+	 * Gives the starters on offer. They are rolled when first asked for and kept until picked or the offer ends,
+	 * so closing and opening the panel never rerolls them.
+	 *
+	 * @return the three starters with what they grow into; empty when no starter is offered
+	 */
+	List<StarterView> starterOffer()
+	{
+		if (!StarterRules.offered(data))
+		{
+			starters = null;
+			return Collections.emptyList();
+		}
+
+		for (String name : StarterRules.STARTERS)
+		{
+			if (species.find(name) == null)
+				return Collections.emptyList();
+		}
+
+		if (starters == null)
+			starters = StarterRules.roll(starterRandom, clock.getAsLong());
+
+		List<CreatureView> shown = views(starters, clock.getAsLong());
+		List<StarterView> offer = new ArrayList<>();
+		for (int i = 0; i < shown.size(); i++)
+			offer.add(new StarterView(shown.get(i), growsInto(starters.get(i).species)));
+
+		return offer;
+	}
+
+	/**
+	 * Takes one of the starters on offer: it joins as the lead. It is marked caught and seen in the Log, but pays
+	 * no task, no streak and no trainer XP, because it is not a catch.
+	 *
+	 * @param index the place in {@link #starterOffer()}
+	 * @return true when the starter joined; false when none is on offer or the place does not exist
+	 */
+	boolean pickStarter(int index)
+	{
+		List<StarterView> offer = starterOffer();
+		if (offer.isEmpty() || index < 0 || index >= offer.size())
+			return false;
+
+		Creature picked = starters.get(index);
+		starters = null;
+		settleMoves(picked);
+		keep(picked);
+		recordOwned(picked);
+		tell(nameOf(picked) + " joined your team", Tone.GOOD);
+		String rating = ratingNote(picked);
+		if (!rating.isEmpty())
+			tell(rating, Tone.FIND);
+
+		settleMilestones();
+		return true;
+	}
+
+	private String growsInto(String speciesKey)
+	{
+		List<String> steps = new ArrayList<>();
+		EvolutionTable.Step step = evolutions.next(speciesKey);
+		for (int i = 0; i < MAX_EVOLUTIONS_AT_ONCE * 2 && step != null; i++)
+		{
+			Species grown = species.find(step.to());
+			if (grown == null)
+				break;
+
+			steps.add(grown.name() + " (" + step.level() + ")");
+			step = evolutions.next(grown.key());
+		}
+
+		return steps.isEmpty() ? "Does not evolve" : "Grows into " + String.join(", ", steps);
+	}
+
+	/**
+	 * Tells why the save cannot be reset right now.
+	 *
+	 * @return the reason, worded for the player, or null when a reset is allowed. A battle on screen is checked by the
+	 *     plugin, which owns it
+	 */
+	String resetBlocker()
+	{
+		if (eliteOpen())
+			return "Finish or forfeit the Elite run first";
+
+		if (tradeLocks.open())
+			return "Finish or cancel the trade first";
+
+		return null;
+	}
+
+	/**
+	 * Puts the save back to a fresh one: the starting jars and nothing else. Settings are not part of the save. Call
+	 * {@link #resetBlocker()} first.
+	 */
+	void reset()
+	{
+		load(SaveData.fresh());
+		dirty = true;
+		tell("Progress reset", Tone.INFO);
+	}
+
+	/**
+	 * Words what a reset would lose, for the confirm dialog.
+	 *
+	 * @return for example {@code 6 creatures in your team, 41 in Storage, 212 species in the Log, 5 sigils}
+	 */
+	String resetSummary()
+	{
+		return data.team.size() + plural(data.team.size(), " creature", " creatures") + " in your team, "
+			+ data.storage.size() + " in Storage, "
+			+ data.caught.size() + " species in the Log, "
+			+ data.sigils.size() + plural(data.sigils.size(), " sigil", " sigils") + ", "
+			+ data.eggs.size() + plural(data.eggs.size(), " egg", " eggs");
+	}
+
+	private static String plural(int count, String one, String many)
+	{
+		return count == 1 ? one : many;
 	}
 
 	/**
@@ -361,6 +506,7 @@ final class GoGame
 
 		walking = false;
 		settleMilestones();
+		settleBossEggs();
 	}
 
 	/**
@@ -841,6 +987,20 @@ final class GoGame
 		BattleState state = new BattleState(mine, theirs, random, BattleState.Mode.CHAMPION);
 		BattleLine opening = new BattleLine("Challenging the " + champion.title() + "!", Tone.INFO, true);
 		return new BattleSession(state, fighters, null, champion, opening);
+	}
+
+	/**
+	 * Tells whether a Battle against a wild creature would be accepted now: the lead exists and is rested to
+	 * {@link #MIN_BATTLE_HP}. It is the same test {@link #startBattle} and {@link #battle} refuse on, with no
+	 * message and no side effect, so a menu can leave the Battle entry out when it would only be refused.
+	 *
+	 * @param now the time, for the health each creature has recovered
+	 * @return true when a battle could start
+	 */
+	boolean canBattle(long now)
+	{
+		Creature lead = data.lead();
+		return lead != null && species.find(lead.species) != null && lead.hpFractionAt(now) >= MIN_BATTLE_HP;
 	}
 
 	/**
@@ -1433,6 +1593,13 @@ final class GoGame
 		return true;
 	}
 
+	/** @return the name of the species a boss egg holds, or null for an ordinary egg */
+	private String eggName(Egg egg)
+	{
+		Species fixed = egg.species == null ? null : species.find(egg.species);
+		return fixed == null ? null : fixed.name();
+	}
+
 	/** @return a copy of everything the side panel shows, safe to hand to the UI thread */
 	PanelState snapshot()
 	{
@@ -1443,14 +1610,16 @@ final class GoGame
 
 		List<EggView> eggs = new ArrayList<>();
 		for (Egg egg : data.eggs)
-			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal));
+			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal, eggName(egg)));
 
 		freezeTeam(now);
 		TaskView tasks = startTasks().view(now, bestUnlockedJar());
 		return new PanelState(trainerLevel(), XpRules.trainerProgress(data.trainerXp), data.battlesWon, jars,
 			selectedJar(), data.stepProgress, views(data.team, now), views(data.storage, now), log(),
 			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get(), tasks, itemCounts())
-			.withGoals(milestoneTable.progress(data), eliteView());
+			.withGoals(milestoneTable.progress(data), eliteView())
+			.withResetSummary(resetSummary())
+			.withStarters(starterOffer());
 	}
 
 	/** @return how many caught species count toward the Log: known ones that are not quest-only */
@@ -1502,7 +1671,8 @@ final class GoGame
 	}
 
 	/**
-	 * Hatches an egg into a level 1 creature of a random species of the egg's rarity.
+	 * Hatches an egg into a level 1 creature: of the egg's own species for a boss egg, otherwise of a random species
+	 * of the egg's rarity.
 	 *
 	 * @param egg the egg whose walking is done
 	 * @return true when the egg is used up; false when there is no room, so it waits
@@ -1512,17 +1682,22 @@ final class GoGame
 		if (!hasRoomForCreature())
 			return false;
 
-		List<Species> pool = new ArrayList<>();
-		for (Species candidate : species.catchable())
+		Species born = egg.species == null ? null : species.find(egg.species);
+		if (born == null)
 		{
-			if (candidate.rarity() == egg.rarityTier())
-				pool.add(candidate);
+			List<Species> pool = new ArrayList<>();
+			for (Species candidate : species.catchable())
+			{
+				if (candidate.rarity() == egg.rarityTier())
+					pool.add(candidate);
+			}
+
+			if (pool.isEmpty())
+				return true;
+
+			born = pool.get(random.nextInt(pool.size()));
 		}
 
-		if (pool.isEmpty())
-			return true;
-
-		Species born = pool.get(random.nextInt(pool.size()));
 		Creature creature = new Creature(born.key(), 1, clock.getAsLong());
 		creature.gilded = random.nextInt(gildedOneIn()) == 0;
 		creature.setRolls(StatRolls.roll(random));
@@ -1603,6 +1778,64 @@ final class GoGame
 	{
 		milestoneTable = table == null ? Milestones.NONE : table;
 		milestonesDue = true;
+	}
+
+	/**
+	 * Sets the bosses whose kills give an egg. Without this call there are none.
+	 *
+	 * @param table the boss table
+	 */
+	void bosses(BossTable table)
+	{
+		bossTable = table == null ? BossTable.empty() : table;
+	}
+
+	/** @return the bosses whose kills give an egg */
+	BossTable bossTable()
+	{
+		return bossTable;
+	}
+
+	/**
+	 * Handles a boss kill the game reported in the chat. The first kill of a boss always gives its egg, later kills
+	 * give it {@link BossRules#LATER_CHANCE} of the time. With a full egg bag the egg waits, one place per boss,
+	 * until a slot is free; a first-kill egg is only counted as paid once it is in the bag.
+	 *
+	 * @param chatName the boss or raid name from the kill-count line
+	 */
+	void bossKilled(String chatName)
+	{
+		Species boss = bossTable.speciesFor(chatName);
+		if (boss == null)
+			return;
+
+		boolean first = !data.bossKills.contains(boss.key());
+		if (!BossRules.eggDrops(first, random))
+			return;
+
+		bossEggsWaiting.add(boss.key());
+		settleBossEggs();
+	}
+
+	/** Gives the boss eggs that wait for a slot, as far as there are slots, unless the egg list is being walked. */
+	private void settleBossEggs()
+	{
+		if (walking)
+			return;
+
+		Iterator<String> waiting = bossEggsWaiting.iterator();
+		while (waiting.hasNext() && hasRoomForEgg())
+		{
+			Species boss = species.find(waiting.next());
+			waiting.remove();
+			if (boss == null)
+				continue;
+
+			data.eggs.add(new Egg(boss));
+			data.bossKills.add(boss.key());
+			dirty = true;
+			tell("You found a " + boss.name() + " egg!", Tone.FIND);
+		}
 	}
 
 	/** @return whether the Gilded charm is owned, which is milestone {@link Milestones#CHARM_ID} being paid */

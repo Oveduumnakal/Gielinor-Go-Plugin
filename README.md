@@ -27,10 +27,11 @@ Then replace this comment with:
 ## Getting started
 
 1. Open the **Plugin Hub** in RuneLite, search for **Gielinor Go** and click **Install**.
-2. Click the Gielinor Go icon in the sidebar to open the panel. You start with 10 Bronze jars.
+2. Click the Gielinor Go icon in the sidebar to open the panel. You start with 10 Bronze jars. On the Team tab,
+   pick your first creature: an Imp, a Gnome Archer or a Wizard.
 3. Walk near monsters until one turns wild: a smaller, outlined copy with a level tag appears beside it.
 4. Right-click the copy and choose **Catch** to throw a jar. The menu shows your odds.
-5. Once you have a creature, left-click a wild one to **Battle** it. Click it again while it lies knocked out to
+5. Left-click a wild one to **Battle** it. Click it again while it lies knocked out to
    throw a jar at twice the odds.
 
 ## Features
@@ -40,7 +41,12 @@ Then replace this comment with:
 - **Monsters near you turn wild**
 
   A wild creature is its own smaller copy that stands beside the real monster for about three minutes. There are
-  1,094 species to find, from chickens to bosses. Wild creatures do not appear inside instances.
+  1,096 species to find, from chickens to bosses. Wild creatures do not appear inside instances.
+
+- **Boss eggs**
+
+  Kill a boss and the game's kill-count line can give you its egg: always the first time, then one kill in 20.
+  It hatches into that boss when you walk, and it works inside instances.
 
 - **Catch them with jars**
 
@@ -227,6 +233,8 @@ Then replace this comment with:
 | Setting | Default | What it does |
 |---|---|---|
 | Wild creature rarity | 1 in 8 | How often a nearby monster turns wild. Lower numbers mean more wild creatures. |
+| Left-click wild creatures | Not while in combat | Whether a left click on a wild creature battles or catches it. |
+| Skilling encounters | On | Fishing, Woodcutting, Mining, Farming and Hunter XP sometimes bring a wild creature. |
 | Choose battle actions | Off | Each battle turn waits for you instead of playing itself. |
 | Battle animations | On | Battles are acted out in the game view. Off shows them as floating text. |
 | Lead creature follows you | On | Your lead walks a step behind you. |

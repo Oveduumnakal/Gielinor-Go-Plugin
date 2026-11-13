@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import net.runelite.api.Animation;
@@ -22,6 +23,17 @@ import static org.mockito.Mockito.when;
 public class AnimationHoldTest
 {
 	private static final int TIMEOUT_MS = 5_000;
+
+	/**
+	 * Builds the first mocks before the timed tests. Mockito's first mock of the large {@link Client} interface can
+	 * take seconds on a busy machine, and the timeouts are there to catch a spinning loop, not slow mock setup.
+	 */
+	@BeforeClass
+	public static void warmUpMocks()
+	{
+		mock(Client.class);
+		animation(1);
+	}
 
 	private static Animation animation(int... frameLengths)
 	{

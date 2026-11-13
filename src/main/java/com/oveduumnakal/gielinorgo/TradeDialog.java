@@ -109,7 +109,7 @@ final class TradeDialog
 		for (int i = 0; i < state.eggs().size(); i++)
 		{
 			EggView egg = state.eggs().get(i);
-			String label = egg.rarity().label() + " egg  (" + egg.tilesLeft() + " tiles left)";
+			String label = egg.label() + "  (" + egg.tilesLeft() + " tiles left)";
 			choices.add(new Choice(TradePick.of(i, egg), label));
 		}
 
