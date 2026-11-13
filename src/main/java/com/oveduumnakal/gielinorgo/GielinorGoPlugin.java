@@ -1609,7 +1609,7 @@ public class GielinorGoPlugin extends Plugin
 		String target = entry.prefix() + name + " (Lv " + entry.level() + ")";
 		int wildId = entry.wildId();
 		WildBody body = bodies.get(wildId);
-		boolean canBattle = game.canBattle(System.currentTimeMillis());
+		boolean canBattle = game.canBattle(System.currentTimeMillis(), config.chooseBattleActions());
 		boolean withBattle = !entry.battled() && !director.active() && body != null && !body.life().leaving()
 			&& canBattle;
 		List<WildMenu.Item> items = WildMenu.topFirst(game.jarToThrow(), game.matchingSpecialtyJars(entry),
