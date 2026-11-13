@@ -302,7 +302,7 @@ public class BattleDirectorTest
 	}
 
 	@Test
-	public void aSceneThatEndedByItselfEndsTheBattleToo()
+	public void aSceneThatEndedByItselfLeavesTheBattleGoingAsText()
 	{
 		FakeScene scene = new FakeScene();
 		WildEntry foe = new WildEntry(1, GOBLIN, 30, 1);
@@ -311,6 +311,22 @@ public class BattleDirectorTest
 		scene.alive = false;
 
 		director.gameTick(false);
+
+		assertTrue(director.active());
+		assertFalse(foe.battled());
+		assertTrue(director.promptOpen());
+	}
+
+	@Test
+	public void aForfeitStillEndsABattleWhoseSceneEnded()
+	{
+		FakeScene scene = new FakeScene();
+		WildEntry foe = new WildEntry(1, GOBLIN, 30, 1);
+		game.data().team.add(creature("goblin", 30));
+		director.begin(game.startBattle(foe), scene);
+		scene.alive = false;
+
+		director.gameTick(true);
 
 		assertFalse(director.active());
 		assertTrue(foe.battled());
