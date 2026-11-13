@@ -550,7 +550,10 @@ final class WildBody
 			shapes.add(Perspective.getClickbox(client, view, model, facing, at.getX(), at.getY(), z));
 		}
 
-		Polygon ground = Perspective.getCanvasTileAreaPoly(client, at, tiles);
+		int[] middle = WildFootprint.centre(x, y, tiles, view == null ? 0 : view.getBaseX(),
+			view == null ? 0 : view.getBaseY());
+		LocalPoint footprint = view == null ? at : new LocalPoint(middle[0], middle[1], view);
+		Polygon ground = Perspective.getCanvasTileAreaPoly(client, footprint, tiles);
 		if (ground != null)
 			shapes.add(ground);
 
