@@ -19,6 +19,7 @@ final class Species
 	private List<Trait> traits;
 	private int[] ids;
 	private boolean quest;
+	private double[] stats;
 
 	/** Used by Gson. */
 	Species()
@@ -49,6 +50,45 @@ final class Species
 	CombatType style()
 	{
 		return style == null ? CombatType.CRUSH : style;
+	}
+
+	/** Lowest factor a species may have for any stat. */
+	static final double MIN_FACTOR = 0.75;
+
+	/** Highest factor a species may have for any stat. */
+	static final double MAX_FACTOR = 1.25;
+
+	/** A factor this far from 1.0 or more is worth a word on the card. */
+	static final double WORD_AT = 0.12;
+
+	/**
+	 * How much better or worse this species is than the baseline at one stat. Written by gen-species-stats.py from
+	 * the wiki monster's numbers.
+	 *
+	 * @param stat the stat
+	 * @return the factor, 0.75 to 1.25; 1.0 when the data has none, so a species built by hand is the baseline
+	 */
+	double factor(Stat stat)
+	{
+		if (stats == null || stats.length != StatRolls.COUNT)
+			return 1.0;
+
+		return Math.max(MIN_FACTOR, Math.min(MAX_FACTOR, stats[stat.ordinal()]));
+	}
+
+	/**
+	 * Sets the stat factors, for tests and for building species in code.
+	 *
+	 * @param health the health factor
+	 * @param attack the attack factor
+	 * @param defence the defence factor
+	 * @param speed the speed factor
+	 * @return this species
+	 */
+	Species withFactors(double health, double attack, double defence, double speed)
+	{
+		this.stats = new double[] {health, attack, defence, speed};
+		return this;
 	}
 
 	/**

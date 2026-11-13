@@ -7,6 +7,9 @@ Combat styles (issue #85): a species gets STAB, SLASH, CRUSH, RANGED or MAGIC fr
 ones the wiki does not decide (no style, Melee, Typeless, All, Dragonfire first) take STAB, SLASH or CRUSH from
 scripts/species-melee-style.txt; a line there also wins over the wiki. A species with neither fails the run.
 
+Stats (issue #86): the per-species stat factors live in the "stats" field, written by scripts/gen-species-stats.py,
+which reads species.json and evolutions.json. This script keeps the field of every species it already has.
+
 Quest monsters (issue #50): a species whose every wiki row sits on a page of Category:Quest_monsters (read through the
 MediaWiki API, list=categorymembers) gets "quest": true. scripts/species-quest-add.txt lists names to flag although the
 wiki does not, scripts/species-quest-keep.txt names to keep catchable although it does. The flagged names are written
@@ -188,7 +191,7 @@ def clean_name(name):
     return name
 
 
-def record(entry):
+def record(entry, stats=None):
     name, level, style, traits, ids = entry[:5]
     data = {"name": name, "level": level, "style": style}
     if traits:
@@ -197,7 +200,21 @@ def record(entry):
         data["ids"] = ids
     if len(entry) > 5 and entry[5]:
         data["quest"] = True
+    if stats:
+        data["stats"] = stats
     return data
+
+
+def kept_stats(path=OUT):
+    """Returns {lowercase name: [h, a, d, s]} from the current species.json, so a regenerated file keeps its stats.
+
+    gen-species-stats.py writes the stats; run it again after this script when the wiki rows or levels changed.
+    """
+    try:
+        with open(path, encoding="utf-8") as f:
+            return {d["name"].lower(): d["stats"] for d in json.load(f) if d.get("stats")}
+    except (OSError, ValueError, KeyError):
+        return {}
 
 
 NPC_DEF = re.compile(r"(?:^|/)npc_defs/(\d+)\.json$")
@@ -247,6 +264,35 @@ def resolve_styles(entries):
     return [(e[0], e[1], chosen.get(e[0].lower(), e[2])) + e[3:] for e in entries]
 
 
+def usable_rows(rows, blocked_names, blocked=None):
+    """Yields (key, name, page, level, row) for every wiki row that can describe a species.
+
+    Variants from special pages (minigames, unused, historical) inflate levels, so when a name has rows on its own main
+    page, only those rows are used. gen-species-stats.py picks the same rows, so a species' stats and its level come
+    from one row.
+    """
+    main_names = {clean_name(r.get("name")).lower() for r in rows
+                  if clean_name(r.get("name")).lower() == clean_name(r.get("page_name")).lower()}
+    for row in rows:
+        name = clean_name(row.get("name") or row.get("page_name"))
+        page = clean_name(row.get("page_name")).lower()
+        if name.lower() in blocked_names or page in blocked_names:
+            if blocked is not None:
+                blocked.add(name.lower() if name.lower() in blocked_names else page)
+            continue
+        if name.lower() in main_names and page != name.lower():
+            continue
+        if re.search(r"\((unused|historical)", row.get("page_name") or "", re.I):
+            continue
+        try:
+            level = int(row.get("combat_level"))
+        except (TypeError, ValueError):
+            continue
+        if not name or level < 1 or any(c in name for c in "[]{}<>|()"):
+            continue
+        yield name.lower(), name, page, level, row
+
+
 def is_quest(key, row_pages, quest_titles, quest_add, quest_keep):
     """True when the wiki puts every row of the species in the quest category, or the add file names it."""
     if key in quest_keep:
@@ -273,28 +319,8 @@ def main():
         rows.extend(page)
         offset += PAGE
         time.sleep(1)
-    # Variants from special pages (minigames, unused, historical) inflate levels, so when a
-    # name has rows on its own main page, only those rows are used.
-    main_names = {clean_name(r.get("name")).lower() for r in rows
-                  if clean_name(r.get("name")).lower() == clean_name(r.get("page_name")).lower()}
     best = {}
-    for row in rows:
-        name = clean_name(row.get("name") or row.get("page_name"))
-        page = clean_name(row.get("page_name")).lower()
-        if name.lower() in blocked_names or page in blocked_names:
-            blocked.add(name.lower() if name.lower() in blocked_names else page)
-            continue
-        if name.lower() in main_names and page != name.lower():
-            continue
-        if re.search(r"\((unused|historical)", row.get("page_name") or "", re.I):
-            continue
-        try:
-            level = int(row.get("combat_level"))
-        except (TypeError, ValueError):
-            continue
-        if not name or level < 1 or any(c in name for c in "[]{}<>|()"):
-            continue
-        key = name.lower()
+    for key, name, page, level, row in usable_rows(rows, blocked_names, blocked):
         row_pages.setdefault(key, set()).add(page_key(row.get("page_name")))
         row_ids = ids_of(row)
         if key not in best or level > best[key][1]:
@@ -310,9 +336,10 @@ def main():
         extra = dump_ids(sys.argv[1])
         entries = [e[:4] + (merge_ids(e[4], extra.get(e[0].lower(), [])),) + e[5:] for e in entries]
     entries = [e[:4] + (e[4][:MAX_IDS],) + e[5:] for e in entries]
+    stats = kept_stats()
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("[\n")
-        f.write(",\n".join(json.dumps(record(e), separators=(",", ":"), ensure_ascii=False) for e in entries))
+        f.write(",\n".join(json.dumps(record(e, stats.get(e[0].lower())), separators=(",", ":"), ensure_ascii=False) for e in entries))
         f.write("\n]\n")
     quest = [e[0] for e in entries if e[5]]
     with open(QUEST_LIST, "w", encoding="utf-8") as f:
