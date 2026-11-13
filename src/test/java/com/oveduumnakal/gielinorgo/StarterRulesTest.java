@@ -107,6 +107,56 @@ public class StarterRulesTest
 		}
 	}
 
+	private List<String> offerDescribed()
+	{
+		List<String> described = new ArrayList<>();
+		for (StarterView starter : game.starterOffer())
+			described.add(starter.creature().name() + " " + starter.creature().rolls().describeNet());
+
+		return described;
+	}
+
+	@Test
+	public void theSameAccountIsOfferedTheSameStartersAfterALoad()
+	{
+		game.starterSeed(424242L);
+		List<String> before = offerDescribed();
+
+		game.load(SaveData.fresh());
+		List<String> after = offerDescribed();
+
+		assertEquals(3, before.size());
+		assertEquals(before, after);
+	}
+
+	@Test
+	public void anotherAccountIsOfferedOtherStarters()
+	{
+		game.starterSeed(1L);
+		List<String> first = offerDescribed();
+
+		game.starterSeed(2L);
+		game.load(SaveData.fresh());
+
+		assertFalse(first.equals(offerDescribed()));
+	}
+
+	@Test
+	public void thePickedIndexIsTheStarterTheSeedGives()
+	{
+		game.starterSeed(99L);
+		StarterView second = game.starterOffer().get(1);
+		StatRolls rolls = second.creature().rolls();
+		String shown = rolls.describeNet();
+
+		game.load(SaveData.fresh());
+		assertTrue(game.pickStarter(1));
+
+		Creature lead = game.data().lead();
+		assertEquals("gnome archer", lead.species);
+		assertEquals(shown, lead.rolls().describeNet());
+	}
+
 	@Test
 	public void theStartersAreOneOfEachStyleAndAllExist()
 	{

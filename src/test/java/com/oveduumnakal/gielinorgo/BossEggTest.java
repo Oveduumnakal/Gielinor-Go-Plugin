@@ -127,6 +127,19 @@ public class BossEggTest
 	}
 
 	@Test
+	public void aWaitingEggStaysBehindWhenAnotherSaveIsLoaded()
+	{
+		fillBag();
+		game.bossKilled("Giant Mole");
+
+		game.load(new SaveData());
+		game.addSteps(1);
+
+		assertTrue(game.data().eggs.isEmpty());
+		assertTrue(game.data().bossKills.isEmpty());
+	}
+
+	@Test
 	public void aBossEggHatchesIntoThatSpeciesAtLevelOne()
 	{
 		game.bossKilled("Vorkath");
@@ -269,7 +282,7 @@ public class BossEggTest
 		GielinorGoPartyMessage old = gson.fromJson(wire, GielinorGoPartyMessage.class);
 		old.setMemberId(ANN);
 
-		assertEquals(8, GielinorGoPartyMessage.PROTOCOL);
+		assertEquals(9, GielinorGoPartyMessage.PROTOCOL);
 		assertFalse(bob.receive(old, BOB, "Ann"));
 		assertEquals("", bob.offerFrom(ANN));
 		assertEquals("Ann runs a different version of Gielinor Go", bobTold.get(bobTold.size() - 1));

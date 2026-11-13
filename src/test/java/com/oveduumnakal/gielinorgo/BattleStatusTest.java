@@ -86,6 +86,28 @@ public class BattleStatusTest
 	}
 
 	@Test
+	public void afterAnItemTheHigherLevelCreatureTakesPoisonFirstWhenSpeedsTie()
+	{
+		Combatant mine = new Combatant(FIGHTER, "Fighter", 20, 0.05);
+		Combatant foe = new Combatant(DUMMY, "Dummy", 21, 0.05);
+		assertEquals(mine.speed(), foe.speed());
+		mine.afflict(Status.POISON, new Random(1));
+		foe.afflict(Status.POISON, new Random(1));
+		BattleState state = duel(mine, foe, new Random(4));
+
+		TurnResult turn = state.step(BattleChoice.item(ItemType.SMALL_SALVE, 0));
+
+		List<String> hurt = new ArrayList<>();
+		for (String text : texts(turn))
+		{
+			if (text.contains("hurt by poison"))
+				hurt.add(text);
+		}
+
+		assertTrue(hurt.toString(), hurt.get(0).startsWith("Dummy"));
+	}
+
+	@Test
 	public void aPoisonedHitPutsThePoisonOnAndItBitesAtTheEndOfTheRound()
 	{
 		Combatant foe = dummy(10);

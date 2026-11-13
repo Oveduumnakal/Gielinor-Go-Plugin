@@ -72,18 +72,19 @@ final class TaskBoard
 	}
 
 	/**
-	 * Starts a new day or week when the clock has moved into one. The check is two comparisons when nothing
-	 * changed, so it can run on every event and every snapshot.
+	 * Starts a new day or week when the clock has moved into a later one. A clock that is set back keeps the day
+	 * and week already stored, so setting it back and forward again does not start the day twice. The check is two
+	 * comparisons when nothing changed, so it can run on every event and every snapshot.
 	 *
 	 * @param now wall-clock milliseconds
 	 * @return true when the progress changed and needs saving
 	 */
 	boolean rollover(long now)
 	{
-		long day = calendar.dayOf(now);
-		long week = calendar.weekOfDay(day);
+		long day = Math.max(calendar.dayOf(now), progress.day);
+		long week = Math.max(calendar.weekOfDay(day), progress.week);
 		boolean changed = false;
-		if (progress.day != day)
+		if (progress.day < day)
 		{
 			progress.day = day;
 			Arrays.fill(progress.daily, 0);
@@ -91,7 +92,7 @@ final class TaskBoard
 			changed = true;
 		}
 
-		if (progress.week != week)
+		if (progress.week < week)
 		{
 			progress.week = week;
 			progress.weekly = 0;
@@ -128,7 +129,7 @@ final class TaskBoard
 	 */
 	Streak recordCatch()
 	{
-		if (progress.lastCatchDay == progress.day)
+		if (progress.lastCatchDay >= progress.day)
 			return null;
 
 		progress.streak++;
