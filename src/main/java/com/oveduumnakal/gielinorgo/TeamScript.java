@@ -423,6 +423,13 @@ final class TeamScript
 		if (turn.voluntarySwitch())
 			out.add(new Entry(Kind.EXIT, Side.MINE, null, false, null, null, FADE_TICKS));
 
+		Combatant next = turn.enteredFoe();
+		if (turn.voluntaryFoeSwitch() && next != null)
+		{
+			out.add(new Entry(Kind.EXIT, Side.FOE, null, false, null, null, FADE_TICKS));
+			out.add(enterFoe(next.speciesKey()));
+		}
+
 		Combatant entered = turn.enteredMine();
 		if (entered != null)
 			out.add(enterMine(entered.speciesKey(), entered.isGilded(), entered.npcId()));
@@ -448,8 +455,7 @@ final class TeamScript
 			out.add(new Entry(Kind.EXIT, Side.FOE, null, false, null, null, FADE_TICKS));
 		}
 
-		Combatant next = turn.enteredFoe();
-		if (next != null)
+		if (next != null && !turn.voluntaryFoeSwitch())
 			out.add(enterFoe(next.speciesKey()));
 
 		return out;

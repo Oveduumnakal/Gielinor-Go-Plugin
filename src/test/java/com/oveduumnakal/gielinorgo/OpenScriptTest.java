@@ -133,6 +133,30 @@ public class OpenScriptTest
 	}
 
 	@Test
+	public void aFriendsSwitchIsActedOutBeforeTheBlowsOfTheTurn()
+	{
+		BattleState state = new BattleState(new ArrayList<>(Collections.singletonList(new Combatant(DRAGON, 60, 1.0))),
+			new ArrayList<>(Arrays.asList(new Combatant(GOBLIN, 20, 1.0), new Combatant(ARCHER, 20, 1.0))),
+			new Random(1), BattleState.Mode.CHAMPION).friendMatch(true);
+
+		TurnResult turn = state.step(BattleChoice.attack(), BattleChoice.switchTo(1));
+		List<TeamScript.Entry> entries = TeamScript.entriesOf(turn);
+
+		assertTrue(turn.voluntaryFoeSwitch());
+		assertEquals(TeamScript.Kind.EXIT, entries.get(0).kind());
+		assertEquals(TeamScript.Side.FOE, entries.get(0).side());
+		assertEquals(TeamScript.Kind.ENTER_FOE, entries.get(1).kind());
+		assertEquals("archer", entries.get(1).species());
+		assertEquals(TeamScript.Kind.HIT, entries.get(2).kind());
+		int enters = 0;
+		for (TeamScript.Entry entry : entries)
+			if (entry.kind() == TeamScript.Kind.ENTER_FOE)
+				enters++;
+
+		assertEquals(1, enters);
+	}
+
+	@Test
 	public void aFaintedCreatureGoesDownFadesOutAndIsReplacedForFree()
 	{
 		BattleState state = new BattleState(new ArrayList<>(Arrays.asList(new Combatant(GOBLIN, 2, 1.0),
