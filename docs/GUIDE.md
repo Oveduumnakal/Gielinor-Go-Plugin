@@ -20,6 +20,21 @@ Every feature and every number, in detail. For the short version, see the [READM
   the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
   seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
+- **While skilling**
+
+  Fishing, Woodcutting, Mining, Farming and Hunter XP drops sometimes bring a wild creature to a free tile one or
+  two tiles from you: "A wild Crab surfaced!" (Woodcutting: "dropped from the branches", Mining: "crawled out of the
+  rock", Farming: "came out of the patch", Hunter: "broke cover"). It is an ordinary wild creature: Battle, Catch,
+  about 3 minutes, and it counts toward the limit of three. The bigger the XP drop, the likelier the creature, so
+  fast small drops and slow big ones find creatures at about the same rate per XP: about one every 6 to 10 minutes
+  of steady skilling at the default **Wild creature rarity**, never two within 3 minutes. Each skill has its own
+  species (Fishing water creatures, Woodcutting birds and tree dwellers, Mining cave and rock creatures, Farming
+  pests and field animals, Hunter prey). The species follows your level in the skill: a level 90 fisher meets
+  stronger creatures than a level 20 one. Three species are met **only** this way, one time in 20 and from skill
+  level 40: the River troll while Fishing, the Rock Golem while Mining and the Tree spirit while Woodcutting. Nothing
+  appears with the **Skilling encounters** setting off, in an instance or in a PvP area, or when there is no free
+  tile.
+
 - **Catch them with jars**
 
   Throwing a jar has a chance to catch the creature. The menu shows your odds before you click. Stronger monsters
@@ -47,6 +62,29 @@ Every feature and every number, in detail. For the short version, see the [READM
   you, it shows up as its own **Catch** option with its odds. Every jar has its own small picture, in the jar list on
   the panel, on the champion cards and beside the "Found a ... jar" lines that float over your head.
 
+  The Attack, Strength and Defence skills find their own jars: **Stab** jars (Attack), **Slash** jars (Strength)
+  and **Crush** jars (Defence), each ×2.5 on creatures of that style. A save from before the split turns its old
+  Warrior jars into the three, a third each, with any left over going to Crush.
+
+- **Combat styles**
+
+  Every creature has one of five styles, taken from how the monster really fights on the wiki; monsters the wiki
+  does not give a style (an Imp, a Chompy bird, a Void Flare) have one picked by hand. An attack of the right style
+  does 25% more damage and the wrong one 20% less.
+
+  | Style  | Strong against | Weak against  |
+  |--------|----------------|---------------|
+  | Stab   | Slash, Ranged  | Crush, Magic  |
+  | Slash  | Crush, Ranged  | Stab, Magic   |
+  | Crush  | Stab, Magic    | Slash, Ranged |
+  | Ranged | Crush, Magic   | Stab, Slash   |
+  | Magic  | Stab, Slash    | Crush, Ranged |
+
+  To remember it: Stab and Slash beat Ranged, Ranged beats Magic, Magic beats Stab and Slash. Crush is the odd one
+  out: it beats Magic and falls to Ranged. Among the melee styles, Stab beats Slash, Slash beats Crush and Crush
+  beats Stab. The starters hold the old triangle: Imp (Slash) beats Gnome Archer (Ranged), which beats Wizard
+  (Magic), which beats Imp. Friends on an older version cannot battle or trade with you.
+
 - **Healing items**
 
   Four items help a hurt creature. A **Small salve** restores 25% health and a **Large salve** 60%. A **Revive
@@ -64,6 +102,19 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   News about a creature floats over that creature: it appeared, you caught it, it broke free. Things you find or
   earn, such as jars and level-ups, float over your own head.
+
+- **Boss eggs from real kills**
+
+  When the game tells you a boss kill count (`Your Vorkath kill count is: 12.`), you may find that boss's egg. The
+  first kill of each boss the plugin sees always gives its egg, and after that one kill in 20 does. A completed
+  raid counts as one kill of its final boss: the Great Olm for the Chambers of Xeric, Verzik Vitur for the Theatre
+  of Blood and Elidinis' Warden for the Tombs of Amascut, solo or in a group. The egg appears after the fight
+  (`You found a Vorkath egg!`) and works in instances, where no wild creature ever turns up. It shows on the Team
+  tab as `Vorkath egg` and hatches by walking into a level 1 creature of that exact boss, rolled and gilded like any
+  other egg. Nothing about loot is read, only the kill-count line. With three eggs already carried the new one
+  waits, one per boss, and arrives when a slot frees up (a waiting egg is lost if you log out, and the first-kill
+  egg is then given again at the next kill). Re-fightable instance bosses such as Vorkath are in the Creature Log
+  because of this, though they never turn wild. A boss egg can be given to a friend in a trade.
 
 ### Your team
 
@@ -119,7 +170,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Moves**
 
-  Every creature knows up to four moves. A move has a style (Melee, Ranged or Magic), a power (1 is a plain
+  Every creature knows up to four moves. A move has a style (Stab, Slash, Crush, Ranged or Magic), a power (1 is a plain
   attack), an accuracy (a move below 100% can miss and does no damage then) and sometimes an effect. A creature
   starts with the newest four moves its level has unlocked. New moves unlock at set levels: a dragon bites at level
   1, claws at 10, uses Dragonfire at 20 and Inferno at 40, a wizard goes from a strike to a bind to a blast, a spider
@@ -152,8 +203,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   your team that can fight steps in by itself ("Go, Bob!") and the battle goes on; it is lost only when your whole
   team is down. Creatures below a quarter of their health sit out, so when the lead is too tired the first rested
   creature opens. A win pays once and the creature that lands the last blow gets the creature XP. Each hit floats over the creature's
-  head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. Melee beats Ranged, Ranged beats Magic, and Magic beats
-  Melee. A creature's card tooltip reminds you of its style's match-up. There is no opening line: the fight goes
+  head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. There are five styles and each beats two and loses to two (see the chart below). A creature's
+  card tooltip reminds you of its style's match-up. There is no opening line: the fight goes
   straight from the face-off to the first blow. A creature that loses to you is easier to catch. Every attack is one of the creature's moves, and the
   line says which ("Bob uses Dragonfire: -14" or "Bob's Bite missed"); see **Moves** below.
 
@@ -162,7 +213,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   every step of a melee attacker is over open ground. When the lead has no way to get to the wild creature (it
   stands behind a fence), the battle is shown as text and says so once. Each hit plays as an attack by one and a flinch by the
   other, one every 3 game ticks, and the flinch and the floating line come at the same moment of the turn for every
-  attack. A Melee attacker steps up, strikes and steps back. A Ranged or Magic attacker stays where it is and an
+  attack. A Stab, Slash or Crush attacker steps up, strikes and steps back. A Ranged or Magic attacker stays where it is and an
   arrow or a bolt flies from one body to the other, at the height each is drawn at; a dragon steps in to bite but
   stays put to use Dragonfire, and a wyvern uses Icy breath. A move that misses is acted out like a hit, but the
   other creature does not flinch.
@@ -227,6 +278,26 @@ Every feature and every number, in detail. For the short version, see the [READM
   Many creatures grow into a stronger relative when they reach a certain level: an Imp becomes a Lesser demon,
   then a Greater demon, then a Black demon. There are over 150 evolutions to find.
 
+  A few evolutions ask for more than a level. A Zombie, Skeleton, Ghost, Banshee or Vampyre only grows **at night**
+  (20:00 to 06:00 on your computer's clock), and a Giant bat, Rockslug, Bloodveld, Crypt rat and other cave dwellers
+  only grow **underground**. A creature that has the level but not the moment waits, and its card says what for, for
+  example `Evolves at night`. It evolves as soon as the night falls or you walk into a cave, with no XP needed. Only
+  your team evolves; creatures in Storage wait. Some species grow into different creatures depending on the
+  condition: a Rat becomes a Giant rat on the surface but a Crypt rat underground, and a Wolf becomes a Dire Wolf by
+  day but a Werewolf at night. Each Creature Log entry shows these conditions beside the stages you know. Every
+  condition can be met alone, and no creature needs a trade to evolve.
+
+- **Releasing creatures**
+
+  Right-click a creature in Storage and choose **Release**, or press **Select** at the top of the Storage tab, tick
+  as many creatures as you like and press **Release selected**. One confirm lists the names and the total XP. Your
+  lead creature gains creature XP for each one: 20 plus 4 for every level of the released creature, times 1 for a
+  Common, 1.5 for an Uncommon, 2 for a Rare, 3 for an Epic and 4 for a Legendary. A Level 10 Common pays 60 XP. The
+  XP counts like any other, so it can level the lead, teach it moves and evolve it. A release never pays jars or
+  items, so catching and releasing cannot make jars. With no creature on your team the release pays nothing. A
+  gilded creature, one rated Strong or Exceptional, and one with a nickname ask a second time. A creature promised
+  in a trade is skipped.
+
 - **Eggs hatch as you walk**
 
   Battle wins sometimes drop an egg. Carry up to three, and each hatches into a new creature once you have
@@ -279,21 +350,23 @@ Every feature and every number, in detail. For the short version, see the [READM
   unlocked, or 100 trainer XP, for a daily task; 5 jars and a Rare egg for the weekly one. When you have no room
   for an egg you get 5 jars instead.
 
-- **Login streak**
+- **Days played**
 
-  The first catch of each UTC day pays 2 Bronze jars and adds a day to your streak. Miss a day and it starts again
-  at 1. Every 7th day in a row pays an Uncommon egg. The Team tab shows your streak and how many days are left to
-  the next egg. The plugin goes by your computer's clock, so changing the clock would cheat; nothing stops that in
-  a single-player side game.
+  The first catch of each UTC day pays 2 Bronze jars and adds a day to your days played. The count only goes up:
+  missing a day costs nothing. Every 7th day played pays an Uncommon egg. The Team tab shows the day you are on
+  and how many days are left to the next egg. The plugin goes by your computer's clock, so changing the clock would
+  cheat; nothing stops that in a single-player side game.
 
 ### Creature Log milestones
 
 - **Rewards for a growing Log**
 
-  Catching new species pays rewards once each, at 25, 50, 100, 250 and 500 species: 5 Iron jars; 5 Rune jars and a
-  Rare egg; 5 Dragon jars and an Epic egg; the **Gilded charm**; then 10 Dragon jars and a Legendary egg. The charm
+  Catching new species pays rewards once each, at 25, 50, 100, 250, 500, 750 and 1,000 species: 5 Iron jars; 5 Rune
+  jars and a Rare egg; 5 Dragon jars and an Epic egg; the **Gilded charm**; 10 Dragon jars and a Legendary egg; 10
+  Dragon jars and an Epic egg; then 3 of every specialty jar and a Legendary egg. The charm
   is not an item: from then on gilded creatures turn up twice as often (1 in 250 instead of 1 in 500), in the wild
-  and from eggs. Completing a family, such as every goblin or every dragon, pays 3 jars of the family's specialty
+  and from eggs. A **complete Log** (every species that is not quest only) pays a Legendary egg and the title
+  **Master Collector**. Completing a family, such as every goblin or every dragon, pays 3 jars of the family's specialty
   type and an egg of the rarest creature in it. Milestones you had already reached are paid when you log in. When
   your egg bag is full an egg reward waits until you have a free slot.
 
@@ -301,6 +374,13 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Under the Log header the next goal shows with a bar (`Next: 100 species`, `87 / 100`). The **Milestones...**
   button lists every milestone and family with its bar, its reward and a tick once it is paid.
+
+- **Titles**
+
+  The panel header shows your title next to your trainer level: **Grand Champion** after the Elite challenge and
+  **Master Collector** for a complete Log. When you hold both, click the title in the header to switch between
+  them. The one you pick is saved; until you pick, the header shows the one you earned last of the two in that
+  order (Master Collector).
 
 - **Quest-only monsters**
 
@@ -411,14 +491,30 @@ Every feature and every number, in detail. For the short version, see the [READM
   the eggs you carry and whatever you put in a trade (never nicknames), and only to the people in your own party. You can turn
   battle challenges off in the settings.
 
+### Sounds
+
+- **Game sounds**
+
+  A short sound from the game itself plays for a catch, a creature breaking free, a creature gaining a level, an
+  evolution, an egg hatching, a gilded creature appearing, a sigil and a Creature Log milestone. No sound file is
+  added: the plugin asks the game to play one of its own sound effects, so the game's sound effect volume applies
+  and muting the game mutes them. Only one sound plays at a time (a second one within 0.6 seconds is dropped),
+  except the gilded creature's sound, which always plays. Battle hits, jar finds and task progress are silent, and
+  so is everything while the plugin is hidden in PvP areas. Switch them off with **Sounds** in the settings.
+
 ### Side panel
 
 - **Team, Storage, Creature Log and Battle**
 
   The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, your daily and weekly tasks, the
-  creatures you have stored, and a Creature Log of every species you can meet in the game (1,094) so you can see what
+  creatures you have stored, and a Creature Log of every species you can meet in the game (1,096) so you can see what
   you have caught, what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
   you can challenge. The top of the Log tab shows what is featured today and which event is on.
+
+  Click a species you have seen or caught and a box under the list shows the monster's examine text, its evolution
+  line (stages you have not met yet show as `???`), how many you have caught and whether you own a gilded one.
+  Right-click a species you have seen or caught and choose **Open wiki** to open its page on the Old School RuneScape
+  Wiki in your browser. A species you have never met shows neither the box nor the menu.
 
   You can move a creature between your team and Storage only inside a city (any City Champion's area) or within
   10 tiles of a banker, a bank booth or a bank chest. Anywhere else the panel says "Go to a city or a bank to change

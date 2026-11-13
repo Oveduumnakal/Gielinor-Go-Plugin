@@ -19,19 +19,19 @@ import static org.junit.Assert.assertTrue;
 public class MoveTableTest
 {
 	private static final String JSON = "{\"moves\":["
-		+ "{\"id\":\"a\",\"name\":\"A\",\"style\":\"MELEE\",\"power\":1.0,\"accuracy\":1.0},"
-		+ "{\"id\":\"b\",\"name\":\"B\",\"style\":\"MELEE\",\"power\":1.2,\"accuracy\":0.9},"
+		+ "{\"id\":\"a\",\"name\":\"A\",\"style\":\"STAB\",\"power\":1.0,\"accuracy\":1.0},"
+		+ "{\"id\":\"b\",\"name\":\"B\",\"style\":\"STAB\",\"power\":1.2,\"accuracy\":0.9},"
 		+ "{\"id\":\"c\",\"name\":\"C\",\"style\":\"MAGIC\",\"power\":1.5,\"accuracy\":0.8,\"slot\":\"SECOND\"},"
-		+ "{\"id\":\"d\",\"name\":\"D\",\"style\":\"MELEE\",\"power\":1.8,\"accuracy\":0.7},"
-		+ "{\"id\":\"e\",\"name\":\"E\",\"style\":\"MELEE\",\"power\":2.0,\"accuracy\":0.6},"
+		+ "{\"id\":\"d\",\"name\":\"D\",\"style\":\"STAB\",\"power\":1.8,\"accuracy\":0.7},"
+		+ "{\"id\":\"e\",\"name\":\"E\",\"style\":\"STAB\",\"power\":2.0,\"accuracy\":0.6},"
 		+ "{\"id\":\"f\",\"name\":\"F\",\"style\":\"MAGIC\",\"power\":1.0,\"accuracy\":1.0}],"
-		+ "\"defaults\":{\"MELEE\":\"plain\",\"MAGIC\":\"spell\"},"
-		+ "\"pools\":{\"plain\":{\"styles\":[\"MELEE\"],"
+		+ "\"defaults\":{\"STAB\":\"plain\",\"MAGIC\":\"spell\"},"
+		+ "\"pools\":{\"plain\":{\"styles\":[\"STAB\"],"
 		+ "\"learns\":[[\"a\",1],[\"b\",5],[\"c\",10],[\"d\",20],[\"e\",30]]},"
 		+ "\"spell\":{\"styles\":[\"MAGIC\"],\"learns\":[[\"f\",1]]}},"
 		+ "\"species\":{\"special\":\"spell\"}}";
 
-	private static final Species GOBLIN = new Species("Goblin", 5, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 5, CombatType.STAB);
 	private static final Species WIZARD = new Species("Wizard", 5, CombatType.MAGIC);
 
 	private final MoveTable table = MoveTable.load(new Gson(), new StringReader(JSON));
@@ -96,7 +96,7 @@ public class MoveTableTest
 	{
 		assertTrue(table.find("c").second());
 		assertFalse(table.find("a").second());
-		assertTrue(Move.basic(CombatType.MELEE).plain());
+		assertTrue(Move.basic(CombatType.STAB).plain());
 		assertEquals(1.0, Move.basic(CombatType.RANGED).power(), 0.0);
 		assertEquals(CombatType.RANGED, Move.basic(CombatType.RANGED).style());
 		assertEquals("Magic, power 1.5, accuracy 80%", table.find("c").describe());

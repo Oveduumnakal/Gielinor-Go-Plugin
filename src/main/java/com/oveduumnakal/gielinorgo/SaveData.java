@@ -85,8 +85,20 @@ final class SaveData
 	/** The rival's starter and how many of the rival's battles are won. Null until the rival is first needed. */
 	RivalProgress rival;
 
+	/**
+	 * The title the panel header shows, {@code GRAND_CHAMPION} or {@code MASTER_COLLECTOR}, or null to show the newest
+	 * title earned. Null in saves from before it existed.
+	 */
+	String title;
+
 	/** Healing items owned, keyed by {@link ItemType#name()}. Null in saves from before items existed. */
 	Map<String, Integer> items = new HashMap<>();
+
+	/** Species keys of the bosses that have already paid their sure first-kill egg. Null in older saves. */
+	Set<String> bossKills = new LinkedHashSet<>();
+
+	/** The key the Warrior jar was saved under before it became the Stab, Slash and Crush jars. */
+	private static final String OLD_WARRIOR = "WARRIOR";
 
 	/** @return a save for a player who has never played, with the starting jars */
 	static SaveData fresh()
@@ -114,6 +126,7 @@ final class SaveData
 		sigils = sigils == null ? new LinkedHashSet<>() : new LinkedHashSet<>(sigils);
 		tasks = tasks == null ? new TaskProgress() : tasks.sanitized();
 		milestones = milestones == null ? new LinkedHashSet<>() : new LinkedHashSet<>(milestones);
+		bossKills = bossKills == null ? new LinkedHashSet<>() : new LinkedHashSet<>(bossKills);
 		eggs.removeIf(egg -> egg == null);
 		team.removeIf(creature -> creature == null || creature.species == null);
 		storage.removeIf(creature -> creature == null || creature.species == null);
@@ -133,11 +146,28 @@ final class SaveData
 				rival = null;
 		}
 
-		if (selectedJar == null)
+		splitWarriorJars();
+		if (selectedJar == null || selectedJar.equals(OLD_WARRIOR))
 			selectedJar = JarType.BRONZE.name();
 
 		version = VERSION;
 		return this;
+	}
+
+	/**
+	 * Turns the Warrior jars of an old save into Stab, Slash and Crush jars, a third each with the remainder going to
+	 * Crush, and removes the old key, so no jar is lost.
+	 */
+	private void splitWarriorJars()
+	{
+		Integer old = jars.remove(OLD_WARRIOR);
+		if (old == null || old <= 0)
+			return;
+
+		int third = old / 3;
+		jars.merge(JarType.STAB.name(), third, Integer::sum);
+		jars.merge(JarType.SLASH.name(), third, Integer::sum);
+		jars.merge(JarType.CRUSH.name(), old - 2 * third, Integer::sum);
 	}
 
 	/**

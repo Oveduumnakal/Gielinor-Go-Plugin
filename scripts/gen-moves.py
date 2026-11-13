@@ -30,7 +30,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "..", "src", "main", "resources", "com", "oveduumnakal", "gielinorgo")
 POOLS = os.path.join(HERE, "move-pools.json")
-STYLES = ("MELEE", "RANGED", "MAGIC")
+STYLES = ("STAB", "SLASH", "CRUSH", "RANGED", "MAGIC")
 SLOTS = ("ATTACK", "SECOND")
 STATUSES = ("POISON", "VENOM", "BURN", "FREEZE", "STUN")
 MAX_POWER = 3.0
@@ -132,7 +132,7 @@ def assign(species, rules, pools, defaults):
     out = {}
     for row in species:
         name = row["name"]
-        style = row.get("style", "MELEE")
+        style = row.get("style", "CRUSH")
         for pool, matches in rules:
             if style in pools[pool]["styles"] and matches(name):
                 if pool != defaults[style]:

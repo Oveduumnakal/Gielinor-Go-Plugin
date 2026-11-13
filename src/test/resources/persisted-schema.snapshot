@@ -17,6 +17,7 @@ class Creature {
 }
 class Egg {
   rarity: String
+  species: String
   tilesLeft: int
   tilesTotal: int
 }
@@ -26,6 +27,7 @@ class RivalProgress {
 }
 class SaveData {
   battlesWon: int
+  bossKills: Set<String>
   caught: Map<String, Integer>
   eggs: List<Egg>
   eliteClears: int
@@ -41,6 +43,7 @@ class SaveData {
   storage: List<Creature>
   tasks: TaskProgress
   team: List<Creature>
+  title: String
   trainerXp: long
   version: int
 }

@@ -234,7 +234,7 @@ final class BattleTimeline
 		/** @return whether the attacker steps up to the target: a melee attack, or a beat with no style given */
 		boolean melee()
 		{
-			return style == null || style == CombatType.MELEE;
+			return style == null || style.melee();
 		}
 	}
 

@@ -45,9 +45,10 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	 * that sends no version reads as 0. Version 3 added the moves of each creature and the moves of a traded one, and
 	 * changed how a creature attacks (accuracy, power, no second style, a move picked at random). Version 4 added
 	 * status effects (poison, venom, burn, freeze and stun), so a battle draws more random numbers and ends
-	 * differently.
+	 * differently. Version 5 added the species of a boss egg in a trade. Version 6 split Melee into
+	 * Stab, Slash and Crush, with a new chart of five styles.
 	 */
-	static final int PROTOCOL = 4;
+	static final int PROTOCOL = 6;
 
 	/** One creature or one egg named in a trade. Exactly one of the species and the egg rarity is set. */
 	static final class Item
@@ -61,6 +62,7 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 		private String[] moves;
 		private String egg;
 		private int tilesLeft;
+		private String eggSpecies;
 
 		/** Used by Gson. */
 		Item()
@@ -135,6 +137,27 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 			item.egg = rarity;
 			item.tilesLeft = tilesLeft;
 			return item;
+		}
+
+		/**
+		 * Names a boss egg.
+		 *
+		 * @param rarity the egg's rarity, as a {@link Rarity#name()}
+		 * @param tilesLeft tiles still to walk before it hatches
+		 * @param species the species key the egg hatches into
+		 * @return the item
+		 */
+		static Item egg(String rarity, int tilesLeft, String species)
+		{
+			Item item = egg(rarity, tilesLeft);
+			item.eggSpecies = species;
+			return item;
+		}
+
+		/** @return the species key a boss egg hatches into, or null for an ordinary egg */
+		String eggSpecies()
+		{
+			return eggSpecies;
 		}
 
 		/** @return the creature's species key, or null for an egg */

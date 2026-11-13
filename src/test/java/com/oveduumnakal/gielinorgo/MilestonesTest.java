@@ -35,7 +35,7 @@ public class MilestonesTest
 	{
 		List<Species> all = new ArrayList<>();
 		for (int i = 0; i < SPECIES; i++)
-			all.add(new Species(String.format("Beast %03d", i), 1 + i, CombatType.MELEE));
+			all.add(new Species(String.format("Beast %03d", i), 1 + i, CombatType.STAB));
 
 		table = new SpeciesTable(all);
 		Family twins = new Family("twins", "Twins", JarType.EMBER,
@@ -219,7 +219,7 @@ public class MilestonesTest
 		assertEquals("Next: 100 species", view.nextLabel());
 		assertEquals(87, view.nextCurrent());
 		assertEquals(100, view.nextTarget());
-		assertEquals(6, view.rows().size());
+		assertEquals(9, view.rows().size());
 		MilestoneView.Row first = view.rows().get(0);
 		MilestoneView.Row third = view.rows().get(2);
 		assertTrue(first.paid());

@@ -35,6 +35,8 @@ final class PanelState
 	private MilestoneView milestones = MilestoneView.NONE;
 	private EliteView elite = EliteView.NONE;
 	private RivalView rival = RivalView.NONE;
+	private String shownTitle;
+	private List<String> titles = Collections.emptyList();
 	private String resetSummary = "";
 	private List<StarterView> starters = Collections.emptyList();
 	private final Map<ItemType, Integer> items;
@@ -137,7 +139,7 @@ final class PanelState
 		copy.resetSummary = resetSummary;
 		copy.starters = starters;
 		copy.rival = rival;
-		return copy.withGoals(milestones, elite);
+		return copy.withGoals(milestones, elite).withTitle(shownTitle, titles);
 	}
 
 	/**
@@ -307,6 +309,32 @@ final class PanelState
 		this.milestones = milestoneView;
 		this.elite = eliteView;
 		return this;
+	}
+
+	/**
+	 * Sets the titles for the header.
+	 *
+	 * @param shown the title the header shows, or null for none
+	 * @param earned every title earned, in order
+	 * @return this snapshot
+	 */
+	PanelState withTitle(String shown, List<String> earned)
+	{
+		this.shownTitle = shown;
+		this.titles = Collections.unmodifiableList(new ArrayList<>(earned));
+		return this;
+	}
+
+	/** @return the title the header shows, a {@code GoGame.TITLE_} constant, or null when none is earned */
+	String shownTitle()
+	{
+		return shownTitle;
+	}
+
+	/** @return every title earned, in order, so the header can switch between them */
+	List<String> titles()
+	{
+		return titles;
 	}
 
 	/** @return the Elite challenge card for the Battle tab */

@@ -56,8 +56,8 @@ public class BattleTimelineTest
 	@Test
 	public void aRealBattleEndsWithTheResult()
 	{
-		Combatant mine = new Combatant(new Species("Cow", 2, CombatType.MELEE), 5, 1.0);
-		Combatant foe = new Combatant(new Species("Goblin", 13, CombatType.MELEE), 5, 1.0);
+		Combatant mine = new Combatant(new Species("Cow", 2, CombatType.STAB), 5, 1.0);
+		Combatant foe = new Combatant(new Species("Goblin", 13, CombatType.STAB), 5, 1.0);
 
 		BattleResult result = BattleSim.fight(mine, foe, new Random(7));
 		List<BattleTimeline.Step> steps = BattleTimeline.stepsOf(result.lines());
@@ -201,7 +201,7 @@ public class BattleTimelineTest
 		List<BattleLine> lines = Arrays.asList(
 			new BattleLine("x", Tone.GOOD, false, BattleLine.Kind.LEAD_HIT, false, CombatType.RANGED, false),
 			new BattleLine("x", Tone.BAD, true, BattleLine.Kind.FOE_HIT, true, CombatType.MAGIC, true),
-			new BattleLine("x", Tone.BAD, true, BattleLine.Kind.FOE_HIT, false, CombatType.MELEE, false),
+			new BattleLine("x", Tone.BAD, true, BattleLine.Kind.FOE_HIT, false, CombatType.STAB, false),
 			line(BattleLine.Kind.CLOSING));
 
 		List<BattleTimeline.Step> steps = BattleTimeline.stepsOf(lines);
@@ -211,7 +211,7 @@ public class BattleTimelineTest
 		assertFalse(steps.get(0).melee());
 		assertEquals(CombatType.MAGIC, steps.get(1).style());
 		assertEquals(ProjectileLook.ICE, steps.get(1).look());
-		assertEquals(CombatType.MELEE, steps.get(2).style());
+		assertEquals(CombatType.STAB, steps.get(2).style());
 		assertNull(steps.get(2).look());
 		assertTrue(steps.get(2).melee());
 		assertNull(steps.get(3).style());

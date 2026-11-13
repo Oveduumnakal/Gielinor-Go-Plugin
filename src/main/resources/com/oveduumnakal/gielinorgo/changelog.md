@@ -58,9 +58,27 @@ A Creature Log, daily tasks and daily events give you goals.
   combat. (#87)
 - **Report a bug and Request a feature.** The Feedback button in the panel opens GitHub with your text filled in.
   (#81)
+- **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
+  beside you, and three species are only met this way. (#90)
+- **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final
+  boss. (#91)
+- **Days played.** The login streak became a count of days played that never resets; every 7th day still pays
+  an egg. (#89)
+- **Sound effects.** Game sounds for a catch, a level-up, an evolution, a hatch, a gilded creature and other
+  big moments, with a setting to turn them off. (#94)
+- **A reward for releasing.** Releasing creatures pays creature XP to your lead, and Storage can release several
+  at once. (#92)
 - **Reset progress.** A link at the bottom of the Team tab starts you over after two clicks; the old save is kept
   aside. (#84)
 - **Starter creatures.** New players pick an Imp, a Gnome Archer or a Wizard at level 5; the Gnome Archer starts a
   new evolution line. (#83)
+- **Richer Log entries.** Click a species in the Creature Log for its examine text, evolution line and how many
+  you caught; right-click it to open its wiki page. (#93)
+- **Log rewards and titles.** The Creature Log pays at 750 species, 1,000 and a complete Log, which earns the
+  Master Collector title; with Grand Champion you pick which one the header shows. (#88)
+- **Evolutions by night or underground.** Some creatures evolve only at night or in a cave, and the Rat and Wolf
+  lines branch. (#99)
+- **Five combat styles.** Melee splits into Stab, Slash and Crush, each with its own jar from Attack, Strength or
+  Defence XP. (#85)
 - **A rival.** Bryn takes the starter that beats yours and challenges you five times from the Battle tab. (#95)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

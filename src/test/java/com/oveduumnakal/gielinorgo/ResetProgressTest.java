@@ -50,8 +50,8 @@ public class ResetProgressTest
 	@Before
 	public void setUp()
 	{
-		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Mite", 1, CombatType.MELEE),
-			new Species("Brute", 200, CombatType.MELEE)));
+		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Mite", 1, CombatType.STAB),
+			new Species("Brute", 200, CombatType.STAB)));
 		game = new GoGame(species, new Random(7), () -> now, notice -> messages.add(notice.text()));
 	}
 
@@ -127,8 +127,8 @@ public class ResetProgressTest
 
 		String json = "{\"minX\":3180,\"minY\":3346,\"maxX\":3202,\"maxY\":3372,\"firstDragonJars\":10,"
 			+ "\"firstSpecialtyJars\":3,\"firstEgg\":\"LEGENDARY\",\"laterDragonJars\":2,\"stages\":[" + stages + "]}";
-		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Mite", 1, CombatType.MELEE),
-			new Species("Brute", 200, CombatType.MELEE)));
+		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Mite", 1, CombatType.STAB),
+			new Species("Brute", 200, CombatType.STAB)));
 		game.elite(EliteTable.load(gson, new StringReader(json), species));
 		game.data().team.add(new Creature("brute", 60, now));
 		for (int i = 0; i < 8; i++)

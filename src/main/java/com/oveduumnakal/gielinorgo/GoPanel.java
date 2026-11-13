@@ -8,8 +8,11 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -126,6 +129,14 @@ final class GoPanel extends PluginPanel
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
 		trainerLabel = PanelUi.label("", FontManager.getRunescapeSmallFont(), Color.WHITE);
+		trainerLabel.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				nextTitle();
+			}
+		});
 		trainerBar = new BarComponent(ColorScheme.BRAND_ORANGE, TRAINER_BAR_HEIGHT);
 		winsLabel = PanelUi.caption("");
 		stepsLabel = PanelUi.caption("");
@@ -167,8 +178,14 @@ final class GoPanel extends PluginPanel
 	void update(PanelState state)
 	{
 		latest = state;
-		trainerLabel.setText((state.elite().titled() ? "Grand Champion Lv " : "Trainer Lv ") + state.trainerLevel());
-		trainerLabel.setForeground(state.elite().titled() ? PanelUi.GOLD : Color.WHITE);
+		String shown = state.shownTitle();
+		String name = GoGame.TITLE_GRAND_CHAMPION.equals(shown) ? "Grand Champion"
+			: GoGame.TITLE_MASTER_COLLECTOR.equals(shown) ? "Master Collector" : "Trainer";
+		trainerLabel.setText(name + " Lv " + state.trainerLevel());
+		trainerLabel.setForeground(shown != null ? PanelUi.GOLD : Color.WHITE);
+		boolean switchable = state.titles().size() > 1;
+		trainerLabel.setCursor(Cursor.getPredefinedCursor(switchable ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR));
+		trainerLabel.setToolTipText(switchable ? "Click to change title" : null);
 		trainerBar.set(state.trainerProgress(), ColorScheme.BRAND_ORANGE);
 		trainerBar.setToolTipText(Math.round(state.trainerProgress() * 100) + "% to the next trainer level");
 		winsLabel.setText(state.battlesWon() + (state.battlesWon() == 1 ? " battle won" : " battles won"));
@@ -245,6 +262,16 @@ final class GoPanel extends PluginPanel
 	private void closeChangelog()
 	{
 		((CardLayout) body.getLayout()).show(body, TABS_CARD);
+	}
+
+	private void nextTitle()
+	{
+		PanelState state = latest;
+		if (state == null || state.titles().size() < 2)
+			return;
+
+		int at = state.titles().indexOf(state.shownTitle());
+		actions.pickTitle(state.titles().get((at + 1) % state.titles().size()));
 	}
 
 	private JPanel buildHeader()

@@ -127,7 +127,7 @@ public class FollowerDataTest
 			moves = MoveTable.load(gson, reader);
 		}
 
-		assertEquals(CombatType.MELEE, species.find("Green dragon").style());
+		assertEquals(CombatType.SLASH, species.find("Green dragon").style());
 		int breathers = 0;
 		List<String> unanimated = new ArrayList<>();
 		for (Species one : species.all())

@@ -4,6 +4,8 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.List;
+
 /**
  * What the player can do from the side panel. The panel calls these on the UI thread; the plugin carries each one
  * over to the game thread and then sends the panel a fresh {@link PanelState}.
@@ -39,11 +41,25 @@ interface PanelActions
 	void release(int storageIndex);
 
 	/**
+	 * Releases several stored creatures for good, once it is checked that each is still where the panel showed it.
+	 *
+	 * @param picks the creatures as the Storage tab listed them
+	 */
+	void releaseMany(List<TradePick> picks);
+
+	/**
 	 * Challenges a City Champion. It only starts a battle while the player stands in that city.
 	 *
 	 * @param championId the champion's {@link ChampionView#id()}
 	 */
 	void challenge(String championId);
+
+	/**
+	 * Picks which earned title the header shows.
+	 *
+	 * @param title a {@code GoGame.TITLE_} constant
+	 */
+	void pickTitle(String title);
 
 	/** Starts the Elite challenge and fights its first battle. It only starts at the Champions' Guild. */
 	void eliteChallenge();

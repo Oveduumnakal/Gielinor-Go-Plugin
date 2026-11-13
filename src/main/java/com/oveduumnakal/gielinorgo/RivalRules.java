@@ -58,7 +58,8 @@ final class RivalRules
 
 	/**
 	 * Picks the rival's starter for a save that never recorded the player's starter: the one that takes on the
-	 * starter sharing the lead's combat style. A lead that matches no starter gives the Imp.
+	 * starter sharing the lead's combat style, with Stab, Slash and Crush all answered like the Imp's Slash. A lead
+	 * that matches no starter gives the Imp.
 	 *
 	 * @param lead the species of the player's lead, or null when there is none
 	 * @param species every species, to read the starters' styles from
@@ -66,6 +67,9 @@ final class RivalRules
 	 */
 	static String starterAgainst(Species lead, SpeciesTable species)
 	{
+		if (lead != null && lead.style().melee())
+			return counterOf("Imp");
+
 		if (lead != null)
 		{
 			for (String name : StarterRules.STARTERS)

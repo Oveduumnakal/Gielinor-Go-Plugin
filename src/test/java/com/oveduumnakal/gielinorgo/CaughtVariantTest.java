@@ -26,7 +26,7 @@ public class CaughtVariantTest
 	private static final Species GUARD = species("Monkey Guard", 167, "[5275,5276,5271]");
 	private static final Species IMP = species("Imp", 7, "[100,101,102]");
 	private static final Species LESSER = species("Lesser demon", 82, "[200,201]");
-	private static final Species NO_IDS = new Species("Mystery", 5, CombatType.MELEE);
+	private static final Species NO_IDS = new Species("Mystery", 5, CombatType.STAB);
 
 	private GoGame game;
 
@@ -219,7 +219,7 @@ public class CaughtVariantTest
 
 	private static Species species(String name, int level, String ids)
 	{
-		return GSON.fromJson("{\"name\":\"" + name + "\",\"level\":" + level + ",\"style\":\"MELEE\",\"ids\":" + ids
+		return GSON.fromJson("{\"name\":\"" + name + "\",\"level\":" + level + ",\"style\":\"STAB\",\"ids\":" + ids
 			+ "}", Species.class);
 	}
 }

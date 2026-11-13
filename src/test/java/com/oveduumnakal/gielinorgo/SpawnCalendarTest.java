@@ -38,12 +38,12 @@ public class SpawnCalendarTest
 		List<Species> all = new ArrayList<>();
 		Random random = new Random(7);
 		for (int i = 0; i < 400; i++)
-			all.add(new Species("Beast " + i, 1 + random.nextInt(i < 250 ? 30 : 400), CombatType.MELEE));
+			all.add(new Species("Beast " + i, 1 + random.nextInt(i < 250 ? 30 : 400), CombatType.STAB));
 
-		all.add(new Species("Spirit", 20, CombatType.MELEE, Trait.UNHOLY));
-		all.add(new Species("Cave goblin", 20, CombatType.MELEE));
-		all.add(new Species("Colossus", 20, CombatType.MELEE, Trait.LARGE));
-		all.add(new Species("Wyrm", 20, CombatType.MELEE, Trait.FIERY));
+		all.add(new Species("Spirit", 20, CombatType.STAB, Trait.UNHOLY));
+		all.add(new Species("Cave goblin", 20, CombatType.STAB));
+		all.add(new Species("Colossus", 20, CombatType.STAB, Trait.LARGE));
+		all.add(new Species("Wyrm", 20, CombatType.STAB, Trait.FIERY));
 		return new SpeciesTable(all);
 	}
 
@@ -126,7 +126,7 @@ public class SpawnCalendarTest
 	@Test
 	public void aRarityWithNoSpeciesIsLeftOut()
 	{
-		SpeciesTable small = new SpeciesTable(List.of(new Species("Rat", 1, CombatType.MELEE)));
+		SpeciesTable small = new SpeciesTable(List.of(new Species("Rat", 1, CombatType.STAB)));
 
 		assertEquals(1, new SpawnCalendar(small).featured(MONDAY).size());
 	}
@@ -214,7 +214,7 @@ public class SpawnCalendarTest
 	@Test
 	public void multipliersMultiplyAndStopAtSix()
 	{
-		SpeciesTable table = new SpeciesTable(List.of(new Species("Ghost goblin", 5, CombatType.MELEE, Trait.UNHOLY)));
+		SpeciesTable table = new SpeciesTable(List.of(new Species("Ghost goblin", 5, CombatType.STAB, Trait.UNHOLY)));
 		SpawnCalendar only = new SpawnCalendar(table);
 		Species ghost = table.find("Ghost goblin");
 		LocalDate goblinWeekend = goblinWeekend();

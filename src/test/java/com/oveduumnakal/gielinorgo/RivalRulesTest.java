@@ -66,7 +66,7 @@ public class RivalRulesTest
 		{
 			Species mine = species.find(name);
 			Species theirs = species.find(RivalRules.counterOf(name));
-			assertTrue(name, theirs.style().beats() == mine.style());
+			assertTrue(name, theirs.style().beats(mine.style()));
 		}
 	}
 

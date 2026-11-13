@@ -17,6 +17,7 @@ import net.runelite.client.ui.FontManager;
 final class EggRow extends JPanel
 {
 	private final Rarity rarity;
+	private final String bossName;
 	private final JLabel status;
 	private final BarComponent bar;
 
@@ -24,12 +25,13 @@ final class EggRow extends JPanel
 	{
 		super(new BorderLayout(0, 3));
 		rarity = egg.rarity();
+		bossName = egg.bossName();
 		setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		setBorder(new EmptyBorder(4, 8, 4, 8));
 
 		JPanel top = new JPanel(new BorderLayout(4, 0));
 		top.setOpaque(false);
-		top.add(PanelUi.label(rarity.label() + " egg", FontManager.getRunescapeSmallFont(), rarity.color()),
+		top.add(PanelUi.label(egg.label(), FontManager.getRunescapeSmallFont(), rarity.color()),
 			BorderLayout.WEST);
 		status = PanelUi.label("", FontManager.getRunescapeSmallFont(), ColorScheme.LIGHT_GRAY_COLOR);
 		top.add(status, BorderLayout.EAST);
@@ -44,6 +46,12 @@ final class EggRow extends JPanel
 	Rarity rarity()
 	{
 		return rarity;
+	}
+
+	/** @return the boss species name this row was built for, or null for an ordinary egg */
+	String bossName()
+	{
+		return bossName;
 	}
 
 	/**

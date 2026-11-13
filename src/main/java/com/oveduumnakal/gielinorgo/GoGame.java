@@ -8,11 +8,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
@@ -24,6 +29,12 @@ import java.util.function.Supplier;
  */
 final class GoGame
 {
+	/** The title for clearing the Elite challenge. */
+	static final String TITLE_GRAND_CHAMPION = "GRAND_CHAMPION";
+
+	/** The title for a complete Creature Log. */
+	static final String TITLE_MASTER_COLLECTOR = "MASTER_COLLECTOR";
+
 	/** Tiles the player walks to find one Bronze jar. */
 	static final int TILES_PER_JAR = 150;
 
@@ -107,10 +118,15 @@ final class GoGame
 
 	private final SpeciesTable species;
 	private final EvolutionTable evolutions;
+	private Conditions conditions = Conditions.NONE;
+	private ExamineTable examine = ExamineTable.empty();
 	private final ChampionTable champions;
 	private final Random random;
 	private final LongSupplier clock;
 	private final Consumer<Notice> notices;
+	private Consumer<Cue> cues = cue ->
+	{
+	};
 	private SaveData data = SaveData.fresh();
 	private List<LogEntry> log;
 	private long xpCarry;
@@ -123,6 +139,8 @@ final class GoGame
 	private Milestones milestoneTable = Milestones.NONE;
 	private boolean milestonesDue;
 	private boolean walking;
+	private BossTable bossTable = BossTable.empty();
+	private final Set<String> bossEggsWaiting = new LinkedHashSet<>();
 	private EliteTable elite = EliteTable.empty();
 	private RivalTable rivals = RivalTable.empty();
 	private EliteRun run;
@@ -164,6 +182,17 @@ final class GoGame
 		this.random = random;
 		this.clock = clock;
 		this.notices = notices;
+	}
+
+	/**
+	 * Sets the examine lines the Creature Log shows.
+	 *
+	 * @param table the wiki's examine line for each species
+	 */
+	void examine(ExamineTable table)
+	{
+		this.examine = table;
+		this.log = null;
 	}
 
 	/**
@@ -488,6 +517,7 @@ final class GoGame
 
 		walking = false;
 		settleMilestones();
+		settleBossEggs();
 	}
 
 	/**
@@ -510,6 +540,43 @@ final class GoGame
 
 		cityId = id;
 		return true;
+	}
+
+	/**
+	 * Tells the game what the world is like, so evolutions with a condition can fire. Call it every tick; nothing
+	 * happens unless something changed. A team creature that has its level and now meets the condition evolves on
+	 * the spot. Creatures in Storage do not evolve.
+	 *
+	 * @param now whether it is night and whether the player is underground
+	 * @return true when the conditions changed, so the panel needs a refresh
+	 */
+	boolean setConditions(Conditions now)
+	{
+		if (now.equals(conditions))
+			return false;
+
+		conditions = now;
+		boolean evolved = false;
+		for (Creature creature : new ArrayList<>(data.team))
+			evolved |= evolveIfReady(creature);
+
+		if (evolved)
+		{
+			dirty = true;
+			cues.accept(Cue.EVOLVE);
+		}
+
+		return true;
+	}
+
+	/**
+	 * Sets where the game's sound cues go. Without this call they are dropped.
+	 *
+	 * @param sink receives each cue as it happens; the caller decides whether and how to play it
+	 */
+	void setCues(Consumer<Cue> sink)
+	{
+		this.cues = sink;
 	}
 
 	/**
@@ -739,10 +806,12 @@ final class GoGame
 			if (random.nextDouble() < CatchRules.FLEE_CHANCE)
 			{
 				tell(entry, "Broke free and ran away!", Tone.BAD);
+				cues.accept(Cue.BROKE_FREE);
 				return CatchOutcome.FLED;
 			}
 
 			tell(entry, "Broke free!", Tone.BAD);
+			cues.accept(Cue.BROKE_FREE);
 			return CatchOutcome.BROKE_FREE;
 		}
 
@@ -758,6 +827,7 @@ final class GoGame
 		else
 			tell(entry, "Caught " + name + " (Lv " + entry.level() + ")!", Tone.GOOD);
 
+		cues.accept(Cue.CATCH);
 		String rating = ratingNote(caught);
 		if (!rating.isEmpty())
 			tell(entry, rating, Tone.FIND);
@@ -1291,24 +1361,82 @@ final class GoGame
 	}
 
 	/**
-	 * Releases a stored creature for good.
+	 * Releases a stored creature for good. The lead gains creature XP for it.
 	 *
 	 * @param storageIndex position in storage
 	 */
 	void release(int storageIndex)
 	{
-		if (storageIndex < 0 || storageIndex >= data.storage.size())
+		release(Collections.singletonList(storageIndex));
+	}
+
+	/**
+	 * Releases several stored creatures for good, in any order. A creature promised in a trade and a place that does
+	 * not exist are skipped. The lead gains the creature XP of every creature that went, with one line to say so.
+	 *
+	 * @param storageIndexes positions in storage
+	 */
+	void release(List<Integer> storageIndexes)
+	{
+		List<Integer> places = new ArrayList<>(new TreeSet<>(storageIndexes));
+		Collections.reverse(places);
+		long xp = 0;
+		int count = 0;
+		String lastName = null;
+		for (int index : places)
+		{
+			if (index < 0 || index >= data.storage.size())
+				continue;
+
+			Creature kept = data.storage.get(index);
+			if (tradeLocks.locked(kept))
+			{
+				tell(nameOf(kept) + " is promised in a trade", Tone.BAD);
+				continue;
+			}
+
+			Species found = species.find(kept.species);
+			xp += ReleaseRules.xp(kept.level(), found == null ? Rarity.COMMON : found.rarity());
+			lastName = nameOf(kept);
+			data.storage.remove(index);
+			count++;
+		}
+
+		if (count == 0)
 			return;
 
-		if (tradeLocks.locked(data.storage.get(storageIndex)))
+		dirty = true;
+		String what = count == 1 ? lastName : count + " creatures";
+		Creature lead = data.lead();
+		if (lead == null)
 		{
-			tell(nameOf(data.storage.get(storageIndex)) + " is promised in a trade", Tone.BAD);
+			tell("Released " + what, Tone.INFO);
 			return;
 		}
 
-		Creature released = data.storage.remove(storageIndex);
-		dirty = true;
-		tell("Released " + nameOf(released), Tone.INFO);
+		tell(nameOf(lead) + " +" + xp + " XP (released " + what + ")", Tone.GOOD);
+		trainLead(lead, xp);
+	}
+
+	/**
+	 * Gives the lead creature XP the way a battle win does: it can level, learn moves and evolve.
+	 *
+	 * @param lead the lead creature
+	 * @param xp the creature XP to add
+	 */
+	private void trainLead(Creature lead, long xp)
+	{
+		int before = lead.level();
+		lead.xp = XpRules.capped(lead.xp + xp);
+		if (lead.level() > before)
+			tell(nameOf(lead) + " grew to Lv " + lead.level() + "!", Tone.GOOD);
+
+		if (evolveIfReady(lead))
+			cues.accept(Cue.EVOLVE);
+		else if (lead.level() > before)
+			cues.accept(Cue.LEVEL_UP);
+
+		learnMoves(lead, before);
 	}
 
 	/**
@@ -1458,6 +1586,13 @@ final class GoGame
 		return true;
 	}
 
+	/** @return the name of the species a boss egg holds, or null for an ordinary egg */
+	private String eggName(Egg egg)
+	{
+		Species fixed = egg.species == null ? null : species.find(egg.species);
+		return fixed == null ? null : fixed.name();
+	}
+
 	/** @return a copy of everything the side panel shows, safe to hand to the UI thread */
 	PanelState snapshot()
 	{
@@ -1468,7 +1603,7 @@ final class GoGame
 
 		List<EggView> eggs = new ArrayList<>();
 		for (Egg egg : data.eggs)
-			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal));
+			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal, eggName(egg)));
 
 		freezeTeam(now);
 		TaskView tasks = startTasks().view(now, bestUnlockedJar());
@@ -1478,7 +1613,8 @@ final class GoGame
 			.withGoals(milestoneTable.progress(data), eliteView())
 			.withResetSummary(resetSummary())
 			.withRival(rivalView())
-			.withStarters(starterOffer());
+			.withStarters(starterOffer())
+			.withTitle(shownTitle(), titles());
 	}
 
 	/** @return how many caught species count toward the Log: known ones that are not quest-only */
@@ -1530,7 +1666,8 @@ final class GoGame
 	}
 
 	/**
-	 * Hatches an egg into a level 1 creature of a random species of the egg's rarity.
+	 * Hatches an egg into a level 1 creature: of the egg's own species for a boss egg, otherwise of a random species
+	 * of the egg's rarity.
 	 *
 	 * @param egg the egg whose walking is done
 	 * @return true when the egg is used up; false when there is no room, so it waits
@@ -1540,17 +1677,22 @@ final class GoGame
 		if (!hasRoomForCreature())
 			return false;
 
-		List<Species> pool = new ArrayList<>();
-		for (Species candidate : species.catchable())
+		Species born = egg.species == null ? null : species.find(egg.species);
+		if (born == null)
 		{
-			if (candidate.rarity() == egg.rarityTier())
-				pool.add(candidate);
+			List<Species> pool = new ArrayList<>();
+			for (Species candidate : species.catchable())
+			{
+				if (candidate.rarity() == egg.rarityTier())
+					pool.add(candidate);
+			}
+
+			if (pool.isEmpty())
+				return true;
+
+			born = pool.get(random.nextInt(pool.size()));
 		}
 
-		if (pool.isEmpty())
-			return true;
-
-		Species born = pool.get(random.nextInt(pool.size()));
 		Creature creature = new Creature(born.key(), 1, clock.getAsLong());
 		creature.gilded = random.nextInt(gildedOneIn()) == 0;
 		creature.setRolls(StatRolls.roll(random));
@@ -1558,6 +1700,7 @@ final class GoGame
 		keep(creature);
 		recordOwned(creature);
 		tell("Egg hatched: " + (creature.gilded ? "gilded " : "") + born.name() + "!", Tone.FIND);
+		cues.accept(Cue.HATCH);
 		String rating = ratingNote(creature);
 		if (!rating.isEmpty())
 			tell(rating, Tone.FIND);
@@ -1570,10 +1713,12 @@ final class GoGame
 	 * Turns a creature into the next species of its line for every evolution level it has reached.
 	 *
 	 * @param creature the creature that just gained XP
+	 * @return whether it evolved at least once
 	 */
-	private void evolveIfReady(Creature creature)
+	private boolean evolveIfReady(Creature creature)
 	{
-		EvolutionTable.Step step = evolutions.next(creature.species);
+		boolean evolved = false;
+		EvolutionTable.Step step = evolutions.next(creature.species, conditions);
 		for (int i = 0; i < MAX_EVOLUTIONS_AT_ONCE && step != null && creature.level() >= step.level(); i++)
 		{
 			Species grown = species.find(step.to());
@@ -1583,10 +1728,12 @@ final class GoGame
 			MoveLearning.evolved(creature, grown, moves);
 			recordOwned(creature);
 			tell(before + " evolved into " + grown.name() + "!", Tone.GOOD);
-			step = evolutions.next(creature.species);
+			evolved = true;
+			step = evolutions.next(creature.species, conditions);
 		}
 
 		settleMilestones();
+		return evolved;
 	}
 
 	/**
@@ -1776,6 +1923,7 @@ final class GoGame
 			return;
 
 		tell("Sigil of " + champion.city() + " earned!", Tone.FIND);
+		cues.accept(Cue.SIGIL);
 		data.addJars(champion.rewardJar(), champion.rewardJars());
 		tell(foundJars(champion.rewardJar(), champion.rewardJars(), "champion"), Tone.FIND,
 			champion.rewardJar());
@@ -1793,6 +1941,64 @@ final class GoGame
 	{
 		milestoneTable = table == null ? Milestones.NONE : table;
 		milestonesDue = true;
+	}
+
+	/**
+	 * Sets the bosses whose kills give an egg. Without this call there are none.
+	 *
+	 * @param table the boss table
+	 */
+	void bosses(BossTable table)
+	{
+		bossTable = table == null ? BossTable.empty() : table;
+	}
+
+	/** @return the bosses whose kills give an egg */
+	BossTable bossTable()
+	{
+		return bossTable;
+	}
+
+	/**
+	 * Handles a boss kill the game reported in the chat. The first kill of a boss always gives its egg, later kills
+	 * give it {@link BossRules#LATER_CHANCE} of the time. With a full egg bag the egg waits, one place per boss,
+	 * until a slot is free; a first-kill egg is only counted as paid once it is in the bag.
+	 *
+	 * @param chatName the boss or raid name from the kill-count line
+	 */
+	void bossKilled(String chatName)
+	{
+		Species boss = bossTable.speciesFor(chatName);
+		if (boss == null)
+			return;
+
+		boolean first = !data.bossKills.contains(boss.key());
+		if (!BossRules.eggDrops(first, random))
+			return;
+
+		bossEggsWaiting.add(boss.key());
+		settleBossEggs();
+	}
+
+	/** Gives the boss eggs that wait for a slot, as far as there are slots, unless the egg list is being walked. */
+	private void settleBossEggs()
+	{
+		if (walking)
+			return;
+
+		Iterator<String> waiting = bossEggsWaiting.iterator();
+		while (waiting.hasNext() && hasRoomForEgg())
+		{
+			Species boss = species.find(waiting.next());
+			waiting.remove();
+			if (boss == null)
+				continue;
+
+			data.eggs.add(new Egg(boss));
+			data.bossKills.add(boss.key());
+			dirty = true;
+			tell("You found a " + boss.name() + " egg!", Tone.FIND);
+		}
 	}
 
 	/** @return whether the Gilded charm is owned, which is milestone {@link Milestones#CHARM_ID} being paid */
@@ -1832,6 +2038,7 @@ final class GoGame
 	private void payMilestones()
 	{
 		milestonesDue = false;
+		boolean paid = false;
 		for (String id : milestoneTable.reached(data))
 		{
 			if (data.milestones.contains(id))
@@ -1847,11 +2054,23 @@ final class GoGame
 
 			data.milestones.add(id);
 			dirty = true;
+			paid = true;
 			List<String> parts = new ArrayList<>();
 			if (reward.jars() > 0)
 			{
 				data.addJars(reward.jar(), reward.jars());
 				parts.add("+" + reward.jars() + " " + reward.jar().label() + " jars");
+			}
+
+			if (reward.specialtyJars() > 0)
+			{
+				for (JarType type : JarType.values())
+				{
+					if (type.specialty())
+						data.addJars(type, reward.specialtyJars());
+				}
+
+				parts.add("+" + reward.specialtyJars() + " of every specialty jar");
 			}
 
 			if (reward.egg() != null)
@@ -1863,12 +2082,58 @@ final class GoGame
 			if (reward.charm())
 				parts.add("Gilded charm: gilded odds doubled");
 
+			if (reward.title())
+				parts.add("Title: Master Collector");
+
 			String line = "Milestone: " + milestone.label() + "! " + String.join(", ", parts);
 			if (reward.jar() == null)
 				tell(line, Tone.FIND);
 			else
 				tell(line, Tone.FIND, reward.jar());
 		}
+
+		if (paid)
+			cues.accept(Cue.MILESTONE);
+	}
+
+	/** @return the titles the player has earned, Grand Champion first and Master Collector second */
+	List<String> titles()
+	{
+		List<String> earned = new ArrayList<>();
+		if (data.eliteClears > 0)
+			earned.add(TITLE_GRAND_CHAMPION);
+
+		if (data.milestones.contains(Milestones.COMPLETE_ID))
+			earned.add(TITLE_MASTER_COLLECTOR);
+
+		return earned;
+	}
+
+	/** @return the title the header shows: the one picked if it is earned, else the newest earned, or null for none */
+	String shownTitle()
+	{
+		List<String> earned = titles();
+		if (earned.isEmpty())
+			return null;
+
+		if (data.title != null && earned.contains(data.title))
+			return data.title;
+
+		return earned.get(earned.size() - 1);
+	}
+
+	/**
+	 * Picks which earned title the header shows. A title that is not earned is ignored.
+	 *
+	 * @param title {@link #TITLE_GRAND_CHAMPION} or {@link #TITLE_MASTER_COLLECTOR}
+	 */
+	void pickTitle(String title)
+	{
+		if (!titles().contains(title))
+			return;
+
+		data.title = title;
+		dirty = true;
 	}
 
 	/**
@@ -2198,7 +2463,7 @@ final class GoGame
 			if (streak.eggDue())
 				bonus += ", " + eggOrJars(Rarity.UNCOMMON);
 
-			tell("Day " + streak.days() + " streak: " + bonus, Tone.FIND);
+			tell("Day " + streak.days() + ": " + bonus, Tone.FIND);
 		}
 
 		boolean underground = entry.traits().contains(Trait.CAVE);
@@ -2296,7 +2561,11 @@ final class GoGame
 		if (lead.level() > before)
 			tell(nameOf(lead) + " grew to Lv " + lead.level() + "!", Tone.GOOD);
 
-		evolveIfReady(lead);
+		if (evolveIfReady(lead))
+			cues.accept(Cue.EVOLVE);
+		else if (lead.level() > before)
+			cues.accept(Cue.LEVEL_UP);
+
 		learnMoves(lead, before);
 		addTrainerXp(5L + entry.level());
 		if (random.nextDouble() < JAR_DROP_CHANCE)
@@ -2362,15 +2631,23 @@ final class GoGame
 
 		XpRules.share(data.team, creatureXp);
 		dirty = true;
+		Cue loudest = null;
 		for (int i = 0; i < before.length; i++)
 		{
 			Creature creature = data.team.get(i);
 			if (creature.level() > before[i])
 				tell(nameOf(creature) + " grew to Lv " + creature.level() + "!", Tone.GOOD);
 
-			evolveIfReady(creature);
+			if (evolveIfReady(creature))
+				loudest = Cue.stronger(loudest, Cue.EVOLVE);
+			else if (creature.level() > before[i])
+				loudest = Cue.stronger(loudest, Cue.LEVEL_UP);
+
 			learnMoves(creature, before[i]);
 		}
+
+		if (loudest != null)
+			cues.accept(loudest);
 	}
 
 	/**
@@ -2635,6 +2912,12 @@ final class GoGame
 		return found == null ? creature.species : found.name();
 	}
 
+	private String waitingText(Creature creature)
+	{
+		EvolutionCondition waiting = evolutions.waitingFor(creature.species, creature.level(), conditions);
+		return waiting == null ? null : waiting.waitingText();
+	}
+
 	private List<CreatureView> views(List<Creature> creatures, long now)
 	{
 		List<CreatureView> views = new ArrayList<>(creatures.size());
@@ -2642,15 +2925,86 @@ final class GoGame
 		{
 			Species found = species.find(creature.species);
 			Rarity rarity = found == null ? Rarity.COMMON : found.rarity();
-			CombatType type = found == null ? CombatType.MELEE : found.style();
+			CombatType type = found == null ? CombatType.CRUSH : found.style();
 			views.add(new CreatureView(speciesNameOf(creature), creature.level(), XpRules.progress(creature.xp),
 				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname,
 				creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId),
 				found == null ? Collections.emptyList() : MoveLearning.known(creature, found, moves),
-				MoveLearning.pending(creature, moves)));
+				MoveLearning.pending(creature, moves), waitingText(creature)));
 		}
 
 		return views;
+	}
+
+	private List<LogEntry.Stage> evolutionLine(Species entry)
+	{
+		LinkedList<Species> stages = new LinkedList<>();
+		stages.add(entry);
+		Set<String> visited = new HashSet<>();
+		visited.add(entry.key());
+		EvolutionTable.Step step = evolutions.previous(entry.key());
+		while (step != null)
+		{
+			Species before = species.find(step.from());
+			if (before == null || !visited.add(before.key()))
+				break;
+
+			stages.addFirst(before);
+			step = evolutions.previous(before.key());
+		}
+
+		step = evolutions.next(entry.key());
+		while (step != null)
+		{
+			Species after = species.find(step.to());
+			if (after == null || !visited.add(after.key()))
+				break;
+
+			stages.addLast(after);
+			step = evolutions.next(after.key());
+		}
+
+		if (stages.size() < 2)
+			return Collections.emptyList();
+
+		List<LogEntry.Stage> line = new ArrayList<>(stages.size());
+		Set<String> inLine = new HashSet<>();
+		for (Species stage : stages)
+			inLine.add(stage.key());
+
+		for (Species stage : stages)
+			line.add(stageOf(stage, inLine));
+
+		return line;
+	}
+
+	private boolean knownSpecies(Species stage)
+	{
+		Integer count = data.caught.get(stage.key());
+		return data.seen.contains(stage.key()) || count != null && count > 0;
+	}
+
+	private LogEntry.Stage stageOf(Species stage, Set<String> inLine)
+	{
+		EvolutionTable.Step into = evolutions.previous(stage.key());
+		if (into == null)
+			return new LogEntry.Stage(stage.name(), knownSpecies(stage));
+
+		List<LogEntry.Stage> others = new ArrayList<>();
+		for (EvolutionTable.Step sibling : evolutions.steps(into.from()))
+		{
+			Species other = species.find(sibling.to());
+			if (other != null && !inLine.contains(other.key()))
+				others.add(new LogEntry.Stage(other.name(), knownSpecies(other), conditionOf(sibling),
+					Collections.emptyList()));
+		}
+
+		return new LogEntry.Stage(stage.name(), knownSpecies(stage), conditionOf(into), others);
+	}
+
+	private static String conditionOf(EvolutionTable.Step step)
+	{
+		return step.when() == null ? null : step.when().phrase();
 	}
 
 	private List<LogEntry> log()
@@ -2667,7 +3021,7 @@ final class GoGame
 
 			entries.add(new LogEntry(entry.name(), entry.level(), entry.rarity(), entry.style(),
 				count == null ? 0 : count, data.seen.contains(entry.key()), data.gilded.contains(entry.key()),
-				entry.questOnly()));
+				entry.questOnly(), examine.textFor(entry.key()), evolutionLine(entry)));
 		}
 
 		log = Collections.unmodifiableList(entries);

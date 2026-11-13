@@ -84,7 +84,8 @@ public class GameDataTest
 			assertEquals(link + ": name must match the species list exactly", step.to(), to.name());
 			assertTrue(link + ": the next stage must be a stronger species", to.level() > from.level());
 			assertTrue(link + ": level out of range", step.level() >= 10 && step.level() <= 85);
-			assertTrue(step.from() + " evolves twice", froms.add(from.key()));
+			assertTrue(step.from() + " evolves twice without a condition on each", froms.add(from.key())
+				|| step.when() != null);
 		}
 	}
 
@@ -116,7 +117,11 @@ public class GameDataTest
 	{
 		EvolutionTable table = new EvolutionTable(steps, species);
 
-		assertEquals(steps.size(), table.size());
+		Set<String> distinct = new HashSet<>();
+		for (EvolutionTable.Step step : steps)
+			distinct.add(Species.keyFor(step.from()));
+
+		assertEquals(distinct.size(), table.size());
 		assertEquals("Lesser demon", table.next("Imp").to());
 		assertNull(table.next("Zulrah"));
 	}
@@ -226,7 +231,7 @@ public class GameDataTest
 		}
 
 		Milestones milestones = new Milestones(species, families);
-		assertEquals(5 + families.size(), milestones.all().size());
+		assertEquals(8 + families.size(), milestones.all().size());
 	}
 
 	@Test
@@ -410,6 +415,6 @@ public class GameDataTest
 		assertEquals("dragon", table.poolOf(species.find("Vorkath")));
 		assertEquals("wyvern", table.poolOf(species.find("Spitting Wyvern")));
 		assertEquals("wizard", table.poolOf(species.find("Dark wizard")));
-		assertEquals("default_melee", table.poolOf(species.find("Man")));
+		assertEquals("default_crush", table.poolOf(species.find("Man")));
 	}
 }

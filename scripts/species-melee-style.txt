@@ -1,0 +1,111 @@
+# The combat style of every species the wiki does not decide, read by scripts/gen-species.py (issue 85).
+#
+# One line per species: name = STAB, SLASH or CRUSH. The wiki names a style (Stab, Slash, Crush, Ranged, Magic) for
+# most monsters; these have none of their own (no style, Melee, Typeless, All, Various, a list that starts with
+# Melee). The generator fails when a species with no wiki style has no line here. A line also WINS over the wiki, so
+# the one line for a species the wiki does decide (Imp) is an override; the generator prints it.
+#
+# How these were picked (a first draft for the owner to review): claws and blades Slash, teeth and spikes and
+# spears Stab, fists and clubs and bulk Crush; a whole evolution or family line stays on one style (goblins Crush,
+# Imp and Imp Champion Slash, Moss giant and Mosschin Crush); where a monster could be either, Stab then Slash,
+# to keep the five styles even.
+
+Abyssal Sire = SLASH
+Akkha's Shadow = SLASH
+Armoured Foe = SLASH
+Baby leviathan = CRUSH
+Blink = STAB
+Blood spawn = CRUSH
+Captain Cotus = SLASH
+Captain Darvald = SLASH
+Chompy bird = STAB
+Corpse = CRUSH
+Culinaromancer = STAB
+Cursed Baboon = SLASH
+Dagannoth mother = STAB
+Dark energy core = STAB
+Dave = STAB
+Doom of Mokhaiotl = SLASH
+Double Decimation Daryl = SLASH
+Dreadnoth the Jellied = CRUSH
+Elidinis' Warden = SLASH
+Fremennik warrior = SLASH
+Frost dragon = SLASH
+General Danknuck = SLASH
+Goblin lieutenant = CRUSH
+Goblin priest = CRUSH
+Goblin raider = CRUSH
+Golem = CRUSH
+Green Guard = SLASH
+Hueycoatl body = CRUSH
+Hueycoatl tail = CRUSH
+Imp Champion = SLASH
+Jal-MejJak = STAB
+Jubbly bird = STAB
+Kamil = SLASH
+Kinetic Katara = SLASH
+King Snagwort = SLASH
+Large reef shark = STAB
+Mad Angel = SLASH
+Magma strykewyrm = STAB
+Manticore = STAB
+Maxilla beast = SLASH
+Mirrorback Araxyte = STAB
+Mosschin = CRUSH
+Mr Hyde = CRUSH
+Mysterious Figure = SLASH
+Nylocas Athanatos = STAB
+Nylocas Matomenos = STAB
+Painted Goblin = CRUSH
+Penance Queen = STAB
+Pete Kayer = SLASH
+Phantom Muspah = SLASH
+Pirate captain = SLASH
+Redeyes = SLASH
+Reef snake = STAB
+Rowdy Guard = SLASH
+Ruptura Araxyte = STAB
+Sarachnis = STAB
+SAS Member = SLASH
+Scorpia's guardian = STAB
+Sea monodon = STAB
+Seal = CRUSH
+Shellbane gryphon = SLASH
+Siren = SLASH
+Sleepwalker = CRUSH
+Smokedevil = SLASH
+Snailfeet = CRUSH
+Sol Heredit = SLASH
+Sparring partner = CRUSH
+Spawn sharhai = SLASH
+Starved horror = STAB
+Strange Creature = SLASH
+Strangled = SLASH
+Strangled Bear = SLASH
+Strangled Boar = STAB
+Strangled Lynx = SLASH
+Suspicious water = STAB
+The Hueycoatl = CRUSH
+The Leviathan = CRUSH
+The Whisperer = SLASH
+Tormented Demon = SLASH
+Tumeken's Warden = STAB
+Underwater horror = STAB
+Unusual Chicken = STAB
+Void Flare = STAB
+Void Rift = STAB
+Void Siphon = STAB
+Volatile Baboon = SLASH
+Warrior of Murahs = SLASH
+Well-armed Foe = STAB
+Whale = CRUSH
+Wighted Leech = STAB
+Wolfman = SLASH
+Wolfwoman = SLASH
+Wuss = CRUSH
+Xx I DBOW I xX = STAB
+Yeti = CRUSH
+Yrsa = SLASH
+Zalcano = CRUSH
+Zebak = CRUSH
+Imp = SLASH

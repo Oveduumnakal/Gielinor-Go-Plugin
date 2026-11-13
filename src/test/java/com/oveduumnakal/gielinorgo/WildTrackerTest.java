@@ -6,6 +6,7 @@ package com.oveduumnakal.gielinorgo;
 
 import java.util.Random;
 
+import com.google.gson.Gson;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -19,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 /** Checks when monsters may turn wild: the odds, the cap, the cooldown and the memory of past rolls. */
 public class WildTrackerTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 
 	private static final int ID = 3029;
 
@@ -337,7 +338,7 @@ public class WildTrackerTest
 	@Test
 	public void roamingIsCappedAtLevelNinetyNine()
 	{
-		Species boss = new Species("Boss", 1000, CombatType.MELEE);
+		Species boss = new Species("Boss", 1000, CombatType.STAB);
 		int capped = 0;
 		for (int seed = 0; seed < 2000; seed++)
 		{
@@ -360,5 +361,80 @@ public class WildTrackerTest
 				.offer(1, ID, GOBLIN, 13, false, 0, ALWAYS, WildTracker.GILDED_ONE_IN, false);
 			assertFalse(entry.roaming());
 		}
+	}
+
+	private static Species beast()
+	{
+		return new Gson().fromJson("{\"name\":\"Crab\",\"level\":23,\"ids\":[4819]}", Species.class);
+	}
+
+	@Test
+	public void aLooseCreatureCountsTowardTheCapAndLeavesNoRoll()
+	{
+		WildTracker tracker = new WildTracker(new Random(1));
+		for (int i = 0; i < 5; i++)
+			tracker.offerLoose(beast(), false, WildTracker.GILDED_ONE_IN, false);
+
+		assertEquals(WildTracker.MAX_WILD, tracker.all().size());
+		assertNull(offer(tracker, 1, ID, 0, ALWAYS));
+		assertTrue(tracker.mayRoll(7, ID, 0));
+	}
+
+	@Test
+	public void aLooseCreatureHasItsOwnIdAndTheSpeciesFirstNpcId()
+	{
+		WildTracker tracker = new WildTracker(new Random(1));
+
+		WildEntry entry = tracker.offerLoose(beast(), true, WildTracker.GILDED_ONE_IN, false);
+
+		assertSame(entry, tracker.get(entry.wildId()));
+		assertEquals(4819, entry.npcId());
+		assertEquals(23, entry.combatLevel());
+		assertTrue(entry.traits().contains(Trait.CAVE));
+	}
+
+	@Test
+	public void aLooseCreatureDoesNotUseOrStartTheMonsterCooldown()
+	{
+		WildTracker tracker = new WildTracker(new Random(1));
+		assertNotNull(offer(tracker, 1, ID, 0, ALWAYS));
+
+		assertNotNull(tracker.offerLoose(beast(), false, WildTracker.GILDED_ONE_IN, false));
+		assertNotNull(offer(tracker, 2, ID, WildTracker.COOLDOWN_MS, ALWAYS));
+	}
+
+	@Test
+	public void aLooseCreatureExpiresAndWithdrawingItKeepsTheCooldown()
+	{
+		WildTracker tracker = new WildTracker(new Random(1));
+		assertNotNull(offer(tracker, 1, ID, 0, ALWAYS));
+		WildEntry loose = tracker.offerLoose(beast(), false, WildTracker.GILDED_ONE_IN, false);
+
+		tracker.withdrawLoose(loose);
+
+		assertNull(tracker.get(loose.wildId()));
+		assertNull(offer(tracker, 2, ID, WildTracker.COOLDOWN_MS - 1, ALWAYS));
+	}
+
+	@Test
+	public void aLooseCreatureIsEndedLikeAnyOtherAndNotRerolledByAMonster()
+	{
+		WildTracker tracker = new WildTracker(new Random(1));
+		WildEntry loose = tracker.offerLoose(beast(), false, WildTracker.GILDED_ONE_IN, false);
+
+		tracker.leftView(loose.wildId(), 0);
+		assertNotNull(tracker.get(loose.wildId()));
+
+		tracker.remove(loose.wildId());
+		assertNull(tracker.get(loose.wildId()));
+	}
+
+	@Test
+	public void aSpeciesWithNoNpcIdOrAQuestOneIsRefused()
+	{
+		WildTracker tracker = new WildTracker(new Random(1));
+
+		assertNull(tracker.offerLoose(GOBLIN, false, WildTracker.GILDED_ONE_IN, false));
+		assertNull(tracker.offerLoose(beast().asQuestOnly(), false, WildTracker.GILDED_ONE_IN, false));
 	}
 }
