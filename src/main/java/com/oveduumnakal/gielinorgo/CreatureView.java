@@ -296,6 +296,29 @@ final class CreatureView
 			&& rolls.equals(that.rolls);
 	}
 
+	/**
+	 * Tells whether another view shows the same creature, leaving health out because it recovers by itself.
+	 *
+	 * @param that the other view
+	 * @return true when everything but the health fraction is equal
+	 */
+	boolean sameCreature(CreatureView that)
+	{
+		return level == that.level
+			&& gilded == that.gilded
+			&& Double.compare(xpProgress, that.xpProgress) == 0
+			&& rarity == that.rarity
+			&& type == that.type
+			&& Objects.equals(name, that.name)
+			&& Objects.equals(nickname, that.nickname)
+			&& npcId == that.npcId
+			&& hearts == that.hearts
+			&& moves.equals(that.moves)
+			&& pending.equals(that.pending)
+			&& Objects.equals(evolvesWhen, that.evolvesWhen)
+			&& rolls.equals(that.rolls);
+	}
+
 	@Override
 	public int hashCode()
 	{
