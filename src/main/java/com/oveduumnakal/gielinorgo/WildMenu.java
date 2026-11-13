@@ -16,7 +16,7 @@ final class WildMenu
 	/**
 	 * Whether a plain left click on a wild creature throws the selected jar. When false (the owner's choice of
 	 * 2026-11-12), a left click starts a battle instead, except on a knocked-out creature
-	 * ({@link #leftClickCatches(boolean)}). Flip it here.
+	 * ({@link #leftClickCatches(boolean, boolean)}). Flip it here.
 	 */
 	static final boolean LEFT_CLICK_CATCHES = false;
 
@@ -63,15 +63,16 @@ final class WildMenu
 
 	/**
 	 * Works out what a plain left click does for a wild creature in some state: the default
-	 * ({@link #LEFT_CLICK_CATCHES}) while it stands, and a catch once it lies knocked out, when a jar has the best
-	 * odds.
+	 * ({@link #LEFT_CLICK_CATCHES}) while it stands, a catch once it lies knocked out, and a catch whenever a
+	 * battle would be refused (no team, or no rested lead).
 	 *
 	 * @param knockedOut whether the creature lies knocked out after losing a battle
+	 * @param canBattle whether a battle could start now
 	 * @return true when the left click throws the selected jar, false when it starts a battle
 	 */
-	static boolean leftClickCatches(boolean knockedOut)
+	static boolean leftClickCatches(boolean knockedOut, boolean canBattle)
 	{
-		return knockedOut || LEFT_CLICK_CATCHES;
+		return knockedOut || !canBattle || LEFT_CLICK_CATCHES;
 	}
 
 	/**

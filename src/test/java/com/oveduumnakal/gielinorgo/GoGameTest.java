@@ -524,6 +524,29 @@ public class GoGameTest
 	}
 
 	@Test
+	public void aBattleIsOnlyOfferedWhenTheLeadIsRested()
+	{
+		assertFalse("a fresh save has no team", game.canBattle(now));
+
+		Creature goblin = new Creature("goblin", 5, now);
+		game.data().team.add(goblin);
+		assertTrue(game.canBattle(now));
+
+		goblin.hpFraction = 0.2;
+		goblin.hpStampMs = now;
+		assertFalse("a team that is only too tired", game.canBattle(now));
+
+		Creature chicken = new Creature("chicken", 5, now);
+		game.data().team.add(chicken);
+		assertFalse("the lead decides, as the battle itself refuses a tired lead", game.canBattle(now));
+		assertNull(game.startBattle(wild(CHICKEN, 3, 1)));
+
+		goblin.hpFraction = 1.0;
+		assertTrue(game.canBattle(now));
+		assertNotNull(game.startBattle(wild(CHICKEN, 3, 1)));
+	}
+
+	@Test
 	public void aPickGoesStaleWhenTheNicknameChanges()
 	{
 		Creature goblin = new Creature("goblin", 5, now);

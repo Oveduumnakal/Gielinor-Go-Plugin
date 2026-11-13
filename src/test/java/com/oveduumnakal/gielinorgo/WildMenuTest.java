@@ -32,8 +32,15 @@ public class WildMenuTest
 	@Test
 	public void aKnockedOutCreatureIsCaughtByALeftClick()
 	{
-		assertTrue(WildMenu.leftClickCatches(true));
-		assertEquals(WildMenu.LEFT_CLICK_CATCHES, WildMenu.leftClickCatches(false));
+		assertTrue(WildMenu.leftClickCatches(true, true));
+		assertTrue(WildMenu.leftClickCatches(true, false));
+		assertEquals(WildMenu.LEFT_CLICK_CATCHES, WildMenu.leftClickCatches(false, true));
+	}
+
+	@Test
+	public void aLeftClickCatchesWheneverABattleWouldBeRefused()
+	{
+		assertTrue(WildMenu.leftClickCatches(false, false));
 	}
 
 	@Test
@@ -66,6 +73,18 @@ public class WildMenuTest
 
 		assertEquals(1, items.size());
 		assertTrue(items.get(0).isCatch());
+	}
+
+	@Test
+	public void withoutABattleEntryCatchIsFirstAndThereIsNoBattle()
+	{
+		List<WildMenu.Item> items = WildMenu.topFirst(STANDARD, Collections.singletonList(SPECIALTY), false,
+			WildMenu.leftClickCatches(false, false));
+
+		assertEquals(2, items.size());
+		assertTrue(items.get(0).isCatch());
+		assertSame(STANDARD, items.get(0).jar());
+		assertTrue(items.stream().noneMatch(item -> WildMenu.BATTLE.equals(item.option())));
 	}
 
 	@Test
