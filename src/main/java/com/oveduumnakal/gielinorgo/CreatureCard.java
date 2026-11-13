@@ -219,10 +219,11 @@ final class CreatureCard extends JPanel
 		if (SwingUtilities.isRightMouseButton(event))
 		{
 			JPopupMenu menu = new JPopupMenu();
+			TradePick pick = TradePick.of(Holding.TEAM, index, shown);
 			if (index != 0)
-				menu.add(PanelUi.menuItem("Make lead", () -> actions.setLead(index)));
+				menu.add(PanelUi.menuItem("Make lead", () -> actions.setLead(pick)));
 
-			menu.add(PanelUi.menuItem("Move to storage", () -> actions.moveToStorage(index)));
+			menu.add(PanelUi.menuItem("Move to storage", () -> actions.moveToStorage(pick)));
 			menu.add(PanelUi.menuItem("Rename...", this::rename));
 			menu.add(PanelUi.menuItem("Moves...", this::showMoves));
 			ItemMenu.addTo(menu, items, shown.hpFraction(),
@@ -232,7 +233,7 @@ final class CreatureCard extends JPanel
 		}
 
 		if (SwingUtilities.isLeftMouseButton(event) && index != 0)
-			actions.setLead(index);
+			actions.setLead(TradePick.of(Holding.TEAM, index, shown));
 	}
 
 	/**

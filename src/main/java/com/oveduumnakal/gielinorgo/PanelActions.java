@@ -15,30 +15,30 @@ interface PanelActions
 	/**
 	 * Makes a team member the lead.
 	 *
-	 * @param teamIndex position in {@link PanelState#team()}
+	 * @param pick the team member as the panel showed it
 	 */
-	void setLead(int teamIndex);
+	void setLead(TradePick pick);
 
 	/**
 	 * Moves a team member into storage.
 	 *
-	 * @param teamIndex position in {@link PanelState#team()}
+	 * @param pick the team member as the panel showed it
 	 */
-	void moveToStorage(int teamIndex);
+	void moveToStorage(TradePick pick);
 
 	/**
 	 * Moves a stored creature onto the team, when the team has room.
 	 *
-	 * @param storageIndex position in {@link PanelState#storage()}
+	 * @param pick the stored creature as the panel showed it
 	 */
-	void moveToTeam(int storageIndex);
+	void moveToTeam(TradePick pick);
 
 	/**
 	 * Releases a stored creature for good.
 	 *
-	 * @param storageIndex position in {@link PanelState#storage()}
+	 * @param pick the stored creature as the panel showed it
 	 */
-	void release(int storageIndex);
+	void release(TradePick pick);
 
 	/**
 	 * Releases several stored creatures for good, once it is checked that each is still where the panel showed it.

@@ -175,7 +175,8 @@ final class StorageTab extends JPanel
 		if (SwingUtilities.isRightMouseButton(event))
 		{
 			JPopupMenu menu = new JPopupMenu();
-			menu.add(PanelUi.menuItem("Move to team", () -> actions.moveToTeam(index)));
+			TradePick pick = TradePick.of(Holding.STORAGE, index, view);
+			menu.add(PanelUi.menuItem("Move to team", () -> actions.moveToTeam(pick)));
 			menu.add(PanelUi.menuItem("Rename...", () -> rename(index, view)));
 			ItemMenu.addTo(menu, items, view.hpFraction(),
 				type -> actions.useItem(TradePick.of(Holding.STORAGE, index, view), type));
@@ -185,7 +186,7 @@ final class StorageTab extends JPanel
 		}
 
 		if (SwingUtilities.isLeftMouseButton(event))
-			actions.moveToTeam(index);
+			actions.moveToTeam(TradePick.of(Holding.STORAGE, index, view));
 	}
 
 	/**
@@ -211,7 +212,7 @@ final class StorageTab extends JPanel
 			+ " gains " + ReleaseRules.xp(view) + " XP. This cannot be undone.", "Release creature",
 			JOptionPane.YES_NO_OPTION);
 		if (answer == JOptionPane.YES_OPTION && askAgain(Collections.singletonList(view)))
-			actions.release(index);
+			actions.release(TradePick.of(Holding.STORAGE, index, view));
 	}
 
 	private void toggleSelecting()
