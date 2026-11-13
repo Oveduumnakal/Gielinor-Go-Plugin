@@ -27,6 +27,26 @@ final class MessageRate
 	private static final int MAX_SENDERS = 100;
 
 	private final Map<Long, Deque<Long>> seen = new HashMap<>();
+	private final int limit;
+	private final long windowMs;
+
+	/** Makes a limit of {@link #LIMIT} messages in {@link #WINDOW_MS}. */
+	MessageRate()
+	{
+		this(LIMIT, WINDOW_MS);
+	}
+
+	/**
+	 * Makes a limit of its own.
+	 *
+	 * @param limit messages one sender may get through in one window
+	 * @param windowMs length of the window, in milliseconds
+	 */
+	MessageRate(int limit, long windowMs)
+	{
+		this.limit = limit;
+		this.windowMs = windowMs;
+	}
 
 	/**
 	 * Counts a message and says whether it may be handled.
@@ -41,10 +61,10 @@ final class MessageRate
 			forgetOld(nowMs);
 
 		Deque<Long> times = seen.computeIfAbsent(sender, key -> new ArrayDeque<>());
-		while (!times.isEmpty() && nowMs - times.peekFirst() >= WINDOW_MS)
+		while (!times.isEmpty() && nowMs - times.peekFirst() >= windowMs)
 			times.pollFirst();
 
-		if (times.size() >= LIMIT)
+		if (times.size() >= limit)
 			return false;
 
 		times.addLast(nowMs);
@@ -63,7 +83,7 @@ final class MessageRate
 		while (all.hasNext())
 		{
 			Deque<Long> times = all.next();
-			if (times.isEmpty() || nowMs - times.peekLast() >= WINDOW_MS)
+			if (times.isEmpty() || nowMs - times.peekLast() >= windowMs)
 				all.remove();
 		}
 

@@ -39,6 +39,27 @@ public class PartyRateGateTest
 	}
 
 	@Test
+	public void theBattlePartnerHasAGenerousCapOfTheirOwn()
+	{
+		for (int i = 0; i < PartyRateGate.TURN_LIMIT; i++)
+			assertTrue(gate.allow(from(ANN, ME, GielinorGoPartyMessage.TURN), ME, false, true, NOW + i));
+
+		assertFalse("a flood is cut off", gate.allow(from(ANN, ME, GielinorGoPartyMessage.TURN), ME, false, true,
+			NOW + 50));
+		assertTrue("a second later turns flow again", gate.allow(from(ANN, ME, GielinorGoPartyMessage.TURN), ME, false,
+			true, NOW + PartyRateGate.TURN_WINDOW_MS + 100));
+	}
+
+	@Test
+	public void aTurnNotFromTheBattlePartnerIsHeldToTheNormalLimit()
+	{
+		for (int i = 0; i < MessageRate.LIMIT; i++)
+			assertTrue(gate.allow(from(ANN, ME, GielinorGoPartyMessage.TURN), ME, false, false, NOW + i));
+
+		assertFalse(gate.allow(from(ANN, ME, GielinorGoPartyMessage.TURN), ME, false, false, NOW + 50));
+	}
+
+	@Test
 	public void aBroadcastIsHeldToTheLimit()
 	{
 		for (int i = 0; i < MessageRate.LIMIT; i++)

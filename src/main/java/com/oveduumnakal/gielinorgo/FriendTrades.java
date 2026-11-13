@@ -346,6 +346,21 @@ final class FriendTrades implements GoGame.TradeLocks
 		return waitingOnAnyone() || !incoming.isEmpty();
 	}
 
+	@Override
+	public boolean blocksReset()
+	{
+		if (waitingOnAnyone())
+			return true;
+
+		for (Incoming offer : incoming.values())
+		{
+			if (offer.agreedMs != 0)
+				return true;
+		}
+
+		return false;
+	}
+
 	private boolean waitingOnAnyone()
 	{
 		return outgoing != null && clock.getAsLong() - outgoing.sentMs <= OFFER_TIMEOUT_MS;

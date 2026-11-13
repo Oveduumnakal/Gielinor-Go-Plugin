@@ -99,6 +99,15 @@ final class GoGame
 			return false;
 		}
 
+		/**
+		 * @return whether a trade the player is part of is under way, which blocks a reset: one they offered, or one
+		 *     they agreed to; an offer they have not answered does not count
+		 */
+		default boolean blocksReset()
+		{
+			return open();
+		}
+
 		/** @return creature slots, in the team and storage together, that open trades will need */
 		default int reservedCreatureSlots()
 		{
@@ -357,7 +366,7 @@ final class GoGame
 		if (eliteOpen())
 			return "Finish or forfeit the Elite run first";
 
-		if (tradeLocks.open())
+		if (tradeLocks.blocksReset())
 			return "Finish or cancel the trade first";
 
 		return null;
