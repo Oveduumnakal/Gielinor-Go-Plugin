@@ -346,7 +346,8 @@ final class FriendBattles
 		if (message.to() != myId)
 			return null;
 
-		if (kind.equals(GielinorGoPartyMessage.TURN) || kind.equals(GielinorGoPartyMessage.LEAVE))
+		if (kind.equals(GielinorGoPartyMessage.TURN) || kind.equals(GielinorGoPartyMessage.LEAVE)
+			|| kind.equals(GielinorGoPartyMessage.READY))
 		{
 			steer(message);
 			return null;
@@ -491,7 +492,7 @@ final class FriendBattles
 	 * Passes a message about the battle played turn by turn to that battle. A message from a different version, or
 	 * one for no battle that is on, is dropped, except that a different version ends the battle.
 	 *
-	 * @param message a message of kind TURN or LEAVE addressed to this player
+	 * @param message a message of kind TURN, LEAVE or READY addressed to this player
 	 */
 	private void steer(GielinorGoPartyMessage message)
 	{

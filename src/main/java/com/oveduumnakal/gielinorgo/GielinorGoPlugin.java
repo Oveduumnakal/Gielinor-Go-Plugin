@@ -1187,7 +1187,8 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		boolean turnMessage = GielinorGoPartyMessage.TURN.equals(message.kind())
-			|| GielinorGoPartyMessage.LEAVE.equals(message.kind());
+			|| GielinorGoPartyMessage.LEAVE.equals(message.kind())
+			|| GielinorGoPartyMessage.READY.equals(message.kind());
 		if (!(turnMessage && friends.inTurnBattleWith(message.getMemberId()))
 			&& !partyRate.allow(message.getMemberId(), System.currentTimeMillis()))
 			return;

@@ -430,7 +430,7 @@ public class BattleDirectorTest
 		assertEquals("Bob", director.view().friendName());
 
 		assertTrue(director.choose(BattleChoice.attack()));
-		assertEquals(1, fromMe.size());
+		assertEquals(2, fromMe.size());
 		assertTrue(shown.isEmpty());
 		director.gameTick(false);
 		assertTrue(director.view().waitingForFriend());
@@ -438,7 +438,7 @@ public class BattleDirectorTest
 
 		friendSide.opened(now);
 		friendSide.local(BattleChoice.attack(), now);
-		GielinorGoPartyMessage reply = fromFriend.get(0);
+		GielinorGoPartyMessage reply = fromFriend.get(fromFriend.size() - 1);
 		reply.setMemberId(2L);
 		mineBattle.remote(reply, now);
 		director.gameTick(false);
@@ -454,7 +454,7 @@ public class BattleDirectorTest
 		assertTrue(director.choose(choice));
 		friendSide.opened(now);
 		friendSide.local(BattleChoice.attack(), now);
-		GielinorGoPartyMessage reply = fromFriend.remove(0);
+		GielinorGoPartyMessage reply = fromFriend.get(fromFriend.size() - 1);
 		reply.setMemberId(2L);
 		mineBattle.remote(reply, now);
 		director.gameTick(false);
@@ -517,6 +517,21 @@ public class BattleDirectorTest
 	}
 
 	@Test
+	public void aTextBattleWithAFriendStartsTheClockAndTellsTheFriendAtOnce()
+	{
+		game.data().team.add(creature("king black dragon", 60));
+		List<GielinorGoPartyMessage> sent = new ArrayList<>();
+		FriendTurnBattle battle = friendBattle(new ArrayList<>(Arrays.asList(new Combatant(DRAGON, 60, 1.0))),
+			new ArrayList<>(Arrays.asList(new Combatant(CHICKEN, 2, 1.0))), true, sent);
+
+		director.begin(game.startFriendBattle(battle), null);
+		battle.timeout(now + FriendTurnBattle.TURN_MS + FriendTurnBattle.GRACE_MS);
+
+		assertEquals(GielinorGoPartyMessage.READY, sent.get(0).kind());
+		assertEquals(FriendTurnBattle.End.SILENT, battle.ended());
+	}
+
+	@Test
 	public void leavingABattleWithAFriendTellsTheFriendAndEndsItWithNoResult()
 	{
 		game.data().team.add(creature("king black dragon", 60));
@@ -528,7 +543,7 @@ public class BattleDirectorTest
 		assertTrue(director.choose(BattleChoice.run()));
 
 		assertFalse(director.active());
-		assertEquals(GielinorGoPartyMessage.LEAVE, sent.get(0).kind());
+		assertEquals(GielinorGoPartyMessage.LEAVE, sent.get(sent.size() - 1).kind());
 		assertEquals(0, game.data().battlesWon);
 		assertTrue(shown.isEmpty());
 	}

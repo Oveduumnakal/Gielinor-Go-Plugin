@@ -19,8 +19,9 @@ import java.util.function.Consumer;
  *
  * <p>Nothing is trusted from the other side: a message must be for this battle and this turn, carry a choice that
  * can be made now and a hash that matches. Anything else ends the battle with no result. So does a friend who
- * leaves, or who has not answered 10 seconds after the turn's time ran out. Nothing is won or lost in these
- * battles.
+ * leaves, or who has not answered 10 seconds after the turn's time ran out, counted from the later of the two
+ * players opening the turn. Every ending the friend did not cause is told to the friend with a LEAVE. Nothing is
+ * won or lost in these battles.
  */
 final class FriendTurnBattle
 {
@@ -104,6 +105,9 @@ final class FriendTurnBattle
 	private BattleChoice localChoice;
 	private BattleChoice remoteChoice;
 	private long deadlineMs = NOT_OPEN;
+	private long openedMs = NOT_OPEN;
+	private int readyTurn;
+	private long readyMs = NOT_OPEN;
 	private End end;
 
 	/**
@@ -219,8 +223,12 @@ final class FriendTurnBattle
 	 */
 	void opened(long nowMs)
 	{
-		if (deadlineMs == NOT_OPEN)
-			deadlineMs = nowMs + TURN_MS;
+		if (over() || deadlineMs != NOT_OPEN)
+			return;
+
+		deadlineMs = nowMs + TURN_MS;
+		openedMs = nowMs;
+		outbox.accept(GielinorGoPartyMessage.ready(friendId, battle, turn));
 	}
 
 	/**
@@ -261,6 +269,17 @@ final class FriendTurnBattle
 			return;
 		}
 
+		if (GielinorGoPartyMessage.READY.equals(message.kind()))
+		{
+			if (message.turn() >= turn && message.turn() >= readyTurn)
+			{
+				readyTurn = message.turn();
+				readyMs = nowMs;
+			}
+
+			return;
+		}
+
 		if (!GielinorGoPartyMessage.TURN.equals(message.kind()))
 			return;
 
@@ -291,8 +310,21 @@ final class FriendTurnBattle
 		if (mustChoose() && nowMs >= deadlineMs)
 			local(automatic(), nowMs);
 
-		if (!over() && waitingForFriend() && nowMs >= deadlineMs + GRACE_MS)
+		if (!over() && waitingForFriend() && nowMs >= friendDueMs())
 			end(End.SILENT);
+	}
+
+	/**
+	 * Works out when the friend's choice for the turn is due: the time to choose plus the grace, counted from the
+	 * later of this player's own opening of the turn and the friend's {@link GielinorGoPartyMessage#READY}. Without
+	 * a READY the friend is counted from this player's own opening, so a friend who never opens ends it just the same.
+	 *
+	 * @return the time in milliseconds
+	 */
+	private long friendDueMs()
+	{
+		long from = readyTurn == turn && readyMs != NOT_OPEN ? Math.max(openedMs, readyMs) : openedMs;
+		return from + TURN_MS + GRACE_MS;
 	}
 
 	/**
@@ -322,8 +354,12 @@ final class FriendTurnBattle
 	 */
 	void end(End why)
 	{
-		if (end == null && state.ended() == null)
-			end = why;
+		if (end != null || state.ended() != null)
+			return;
+
+		end = why;
+		if (why == End.SILENT || why == End.OUT_OF_STEP)
+			outbox.accept(GielinorGoPartyMessage.leave(friendId, battle));
 	}
 
 	/** @return the next turn that was played and not yet taken, or null */
@@ -340,6 +376,7 @@ final class FriendTurnBattle
 		localChoice = null;
 		remoteChoice = null;
 		deadlineMs = NOT_OPEN;
+		openedMs = NOT_OPEN;
 		try
 		{
 			played.addLast(new Played(state.step(mine, theirs), shown));
