@@ -1998,7 +1998,7 @@ final class GoGame
 	 */
 	private void tell(WildEntry entry, String text, Tone tone)
 	{
-		notices.accept(Notice.creature(entry.npcIndex(), text, tone));
+		notices.accept(Notice.creature(entry.wildId(), text, tone));
 	}
 
 	private static String skillName(String skill)

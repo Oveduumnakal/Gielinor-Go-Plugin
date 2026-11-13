@@ -7,7 +7,7 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.Shape;
 import java.util.Collection;
 
-/** Hit tests on the canvas shapes of a stand-in. Pure geometry, no game client. */
+/** Hit tests on the canvas shapes of a wild body. Pure geometry, no game client. */
 final class ShapeHits
 {
 	private ShapeHits()

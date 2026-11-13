@@ -50,6 +50,17 @@ final class DuelActing
 
 		/** @return how tall the body is drawn, in scene units */
 		double height();
+
+		/**
+		 * Gives the height of the ground the body is drawn on.
+		 *
+		 * @return the scene's z of its feet, or NaN when it is not known, in which case a projectile follows the
+		 *     terrain under its flight
+		 */
+		default double groundZ()
+		{
+			return Double.NaN;
+		}
 	}
 
 	/** Makes the lead creature's side of a duel from the follower. */
@@ -90,6 +101,12 @@ final class DuelActing
 		public double height()
 		{
 			return follower.tagHeight();
+		}
+
+		@Override
+		public double groundZ()
+		{
+			return follower.groundZ();
 		}
 	}
 
@@ -238,8 +255,8 @@ final class DuelActing
 		{
 			Side from = leadIsHit ? foe : lead;
 			Side to = leadIsHit ? lead : foe;
-			ProjectilePath route = new ProjectilePath(from.x(), from.y(), from.height() * SHOT_HEIGHT, to.x(), to.y(),
-				to.height() * SHOT_HEIGHT);
+			ProjectilePath route = new ProjectilePath(from.x(), from.y(), from.height() * SHOT_HEIGHT, from.groundZ(),
+				to.x(), to.y(), to.height() * SHOT_HEIGHT, to.groundZ());
 			if (projectile == null)
 				projectile = new BattleProjectile(client, projectileModels);
 

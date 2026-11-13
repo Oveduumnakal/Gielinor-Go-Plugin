@@ -6,6 +6,7 @@ package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 
 /**
  * Where the follower stands and how it moves. It is told where the player is drawn, a little at a time, and walks
@@ -60,7 +61,23 @@ final class FollowerPath
 		boolean free(int x, int y);
 	}
 
+	/** Finds a way between two tiles that does not cross a wall, for the walk back from an errand. */
+	interface Router
+	{
+		/**
+		 * Finds a route.
+		 *
+		 * @param fromX world x of the start tile
+		 * @param fromY world y of the start tile
+		 * @param toX world x of the end tile
+		 * @param toY world y of the end tile
+		 * @return the tiles to step onto, ending on the end tile, or null when there is no route
+		 */
+		List<int[]> route(int fromX, int fromY, int toX, int toY);
+	}
+
 	private final Deque<double[]> trail = new ArrayDeque<>();
+	private final Deque<double[]> waypoints = new ArrayDeque<>();
 	private boolean placed;
 	private boolean walking;
 	private int playerX;
@@ -180,6 +197,7 @@ final class FollowerPath
 		walking = false;
 		errand = false;
 		trail.clear();
+		waypoints.clear();
 	}
 
 	/**
@@ -204,6 +222,37 @@ final class FollowerPath
 		lookX = faceX;
 		lookY = faceY;
 		trail.clear();
+		waypoints.clear();
+		walking = true;
+		return true;
+	}
+
+	/**
+	 * Sends the follower to a spot along a route of tiles it can walk, so it goes round walls and objects instead of
+	 * through them. Otherwise it is {@link #goTo}.
+	 *
+	 * @param route the tiles to step onto, in order; empty to stay on the tile the follower is on
+	 * @param faceX world x of what to face once there, in tiles
+	 * @param faceY world y of what to face once there, in tiles
+	 * @return false when there is no follower yet or the route has more than {@link #MAX_ERRAND} steps
+	 */
+	boolean goVia(List<int[]> route, double faceX, double faceY)
+	{
+		if (!placed || route.size() > MAX_ERRAND)
+			return false;
+
+		errand = true;
+		trail.clear();
+		waypoints.clear();
+		for (int[] tile : route)
+			waypoints.add(new double[]{tile[0], tile[1]});
+
+		int[] last = route.isEmpty() ? new int[]{(int) Math.round(x), (int) Math.round(y)}
+			: route.get(route.size() - 1);
+		errandX = last[0];
+		errandY = last[1];
+		lookX = faceX;
+		lookY = faceY;
 		walking = true;
 		return true;
 	}
@@ -216,6 +265,7 @@ final class FollowerPath
 		if (!errand)
 			return;
 
+		waypoints.clear();
 		x = errandX;
 		y = errandY;
 		walking = false;
@@ -230,10 +280,23 @@ final class FollowerPath
 	 */
 	void endErrand(Ground ground)
 	{
+		endErrand(ground, null);
+	}
+
+	/**
+	 * Ends an errand: the follower walks back to the player, to the free tile next to them that is nearest to it,
+	 * by a route that does not cross a wall. With no route it is put down next to the player at once.
+	 *
+	 * @param ground which tiles are free
+	 * @param router finds the route back, or null to walk straight
+	 */
+	void endErrand(Ground ground, Router router)
+	{
 		if (!errand)
 			return;
 
 		errand = false;
+		waypoints.clear();
 		trail.clear();
 		int[] best = {playerX, playerY};
 		double bestDistance = Double.MAX_VALUE;
@@ -249,7 +312,24 @@ final class FollowerPath
 			}
 		}
 
-		trail.add(new double[]{best[0], best[1]});
+		List<int[]> way = router == null ? null : router.route((int) Math.round(x), (int) Math.round(y), best[0],
+			best[1]);
+		if (router != null && way == null)
+		{
+			place(drawnX, drawnY, plane, ground);
+			return;
+		}
+
+		if (way == null)
+		{
+			trail.add(new double[]{best[0], best[1]});
+		}
+		else
+		{
+			for (int[] tile : way)
+				trail.add(new double[]{tile[0], tile[1]});
+		}
+
 		walking = true;
 	}
 
@@ -262,7 +342,7 @@ final class FollowerPath
 	/** @return whether the follower is on an errand and has reached its spot */
 	boolean arrived()
 	{
-		return errand && Math.max(Math.abs(errandX - x), Math.abs(errandY - y)) <= ARRIVED;
+		return errand && waypoints.isEmpty() && Math.max(Math.abs(errandX - x), Math.abs(errandY - y)) <= ARRIVED;
 	}
 
 	/** @return whether the follower has a position yet */
@@ -304,16 +384,19 @@ final class FollowerPath
 	/** Moves the follower toward its errand spot for one client tick, then turns it. */
 	private void advanceErrand()
 	{
-		double dx = errandX - x;
-		double dy = errandY - y;
+		double goalX = waypoints.isEmpty() ? errandX : waypoints.peek()[0];
+		double goalY = waypoints.isEmpty() ? errandY : waypoints.peek()[1];
+		double dx = goalX - x;
+		double dy = goalY - y;
 		double distance = Math.max(Math.abs(dx), Math.abs(dy));
 		double budget = (double) ERRAND_SPEED / CLIENT_TICKS;
 		if (distance > ARRIVED)
 		{
 			if (distance <= budget)
 			{
-				x = errandX;
-				y = errandY;
+				x = goalX;
+				y = goalY;
+				waypoints.poll();
 			}
 			else
 			{
@@ -322,6 +405,10 @@ final class FollowerPath
 			}
 
 			wantFacing = angle(dx, dy);
+		}
+		else
+		{
+			waypoints.poll();
 		}
 
 		walking = !arrived();

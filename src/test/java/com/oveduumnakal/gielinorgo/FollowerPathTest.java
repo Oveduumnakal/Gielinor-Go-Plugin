@@ -425,4 +425,68 @@ public class FollowerPathTest
 		assertAt(3200, 3190);
 		assertEquals(WEST, path.orientation());
 	}
+
+	@Test
+	public void anErrandAlongARouteWalksEveryCornerOfIt()
+	{
+		path.playerAt(3200, 3200, 0, OPEN);
+
+		assertTrue(path.goVia(java.util.Arrays.asList(new int[]{3200, 3198}, new int[]{3202, 3198},
+			new int[]{3202, 3196}), 3202, 3190));
+		double farthestWest = 3200;
+		double farthestSouthBeforeTurn = 3200;
+		for (int tick = 0; tick < 12 * FollowerPath.CLIENT_TICKS && !path.arrived(); tick++)
+		{
+			path.advance();
+			boolean beforeTurn = path.y() > 3198;
+			if (beforeTurn)
+				farthestSouthBeforeTurn = Math.min(farthestSouthBeforeTurn, path.y());
+
+			farthestWest = Math.min(farthestWest, path.x());
+			assertFalse("never cuts the corner", path.x() > 3200.001 && path.y() > 3198.001);
+		}
+
+		assertTrue(path.arrived());
+		assertAt(3202, 3196);
+		assertEquals(3200, farthestWest, CLOSE);
+	}
+
+	@Test
+	public void anErrandWithAnEmptyRouteStaysPut()
+	{
+		path.playerAt(3200, 3200, 0, OPEN);
+		path.advance();
+
+		assertTrue(path.goVia(java.util.Collections.<int[]>emptyList(), 3200, 3190));
+
+		assertTrue(path.arrived());
+	}
+
+	@Test
+	public void aRouteLongerThanTheErrandLimitIsRefused()
+	{
+		path.playerAt(3200, 3200, 0, OPEN);
+		java.util.List<int[]> far = new java.util.ArrayList<>();
+		for (int i = 1; i <= FollowerPath.MAX_ERRAND + 1; i++)
+			far.add(new int[]{3200, 3200 - i});
+
+		assertFalse(path.goVia(far, 3200, 3100));
+	}
+
+	@Test
+	public void theWalkBackGoesByTheRouteAndPutsTheFollowerDownWhenThereIsNone()
+	{
+		path.playerAt(3200, 3200, 0, OPEN);
+		path.goTo(3200, 3196, 3200, 3190);
+		path.arriveNow();
+		path.endErrand(OPEN, (fx, fy, tx, ty) -> java.util.Arrays.asList(new int[]{3199, 3196}, new int[]{tx, ty}));
+		assertFalse(path.onErrand());
+
+		path.goTo(3200, 3196, 3200, 3190);
+		path.arriveNow();
+		path.endErrand(OPEN, (fx, fy, tx, ty) -> null);
+
+		assertEquals(3200, path.x(), 1.5);
+		assertEquals(3200, path.y(), 1.5);
+	}
 }

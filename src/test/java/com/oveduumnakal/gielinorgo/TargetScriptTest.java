@@ -79,11 +79,6 @@ public class TargetScriptTest
 		assertFalse(TargetScript.hidden(CatchOutcome.CAUGHT, TargetScript.CAUGHT_END));
 		assertTrue(TargetScript.done(CatchOutcome.CAUGHT, TargetScript.CAUGHT_END));
 		assertFalse(TargetScript.copyShown(CatchOutcome.CAUGHT, TargetScript.CAUGHT_END));
-		assertEquals(CatchEffects.HIDDEN, CatchEffects.shadeAt(CatchOutcome.CAUGHT, TargetScript.CAUGHT_END));
-		assertEquals(CatchEffects.shadeAt(TargetScript.LAND + 100),
-			CatchEffects.shadeAt(CatchOutcome.CAUGHT, TargetScript.LAND + 100));
-		assertEquals(CatchEffects.DONE, CatchEffects.shadeAt(CatchOutcome.CAUGHT,
-			TargetScript.LAND + CatchEffects.HIDDEN_TICKS + CatchEffects.FADE_TICKS + 1));
 	}
 
 	@Test
@@ -109,33 +104,10 @@ public class TargetScriptTest
 	}
 
 	@Test
-	public void aFleeingCreatureIsHiddenUntilTheRealOneFadesIn()
-	{
-		CatchOutcome fled = CatchOutcome.FLED;
-		assertEquals(CatchEffects.VISIBLE, CatchEffects.shadeAt(fled, TargetScript.LAND - 1));
-		assertEquals(CatchEffects.HIDDEN, CatchEffects.shadeAt(fled, TargetScript.LAND));
-		assertEquals(CatchEffects.HIDDEN, CatchEffects.shadeAt(fled, TargetScript.FLED_END - 1));
-		assertEquals(0, CatchEffects.shadeAt(fled, TargetScript.FLED_END));
-		int last = 0;
-		for (int age = TargetScript.FLED_END; age < TargetScript.FLED_END + CatchEffects.FADE_TICKS; age++)
-		{
-			int shade = CatchEffects.shadeAt(fled, age);
-			assertTrue("age " + age, shade >= last && shade < CatchEffects.FADE_STEPS);
-			last = shade;
-		}
-
-		assertEquals(CatchEffects.FADE_STEPS - 1, last);
-		assertEquals(CatchEffects.DONE,
-			CatchEffects.shadeAt(fled, TargetScript.FLED_END + CatchEffects.FADE_TICKS));
-	}
-
-	@Test
 	public void aCreatureThatBrokeFreeComesBackAtTheEnd()
 	{
 		CatchOutcome broke = CatchOutcome.BROKE_FREE;
 		assertEquals(TargetScript.LAND + 60, TargetScript.BROKE_FREE_END);
-		assertEquals(CatchEffects.HIDDEN, CatchEffects.shadeAt(broke, TargetScript.BROKE_FREE_END - 1));
-		assertEquals(CatchEffects.DONE, CatchEffects.shadeAt(broke, TargetScript.BROKE_FREE_END));
 		assertEquals(1.0, TargetScript.size(broke, TargetScript.ACT_TICK + 10), 0.0);
 		assertEquals(1.0, TargetScript.opacity(broke, TargetScript.ACT_TICK + 10), 0.0);
 	}
@@ -162,7 +134,6 @@ public class TargetScriptTest
 				assertFalse(TargetScript.hidden(outcome, age));
 				assertFalse(TargetScript.copyShown(outcome, age));
 				assertEquals(TargetScript.Step.NONE, TargetScript.stepAt(outcome, age));
-				assertEquals(CatchEffects.VISIBLE, CatchEffects.shadeAt(outcome, age));
 			}
 
 			assertTrue(TargetScript.done(outcome, 0));

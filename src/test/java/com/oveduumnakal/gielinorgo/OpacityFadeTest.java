@@ -24,7 +24,7 @@ public class OpacityFadeTest
 	@Test
 	public void theGhostsRestingOpacityIsALevelOfItsOwn()
 	{
-		assertEquals(GhostMirror.OPACITY, OpacityFade.opacityOf(OpacityFade.levelOf(GhostMirror.OPACITY)), 0.0);
+		assertEquals(OpacityFade.FAINT, OpacityFade.opacityOf(OpacityFade.levelOf(OpacityFade.FAINT)), 0.0);
 	}
 
 	@Test
@@ -94,5 +94,37 @@ public class OpacityFadeTest
 		fade.moveTo(-2.0, 1);
 		fade.tick();
 		assertEquals(0.0, fade.opacity(), 0.0);
+	}
+
+	@Test
+	public void aSolidFaceBecomesNinetyPercentSeeThrough()
+	{
+		assertEquals(229, OpacityFade.fade(0, OpacityFade.FAINT));
+	}
+
+	@Test
+	public void anUnseenFaceStaysUnseen()
+	{
+		assertEquals(255, OpacityFade.fade(255, OpacityFade.FAINT));
+	}
+
+	@Test
+	public void noFaceGetsMoreSolid()
+	{
+		for (int t = 0; t <= 255; t++)
+			assertTrue(OpacityFade.fade(t, OpacityFade.FAINT) >= t);
+	}
+
+	@Test
+	public void fadeAllReadsBytesAsUnsigned()
+	{
+		byte[] faces = {0, (byte) 200, (byte) 255};
+
+		OpacityFade.fadeAll(faces, OpacityFade.FAINT);
+
+		assertEquals(229, faces[0] & 0xFF);
+		assertEquals(249, faces[1] & 0xFF);
+		assertEquals(255, faces[2] & 0xFF);
+		OpacityFade.fadeAll(null, OpacityFade.FAINT);
 	}
 }
