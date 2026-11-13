@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.IntPredicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -248,7 +249,7 @@ final class WildBodies
 		if (life.state() == WildLife.State.ROAMING && !body.walking())
 			life.endWander(nowMs);
 
-		if (life.wanderDue(nowMs))
+		if (life.wanderDue(nowMs) && !body.hidden())
 			wander(body, nowMs);
 	}
 
@@ -285,8 +286,10 @@ final class WildBodies
 	 * object the plugin added, so each body is taken out on one tick and built again on the next.
 	 *
 	 * @param nowMs the clock now, in milliseconds
+	 * @param inCombat whether the player is in real combat, which hides the bodies ({@link WildHiding})
+	 * @param battleFoe tells whether a wild id is the foe of a battle in progress, which is never hidden
 	 */
-	void clientTick(long nowMs)
+	void clientTick(long nowMs, boolean inCombat, IntPredicate battleFoe)
 	{
 		if (client.getGameState() == GameState.LOADING)
 			reload.loading();
@@ -308,7 +311,8 @@ final class WildBodies
 				else if (step == SceneReload.Step.ADD && !body.build())
 					body.life().remove();
 				else if (step == SceneReload.Step.NONE)
-					body.clientTick(view, nowMs);
+					body.clientTick(view, nowMs, WildHiding.hides(inCombat, body.life().state(),
+						battleFoe.test(body.entry().wildId())));
 			}
 			catch (RuntimeException | AssertionError e)
 			{

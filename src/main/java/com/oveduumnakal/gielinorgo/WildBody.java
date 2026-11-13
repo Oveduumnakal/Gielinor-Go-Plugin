@@ -63,6 +63,7 @@ final class WildBody
 	private boolean facingHeld;
 	private boolean fadeBroken;
 	private boolean unreachableNoted;
+	private boolean hidden;
 	private volatile StageAnchors.Spot spot;
 	private volatile LastPlace lastSpot;
 	private BodyCatch scene;
@@ -262,6 +263,12 @@ final class WildBody
 		return body != null && body.isActive();
 	}
 
+	/** @return whether the body is hidden for the player's combat: not drawn, not clickable, frozen where it is */
+	boolean hidden()
+	{
+		return hidden;
+	}
+
 	/** @return whether the body is walking to a spot */
 	boolean walking()
 	{
@@ -314,11 +321,21 @@ final class WildBody
 	 *
 	 * @param view the top level world view
 	 * @param nowMs the clock now, in milliseconds
+	 * @param hide whether the body is hidden: it is taken out of the scene and, unless a catch scene is playing,
+	 *     stands frozen where it is until it is shown again
 	 */
-	void clientTick(WorldView view, long nowMs)
+	void clientTick(WorldView view, long nowMs, boolean hide)
 	{
 		if (body == null)
 			return;
+
+		hidden = hide;
+		if (hide && scene == null)
+		{
+			removeFromScene();
+			spot = null;
+			return;
+		}
 
 		if (scene != null)
 			stepCatch(nowMs);
@@ -493,7 +510,7 @@ final class WildBody
 		int sceneY = (int) Math.round((y - view.getBaseY() + 0.5 - Math.cos(turned) * push) * TILE);
 		boolean inScene = sceneX >= 0 && sceneY >= 0 && sceneX < view.getSizeX() * TILE
 			&& sceneY < view.getSizeY() * TILE && view.getPlane() == plane;
-		if (!inScene || !body.visible())
+		if (!inScene || !body.visible() || hidden)
 		{
 			if (body.isActive())
 				body.setActive(false);

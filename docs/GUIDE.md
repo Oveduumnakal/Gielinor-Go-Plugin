@@ -20,6 +20,9 @@ Every feature and every number, in detail. For the short version, see the [READM
   the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
   seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
+  While you are in combat with a real monster (and for 5 seconds after), wild creatures are hidden: not drawn, not
+  clickable, and none new appear; they return where they were, unless their time ran out meanwhile.
+
 - **While skilling**
 
   Fishing, Woodcutting, Mining, Farming and Hunter XP drops sometimes bring a wild creature to a free tile one or
