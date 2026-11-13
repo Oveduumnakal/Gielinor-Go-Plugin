@@ -18,9 +18,9 @@ import static org.junit.Assert.assertTrue;
 /** Checks which sound cue each game event fires. */
 public class GoGameCueTest
 {
-	private static final Species IMP = new Species("Imp", 7, CombatType.MELEE);
-	private static final Species LESSER = new Species("Lesser demon", 94, CombatType.MELEE);
-	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.MELEE);
+	private static final Species IMP = new Species("Imp", 7, CombatType.STAB);
+	private static final Species LESSER = new Species("Lesser demon", 94, CombatType.STAB);
+	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.STAB);
 
 	private final List<Cue> cues = new ArrayList<>();
 	private GoGame game;

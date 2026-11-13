@@ -72,4 +72,6 @@ A Creature Log, daily tasks and daily events give you goals.
   aside. (#84)
 - **Starter creatures.** New players pick an Imp, a Gnome Archer or a Wizard at level 5; the Gnome Archer starts a
   new evolution line. (#83)
+- **Five combat styles.** Melee splits into Stab, Slash and Crush, each with its own jar from Attack, Strength or
+  Defence XP. (#85)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
