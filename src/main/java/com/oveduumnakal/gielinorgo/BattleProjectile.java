@@ -101,7 +101,11 @@ final class BattleProjectile extends RuneLiteObject
 		LocalPoint at = new LocalPoint(x, y, view);
 		double[] way = path.direction();
 		setLocation(at, plane);
-		setZ(Perspective.getTileHeight(client, at, plane) - (int) Math.round(path.height(age)));
+		if (path.hasGround())
+			setZ((int) Math.round(path.z(age)));
+		else
+			setZ(Perspective.getTileHeight(client, at, plane) - (int) Math.round(path.height(age)));
+
 		setOrientation(FollowerPath.angle(way[0], way[1]));
 		if (!isActive())
 			setActive(true);

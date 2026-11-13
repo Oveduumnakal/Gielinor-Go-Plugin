@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.List;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import net.runelite.api.CollisionData;
 import net.runelite.api.CollisionDataFlag;
 import net.runelite.api.GameState;
 import net.runelite.api.ModelData;
+import net.runelite.api.Perspective;
 import net.runelite.api.Player;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.LocalPoint;
@@ -365,7 +367,64 @@ final class FollowerService
 	 */
 	boolean beginErrand(double toX, double toY, double faceX, double faceY)
 	{
-		return body != null && body.isActive() && path.goTo(toX, toY, faceX, faceY);
+		if (body == null || !body.isActive())
+			return false;
+
+		Player player = client.getLocalPlayer();
+		WorldView view = player == null ? null : player.getWorldView();
+		if (view == null)
+			return false;
+
+		List<int[]> route = new CollisionGround(view, path.plane()).path().route((int) Math.round(path.x()),
+			(int) Math.round(path.y()), (int) Math.round(toX), (int) Math.round(toY), FollowerPath.MAX_ERRAND);
+		return route != null && path.goVia(route, faceX, faceY);
+	}
+
+	/**
+	 * Sends the lead creature along a route that was worked out round walls and objects, then has it face a point.
+	 * Whatever it was doing as it trailed the player is put aside until {@link #endErrand()}.
+	 *
+	 * @param route the tiles to step onto, in order, from the tile the lead stands on
+	 * @param faceX world x of what it should face there, in tiles
+	 * @param faceY world y of what it should face there, in tiles
+	 * @return false when the lead is not on screen or the route is too long, so nothing was started
+	 */
+	boolean beginErrand(List<int[]> route, double faceX, double faceY)
+	{
+		return body != null && body.isActive() && path.goVia(route, faceX, faceY);
+	}
+
+	/**
+	 * Finds the tile the lead stands on, for working out a route from it.
+	 *
+	 * @return the tile as {x, y}; meaningful only while {@link #shown()}
+	 */
+	int[] tile()
+	{
+		return new int[]{(int) Math.round(path.x()), (int) Math.round(path.y())};
+	}
+
+	/**
+	 * Gives the plane and the walls the lead walks among, for working out a route.
+	 *
+	 * @return a finder over the lead's plane, or null when the lead is not in a scene
+	 */
+	TilePath tilePath()
+	{
+		Player player = client.getLocalPlayer();
+		WorldView view = player == null ? null : player.getWorldView();
+		return view == null ? null : new CollisionGround(view, path.plane()).path();
+	}
+
+	/**
+	 * Gives the height of the ground the lead is drawn on, so a projectile can leave from its body.
+	 *
+	 * @return the scene's z of the lead's feet, or NaN when the lead is not on screen
+	 */
+	double groundZ()
+	{
+		LocalPoint ground = groundPoint();
+		return ground == null ? Double.NaN : Perspective.getTileHeight(client, ground, path.plane());
 	}
 
 	/** @return whether the lead is on an errand: false once it was put back next to the player, or hidden */
@@ -474,7 +533,13 @@ final class FollowerService
 		if (view == null)
 			path.reset();
 		else
-			path.endErrand((x, y) -> free(view, path.plane(), x, y));
+			path.endErrand((x, y) -> free(view, path.plane(), x, y), routerOver(view));
+	}
+
+	private FollowerPath.Router routerOver(WorldView view)
+	{
+		TilePath tiles = new CollisionGround(view, path.plane()).path();
+		return (fromX, fromY, toX, toY) -> tiles.route(fromX, fromY, toX, toY, FollowerPath.MAX_ERRAND);
 	}
 
 	/**

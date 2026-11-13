@@ -13,11 +13,14 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Decides which monsters in view are wild, and remembers them. Knows nothing about the game client: monsters are
- * identified by their index and NPC id, so the rules can be tested without one.
+ * Decides which monsters in view roll wild, and keeps the wild creatures that came of it. Knows nothing about the
+ * game client: a real monster is only an index and an NPC id here, and a wild creature is its own thing with its own
+ * id from a counter, so it carries on whatever its monster does. Two memories are kept apart: the wild creatures
+ * that exist right now, and the real monsters that have rolled.
  *
- * <p>Each roll is remembered for {@link #MEMORY_MS} after the monster last left view, so a monster that reloads
- * (walking out of view and back) keeps its result instead of rolling again.</p>
+ * <p>A monster's roll is remembered for {@link #MEMORY_MS} after it last left view, so a monster that reloads
+ * (walking out of view and back) does not roll again. A monster that rolled wild stays remembered for as long as it
+ * is in view.</p>
  */
 final class WildTracker
 {
@@ -43,6 +46,8 @@ final class WildTracker
 	private final Map<Integer, Roll> rolls = new HashMap<>();
 	private final Random random;
 	private long lastWildMs = -COOLDOWN_MS;
+	private long previousWildMs = -COOLDOWN_MS;
+	private int nextId = 1;
 
 	WildTracker(Random random)
 	{
@@ -50,7 +55,7 @@ final class WildTracker
 	}
 
 	/**
-	 * Gives a monster its chance to turn wild, unless it already had one within {@link #MEMORY_MS}.
+	 * Gives a monster its chance to roll wild, unless it already rolled within {@link #MEMORY_MS}.
 	 *
 	 * @param npcIndex the game's index for the monster
 	 * @param npcId the monster's NPC id, which tells a reused index apart
@@ -61,7 +66,7 @@ final class WildTracker
 	 * @param chance the chance, from 0 to 1, that the monster turns wild
 	 * @param gildedOneIn the odds that a wild creature is gilded: one time in this many
 	 * @param mayRoam whether a wild creature may turn out to be a roaming one, one time in {@link #ROAMING_ONE_IN}
-	 * @return the new wild entry, or null when the monster stays ordinary
+	 * @return the new wild entry, with an id of its own, or null when the monster stays ordinary
 	 */
 	WildEntry offer(int npcIndex, int npcId, Species species, int combatLevel, boolean underground, long nowMs,
 		double chance, int gildedOneIn, boolean mayRoam)
@@ -78,7 +83,7 @@ final class WildTracker
 
 		if (random.nextDouble() >= chance)
 		{
-			rolls.put(npcIndex, new Roll(npcId, null, nowMs));
+			rolls.put(npcIndex, new Roll(npcId, false, nowMs));
 			return null;
 		}
 
@@ -88,59 +93,30 @@ final class WildTracker
 		if (roaming)
 			level = Math.min(XpRules.MAX_LEVEL, level + ROAMING_LEVELS);
 
-		WildEntry entry = new WildEntry(npcIndex, species, level, combatLevel, underground, gilded, roaming)
+		WildEntry entry = new WildEntry(nextId++, species, level, combatLevel, underground, gilded, roaming)
 			.withNpcId(npcId);
-		wild.put(npcIndex, entry);
-		rolls.put(npcIndex, new Roll(npcId, entry, nowMs));
+		wild.put(entry.wildId(), entry);
+		rolls.put(npcIndex, new Roll(npcId, true, nowMs));
+		previousWildMs = lastWildMs;
 		lastWildMs = nowMs;
 		return entry;
 	}
 
 	/**
-	 * Brings back a wild creature that left view and came back, with its level, gilding and battle state.
+	 * Takes back a creature that was just rolled but could not be put on screen, such as one with no free tile near
+	 * its monster. The cooldown it started is undone, so the next monster may roll at once. The monster stays
+	 * remembered as having rolled.
 	 *
-	 * @param npcIndex the game's index for the monster
-	 * @param npcId the monster's NPC id
-	 * @param nowMs the current wall-clock time in milliseconds
-	 * @return the remembered entry, now wild again, or null when there is none to bring back or no room
+	 * @param entry the entry that {@link #offer} returned
 	 */
-	WildEntry restore(int npcIndex, int npcId, long nowMs)
+	void withdraw(WildEntry entry)
 	{
-		Roll roll = fresh(npcIndex, npcId, nowMs);
-		if (roll == null || roll.entry == null || roll.entry.species().questOnly())
-			return null;
-
-		if (wild.containsKey(npcIndex))
-			return null;
-
-		if (wild.size() >= MAX_WILD)
-		{
-			roll.atMs = nowMs;
-			return null;
-		}
-
-		wild.put(npcIndex, roll.entry);
-		return roll.entry;
+		if (wild.remove(entry.wildId()) != null)
+			lastWildMs = previousWildMs;
 	}
 
 	/**
-	 * Tells whether a monster in view has a remembered wild entry that is not wild right now, so a
-	 * {@link #restore} may be tried.
-	 *
-	 * @param npcIndex the game's index for the monster
-	 * @param npcId the monster's NPC id
-	 * @param nowMs the current wall-clock time in milliseconds
-	 * @return whether there is a remembered wild creature waiting to be brought back
-	 */
-	boolean canRestore(int npcIndex, int npcId, long nowMs)
-	{
-		Roll roll = fresh(npcIndex, npcId, nowMs);
-		boolean open = roll != null && roll.entry != null && !roll.entry.species().questOnly();
-		return open && !wild.containsKey(npcIndex);
-	}
-
-	/**
-	 * Tells whether a monster may roll now: it is not wild, and has no roll remembered.
+	 * Tells whether a monster may roll now: it has no roll remembered.
 	 *
 	 * @param npcIndex the game's index for the monster
 	 * @param npcId the monster's NPC id
@@ -149,53 +125,51 @@ final class WildTracker
 	 */
 	boolean mayRoll(int npcIndex, int npcId, long nowMs)
 	{
-		return !wild.containsKey(npcIndex) && fresh(npcIndex, npcId, nowMs) == null;
+		return fresh(npcIndex, npcId, nowMs) == null;
 	}
 
 	/**
-	 * Notes that a monster left view. A wild one stops being wild for now, and its roll is remembered from now on.
+	 * Notes that a monster left view. Its roll is remembered from now on for {@link #MEMORY_MS}. A wild creature it
+	 * made is not touched.
 	 *
 	 * @param npcIndex the game's index for the monster
 	 * @param nowMs the current wall-clock time in milliseconds
 	 */
 	void leftView(int npcIndex, long nowMs)
 	{
-		wild.remove(npcIndex);
 		Roll roll = rolls.get(npcIndex);
 		if (roll != null)
+		{
+			roll.inView = false;
 			roll.atMs = nowMs;
+		}
 	}
 
 	/**
 	 * Looks up a wild creature.
 	 *
-	 * @param npcIndex the game's index for the monster
-	 * @return the entry, or null when that monster is not wild
+	 * @param wildId the creature's id
+	 * @return the entry, or null when there is no such wild creature
 	 */
-	WildEntry get(int npcIndex)
+	WildEntry get(int wildId)
 	{
-		return wild.get(npcIndex);
+		return wild.get(wildId);
 	}
 
 	/**
-	 * Ends a wild creature for good, because it was caught or fled. The monster is remembered as not wild, so it
-	 * does not roll again straight away.
+	 * Ends a wild creature for good, because it was caught, fled or its time was up.
 	 *
-	 * @param npcIndex the game's index for the monster
-	 * @param nowMs the current wall-clock time in milliseconds
+	 * @param wildId the creature's id
 	 */
-	void remove(int npcIndex, long nowMs)
+	void remove(int wildId)
 	{
-		wild.remove(npcIndex);
-		Roll roll = rolls.get(npcIndex);
-		if (roll != null)
-			rolls.put(npcIndex, new Roll(roll.npcId, null, nowMs));
+		wild.remove(wildId);
 	}
 
 	/**
 	 * Drops the current wild creatures while creatures cannot be wild here (the wilderness, an instance). The rolls
-	 * and their entries are kept, and their memory restarts now, so a creature that was battled or rolled "no" is
-	 * the same one when its monster comes back into a playable area.
+	 * are kept, and their memory restarts now, so a monster that rolled does not roll again the moment it comes back
+	 * into a playable area.
 	 *
 	 * @param nowMs the current wall-clock time in milliseconds
 	 */
@@ -203,7 +177,10 @@ final class WildTracker
 	{
 		wild.clear();
 		for (Roll roll : rolls.values())
+		{
+			roll.inView = false;
 			roll.atMs = nowMs;
+		}
 	}
 
 	/** Forgets every wild creature and every roll, for a logout, a world hop or a profile change. */
@@ -225,34 +202,35 @@ final class WildTracker
 		if (roll == null || roll.npcId != npcId)
 			return null;
 
-		boolean inView = roll.entry != null && wild.get(npcIndex) == roll.entry;
-		return inView || nowMs - roll.atMs < MEMORY_MS ? roll : null;
+		return roll.inView || nowMs - roll.atMs < MEMORY_MS ? roll : null;
 	}
 
 	private void forgetOld(long nowMs)
 	{
-		Iterator<Map.Entry<Integer, Roll>> it = rolls.entrySet().iterator();
+		Iterator<Roll> it = rolls.values().iterator();
 		while (it.hasNext())
 		{
-			Map.Entry<Integer, Roll> next = it.next();
-			Roll roll = next.getValue();
-			boolean inView = roll.entry != null && wild.get(next.getKey()) == roll.entry;
-			if (!inView && nowMs - roll.atMs >= MEMORY_MS)
+			Roll roll = it.next();
+			if (!roll.inView && nowMs - roll.atMs >= MEMORY_MS)
 				it.remove();
 		}
 	}
 
-	/** One remembered roll: the monster's NPC id, the wild entry it produced (null for "not wild"), and when. */
+	/**
+	 * One remembered roll: the monster's NPC id, whether it came out wild, when, and whether the monster is still in
+	 * view. A roll that came out wild is kept while the monster is in view; one that came out ordinary runs out
+	 * {@link #MEMORY_MS} after it was made.
+	 */
 	private static final class Roll
 	{
 		private final int npcId;
-		private final WildEntry entry;
+		private boolean inView;
 		private long atMs;
 
-		Roll(int npcId, WildEntry entry, long atMs)
+		Roll(int npcId, boolean wild, long atMs)
 		{
 			this.npcId = npcId;
-			this.entry = entry;
+			this.inView = wild;
 			this.atMs = atMs;
 		}
 	}

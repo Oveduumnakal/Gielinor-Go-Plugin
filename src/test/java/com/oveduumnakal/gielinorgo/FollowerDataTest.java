@@ -290,60 +290,6 @@ public class FollowerDataTest
 	}
 
 	@Test
-	public void aCaughtCreatureIsInSightUntilTheJarLandsThenOutOfSightForFiveSecondsThenFadesIn()
-	{
-		int land = CatchScene.LAND_TICK;
-		assertEquals(CatchEffects.VISIBLE, CatchEffects.shadeAt(0));
-		assertEquals(CatchEffects.VISIBLE, CatchEffects.shadeAt(land - 1));
-		assertEquals(CatchEffects.HIDDEN, CatchEffects.shadeAt(land));
-		assertEquals(CatchEffects.HIDDEN, CatchEffects.shadeAt(land + CatchEffects.HIDDEN_TICKS));
-		assertEquals(0, CatchEffects.shadeAt(land + CatchEffects.HIDDEN_TICKS + 1));
-		assertEquals(CatchEffects.FADE_STEPS - 1,
-			CatchEffects.shadeAt(land + CatchEffects.HIDDEN_TICKS + CatchEffects.FADE_TICKS));
-		assertEquals(CatchEffects.DONE,
-			CatchEffects.shadeAt(land + CatchEffects.HIDDEN_TICKS + CatchEffects.FADE_TICKS + 1));
-		assertEquals("five seconds at 50 client ticks a second", 250, CatchEffects.HIDDEN_TICKS);
-	}
-
-	@Test
-	public void theFadeNeverStepsBackwards()
-	{
-		int last = CatchEffects.VISIBLE;
-		int end = CatchScene.LAND_TICK + CatchEffects.HIDDEN_TICKS + CatchEffects.FADE_TICKS;
-		for (int age = 0; age <= end; age++)
-		{
-			int shade = CatchEffects.shadeAt(age);
-			assertTrue("age " + age, shade >= last && shade < CatchEffects.FADE_STEPS);
-			last = shade;
-		}
-	}
-
-	@Test
-	public void eachFadeStepIsMoreSolidThanTheOneBefore()
-	{
-		int last = 255;
-		for (int step = 0; step < CatchEffects.FADE_STEPS; step++)
-		{
-			int transparency = CatchEffects.transparencyAt(step);
-			assertTrue("step " + step + " is " + transparency, transparency < last && transparency > 0);
-			last = transparency;
-		}
-	}
-
-	@Test
-	public void fadingKeepsFacesThatWereAlreadyFainter()
-	{
-		byte[] faces = {0, (byte) 100, (byte) 250};
-
-		CatchEffects.fade(faces, 200);
-
-		assertEquals(200, faces[0] & 0xFF);
-		assertEquals(200, faces[1] & 0xFF);
-		assertEquals(250, faces[2] & 0xFF);
-		CatchEffects.fade(null, 200);
-	}
-
-	@Test
 	public void followersAreShownAtThreeQuartersOfTheirFittedSize()
 	{
 		assertEquals(0.75, FollowerService.SHOWN_SIZE, CLOSE);

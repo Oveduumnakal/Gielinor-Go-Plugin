@@ -56,18 +56,18 @@ public class NoticeBoardTest
 	}
 
 	@Test
-	public void stageFactoriesKeepTheFallbackHead()
+	public void stageFactoriesKeepTheWildId()
 	{
 		Notice foe = Notice.stageFoe(7, "hit", Tone.GOOD);
 		Notice lead = Notice.stageLead("ouch", Tone.BAD);
 
 		assertEquals(Notice.Anchor.STAGE_FOE, foe.anchor());
-		assertEquals(7, foe.npcIndex());
+		assertEquals(7, foe.wildId());
 		assertFalse(foe.overPlayer());
 		assertEquals(Notice.Anchor.STAGE_LEAD, lead.anchor());
-		assertEquals(Notice.PLAYER, lead.npcIndex());
+		assertEquals(Notice.PLAYER, lead.wildId());
 		assertTrue(lead.overPlayer());
-		assertEquals(Notice.Anchor.HEAD, Notice.creature(7, "x", Tone.INFO).anchor());
+		assertEquals(Notice.Anchor.WILD, Notice.creature(7, "x", Tone.INFO).anchor());
 		assertEquals(Notice.Anchor.HEAD, Notice.player("x", Tone.INFO).anchor());
 	}
 
