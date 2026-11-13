@@ -3,6 +3,10 @@
 
 Run from the repo root: python3 scripts/gen-species.py [dump.tar.gz]
 
+Combat styles (issue #85): a species gets STAB, SLASH, CRUSH, RANGED or MAGIC from the first wiki attack style. The
+ones the wiki does not decide (no style, Melee, Typeless, All, Dragonfire first) take STAB, SLASH or CRUSH from
+scripts/species-melee-style.txt; a line there also wins over the wiki. A species with neither fails the run.
+
 Quest monsters (issue #50): a species whose every wiki row sits on a page of Category:Quest_monsters (read through the
 MediaWiki API, list=categorymembers) gets "quest": true. scripts/species-quest-add.txt lists names to flag although the
 wiki does not, scripts/species-quest-keep.txt names to keep catchable although it does. The flagged names are written
