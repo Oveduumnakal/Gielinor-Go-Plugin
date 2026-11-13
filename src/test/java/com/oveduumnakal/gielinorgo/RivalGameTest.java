@@ -202,7 +202,7 @@ public class RivalGameTest
 	{
 		sigils(8);
 		for (int i = 0; i < 5; i++)
-			game.data().team.add(new Creature("abyssal demon", 99, now));
+			game.data().team.add(new Creature("bloodthirsty kurask", 99, now));
 
 		for (int battle = 1; battle <= 4; battle++)
 		{
