@@ -43,6 +43,9 @@ final class WildBodies
 	/** Farthest a new body stands from the real monster's tile, as the game counts distance: two tiles. */
 	static final int SPAWN_MAX_DISTANCE = 2;
 
+	/** The game's angle scale for a full turn, for a random facing. */
+	private static final int FULL_TURN = 2048;
+
 	/** How long the place of a body that is gone is kept for floating text, in milliseconds. */
 	static final long FAREWELL_MS = 10_000L;
 
@@ -94,9 +97,46 @@ final class WildBodies
 	{
 		try
 		{
+			return spawn(entry, monster.getWorldLocation(), monster.getIdlePoseAnimation(),
+				monster.getWalkAnimation(), monster.getCurrentOrientation(), nowMs);
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not read the monster to copy", e);
+			return null;
+		}
+	}
+
+	/**
+	 * Puts a wild creature down beside the player, for one that no real monster came from. The model is the
+	 * species' own NPC id and its stand and walk animations come from the animation table. It stands on a free tile
+	 * one or two tiles from the player; with no such tile, or when the model cannot be drawn, nothing is put down.
+	 *
+	 * @param entry the wild creature, with its NPC id set
+	 * @param nowMs the clock now, in milliseconds
+	 * @return the body, or null when none could be put down
+	 */
+	WildBody spawnBesidePlayer(WildEntry entry, long nowMs)
+	{
+		try
+		{
+			Player player = client.getLocalPlayer();
+			WorldPoint there = player == null ? null : player.getWorldLocation();
+			return spawn(entry, there, AnimationTable.NONE, AnimationTable.NONE, random.nextInt(FULL_TURN), nowMs);
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not read the player to put a creature beside", e);
+			return null;
+		}
+	}
+
+	private WildBody spawn(WildEntry entry, WorldPoint there, int idle, int walk, int facing, long nowMs)
+	{
+		try
+		{
 			Player player = client.getLocalPlayer();
 			WorldView view = client.getTopLevelWorldView();
-			WorldPoint there = monster.getWorldLocation();
 			WorldPoint here = player == null ? null : player.getWorldLocation();
 			if (view == null || there == null || here == null || here.getPlane() != there.getPlane()
 				|| client.getGameState() != GameState.LOGGED_IN)
@@ -109,9 +149,6 @@ final class WildBodies
 				return null;
 
 			int[] tile = route.get(route.size() - 1);
-			int idle = monster.getIdlePoseAnimation();
-			int walk = monster.getWalkAnimation();
-			int facing = monster.getCurrentOrientation();
 			WildBody body = new WildBody(client, animations, entry, new WildLife(nowMs, random), tile[0], tile[1],
 				there.getPlane(), idle, walk, facing);
 			if (!body.build())

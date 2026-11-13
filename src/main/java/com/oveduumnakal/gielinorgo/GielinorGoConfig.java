@@ -393,6 +393,21 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Whether gathering skills bring wild creatures.
+	 *
+	 * @return true by default
+	 */
+	@ConfigItem(
+		keyName = "skillingEncounters",
+		name = "Skilling encounters",
+		description = "Fishing, Woodcutting, Mining, Farming and Hunter XP drops sometimes bring a wild creature"
+			+ " beside you. The Wild creature rarity setting scales how often.",
+		position = 19
+	)
+	default boolean skillingEncounters()
+	}
+
+	/**
 	 * Whether short game sounds play for catches, level-ups and other big moments.
 	 *
 	 * @return true to play them
