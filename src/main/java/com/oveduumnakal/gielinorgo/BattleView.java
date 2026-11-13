@@ -69,6 +69,8 @@ final class BattleView
 	private final String foeName;
 	private final int foeLevel;
 	private final double foeHp;
+	private final Status mineStatus;
+	private final Status foeStatus;
 	private final boolean forcedSwitch;
 	private final boolean canCatch;
 	private final String jarLabel;
@@ -100,6 +102,8 @@ final class BattleView
 		this.foeName = foe.name();
 		this.foeLevel = foe.level();
 		this.foeHp = foe.hpFraction();
+		this.mineStatus = mine.status();
+		this.foeStatus = foe.status();
 		this.forcedSwitch = forcedSwitch;
 		this.canCatch = canCatch;
 		this.jarLabel = jar == null ? null : jar.label();
@@ -138,6 +142,29 @@ final class BattleView
 	double mineHp()
 	{
 		return mineHp;
+	}
+
+	/** @return the status of the player's creature in the fight, or null for none */
+	Status mineStatus()
+	{
+		return mineStatus;
+	}
+
+	/** @return the status of the opposing creature in the fight, or null for none */
+	Status foeStatus()
+	{
+		return foeStatus;
+	}
+
+	/**
+	 * Words a creature's status as a tag to put after its name.
+	 *
+	 * @param status the status, or null
+	 * @return a space and the tag in square brackets, or an empty text for none
+	 */
+	static String tagText(Status status)
+	{
+		return status == null ? "" : " [" + status.tag() + "]";
 	}
 
 	/** @return the name of the opposing creature in the fight */

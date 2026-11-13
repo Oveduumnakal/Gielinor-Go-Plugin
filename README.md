@@ -120,8 +120,23 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   creature's card, and clicking it (or **Moves...** in the card's right-click menu) lets you pick a move to forget
   or skip the new one. Hover a card to see its moves with their power and accuracy. An evolved creature keeps the
   moves its new species can still know. A wild creature has the newest four moves its level unlocks, and an
-  automatic battle picks a move for your creature by power, accuracy and the style match-up. Friends see the same
+  creature that picks for itself (an automatic battle, a timed-out turn, a wild creature or a champion) picks one of
+  its moves at random. Friends see the same
   moves, and a friend's creature can only use moves its species could really know.
+
+- **Status effects**
+
+  Some moves can leave a creature **poisoned** (PSN), **envenomed** (VNM), **burned** (BRN), **frozen** (FRZ) or
+  **stunned** (STN) after a hit: a venom bite or a scorpion's sting poisons, a constrictor envenoms, Dragonfire and fire
+  spells burn, an icy breath freezes, a bind or a shield bash stuns. A poisonous creature's melee hit also poisons one
+  time in five. Poison and burn take 1/16 of full health at the end of each round and venom takes 1/20, then 2/20,
+  then 3/20 and on, all for four rounds; a burned creature's melee hits do a quarter less. A frozen creature loses
+  one or two turns and a stunned one has a 50% chance to lose each of three turns. A creature has one status at a
+  time, poisonous creatures cannot be poisoned or envenomed and fiery ones cannot be burned. A status ends with its
+  time, when the creature is switched out and when the battle ends; it is never saved. The battle text says it
+  ("Bob is poisoned!", "Bob is hurt by poison -3 (12/40)", "Bob is frozen solid", "Bob shook it off"), a small
+  coloured tag floats over an affected creature in a battle that is acted out, and the battle box shows the tag next
+  to each name. Friends see the same statuses (party protocol 4).
 
 - **Battles that play themselves**
 

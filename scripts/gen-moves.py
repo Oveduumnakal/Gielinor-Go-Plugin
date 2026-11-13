@@ -32,6 +32,7 @@ DATA = os.path.join(HERE, "..", "src", "main", "resources", "com", "oveduumnakal
 POOLS = os.path.join(HERE, "move-pools.json")
 STYLES = ("MELEE", "RANGED", "MAGIC")
 SLOTS = ("ATTACK", "SECOND")
+STATUSES = ("POISON", "VENOM", "BURN", "FREEZE", "STUN")
 MAX_POWER = 3.0
 MIN_ACCURACY = 0.5
 MAX_MOVES_PER_POOL = 12
@@ -66,7 +67,7 @@ def check_moves(moves):
         if move.get("slot", "ATTACK") not in SLOTS:
             fail("move %s has an unknown slot" % mid)
         effect = move.get("effect")
-        if effect is not None and (not effect.get("status") or not 0.0 < effect.get("chance", 0) <= 1.0):
+        if effect is not None and (effect.get("status") not in STATUSES or not 0.0 < effect.get("chance", 0) <= 1.0):
             fail("move %s has a broken effect" % mid)
         by_id[mid] = move
     return by_id

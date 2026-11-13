@@ -114,8 +114,8 @@ final class BattleBox extends JPanel
 		options = view.options();
 		moves = view.moves();
 		title.setText(view.forcedSwitch() ? "CHOOSE YOUR NEXT CREATURE" : "YOUR TURN · " + view.secondsLeft() + "s");
-		mineName.setText(view.mineName() + " Lv " + view.mineLevel());
-		foeName.setText(view.foeName() + " Lv " + view.foeLevel());
+		mineName.setText(view.mineName() + " Lv " + view.mineLevel() + BattleView.tagText(view.mineStatus()));
+		foeName.setText(view.foeName() + " Lv " + view.foeLevel() + BattleView.tagText(view.foeStatus()));
 		mineBar.set(view.mineHp(), MINE);
 		foeBar.set(view.foeHp(), FOE);
 		mineBar.setToolTipText(Math.round(view.mineHp() * 100) + "% health");

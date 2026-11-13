@@ -77,6 +77,15 @@ final class BattleTimeline
 		/** The other creature uses its second attack and the lead reacts. */
 		FOE_SPECIAL,
 
+		/** A creature is hurt by poison, venom or burn: it flinches and nobody attacks. */
+		DOT,
+
+		/** A creature loses its turn to freeze or stun: it shakes in place and nobody attacks. */
+		SKIP,
+
+		/** A status starts or wears off: nothing moves, and the tags change. */
+		TAG,
+
 		/** The result is out and the loser goes down. */
 		FINISH,
 
@@ -95,6 +104,8 @@ final class BattleTimeline
 		private final ProjectileLook look;
 		private final Combatant entered;
 		private final boolean missed;
+		private boolean onLead;
+		private BattleLine tags;
 
 		/**
 		 * Describes the step in which a creature of the team steps in as the lead.
@@ -148,6 +159,46 @@ final class BattleTimeline
 			this.look = look;
 			this.entered = null;
 			this.missed = missed;
+		}
+
+		/**
+		 * Describes a beat about a status: a creature hurt by it, a creature that loses its turn, or a tag that
+		 * changes.
+		 *
+		 * @param beat {@link Beat#DOT}, {@link Beat#SKIP} or {@link Beat#TAG}
+		 * @param line the line of the beat, over the creature it is about, carrying the tags afterwards
+		 * @return the step
+		 */
+		static Step ofStatus(Beat beat, BattleLine line)
+		{
+			Step step = new Step(beat, null);
+			step.onLead = line.overPlayer();
+			step.tags = line.tagged() ? line : null;
+			return step;
+		}
+
+		/** @return for a status beat, whether it is about the lead creature (the player's), else the other one */
+		boolean onLead()
+		{
+			return onLead;
+		}
+
+		/** @return whether this beat says which status each creature has afterwards */
+		boolean tagged()
+		{
+			return tags != null;
+		}
+
+		/** @return the status the lead has after this beat, null for none or when {@link #tagged()} is false */
+		Status leadStatus()
+		{
+			return tags == null ? null : tags.mineStatus();
+		}
+
+		/** @return the status the other creature has after this beat, null for none */
+		Status foeStatus()
+		{
+			return tags == null ? null : tags.foeStatus();
 		}
 
 		/** @return whether the attack of this beat misses, so the target does not react */
@@ -290,7 +341,8 @@ final class BattleTimeline
 	/**
 	 * Turns battle lines into steps. The opening line is a beat where nobody strikes ({@link Beat#FACE_OFF}), so text
 	 * and blows stay one to one; a line that is only text makes no step. A hit keeps the style of the move that made
-	 * it, and a miss is marked so the target does not react.
+	 * it, and a miss is marked so the target does not react. Status lines are beats too: hurt ({@link Beat#DOT}),
+	 * lost turn ({@link Beat#SKIP}) and a status that starts or ends ({@link Beat#TAG}).
 	 *
 	 * @param lines the lines of the battle, in order
 	 * @return one step per line that is something to see
@@ -314,6 +366,18 @@ final class BattleTimeline
 				case FOE_HIT:
 					steps.add(new Step(line.special() ? Beat.FOE_SPECIAL : Beat.FOE_ATTACKS, line.style(),
 						ProjectileLook.of(line.style(), line.special(), line.icy()), line.miss()));
+					break;
+
+				case STATUS_DAMAGE:
+					steps.add(Step.ofStatus(Beat.DOT, line));
+					break;
+
+				case SKIPPED:
+					steps.add(Step.ofStatus(Beat.SKIP, line));
+					break;
+
+				case STATUS:
+					steps.add(Step.ofStatus(Beat.TAG, line));
 					break;
 
 				case CLOSING:

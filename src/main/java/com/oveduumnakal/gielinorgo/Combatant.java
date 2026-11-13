@@ -7,6 +7,8 @@ package com.oveduumnakal.gielinorgo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /** One side of a battle: a species at a level, with the stats that follow from the two. */
 final class Combatant
@@ -24,6 +26,9 @@ final class Combatant
 	private final Species species;
 	private int npcId;
 	private List<Move> moves;
+	private Status status;
+	private int statusTurns;
+	private int venomStep;
 
 	/**
 	 * Builds a fighter.
@@ -226,5 +231,95 @@ final class Combatant
 	void hit(int damage)
 	{
 		hp = Math.max(0, hp - damage);
+	}
+
+	/** @return the status the fighter has, or null for none */
+	Status status()
+	{
+		return status;
+	}
+
+	/** @return the traits of the fighter's species, in a set the caller may change */
+	Set<Trait> traits()
+	{
+		return species.traits();
+	}
+
+	/**
+	 * Tells whether a status could be put on the fighter now: it has none and its traits do not block it.
+	 *
+	 * @param wanted the status
+	 * @return true when {@link #afflict} would put it on
+	 */
+	boolean canAfflict(Status wanted)
+	{
+		return status == null && !wanted.blockedBy(species.traits());
+	}
+
+	/**
+	 * Puts a status on the fighter. A fighter that already has one keeps it, and one that is immune stays free. A
+	 * freeze draws once, to roll whether it lasts one turn or two.
+	 *
+	 * @param wanted the status
+	 * @param random the source of the freeze length
+	 * @return whether the status was put on
+	 */
+	boolean afflict(Status wanted, Random random)
+	{
+		if (!canAfflict(wanted))
+			return false;
+
+		status = wanted;
+		venomStep = 0;
+		statusTurns = wanted == Status.FREEZE ? 1 + random.nextInt(2) : wanted.turns();
+		return true;
+	}
+
+	/** Takes the status away, as a switch, a cure or the end of a pairing does. */
+	void clearStatus()
+	{
+		status = null;
+		statusTurns = 0;
+		venomStep = 0;
+	}
+
+	/**
+	 * Ends a round for a fighter: a damaging status takes its health and runs down by one round, and ends when its
+	 * rounds are up. A fighter with no such status takes nothing.
+	 *
+	 * @return the health taken, 0 when none
+	 */
+	int endOfRound()
+	{
+		if (status == null || !status.damaging())
+			return 0;
+
+		int damage = status.roundDamage(maxHp, venomStep);
+		venomStep++;
+		hit(damage);
+		if (--statusTurns <= 0)
+			clearStatus();
+
+		return damage;
+	}
+
+	/**
+	 * Asks whether the fighter loses its turn. A freeze always does, and a stun does half the time with one draw;
+	 * either runs down by one turn and ends when its turns are up. Any other status, or none, never does and draws
+	 * nothing.
+	 *
+	 * @param random the source of the stun roll
+	 * @return true when the fighter cannot move this turn
+	 */
+	boolean skipsTurn(Random random)
+	{
+		if (status == null || !status.skipping())
+			return false;
+
+		boolean skip = status == Status.FREEZE || random.nextDouble() < Status.STUN_SKIP_CHANCE;
+		if (--statusTurns <= 0)
+			clearStatus();
+
+		return skip;
 	}
 }

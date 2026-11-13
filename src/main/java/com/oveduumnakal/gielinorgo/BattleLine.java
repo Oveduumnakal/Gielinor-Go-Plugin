@@ -22,6 +22,15 @@ final class BattleLine
 		/** The result: the loser goes down. */
 		CLOSING,
 
+		/** A creature lost health to poison, venom or burn at the end of a round; nobody attacked. */
+		STATUS_DAMAGE,
+
+		/** A creature lost its turn to freeze or stun; nobody attacked. */
+		SKIPPED,
+
+		/** A status was put on a creature or wore off. It is a quiet beat in which only the tags change. */
+		STATUS,
+
 		/** Any other line, which is only text. */
 		OTHER
 	}
@@ -34,6 +43,9 @@ final class BattleLine
 	private final CombatType style;
 	private final boolean icy;
 	private final boolean miss;
+	private boolean tagged;
+	private Status mineStatus;
+	private Status foeStatus;
 
 	BattleLine(String text, Tone tone, boolean overPlayer)
 	{
@@ -99,6 +111,53 @@ final class BattleLine
 		this.tone = tone;
 		this.overPlayer = overPlayer;
 		this.kind = kind;
+	}
+
+	/**
+	 * Copies the line with a note of the status each side has once the line has happened, so a scene that acts the
+	 * line out can show the right tags.
+	 *
+	 * @param mine the status of the player's creature, or null for none
+	 * @param foe the status of the opposing creature, or null for none
+	 * @return the copy
+	 */
+	BattleLine withTags(Status mine, Status foe)
+	{
+		BattleLine copy = new BattleLine(text, tone, overPlayer, kind, special, style, icy, miss);
+		copy.tagged = true;
+		copy.mineStatus = mine;
+		copy.foeStatus = foe;
+		return copy;
+	}
+
+	/** @return whether the line says which status each side has afterwards */
+	boolean tagged()
+	{
+		return tagged;
+	}
+
+	/** @return the status of the player's creature once the line has happened, null for none or when not tagged */
+	Status mineStatus()
+	{
+		return mineStatus;
+	}
+
+	/** @return the status of the opposing creature once the line has happened, null for none or when not tagged */
+	Status foeStatus()
+	{
+		return foeStatus;
+	}
+
+	/**
+	 * Tells whether a scene acts the line out with a beat of its own and floats it over a creature: a blow, a
+	 * creature hurt by its status, a creature that loses its turn, or a status that starts or ends.
+	 *
+	 * @return true for those lines, false for text that is only text
+	 */
+	boolean blow()
+	{
+		return kind == Kind.LEAD_HIT || kind == Kind.FOE_HIT || kind == Kind.STATUS_DAMAGE || kind == Kind.SKIPPED
+			|| kind == Kind.STATUS;
 	}
 
 	/** @return true when the attack missed: it is still acted out, but the target does not react */

@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.gson.Gson;
+
 /** Moves for the fixtures of the battle tests, so a test dragon bites and breathes like the real pool says. */
 final class TestMoves
 {
@@ -42,5 +44,20 @@ final class TestMoves
 	static List<Move> alwaysMagic()
 	{
 		return Collections.singletonList(Move.basic(CombatType.MAGIC));
+	}
+
+	/**
+	 * Makes a plain melee move of power 1 and accuracy 1 that can cause a status.
+	 *
+	 * @param id the move id
+	 * @param status the status it can cause
+	 * @param chance the chance, from 0 to 1, that a hit causes it
+	 * @return the move
+	 */
+	static Move causing(String id, Status status, double chance)
+	{
+		String json = "{\"id\":\"" + id + "\",\"name\":\"" + id + "\",\"style\":\"MELEE\",\"power\":1.0,"
+			+ "\"accuracy\":1.0,\"effect\":{\"status\":\"" + status.name() + "\",\"chance\":" + chance + "}}";
+		return new Gson().fromJson(json, Move.class);
 	}
 }

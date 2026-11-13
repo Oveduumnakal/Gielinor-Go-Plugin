@@ -45,7 +45,11 @@ final class FloatingTextOverlay extends Overlay
 
 	private final Client client;
 	private final NoticeBoard board;
+	private static final Notice LEAD_BODY = Notice.stageLead("", Tone.INFO);
+	private static final Notice FOE_BODY = Notice.stageFoe("", Tone.INFO);
+
 	private final Function<Notice, StageAnchors.Spot> bodies;
+	private final Function<Notice.Anchor, Status> tags;
 
 	/**
 	 * Creates the overlay.
@@ -53,12 +57,15 @@ final class FloatingTextOverlay extends Overlay
 	 * @param client the game client
 	 * @param board the lines on screen
 	 * @param bodies finds where the body a line is about is drawn, or null to float over the player's head
+	 * @param tags finds the status a body on a battle stage shows as a tag, or null for none
 	 */
-	FloatingTextOverlay(Client client, NoticeBoard board, Function<Notice, StageAnchors.Spot> bodies)
+	FloatingTextOverlay(Client client, NoticeBoard board, Function<Notice, StageAnchors.Spot> bodies,
+		Function<Notice.Anchor, Status> tags)
 	{
 		this.client = client;
 		this.board = board;
 		this.bodies = bodies;
+		this.tags = tags;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -81,11 +88,13 @@ final class FloatingTextOverlay extends Overlay
 	private void drawAll(Graphics2D graphics)
 	{
 		long now = System.currentTimeMillis();
+		graphics.setFont(FontManager.getRunescapeBoldFont());
+		drawTag(graphics, LEAD_BODY, Notice.Anchor.STAGE_LEAD);
+		drawTag(graphics, FOE_BODY, Notice.Anchor.STAGE_FOE);
 		List<NoticeBoard.Shown> lines = board.visible(now);
 		if (lines.isEmpty())
 			return;
 
-		graphics.setFont(FontManager.getRunescapeBoldFont());
 		Map<Object, Integer> stacked = new HashMap<>();
 		for (int i = lines.size() - 1; i >= 0; i--)
 		{
@@ -102,6 +111,32 @@ final class FloatingTextOverlay extends Overlay
 				head.getLogicalHeight() + HEAD_OFFSET) : stageLocation(graphics, spot, notice.text());
 			draw(graphics, anchor, line, row, now);
 		}
+	}
+
+	/**
+	 * Draws the tag of a status, such as PSN, over a body on a battle stage for as long as the status lasts. The
+	 * tag sits just over the body, under the floating lines.
+	 *
+	 * @param graphics the canvas
+	 * @param body a notice that stands for the body, to find where it is drawn
+	 * @param anchor which body
+	 */
+	private void drawTag(Graphics2D graphics, Notice body, Notice.Anchor anchor)
+	{
+		Status status = tags == null ? null : tags.apply(anchor);
+		StageAnchors.Spot spot = status == null ? null : spotFor(body);
+		if (spot == null)
+			return;
+
+		String text = status.tag();
+		Point at = stageLocation(graphics, spot, text);
+		if (at == null)
+			return;
+
+		graphics.setColor(Color.BLACK);
+		graphics.drawString(text, at.getX() + 1, at.getY() + 1);
+		graphics.setColor(status.color());
+		graphics.drawString(text, at.getX(), at.getY());
 	}
 
 	/**
