@@ -669,6 +669,58 @@ public class FriendBattlesTest
 	}
 
 	@Test
+	public void aLateAcceptWhileFightingStartsNoBattleAndSendsLeave()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData, true);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true, true);
+		long battle = last(fromAnn).battle();
+		fromAnn.clear();
+
+		assertNull(ann.receive(last(fromBob), ANN, "Bob", annData, true, true, false));
+
+		assertNull(ann.takeStarted());
+		assertFalse(ann.inTurnBattleWith(BOB));
+		assertEquals(GielinorGoPartyMessage.LEAVE, last(fromAnn).kind());
+		assertEquals(BOB, last(fromAnn).to());
+		assertEquals(battle, last(fromAnn).battle());
+		assertEquals("Bob accepted, but you are in a battle", last(annTold));
+	}
+
+	@Test
+	public void startingAnotherBattleCancelsTheChallengeAndALaterAcceptGetsLeave()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData, true);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true, true);
+		long battle = last(fromAnn).battle();
+		fromAnn.clear();
+
+		ann.cancelChallenge();
+		assertNull(ann.receive(last(fromBob), ANN, "Bob", annData, true, true));
+
+		assertNull(ann.takeStarted());
+		assertEquals(GielinorGoPartyMessage.LEAVE, last(fromAnn).kind());
+		assertEquals(battle, last(fromAnn).battle());
+		assertEquals(BOB, last(fromAnn).to());
+	}
+
+	@Test
+	public void cancellingTheChallengeLeavesATurnBattleAlreadyOnAlone()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData, true);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true, true);
+		ann.receive(last(fromBob), ANN, "Bob", annData, true, true);
+		FriendTurnBattle battle = ann.takeStarted();
+
+		ann.cancelChallenge();
+
+		assertNull(battle.ended());
+		assertTrue(ann.inTurnBattleWith(BOB));
+	}
+
+	@Test
 	public void aTurnMessageOfAnOlderProtocolEndsTheBattle()
 	{
 		meet();
