@@ -415,6 +415,7 @@ public class GielinorGoPlugin extends Plugin
 	public void onNpcSpawned(NpcSpawned event)
 	{
 		NPC npc = event.getNpc();
+		noteBanker(npc);
 		if (speciesOf(npc) == null)
 			return;
 
@@ -425,14 +426,12 @@ public class GielinorGoPlugin extends Plugin
 	/**
 	 * Remembers a banker that came into view, so the team can be changed near it.
 	 *
-	 * @param event the spawn
+	 * @param npc the monster that came into view
 	 */
-	@Subscribe
-	public void onBankerSpawned(NpcSpawned event)
+	private void noteBanker(NPC npc)
 	{
 		try
 		{
-			NPC npc = event.getNpc();
 			NPCComposition composition = npc.getTransformedComposition();
 			WorldPoint point = npc.getWorldLocation();
 			if (composition != null && point != null && offersBank(composition.getActions()))
@@ -445,24 +444,13 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
-	 * Forgets a banker that left view.
-	 *
-	 * @param event the despawn
-	 */
-	@Subscribe
-	public void onBankerDespawned(NpcDespawned event)
-	{
-		bankSpots.remove(event.getNpc());
-	}
-
-	/**
 	 * Remembers a bank booth or chest that came into view, so the team can be changed near it. What an object id
 	 * offers is looked up once and kept.
 	 *
 	 * @param event the spawn
 	 */
 	@Subscribe
-	public void onBankObjectSpawned(GameObjectSpawned event)
+	public void onGameObjectSpawned(GameObjectSpawned event)
 	{
 		try
 		{
@@ -486,7 +474,7 @@ public class GielinorGoPlugin extends Plugin
 	 * @param event the despawn
 	 */
 	@Subscribe
-	public void onBankObjectDespawned(GameObjectDespawned event)
+	public void onGameObjectDespawned(GameObjectDespawned event)
 	{
 		bankSpots.remove(event.getGameObject());
 	}
@@ -522,6 +510,7 @@ public class GielinorGoPlugin extends Plugin
 	@Subscribe
 	public void onNpcDespawned(NpcDespawned event)
 	{
+		bankSpots.remove(event.getNpc());
 		int index = event.getNpc().getIndex();
 		candidates.remove(index);
 		tracker.leftView(index, System.currentTimeMillis());
