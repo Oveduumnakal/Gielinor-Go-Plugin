@@ -121,6 +121,12 @@ interface PanelActions
 	 */
 	void battleChoice(BattleChoice choice);
 
+	/**
+	 * Puts the whole save back to a fresh one, after the player confirmed. The old save is copied to a safety key
+	 * first. It is refused, with the reason shown as floating text, while a battle, a trade or an Elite run is on.
+	 */
+	void resetProgress();
+
 	/** Records that the player opened the change log, so the What's New badge goes away. */
 	void whatsNewSeen();
 }
