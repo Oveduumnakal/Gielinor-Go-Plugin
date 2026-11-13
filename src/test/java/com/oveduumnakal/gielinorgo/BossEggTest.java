@@ -127,6 +127,19 @@ public class BossEggTest
 	}
 
 	@Test
+	public void aWaitingEggStaysBehindWhenAnotherSaveIsLoaded()
+	{
+		fillBag();
+		game.bossKilled("Giant Mole");
+
+		game.load(new SaveData());
+		game.addSteps(1);
+
+		assertTrue(game.data().eggs.isEmpty());
+		assertTrue(game.data().bossKills.isEmpty());
+	}
+
+	@Test
 	public void aBossEggHatchesIntoThatSpeciesAtLevelOne()
 	{
 		game.bossKilled("Vorkath");
