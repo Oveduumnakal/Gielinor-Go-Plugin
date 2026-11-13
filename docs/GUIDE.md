@@ -263,12 +263,12 @@ Every feature and every number, in detail. For the short version, see the [READM
   unlocked, or 100 trainer XP, for a daily task; 5 jars and a Rare egg for the weekly one. When you have no room
   for an egg you get 5 jars instead.
 
-- **Login streak**
+- **Days played**
 
-  The first catch of each UTC day pays 2 Bronze jars and adds a day to your streak. Miss a day and it starts again
-  at 1. Every 7th day in a row pays an Uncommon egg. The Team tab shows your streak and how many days are left to
-  the next egg. The plugin goes by your computer's clock, so changing the clock would cheat; nothing stops that in
-  a single-player side game.
+  The first catch of each UTC day pays 2 Bronze jars and adds a day to your days played. The count only goes up:
+  missing a day costs nothing. Every 7th day played pays an Uncommon egg. The Team tab shows the day you are on
+  and how many days are left to the next egg. The plugin goes by your computer's clock, so changing the clock would
+  cheat; nothing stops that in a single-player side game.
 
 ### Creature Log milestones
 
