@@ -35,6 +35,7 @@ final class PanelState
 	private MilestoneView milestones = MilestoneView.NONE;
 	private EliteView elite = EliteView.NONE;
 	private String resetSummary = "";
+	private List<StarterView> starters = Collections.emptyList();
 	private final Map<ItemType, Integer> items;
 
 	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
@@ -133,6 +134,7 @@ final class PanelState
 		PanelState copy = new PanelState(trainerLevel, trainerProgress, battlesWon, jars, selectedJar, stepProgress,
 			team, storage, log, caughtSpecies, seenSpecies, eggs, champions, today, tasks, items, waiting);
 		copy.resetSummary = resetSummary;
+		copy.starters = starters;
 		return copy.withGoals(milestones, elite);
 	}
 
@@ -146,6 +148,24 @@ final class PanelState
 	{
 		this.resetSummary = summary;
 		return this;
+	}
+
+	/**
+	 * Adds the starters on offer, to a state that is still being built.
+	 *
+	 * @param offer the starters, or an empty list when none is offered
+	 * @return this state
+	 */
+	PanelState withStarters(List<StarterView> offer)
+	{
+		this.starters = Collections.unmodifiableList(new ArrayList<>(offer));
+		return this;
+	}
+
+	/** @return the starter creatures on offer to a new player; empty when none is */
+	List<StarterView> starters()
+	{
+		return starters;
 	}
 
 	/** @return what a reset would lose, in words, for the confirm dialog */

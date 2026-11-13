@@ -122,6 +122,14 @@ interface PanelActions
 	void battleChoice(BattleChoice choice);
 
 	/**
+	 * Takes one of the starter creatures offered to a new player. It is checked again on the game thread; a pick
+	 * made after the offer ended changes nothing.
+	 *
+	 * @param index the place in {@link PanelState#starters()}
+	 */
+	void pickStarter(int index);
+
+	/**
 	 * Puts the whole save back to a fresh one, after the player confirmed. The old save is copied to a safety key
 	 * first. It is refused, with the reason shown as floating text, while a battle, a trade or an Elite run is on.
 	 */

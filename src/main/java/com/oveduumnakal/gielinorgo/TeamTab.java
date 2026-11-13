@@ -41,6 +41,11 @@ final class TeamTab extends JPanel
 	private final List<CreatureCard> slots = new ArrayList<>();
 	private final TasksSection taskSection = new TasksSection();
 	private Map<ItemType, Integer> items = Collections.emptyMap();
+	private final JPanel starterBox = new JPanel();
+	private final JPanel starterCards = new JPanel();
+	private final JLabel emptyState = PanelUi.emptyState(EMPTY_TEXT);
+	private List<StarterView> starters = Collections.emptyList();
+	private String startersShown = "";
 	private final JLabel hint = PanelUi.hint("Click a creature to make it your lead. Right-click for more.");
 	private final JLabel resetLink = PanelUi.hint("<u>Reset progress...</u>");
 	private String resetSummary = "";
@@ -68,6 +73,21 @@ final class TeamTab extends JPanel
 		eggBox.add(eggRows);
 		eggBox.setVisible(false);
 		hint.setAlignmentX(Component.LEFT_ALIGNMENT);
+		starterBox.setLayout(new BoxLayout(starterBox, BoxLayout.Y_AXIS));
+		starterBox.setOpaque(false);
+		starterBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+		starterBox.setVisible(false);
+		starterCards.setLayout(new BoxLayout(starterCards, BoxLayout.Y_AXIS));
+		starterCards.setOpaque(false);
+		starterCards.setAlignmentX(Component.LEFT_ALIGNMENT);
+		JLabel starterHeader = PanelUi.caption("CHOOSE YOUR FIRST CREATURE");
+		starterHeader.setBorder(new EmptyBorder(6, 8, 4, 8));
+		starterBox.add(starterHeader);
+		starterBox.add(starterCards);
+		starterBox.add(PanelUi.hint("Or catch one yourself: your first catch ends this offer."));
+		emptyState.setAlignmentX(Component.LEFT_ALIGNMENT);
+		stack.add(starterBox);
+		stack.add(emptyState);
 		stack.add(cards);
 		stack.add(hint);
 		stack.add(eggBox);
@@ -135,13 +155,12 @@ final class TeamTab extends JPanel
 	private void updateCards(List<CreatureView> team)
 	{
 		hint.setVisible(team.size() > 1);
-		if (team.size() != slots.size() || (team.isEmpty() && cards.getComponentCount() == 0))
+		emptyState.setVisible(team.isEmpty() && starters.isEmpty());
+		updateStarters();
+		if (team.size() != slots.size())
 		{
 			slots.clear();
 			cards.removeAll();
-			if (team.isEmpty())
-				cards.add(PanelUi.emptyState(EMPTY_TEXT));
-
 			for (int i = 0; i < team.size(); i++)
 			{
 				if (i > 0)
@@ -172,6 +191,46 @@ final class TeamTab extends JPanel
 	void items(Map<ItemType, Integer> owned)
 	{
 		items = owned;
+	}
+
+	/**
+	 * Tells the tab which starters are on offer. Call it before {@link #update(List, List, TaskView)}.
+	 *
+	 * @param offer the starters, or an empty list when none is offered
+	 */
+	void starters(List<StarterView> offer)
+	{
+		starters = offer;
+	}
+
+	/** Shows the starter cards, rebuilding them only when the creatures on offer change. */
+	private void updateStarters()
+	{
+		StringBuilder key = new StringBuilder();
+		for (StarterView starter : starters)
+		{
+			CreatureView creature = starter.creature();
+			key.append(creature.name() + creature.rollsNetLines() + '|');
+		}
+
+		starterBox.setVisible(!starters.isEmpty());
+		if (key.toString().equals(startersShown))
+			return;
+
+		startersShown = key.toString();
+		starterCards.removeAll();
+		for (int i = 0; i < starters.size(); i++)
+		{
+			if (i > 0)
+				starterCards.add(Box.createVerticalStrut(4));
+
+			StarterCard card = new StarterCard(actions, portraits, i, starters.get(i));
+			card.setAlignmentX(Component.LEFT_ALIGNMENT);
+			starterCards.add(card);
+		}
+
+		starterBox.revalidate();
+		starterBox.repaint();
 	}
 
 	private void updateEggs(List<EggView> eggs)
