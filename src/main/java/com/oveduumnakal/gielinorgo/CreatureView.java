@@ -50,7 +50,8 @@ final class CreatureView
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname, StatRolls rolls, int npcId, List<Move> moves, List<Move> pending)
 	{
-		this(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId, moves, pending, 0, null);
+		this(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId, moves, pending, 0,
+			null);
 	}
 
 	/**
