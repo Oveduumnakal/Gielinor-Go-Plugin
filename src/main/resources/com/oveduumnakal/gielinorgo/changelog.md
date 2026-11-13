@@ -58,4 +58,6 @@ A Creature Log, daily tasks and daily events give you goals.
   combat. (#87)
 - **Report a bug and Request a feature.** The Feedback button in the panel opens GitHub with your text filled in.
   (#81)
+- **Days played.** The login streak became a count of days played that never resets; every 7th day still pays
+  an egg. (#89)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
