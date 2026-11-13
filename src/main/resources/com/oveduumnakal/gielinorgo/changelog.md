@@ -62,4 +62,6 @@ A Creature Log, daily tasks and daily events give you goals.
   an egg. (#89)
 - **Sound effects.** Game sounds for a catch, a level-up, an evolution, a hatch, a gilded creature and other
   big moments, with a setting to turn them off. (#94)
+- **A reward for releasing.** Releasing creatures pays creature XP to your lead, and Storage can release several
+  at once. (#92)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
