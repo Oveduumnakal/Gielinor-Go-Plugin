@@ -129,4 +129,7 @@ interface PanelActions
 	 * @param choice what the player chose
 	 */
 	void battleChoice(BattleChoice choice);
+
+	/** Records that the player opened the change log, so the What's New badge goes away. */
+	void whatsNewSeen();
 }
