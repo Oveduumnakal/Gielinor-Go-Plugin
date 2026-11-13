@@ -266,7 +266,8 @@ final class TeamScript
 	}
 
 	/**
-	 * Cuts a duel's hits down to the few that are acted out.
+	 * Cuts a duel's hits down to the few that are acted out. A kept blow that follows a line which changed the status
+	 * tags carries the tags as they are by then, so a status that wore off in a dropped line does not stay on.
 	 *
 	 * @param hits every hit of the duel, in order
 	 * @return all of them when there are {@link #TEAM_HIT_BEATS} or fewer, else the first, the one in the middle and
@@ -277,10 +278,26 @@ final class TeamScript
 		if (hits.size() <= TEAM_HIT_BEATS)
 			return new ArrayList<>(hits);
 
+		int[] at = {0, hits.size() / 2, hits.size() - 1};
 		List<BattleLine> kept = new ArrayList<>();
-		kept.add(hits.get(0));
-		kept.add(hits.get(hits.size() / 2));
-		kept.add(hits.get(hits.size() - 1));
+		BattleLine lastTagged = null;
+		int next = 0;
+		for (int i = 0; i < hits.size() && next < at.length; i++)
+		{
+			BattleLine line = hits.get(i);
+			if (line.tagged())
+				lastTagged = line;
+
+			if (i != at[next])
+				continue;
+
+			next++;
+			if (!line.tagged() && lastTagged != null)
+				line = line.withTags(lastTagged.mineStatus(), lastTagged.foeStatus());
+
+			kept.add(line);
+		}
+
 		return kept;
 	}
 
