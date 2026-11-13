@@ -1182,7 +1182,9 @@ public class GielinorGoPlugin extends Plugin
 			boolean changed = friends.takeChanged() | result != null | started != null;
 			changed |= trades.receive(message, me.getMemberId(), sender);
 			saveNow();
-			playTeamBattle(result, !GielinorGoPartyMessage.CHALLENGE.equals(message.kind()) || !interacting());
+			if (started == null)
+				playTeamBattle(result, !GielinorGoPartyMessage.CHALLENGE.equals(message.kind()) || !interacting());
+
 			if (changed)
 				refreshPanel();
 		}
@@ -1250,7 +1252,7 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void beginFriendBattle(FriendTurnBattle friend)
 	{
-		heldNotices = new ArrayList<>();
+		heldNotices = HeldNotices.open(heldNotices);
 		BattleSession battle = game.startFriendBattle(friend);
 		BattleState state = battle.state();
 		Combatant first = state.mine();
@@ -1959,7 +1961,7 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void playBack(List<BattleLine> lines, int wildId, boolean staged)
 	{
-		List<Notice> after = heldNotices;
+		List<Notice> after = HeldNotices.close(heldNotices);
 		heldNotices = null;
 		if (lines == null || !config.showResults())
 		{
