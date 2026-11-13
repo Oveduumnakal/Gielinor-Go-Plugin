@@ -72,6 +72,10 @@ A Creature Log, daily tasks and daily events give you goals.
   aside. (#84)
 - **Starter creatures.** New players pick an Imp, a Gnome Archer or a Wizard at level 5; the Gnome Archer starts a
   new evolution line. (#83)
+- **Richer Log entries.** Click a species in the Creature Log for its examine text, evolution line and how many
+  you caught; right-click it to open its wiki page. (#93)
+- **Log rewards and titles.** The Creature Log pays at 750 species, 1,000 and a complete Log, which earns the
+  Master Collector title; with Grand Champion you pick which one the header shows. (#88)
 - **Five combat styles.** Melee splits into Stab, Slash and Crush, each with its own jar from Attack, Strength or
   Defence XP. (#85)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

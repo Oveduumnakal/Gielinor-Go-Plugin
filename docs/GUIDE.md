@@ -352,10 +352,12 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Rewards for a growing Log**
 
-  Catching new species pays rewards once each, at 25, 50, 100, 250 and 500 species: 5 Iron jars; 5 Rune jars and a
-  Rare egg; 5 Dragon jars and an Epic egg; the **Gilded charm**; then 10 Dragon jars and a Legendary egg. The charm
+  Catching new species pays rewards once each, at 25, 50, 100, 250, 500, 750 and 1,000 species: 5 Iron jars; 5 Rune
+  jars and a Rare egg; 5 Dragon jars and an Epic egg; the **Gilded charm**; 10 Dragon jars and a Legendary egg; 10
+  Dragon jars and an Epic egg; then 3 of every specialty jar and a Legendary egg. The charm
   is not an item: from then on gilded creatures turn up twice as often (1 in 250 instead of 1 in 500), in the wild
-  and from eggs. Completing a family, such as every goblin or every dragon, pays 3 jars of the family's specialty
+  and from eggs. A **complete Log** (every species that is not quest only) pays a Legendary egg and the title
+  **Master Collector**. Completing a family, such as every goblin or every dragon, pays 3 jars of the family's specialty
   type and an egg of the rarest creature in it. Milestones you had already reached are paid when you log in. When
   your egg bag is full an egg reward waits until you have a free slot.
 
@@ -363,6 +365,13 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Under the Log header the next goal shows with a bar (`Next: 100 species`, `87 / 100`). The **Milestones...**
   button lists every milestone and family with its bar, its reward and a tick once it is paid.
+
+- **Titles**
+
+  The panel header shows your title next to your trainer level: **Grand Champion** after the Elite challenge and
+  **Master Collector** for a complete Log. When you hold both, click the title in the header to switch between
+  them. The one you pick is saved; until you pick, the header shows the one you earned last of the two in that
+  order (Master Collector).
 
 - **Quest-only monsters**
 
@@ -466,6 +475,11 @@ Every feature and every number, in detail. For the short version, see the [READM
   creatures you have stored, and a Creature Log of every species you can meet in the game (1,096) so you can see what
   you have caught, what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
   you can challenge. The top of the Log tab shows what is featured today and which event is on.
+
+  Click a species you have seen or caught and a box under the list shows the monster's examine text, its evolution
+  line (stages you have not met yet show as `???`), how many you have caught and whether you own a gilded one.
+  Right-click a species you have seen or caught and choose **Open wiki** to open its page on the Old School RuneScape
+  Wiki in your browser. A species you have never met shows neither the box nor the menu.
 
   You can move a creature between your team and Storage only inside a city (any City Champion's area) or within
   10 tiles of a banker, a bank booth or a bank chest. Anywhere else the panel says "Go to a city or a bank to change

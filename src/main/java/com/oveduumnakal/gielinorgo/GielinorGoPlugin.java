@@ -232,6 +232,7 @@ public class GielinorGoPlugin extends Plugin
 		game.setCues(this::playCue);
 		game.elite(loadElite(species));
 		game.moves(loadMoves());
+		game.examine(loadExamine());
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
 		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce)
 			.withMoves(game.moveTable());
@@ -830,6 +831,25 @@ public class GielinorGoPlugin extends Plugin
 		{
 			log.warn("Gielinor Go: could not read the evolution list", e);
 			return EvolutionTable.empty();
+		}
+	}
+
+	private ExamineTable loadExamine()
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(ExamineTable.RESOURCE))
+		{
+			if (in == null)
+				return ExamineTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return ExamineTable.load(gson, reader);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the examine lines", e);
+			return ExamineTable.empty();
 		}
 	}
 
@@ -2387,6 +2407,12 @@ public class GielinorGoPlugin extends Plugin
 			public void challenge(String championId)
 			{
 				onGameThread(() -> GielinorGoPlugin.this.challenge(championId));
+			}
+
+			@Override
+			public void pickTitle(String title)
+			{
+				onGameThread(() -> game.pickTitle(title));
 			}
 
 			@Override

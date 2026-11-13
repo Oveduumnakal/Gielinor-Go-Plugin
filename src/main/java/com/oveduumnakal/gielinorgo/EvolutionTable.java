@@ -8,6 +8,7 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -67,6 +68,7 @@ final class EvolutionTable
 	}
 
 	private final Map<String, Step> byFrom = new HashMap<>();
+	private final Map<String, Step> byTo = new LinkedHashMap<>();
 
 	/**
 	 * Builds the table, leaving out any link whose species the game does not know and any link that ends in a
@@ -86,6 +88,7 @@ final class EvolutionTable
 				continue;
 
 			byFrom.putIfAbsent(Species.keyFor(step.from), step);
+			byTo.putIfAbsent(Species.keyFor(step.to), step);
 		}
 	}
 
@@ -125,6 +128,17 @@ final class EvolutionTable
 	Step next(String speciesKey)
 	{
 		return byFrom.get(Species.keyFor(speciesKey));
+	}
+
+	/**
+	 * Finds what a species grows from.
+	 *
+	 * @param speciesKey the species key or name
+	 * @return the first link that ends in the species, or null when nothing grows into it
+	 */
+	Step previous(String speciesKey)
+	{
+		return byTo.get(Species.keyFor(speciesKey));
 	}
 
 	/** @return how many species can evolve */
