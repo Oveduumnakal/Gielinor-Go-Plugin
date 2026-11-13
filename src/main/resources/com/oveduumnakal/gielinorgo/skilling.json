@@ -1,0 +1,66 @@
+{
+  "skills": {
+    "FISHING": {
+      "message": "surfaced",
+      "species": [
+        {"species": "Frog", "minLevel": 1},
+        {"species": "Penguin", "minLevel": 1},
+        {"species": "Seagull", "minLevel": 1},
+        {"species": "Rock Crab", "minLevel": 10},
+        {"species": "Sand Crab", "minLevel": 15},
+        {"species": "Big frog", "minLevel": 20},
+        {"species": "Crab", "minLevel": 25},
+        {"species": "Shark", "minLevel": 40},
+        {"species": "Mogre", "minLevel": 55},
+        {"species": "Lobstrosity", "minLevel": 65},
+        {"species": "Giant frog", "minLevel": 80}
+      ]
+    },
+    "WOODCUTTING": {
+      "message": "dropped from the branches",
+      "species": [
+        {"species": "Bird", "minLevel": 1},
+        {"species": "Monkey", "minLevel": 1},
+        {"species": "Giant bat", "minLevel": 20},
+        {"species": "Terrorbird", "minLevel": 30},
+        {"species": "Jungle spider", "minLevel": 45},
+        {"species": "Ent", "minLevel": 80}
+      ]
+    },
+    "MINING": {
+      "message": "crawled out of the rock",
+      "species": [
+        {"species": "Rock Crab", "minLevel": 1},
+        {"species": "Cave slime", "minLevel": 15},
+        {"species": "Rockslug", "minLevel": 30},
+        {"species": "Cave bug", "minLevel": 60},
+        {"species": "Giant rockslug", "minLevel": 75}
+      ]
+    },
+    "FARMING": {
+      "message": "came out of the patch",
+      "species": [
+        {"species": "Rabbit", "minLevel": 1},
+        {"species": "Locust", "minLevel": 10},
+        {"species": "Farmer", "minLevel": 20},
+        {"species": "Giant snail", "minLevel": 60}
+      ]
+    },
+    "HUNTER": {
+      "message": "broke cover",
+      "species": [
+        {"species": "Chinchompa", "minLevel": 1},
+        {"species": "Rabbit", "minLevel": 1},
+        {"species": "Black chinchompa", "minLevel": 10},
+        {"species": "Fox", "minLevel": 15},
+        {"species": "Vulture", "minLevel": 30},
+        {"species": "Wolf", "minLevel": 45}
+      ]
+    }
+  },
+  "exclusive": [
+    {"species": "River troll", "skill": "FISHING", "oneIn": 20, "minLevel": 40},
+    {"species": "Rock Golem", "skill": "MINING", "oneIn": 20, "minLevel": 40},
+    {"species": "Tree spirit", "skill": "WOODCUTTING", "oneIn": 20, "minLevel": 40}
+  ]
+}
