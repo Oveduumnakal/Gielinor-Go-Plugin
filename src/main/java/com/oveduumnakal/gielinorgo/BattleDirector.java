@@ -132,7 +132,9 @@ final class BattleDirector
 		session = battle;
 		scene = stage;
 		promptOpen = false;
-		if (stage == null)
+		if (stage == null && battle.friendTurn() != null)
+			openFriend();
+		else if (stage == null)
 			open();
 	}
 
@@ -288,6 +290,12 @@ final class BattleDirector
 		if (session == null || promptOpen || (scene != null && !scene.waiting()))
 			return;
 
+		openFriend();
+	}
+
+	/** Opens the choice of a battle against a friend, on the time both players share, and tells the friend. */
+	private void openFriend()
+	{
 		promptOpen = true;
 		clock = new TurnClock(FriendTurnBattle.TURN_SECONDS);
 		clock.open();

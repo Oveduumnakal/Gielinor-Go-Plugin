@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -56,6 +57,7 @@ import net.runelite.client.callback.RenderCallbackManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.Keybind;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ClientShutdown;
 import net.runelite.client.events.PartyChanged;
 import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.input.KeyManager;
@@ -205,6 +207,7 @@ public class GielinorGoPlugin extends Plugin
 	private NavigationButton navButton;
 	private boolean loaded;
 	private boolean unsaved;
+	private String saveProfileKey;
 	private int ticks;
 
 	/**
@@ -287,7 +290,12 @@ public class GielinorGoPlugin extends Plugin
 		overlayManager.remove(promptOverlay);
 		choiceOpen = false;
 		clientThread.invoke(director::end);
-		clientThread.invoke(this::saveNow);
+		GoGame endingGame = loaded ? game : null;
+		GoPersistence endingPersistence = persistence;
+		String endingProfile = saveProfileKey;
+		boolean endingUnsaved = unsaved;
+		loaded = false;
+		clientThread.invoke(() -> SaveFlush.write(endingGame, endingPersistence, endingProfile, endingUnsaved));
 		clientThread.invoke(stage::clear);
 		clientThread.invoke(arena::clear);
 		clientThread.invoke(bodies::clear);
@@ -354,7 +362,32 @@ public class GielinorGoPlugin extends Plugin
 	@Subscribe
 	public void onRuneScapeProfileChanged(RuneScapeProfileChanged event)
 	{
-		clientThread.invoke(this::loadSave);
+		clientThread.invoke(() ->
+		{
+			saveNow();
+			loadSave();
+		});
+	}
+
+	/**
+	 * Saves when the client is closed, because RuneLite does not stop plugins then. The event does not arrive on the
+	 * client thread, so the save is written here and the config is flushed to disk afterwards: the config manager's
+	 * own handler may have run first, and without the flush the save would stay in memory.
+	 *
+	 * @param event the shutdown
+	 */
+	@Subscribe
+	public void onClientShutdown(ClientShutdown event)
+	{
+		try
+		{
+			saveNow();
+			configManager.sendConfig();
+		}
+		catch (RuntimeException e)
+		{
+			log.warn("Gielinor Go: could not save on shutdown", e);
+		}
 	}
 
 	/**
@@ -415,6 +448,7 @@ public class GielinorGoPlugin extends Plugin
 	public void onNpcSpawned(NpcSpawned event)
 	{
 		NPC npc = event.getNpc();
+		noteBanker(npc);
 		if (speciesOf(npc) == null)
 			return;
 
@@ -425,14 +459,12 @@ public class GielinorGoPlugin extends Plugin
 	/**
 	 * Remembers a banker that came into view, so the team can be changed near it.
 	 *
-	 * @param event the spawn
+	 * @param npc the monster that came into view
 	 */
-	@Subscribe
-	public void onBankerSpawned(NpcSpawned event)
+	private void noteBanker(NPC npc)
 	{
 		try
 		{
-			NPC npc = event.getNpc();
 			NPCComposition composition = npc.getTransformedComposition();
 			WorldPoint point = npc.getWorldLocation();
 			if (composition != null && point != null && offersBank(composition.getActions()))
@@ -445,24 +477,13 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
-	 * Forgets a banker that left view.
-	 *
-	 * @param event the despawn
-	 */
-	@Subscribe
-	public void onBankerDespawned(NpcDespawned event)
-	{
-		bankSpots.remove(event.getNpc());
-	}
-
-	/**
 	 * Remembers a bank booth or chest that came into view, so the team can be changed near it. What an object id
 	 * offers is looked up once and kept.
 	 *
 	 * @param event the spawn
 	 */
 	@Subscribe
-	public void onBankObjectSpawned(GameObjectSpawned event)
+	public void onGameObjectSpawned(GameObjectSpawned event)
 	{
 		try
 		{
@@ -486,7 +507,7 @@ public class GielinorGoPlugin extends Plugin
 	 * @param event the despawn
 	 */
 	@Subscribe
-	public void onBankObjectDespawned(GameObjectDespawned event)
+	public void onGameObjectDespawned(GameObjectDespawned event)
 	{
 		bankSpots.remove(event.getGameObject());
 	}
@@ -522,6 +543,7 @@ public class GielinorGoPlugin extends Plugin
 	@Subscribe
 	public void onNpcDespawned(NpcDespawned event)
 	{
+		bankSpots.remove(event.getNpc());
 		int index = event.getNpc().getIndex();
 		candidates.remove(index);
 		tracker.leftView(index, System.currentTimeMillis());
@@ -784,6 +806,8 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		loadSave();
+		StatBaseline.seed(Arrays.asList(Skill.values()), lastXp, lastLevel, client::getSkillExperience,
+			client::getRealSkillLevel);
 		WorldView view = client.getTopLevelWorldView();
 		if (view == null)
 			return;
@@ -1033,6 +1057,9 @@ public class GielinorGoPlugin extends Plugin
 
 		director.end();
 		game.load(persistence.load());
+		long account = client.getAccountHash();
+		game.starterSeed(account == -1L ? null : Long.valueOf(account));
+		saveProfileKey = configManager.getRSProfileKey();
 		loaded = true;
 		helloDue = true;
 		helloAsksBack = true;
@@ -1046,11 +1073,7 @@ public class GielinorGoPlugin extends Plugin
 		if (!loaded || game == null)
 			return;
 
-		unsaved |= game.takeDirty();
-		if (!unsaved)
-			return;
-
-		persistence.save(game.data());
+		SaveFlush.write(game, persistence, saveProfileKey, unsaved);
 		unsaved = false;
 	}
 
@@ -1165,7 +1188,8 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		boolean turnMessage = GielinorGoPartyMessage.TURN.equals(message.kind())
-			|| GielinorGoPartyMessage.LEAVE.equals(message.kind());
+			|| GielinorGoPartyMessage.LEAVE.equals(message.kind())
+			|| GielinorGoPartyMessage.READY.equals(message.kind());
 		if (!partyRate.allow(message, me.getMemberId(), trades.awaitsReply(message, me.getMemberId()),
 			turnMessage && friends.inTurnBattleWith(message.getMemberId()), System.currentTimeMillis()))
 			return;
@@ -1175,7 +1199,7 @@ public class GielinorGoPlugin extends Plugin
 		try
 		{
 			TeamBattleResult result = friends.receive(message, me.getMemberId(), sender, game.data(),
-				config.friendBattles() && !director.active(), config.chooseBattleActions());
+				config.friendBattles() && !director.active(), config.chooseBattleActions(), !director.active());
 			FriendTurnBattle started = friends.takeStarted();
 			if (started != null)
 				beginFriendBattle(started);
@@ -1183,7 +1207,9 @@ public class GielinorGoPlugin extends Plugin
 			boolean changed = friends.takeChanged() | result != null | started != null;
 			changed |= trades.receive(message, me.getMemberId(), sender);
 			saveNow();
-			playTeamBattle(result, !GielinorGoPartyMessage.CHALLENGE.equals(message.kind()) || !interacting());
+			if (started == null)
+				playTeamBattle(result, !GielinorGoPartyMessage.CHALLENGE.equals(message.kind()) || !interacting());
+
 			if (changed)
 				refreshPanel();
 		}
@@ -1251,7 +1277,7 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void beginFriendBattle(FriendTurnBattle friend)
 	{
-		heldNotices = new ArrayList<>();
+		heldNotices = HeldNotices.open(heldNotices);
 		BattleSession battle = game.startFriendBattle(friend);
 		BattleState state = battle.state();
 		Combatant first = state.mine();
@@ -1743,6 +1769,8 @@ public class GielinorGoPlugin extends Plugin
 		if (entry == null || body == null || body.life().leaving() || director.active())
 			return;
 
+		friends.cancelChallenge();
+
 		if (config.chooseBattleActions())
 		{
 			startSteeredBattle(wildId, entry);
@@ -1831,6 +1859,8 @@ public class GielinorGoPlugin extends Plugin
 		if (director.active())
 			return;
 
+		friends.cancelChallenge();
+
 		if (config.chooseBattleActions())
 		{
 			startSteeredChallenge(championId);
@@ -1846,6 +1876,8 @@ public class GielinorGoPlugin extends Plugin
 		if (battleOpen())
 			return;
 
+		friends.cancelChallenge();
+
 		if (config.chooseBattleActions())
 		{
 			startSteeredElite(true);
@@ -1860,6 +1892,8 @@ public class GielinorGoPlugin extends Plugin
 	{
 		if (battleOpen())
 			return;
+
+		friends.cancelChallenge();
 
 		if (config.chooseBattleActions())
 		{
@@ -1962,7 +1996,7 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void playBack(List<BattleLine> lines, int wildId, boolean staged)
 	{
-		List<Notice> after = heldNotices;
+		List<Notice> after = HeldNotices.close(heldNotices);
 		heldNotices = null;
 		if (lines == null || !config.showResults())
 		{

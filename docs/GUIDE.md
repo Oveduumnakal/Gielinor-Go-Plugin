@@ -502,7 +502,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   When you and the friend both have **Choose battle actions** on, the battle is played turn by turn instead: each of
   you picks Attack, Switch or Item, and the turn is played when both choices are in. You have 20 seconds each turn;
   if the time runs out your creature picks for itself, and if your friend has not answered 10 seconds after that, the
-  battle ends with no result. Items are allowed and are really spent. Run, logging out, leaving the party or walking
+  battle ends with no result. That wait starts when both of your choices are open, so a friend with animations off is not cut short by one with them on, and whichever of you ends the battle tells the other. Items are allowed: you may use up to as many of each as you owned when the battle began, and none is used up from your bag. Run, logging out, leaving the party or walking
   away ends it with no result. If either of you has the setting off, the battle plays itself as before. You only see
   your friend's choice once yours is in, but nothing is at stake, so nothing here is checked against cheating.
   With **Battle animations** on, you each see the battle acted out beside you, the same way as a champion battle,

@@ -430,7 +430,7 @@ public class BattleDirectorTest
 		assertEquals("Bob", director.view().friendName());
 
 		assertTrue(director.choose(BattleChoice.attack()));
-		assertEquals(1, fromMe.size());
+		assertEquals(2, fromMe.size());
 		assertTrue(shown.isEmpty());
 		director.gameTick(false);
 		assertTrue(director.view().waitingForFriend());
@@ -438,13 +438,97 @@ public class BattleDirectorTest
 
 		friendSide.opened(now);
 		friendSide.local(BattleChoice.attack(), now);
-		GielinorGoPartyMessage reply = fromFriend.get(0);
+		GielinorGoPartyMessage reply = fromFriend.get(fromFriend.size() - 1);
 		reply.setMemberId(2L);
 		mineBattle.remote(reply, now);
 		director.gameTick(false);
 
 		assertEquals(1, shown.size());
 		assertFalse(director.active());
+	}
+
+	private void playHealingTurn(FriendTurnBattle mineBattle, FriendTurnBattle friendSide,
+		List<GielinorGoPartyMessage> fromFriend, BattleChoice choice)
+	{
+		director.gameTick(false);
+		assertTrue(director.choose(choice));
+		friendSide.opened(now);
+		friendSide.local(BattleChoice.attack(), now);
+		GielinorGoPartyMessage reply = fromFriend.get(fromFriend.size() - 1);
+		reply.setMemberId(2L);
+		mineBattle.remote(reply, now);
+		director.gameTick(false);
+	}
+
+	@Test
+	public void anItemUsedInABattleWithAFriendIsNeverTakenFromTheSave()
+	{
+		game.data().team.add(creature("king black dragon", 60));
+		game.data().addItems(ItemType.SMALL_SALVE, 2);
+		List<GielinorGoPartyMessage> fromMe = new ArrayList<>();
+		List<GielinorGoPartyMessage> fromFriend = new ArrayList<>();
+		FriendTurnBattle mineBattle = friendBattle(
+			new ArrayList<>(Arrays.asList(new Combatant(DRAGON, 60, 0.5))),
+			new ArrayList<>(Arrays.asList(new Combatant(CHICKEN, 2, 1.0))), true, fromMe);
+		FriendTurnBattle friendSide = friendBattle(
+			new ArrayList<>(Arrays.asList(new Combatant(CHICKEN, 2, 1.0))),
+			new ArrayList<>(Arrays.asList(new Combatant(DRAGON, 60, 0.5))), false, fromFriend);
+		director.begin(game.startFriendBattle(mineBattle), null);
+
+		playHealingTurn(mineBattle, friendSide, fromFriend, BattleChoice.item(ItemType.SMALL_SALVE, 0));
+
+		assertEquals(2, game.data().itemCount(ItemType.SMALL_SALVE));
+		assertEquals(1, director.session().friendItemsLeft(ItemType.SMALL_SALVE));
+		List<BattleView.ItemOption> options = director.view().items();
+		assertEquals(1, options.get(0).count());
+	}
+
+	@Test
+	public void anItemUsedFromThePanelDuringAFriendBattleDoesNotChangeTheBattlesItems()
+	{
+		game.data().team.add(creature("king black dragon", 60));
+		game.data().addItems(ItemType.LARGE_SALVE, 1);
+		List<GielinorGoPartyMessage> fromMe = new ArrayList<>();
+		FriendTurnBattle mineBattle = friendBattle(
+			new ArrayList<>(Arrays.asList(new Combatant(DRAGON, 60, 0.5))),
+			new ArrayList<>(Arrays.asList(new Combatant(CHICKEN, 2, 1.0))), true, fromMe);
+		director.begin(game.startFriendBattle(mineBattle), null);
+		game.data().addItems(ItemType.LARGE_SALVE, -1);
+
+		assertEquals(1, director.session().friendItemsLeft(ItemType.LARGE_SALVE));
+		director.gameTick(false);
+		assertTrue(director.choose(BattleChoice.item(ItemType.LARGE_SALVE, 0)));
+		assertEquals(0, game.data().itemCount(ItemType.LARGE_SALVE));
+	}
+
+	@Test
+	public void anItemTheBattleBeganWithoutCannotBeUsedInIt()
+	{
+		game.data().team.add(creature("king black dragon", 60));
+		FriendTurnBattle mineBattle = friendBattle(
+			new ArrayList<>(Arrays.asList(new Combatant(DRAGON, 60, 0.5))),
+			new ArrayList<>(Arrays.asList(new Combatant(CHICKEN, 2, 1.0))), true, new ArrayList<>());
+		director.begin(game.startFriendBattle(mineBattle), null);
+		game.data().addItems(ItemType.LARGE_SALVE, 3);
+
+		director.gameTick(false);
+
+		assertFalse(director.choose(BattleChoice.item(ItemType.LARGE_SALVE, 0)));
+	}
+
+	@Test
+	public void aTextBattleWithAFriendStartsTheClockAndTellsTheFriendAtOnce()
+	{
+		game.data().team.add(creature("king black dragon", 60));
+		List<GielinorGoPartyMessage> sent = new ArrayList<>();
+		FriendTurnBattle battle = friendBattle(new ArrayList<>(Arrays.asList(new Combatant(DRAGON, 60, 1.0))),
+			new ArrayList<>(Arrays.asList(new Combatant(CHICKEN, 2, 1.0))), true, sent);
+
+		director.begin(game.startFriendBattle(battle), null);
+		battle.timeout(now + FriendTurnBattle.TURN_MS + FriendTurnBattle.GRACE_MS);
+
+		assertEquals(GielinorGoPartyMessage.READY, sent.get(0).kind());
+		assertEquals(FriendTurnBattle.End.SILENT, battle.ended());
 	}
 
 	@Test
@@ -459,7 +543,7 @@ public class BattleDirectorTest
 		assertTrue(director.choose(BattleChoice.run()));
 
 		assertFalse(director.active());
-		assertEquals(GielinorGoPartyMessage.LEAVE, sent.get(0).kind());
+		assertEquals(GielinorGoPartyMessage.LEAVE, sent.get(sent.size() - 1).kind());
 		assertEquals(0, game.data().battlesWon);
 		assertTrue(shown.isEmpty());
 	}

@@ -6,7 +6,9 @@ package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A battle the player steers, from the first turn to the last: the engine, the saved creatures behind the player's
@@ -23,6 +25,7 @@ final class BattleSession
 	private final Champion champion;
 	private final BattleLine opening;
 	private FriendTurnBattle friend;
+	private final Map<ItemType, Integer> friendItems = new EnumMap<>(ItemType.class);
 	private int eliteNumber;
 	private boolean rematch;
 	private List<BattleLine> verdict = Collections.emptyList();
@@ -59,6 +62,45 @@ final class BattleSession
 	{
 		this.friend = battle;
 		return this;
+	}
+
+	/**
+	 * Sets what the player may use of each item in a battle against a friend: a copy of what the player owned when
+	 * the battle began. Items used in the battle count this down and never touch the save.
+	 *
+	 * @param owned how many of each item the player owned
+	 * @return this session
+	 */
+	BattleSession friendItems(Map<ItemType, Integer> owned)
+	{
+		friendItems.clear();
+		friendItems.putAll(owned);
+		return this;
+	}
+
+	/**
+	 * @param type an item
+	 * @return how many of it the player may still use in this battle against a friend
+	 */
+	int friendItemsLeft(ItemType type)
+	{
+		return friendItems.getOrDefault(type, 0);
+	}
+
+	/**
+	 * Uses up one of an item from the budget of a battle against a friend.
+	 *
+	 * @param type the item
+	 * @return true when one was left to use
+	 */
+	boolean useFriendItem(ItemType type)
+	{
+		int left = friendItemsLeft(type);
+		if (left <= 0)
+			return false;
+
+		friendItems.put(type, left - 1);
+		return true;
 	}
 
 	/** @return the battle shared with a friend, or null when the battle is not one against a friend */
