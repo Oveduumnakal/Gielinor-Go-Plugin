@@ -90,8 +90,8 @@ public class EvolutionTableTest
 				plain++;
 		}
 
-		assertEquals(146, plain);
-		assertEquals(164, raw().size());
+		assertEquals(149, plain);
+		assertEquals(167, raw().size());
 	}
 
 	@Test
