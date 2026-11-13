@@ -124,6 +124,12 @@ final class ArenaStage implements StageAnchors
 		{
 			return foeHeight;
 		}
+
+		@Override
+		public double drawScale()
+		{
+			return foe == null ? 1.0 : foe.drawScale();
+		}
 	}
 
 	/**

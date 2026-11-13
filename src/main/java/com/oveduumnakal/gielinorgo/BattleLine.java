@@ -43,6 +43,7 @@ final class BattleLine
 	private final CombatType style;
 	private final boolean icy;
 	private final boolean miss;
+	private final String move;
 	private boolean tagged;
 	private Status mineStatus;
 	private Status foeStatus;
@@ -103,6 +104,26 @@ final class BattleLine
 	BattleLine(String text, Tone tone, boolean overPlayer, Kind kind, boolean special, CombatType style,
 		boolean icy, boolean miss)
 	{
+		this(text, tone, overPlayer, kind, special, style, icy, miss, null);
+	}
+
+	/**
+	 * Builds a line for an attack, with the move that made it.
+	 *
+	 * @param text the line
+	 * @param tone the mood, from the player's side
+	 * @param overPlayer whether the line is about the player's creature
+	 * @param kind what the line is
+	 * @param special whether the attack used the attacker's second animation, such as a breath
+	 * @param style the style of the attack, or null for a line that is not an attack
+	 * @param icy whether a breath is icy, as a wyvern's is; false for anything that is not a breath
+	 * @param miss whether the attack missed, so the target does not react
+	 * @param move the id of the move, or null when it is not known
+	 */
+	BattleLine(String text, Tone tone, boolean overPlayer, Kind kind, boolean special, CombatType style,
+		boolean icy, boolean miss, String move)
+	{
+		this.move = move;
 		this.miss = miss;
 		this.style = style;
 		this.icy = icy;
@@ -123,11 +144,17 @@ final class BattleLine
 	 */
 	BattleLine withTags(Status mine, Status foe)
 	{
-		BattleLine copy = new BattleLine(text, tone, overPlayer, kind, special, style, icy, miss);
+		BattleLine copy = new BattleLine(text, tone, overPlayer, kind, special, style, icy, miss, move);
 		copy.tagged = true;
 		copy.mineStatus = mine;
 		copy.foeStatus = foe;
 		return copy;
+	}
+
+	/** @return the id of the move that made an attack line, or null when it is not known */
+	String move()
+	{
+		return move;
 	}
 
 	/** @return whether the line says which status each side has afterwards */

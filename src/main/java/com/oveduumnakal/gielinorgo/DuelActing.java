@@ -62,6 +62,12 @@ final class DuelActing
 		/** @return how tall the body is drawn, in scene units */
 		double height();
 
+		/** @return how large the body is drawn compared with the real monster, where 1.0 is as modelled */
+		default double drawScale()
+		{
+			return 1.0;
+		}
+
 		/**
 		 * Gives the height of the ground the body is drawn on.
 		 *
@@ -118,6 +124,12 @@ final class DuelActing
 		public double height()
 		{
 			return follower.tagHeight();
+		}
+
+		@Override
+		public double drawScale()
+		{
+			return follower.drawScale();
 		}
 
 		@Override
@@ -364,7 +376,7 @@ final class DuelActing
 			if (projectile == null)
 				projectile = new BattleProjectile(client, projectileModels);
 
-			projectile.launch(step.look(), route);
+			projectile.launch(step.look(), route, from.drawScale());
 		}
 		catch (RuntimeException | AssertionError e)
 		{

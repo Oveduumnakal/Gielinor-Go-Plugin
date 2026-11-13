@@ -29,6 +29,25 @@ enum ProjectileLook
 		new short[]{926, 947}, new short[]{960, 6080}),
 
 	/**
+	 * Wind Strike. Spot animation {@code SpotanimID.WINDSTRIKE_TRAVEL}: the bolt's model 3081 and animation 659 with
+	 * three recolours.
+	 */
+	WIND_STRIKE(SpotanimID.WINDSTRIKE_TRAVEL, 3081, 659, 128, 1.0, 30, 30,
+		new short[]{926, 947, 11200}, new short[]{-22417, 127, -21568}),
+
+	/**
+	 * Fire Blast. Spot animation {@code SpotanimID.FIREBLAST_TRAVEL}: model 3087, animation 663, no recolours.
+	 */
+	FIRE_BLAST(SpotanimID.FIREBLAST_TRAVEL, 3087, 663, 128, 1.0, 60, 60, new short[0], new short[0]),
+
+	/**
+	 * The earth wave, the nearest earth spell to Earth surge, which the constants of the game do not list. Spot
+	 * animation {@code SpotanimID.EARTHWAVE_TRAVEL}: model 3115, animation 692, three recolours.
+	 */
+	EARTH_WAVE(SpotanimID.EARTHWAVE_TRAVEL, 3115, 692, 128, 1.0, 40, 40,
+		new short[]{7104, 6080, 960}, new short[]{8092, 22464, 22430}),
+
+	/**
 	 * Dragon fire, for a dragon's breath. Spot animation {@code SpotanimID.FIREBREATH_TRAVEL}: model 3154, animation
 	 * 373, no recolours. The model is two tiles wide, so it is drawn at two fifths.
 	 */
@@ -83,13 +102,57 @@ enum ProjectileLook
 	 */
 	static ProjectileLook of(CombatType style, boolean special, boolean icy)
 	{
+		return of(style, special, icy, null);
+	}
+
+	/**
+	 * Picks the look of an attack, a spell showing the projectile of its own move.
+	 *
+	 * @param style the style of the attack
+	 * @param special whether it was the attacker's second kind, which reads as a breath
+	 * @param icy whether a breath is icy, as a wyvern's is
+	 * @param moveId the id of the move, or null when it is not known
+	 * @return the look, or null for a melee attack or an unknown style, which has no projectile
+	 */
+	static ProjectileLook of(CombatType style, boolean special, boolean icy, String moveId)
+	{
 		if (style == null || style.melee())
 			return null;
 
 		if (special)
 			return icy ? ICE : FIRE;
 
-		return style == CombatType.RANGED ? ARROW : SPELL;
+		if (style == CombatType.RANGED)
+			return ARROW;
+
+		return spellOf(moveId);
+	}
+
+	/**
+	 * Gives the projectile of a spell.
+	 *
+	 * @param moveId the id of the move, or null
+	 * @return the spell's own look, or the generic bolt {@link #SPELL} when the move has no match
+	 */
+	private static ProjectileLook spellOf(String moveId)
+	{
+		if (moveId == null)
+			return SPELL;
+
+		switch (moveId)
+		{
+			case "wind_strike":
+				return WIND_STRIKE;
+
+			case "fire_blast":
+				return FIRE_BLAST;
+
+			case "earth_surge":
+				return EARTH_WAVE;
+
+			default:
+				return SPELL;
+		}
 	}
 
 	/** @return the id of the game's spot animation this look was read from */
@@ -143,6 +206,18 @@ enum ProjectileLook
 	/** @return the size to draw it at, where {@link #NORMAL_SIZE} is as modelled: the game's resize and our shrink */
 	int size()
 	{
-		return Math.max(1, (int) Math.round(resize * shown));
+		return sizeFor(1.0);
+	}
+
+	/**
+	 * Gives the size to draw it at for a caster that is itself drawn smaller or larger than modelled.
+	 *
+	 * @param casterScale the caster's draw scale, where 1.0 is as modelled (a body's scale value divided by
+	 *     {@link #NORMAL_SIZE})
+	 * @return the size, where {@link #NORMAL_SIZE} is as modelled, never below 1
+	 */
+	int sizeFor(double casterScale)
+	{
+		return Math.max(1, (int) Math.round(resize * shown * casterScale));
 	}
 }

@@ -236,12 +236,12 @@ final class BattleSim
 		{
 			String text = move.plain() ? "-" + damage + health : named;
 			return new BattleLine(text, Tone.GOOD, false, BattleLine.Kind.LEAD_HIT, move.second(), move.style(),
-				move.icy());
+				move.icy(), false, move.id());
 		}
 
 		String text = move.plain() ? defender.name() + " -" + damage + health : named;
 		return new BattleLine(text, Tone.BAD, true, BattleLine.Kind.FOE_HIT, move.second(), move.style(),
-			move.icy());
+			move.icy(), false, move.id());
 	}
 
 	/**
@@ -256,7 +256,8 @@ final class BattleSim
 	{
 		String text = attacker.name() + "'s " + move.name() + " missed";
 		BattleLine.Kind kind = mine ? BattleLine.Kind.LEAD_HIT : BattleLine.Kind.FOE_HIT;
-		return new BattleLine(text, Tone.INFO, !mine, kind, move.second(), move.style(), move.icy(), true);
+		return new BattleLine(text, Tone.INFO, !mine, kind, move.second(), move.style(), move.icy(), true,
+			move.id());
 	}
 
 	/**

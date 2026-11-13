@@ -477,6 +477,13 @@ final class FollowerService
 		return new LocalPoint(sceneUnits(path.x(), view.getBaseX()), sceneUnits(path.y(), view.getBaseY()), view);
 	}
 
+	/** @return how large the follower is drawn compared with the real monster, or 1.0 when it is not drawn */
+	double drawScale()
+	{
+		CreatureBody shown = body;
+		return shown == null ? 1.0 : shown.drawScale();
+	}
+
 	/** @return how tall the follower is drawn, in local units, for placing a tag above its head */
 	int tagHeight()
 	{
