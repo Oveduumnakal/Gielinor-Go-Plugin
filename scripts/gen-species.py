@@ -6,7 +6,8 @@ Run from the repo root: python3 scripts/gen-species.py [dump.tar.gz]
 Quest monsters (issue #50): a species whose every wiki row sits on a page of Category:Quest_monsters (read through the
 MediaWiki API, list=categorymembers) gets "quest": true. scripts/species-quest-add.txt lists names to flag although the
 wiki does not, scripts/species-quest-keep.txt names to keep catchable although it does. The flagged names are written
-to src/test/resources/quest-species.txt so they can be reviewed. A flagged species stays in species.json, so a creature
+to src/test/resources/quest-species.txt so they can be reviewed. examine.json (species key to the wiki's examine line,
+issue #93) is written beside species.json and kept apart from it. A flagged species stays in species.json, so a creature
 already owned keeps its species, but it never turns wild and does not count toward the Creature Log.
 
 The wiki lists the NPC ids of only some of the NPCs that carry a monster's name (the Goblin page lists 43 of about 150;
@@ -28,12 +29,13 @@ OUT = "src/main/resources/com/oveduumnakal/gielinorgo/species.json"
 BLOCKLIST = "scripts/species-blocklist.txt"
 QUEST_ADD = "scripts/species-quest-add.txt"
 QUEST_KEEP = "scripts/species-quest-keep.txt"
+EXAMINE_OUT = "src/main/resources/com/oveduumnakal/gielinorgo/examine.json"
 QUEST_LIST = "src/test/resources/quest-species.txt"
 QUEST_CATEGORY = "Category:Quest_monsters"
 UA = "species-data-script/1.0"
 PAGE = 500
 QUERY = ("bucket('infobox_monster').select('page_name','name','combat_level','attack_style','attribute',"
-         "'attack_speed','size','poisonous','slayer_level','id').limit(%d).offset(%d).run()")
+         "'attack_speed','size','poisonous','slayer_level','id','examine').limit(%d).offset(%d).run()")
 
 # NPC ids kept per species: those of every wiki row (variant or version) with its name, the row the species' level and
 # style come from first, so ids()[0] stays the id the portrait and old saves know. Every id needs animations (see
@@ -151,6 +153,17 @@ def traits_of(name, row):
     return [t for t in TRAIT_ORDER if t in found]
 
 
+def examine_of(row):
+    """The first non-empty examine line of a wiki row, without wiki markup, or an empty string."""
+    for value in as_list(row.get("examine")):
+        text = re.sub(r"<[^>]*>", "", str(value or ""))
+        text = re.sub(r"\[\[(?:[^|\]]*\|)?([^\]]*)\]\]", r"\1", text)
+        text = re.sub(r"\s+", " ", text).strip()
+        if text:
+            return text
+    return ""
+
+
 def clean_name(name):
     name = re.sub(r"<[^>]*>", "", name or "")
     name = re.sub(r"\[\[(?:[^|\]]*\|)?([^\]]*)\]\]", r"\1", name)
@@ -227,6 +240,7 @@ def main():
     main_names = {clean_name(r.get("name")).lower() for r in rows
                   if clean_name(r.get("name")).lower() == clean_name(r.get("page_name")).lower()}
     best = {}
+    examines = {}
     for row in rows:
         name = clean_name(row.get("name") or row.get("page_name"))
         page = clean_name(row.get("page_name")).lower()
@@ -246,6 +260,9 @@ def main():
         key = name.lower()
         row_pages.setdefault(key, set()).add(page_key(row.get("page_name")))
         row_ids = ids_of(row)
+        examine = examine_of(row)
+        if examine and (key not in best or level > best[key][1] or key not in examines):
+            examines[key] = examine
         if key not in best or level > best[key][1]:
             kept = best[key][4] if key in best else []
             best[key] = (name, level, style_of(row.get("attack_style")), traits_of(name, row),
@@ -262,12 +279,18 @@ def main():
         f.write("[\n")
         f.write(",\n".join(json.dumps(record(e), separators=(",", ":"), ensure_ascii=False) for e in entries))
         f.write("\n]\n")
+    with open(EXAMINE_OUT, "w", encoding="utf-8") as f:
+        f.write("{\n")
+        f.write(",\n".join(json.dumps(e[0].lower(), ensure_ascii=False) + ":" + json.dumps(
+            examines[e[0].lower()], ensure_ascii=False) for e in entries if e[0].lower() in examines))
+        f.write("\n}\n")
     quest = [e[0] for e in entries if e[5]]
     with open(QUEST_LIST, "w", encoding="utf-8") as f:
         f.write("# Species flagged quest-only by gen-species.py (see scripts/species-quest-*.txt). Generated.\n")
         f.write("".join(name + "\n" for name in quest))
     print("quest species:", len(quest))
     print("species:", len(entries))
+    print("with examine:", sum(1 for e in entries if e[0].lower() in examines))
     for s in ("MELEE", "RANGED", "MAGIC"):
         print(s, sum(1 for e in entries if e[2] == s))
     for t in TRAIT_ORDER:

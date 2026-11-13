@@ -444,6 +444,11 @@ Every feature and every number, in detail. For the short version, see the [READM
   you have caught, what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
   you can challenge. The top of the Log tab shows what is featured today and which event is on.
 
+  Click a species you have seen or caught and a box under the list shows the monster's examine text, its evolution
+  line (stages you have not met yet show as `???`), how many you have caught and whether you own a gilded one.
+  Right-click a species you have seen or caught and choose **Open wiki** to open its page on the Old School RuneScape
+  Wiki in your browser. A species you have never met shows neither the box nor the menu.
+
   You can move a creature between your team and Storage only inside a city (any City Champion's area) or within
   10 tiles of a banker, a bank booth or a bank chest. Anywhere else the panel says "Go to a city or a bank to change
   your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
