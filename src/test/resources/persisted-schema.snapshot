@@ -38,6 +38,7 @@ class SaveData {
   storage: List<Creature>
   tasks: TaskProgress
   team: List<Creature>
+  title: String
   trainerXp: long
   version: int
 }
