@@ -151,7 +151,8 @@ final class BattleDirector
 
 	/**
 	 * Moves on by one game tick: opens the prompt when the scene is ready, counts the time to choose, and ends the
-	 * battle as running when it cannot go on.
+	 * battle as running when the player left it. A scene that ended by itself, such as one cleared by a map load, is
+	 * dropped and the battle goes on as a text battle.
 	 *
 	 * @param forfeit whether the player left the battle: logged out, hopped, walked away or the creature is gone
 	 */
@@ -160,11 +161,14 @@ final class BattleDirector
 		if (session == null)
 			return;
 
-		if (forfeit || (scene != null && !scene.active()))
+		if (forfeit)
 		{
 			giveUp();
 			return;
 		}
+
+		if (scene != null && !scene.active())
+			scene = null;
 
 		if (session.friendTurn() != null)
 		{
