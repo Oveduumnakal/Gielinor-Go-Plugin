@@ -45,6 +45,13 @@ interface PanelActions
 	 */
 	void challenge(String championId);
 
+	/**
+	 * Picks which earned title the header shows.
+	 *
+	 * @param title a {@code GoGame.TITLE_} constant
+	 */
+	void pickTitle(String title);
+
 	/** Starts the Elite challenge and fights its first battle. It only starts at the Champions' Guild. */
 	void eliteChallenge();
 

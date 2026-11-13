@@ -82,6 +82,12 @@ final class SaveData
 	/** How many times the player has cleared the Elite challenge. 0 in saves from before it existed. */
 	int eliteClears;
 
+	/**
+	 * The title the panel header shows, {@code GRAND_CHAMPION} or {@code MASTER_COLLECTOR}, or null to show the newest
+	 * title earned. Null in saves from before it existed.
+	 */
+	String title;
+
 	/** Healing items owned, keyed by {@link ItemType#name()}. Null in saves from before items existed. */
 	Map<String, Integer> items = new HashMap<>();
 

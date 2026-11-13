@@ -34,6 +34,8 @@ final class PanelState
 	private final BattleView battle;
 	private MilestoneView milestones = MilestoneView.NONE;
 	private EliteView elite = EliteView.NONE;
+	private String shownTitle;
+	private List<String> titles = Collections.emptyList();
 	private final Map<ItemType, Integer> items;
 
 	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
@@ -131,7 +133,7 @@ final class PanelState
 	{
 		PanelState copy = new PanelState(trainerLevel, trainerProgress, battlesWon, jars, selectedJar, stepProgress,
 			team, storage, log, caughtSpecies, seenSpecies, eggs, champions, today, tasks, items, waiting);
-		return copy.withGoals(milestones, elite);
+		return copy.withGoals(milestones, elite).withTitle(shownTitle, titles);
 	}
 
 	/** @return the battle that waits for the player's choice, or null when none does */
@@ -247,6 +249,32 @@ final class PanelState
 		this.milestones = milestoneView;
 		this.elite = eliteView;
 		return this;
+	}
+
+	/**
+	 * Sets the titles for the header.
+	 *
+	 * @param shown the title the header shows, or null for none
+	 * @param earned every title earned, in order
+	 * @return this snapshot
+	 */
+	PanelState withTitle(String shown, List<String> earned)
+	{
+		this.shownTitle = shown;
+		this.titles = Collections.unmodifiableList(new ArrayList<>(earned));
+		return this;
+	}
+
+	/** @return the title the header shows, a {@code GoGame.TITLE_} constant, or null when none is earned */
+	String shownTitle()
+	{
+		return shownTitle;
+	}
+
+	/** @return every title earned, in order, so the header can switch between them */
+	List<String> titles()
+	{
+		return titles;
 	}
 
 	/** @return the Elite challenge card for the Battle tab */

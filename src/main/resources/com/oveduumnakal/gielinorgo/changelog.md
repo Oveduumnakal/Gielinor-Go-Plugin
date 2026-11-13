@@ -62,4 +62,6 @@ A Creature Log, daily tasks and daily events give you goals.
   beside you, and three species are only met this way. (#90)
 - **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final
   boss. (#91)
+- **Log rewards and titles.** The Creature Log pays at 750 species, 1,000 and a complete Log, which earns the
+  Master Collector title; with Grand Champion you pick which one the header shows. (#88)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
