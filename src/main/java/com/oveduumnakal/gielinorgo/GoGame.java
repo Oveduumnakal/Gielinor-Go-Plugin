@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
@@ -1183,24 +1184,82 @@ final class GoGame
 	}
 
 	/**
-	 * Releases a stored creature for good.
+	 * Releases a stored creature for good. The lead gains creature XP for it.
 	 *
 	 * @param storageIndex position in storage
 	 */
 	void release(int storageIndex)
 	{
-		if (storageIndex < 0 || storageIndex >= data.storage.size())
+		release(Collections.singletonList(storageIndex));
+	}
+
+	/**
+	 * Releases several stored creatures for good, in any order. A creature promised in a trade and a place that does
+	 * not exist are skipped. The lead gains the creature XP of every creature that went, with one line to say so.
+	 *
+	 * @param storageIndexes positions in storage
+	 */
+	void release(List<Integer> storageIndexes)
+	{
+		List<Integer> places = new ArrayList<>(new TreeSet<>(storageIndexes));
+		Collections.reverse(places);
+		long xp = 0;
+		int count = 0;
+		String lastName = null;
+		for (int index : places)
+		{
+			if (index < 0 || index >= data.storage.size())
+				continue;
+
+			Creature kept = data.storage.get(index);
+			if (tradeLocks.locked(kept))
+			{
+				tell(nameOf(kept) + " is promised in a trade", Tone.BAD);
+				continue;
+			}
+
+			Species found = species.find(kept.species);
+			xp += ReleaseRules.xp(kept.level(), found == null ? Rarity.COMMON : found.rarity());
+			lastName = nameOf(kept);
+			data.storage.remove(index);
+			count++;
+		}
+
+		if (count == 0)
 			return;
 
-		if (tradeLocks.locked(data.storage.get(storageIndex)))
+		dirty = true;
+		String what = count == 1 ? lastName : count + " creatures";
+		Creature lead = data.lead();
+		if (lead == null)
 		{
-			tell(nameOf(data.storage.get(storageIndex)) + " is promised in a trade", Tone.BAD);
+			tell("Released " + what, Tone.INFO);
 			return;
 		}
 
-		Creature released = data.storage.remove(storageIndex);
-		dirty = true;
-		tell("Released " + nameOf(released), Tone.INFO);
+		tell(nameOf(lead) + " +" + xp + " XP (released " + what + ")", Tone.GOOD);
+		trainLead(lead, xp);
+	}
+
+	/**
+	 * Gives the lead creature XP the way a battle win does: it can level, learn moves and evolve.
+	 *
+	 * @param lead the lead creature
+	 * @param xp the creature XP to add
+	 */
+	private void trainLead(Creature lead, long xp)
+	{
+		int before = lead.level();
+		lead.xp = XpRules.capped(lead.xp + xp);
+		if (lead.level() > before)
+			tell(nameOf(lead) + " grew to Lv " + lead.level() + "!", Tone.GOOD);
+
+		if (evolveIfReady(lead))
+			cues.accept(Cue.EVOLVE);
+		else if (lead.level() > before)
+			cues.accept(Cue.LEVEL_UP);
+
+		learnMoves(lead, before);
 	}
 
 	/**
