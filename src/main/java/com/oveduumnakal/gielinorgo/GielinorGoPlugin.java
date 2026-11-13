@@ -607,7 +607,8 @@ public class GielinorGoPlugin extends Plugin
 		try
 		{
 			long now = System.currentTimeMillis();
-			if (xpGained <= 0 || !SkillingRules.gathering(skill) || !config.skillingEncounters() || !playable()
+			if (!WildHiding.mayAppear(combatWatch.inCombat(now)) || xpGained <= 0
+				|| !SkillingRules.gathering(skill) || !config.skillingEncounters() || !playable()
 				|| !SkillingRules.ready(lastSkillingMs, now) || tracker.all().size() >= WildTracker.MAX_WILD)
 				return;
 
@@ -701,7 +702,8 @@ public class GielinorGoPlugin extends Plugin
 		if (!loaded)
 			return;
 
-		bodies.clientTick(System.currentTimeMillis());
+		long now = System.currentTimeMillis();
+		bodies.clientTick(now, combatWatch.inCombat(now), this::inBattleWithWild);
 		wildMenu();
 		follower.clientTick();
 		stage.clientTick();
@@ -1519,10 +1521,11 @@ public class GielinorGoPlugin extends Plugin
 	private void offer(NPC npc)
 	{
 		Species species = speciesOf(npc);
-		if (!loaded || species == null || !playable() || !nearPlayer(npc))
+		long now = System.currentTimeMillis();
+		if (!loaded || species == null || !playable() || !nearPlayer(npc)
+			|| !WildHiding.mayAppear(combatWatch.inCombat(now)))
 			return;
 
-		long now = System.currentTimeMillis();
 		WorldPoint point = npc.getWorldLocation();
 		boolean underground = point != null && Terrain.underground(point.getX(), point.getY());
 		boolean events = config.spawnEvents();
@@ -2040,6 +2043,16 @@ public class GielinorGoPlugin extends Plugin
 	{
 		BattleSession battle = director.session();
 		return battle != null && battle.wild() && battle.entry() == entry;
+	}
+
+	/**
+	 * @param wildId a wild creature's id
+	 * @return whether it is the foe of the battle in progress, which real combat never hides
+	 */
+	private boolean inBattleWithWild(int wildId)
+	{
+		BattleSession battle = director.session();
+		return battle != null && battle.wild() && battle.entry().wildId() == wildId;
 	}
 
 	/** @return the share of full health the creature in the battle the player steers has left */
