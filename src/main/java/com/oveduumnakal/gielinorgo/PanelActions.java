@@ -4,6 +4,8 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.List;
+
 /**
  * What the player can do from the side panel. The panel calls these on the UI thread; the plugin carries each one
  * over to the game thread and then sends the panel a fresh {@link PanelState}.
@@ -37,6 +39,13 @@ interface PanelActions
 	 * @param storageIndex position in {@link PanelState#storage()}
 	 */
 	void release(int storageIndex);
+
+	/**
+	 * Releases several stored creatures for good, once it is checked that each is still where the panel showed it.
+	 *
+	 * @param picks the creatures as the Storage tab listed them
+	 */
+	void releaseMany(List<TradePick> picks);
 
 	/**
 	 * Challenges a City Champion. It only starts a battle while the player stands in that city.
@@ -127,6 +136,20 @@ interface PanelActions
 	 * @param choice what the player chose
 	 */
 	void battleChoice(BattleChoice choice);
+
+	/**
+	 * Takes one of the starter creatures offered to a new player. It is checked again on the game thread; a pick
+	 * made after the offer ended changes nothing.
+	 *
+	 * @param index the place in {@link PanelState#starters()}
+	 */
+	void pickStarter(int index);
+
+	/**
+	 * Puts the whole save back to a fresh one, after the player confirmed. The old save is copied to a safety key
+	 * first. It is refused, with the reason shown as floating text, while a battle, a trade or an Elite run is on.
+	 */
+	void resetProgress();
 
 	/** Records that the player opened the change log, so the What's New badge goes away. */
 	void whatsNewSeen();

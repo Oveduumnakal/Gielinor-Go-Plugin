@@ -5,7 +5,7 @@
 package com.oveduumnakal.gielinorgo;
 
 /**
- * How far the player is through today's and this week's tasks, and the login streak. Saved to the profile as JSON,
+ * How far the player is through today's and this week's tasks, and the days played. Saved to the profile as JSON,
  * so every field here is part of the persisted schema. The tasks themselves are not saved: they come from the day
  * and the week, so only the progress is.
  */
@@ -29,7 +29,10 @@ final class TaskProgress
 	/** Whether the week's task has paid its reward. */
 	boolean weeklyPaid;
 
-	/** Days in a row with a catch, up to and including {@link #lastCatchDay}. */
+	/**
+	 * Days played: days with at least one catch. It only goes up. The name stays {@code streak} so saves written
+	 * before it stopped resetting still load.
+	 */
 	int streak;
 
 	/** The UTC day of the last catch, or -1 for none. */

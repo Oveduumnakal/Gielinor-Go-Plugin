@@ -95,6 +95,19 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 ### Your team
 
+- **Your first creature**
+
+  A new player sees **Choose your first creature** at the top of the Team tab: an Imp (Melee), a Gnome Archer
+  (Ranged) or a Wizard (Magic), one of each style. Each card shows the portrait, the style, the temperament and
+  rating it rolled (rolled like a catch, so two Imps differ) and what it grows into. Click a card, then **Yes**: the
+  creature joins as your lead at level 5 and starts following you. The three are rolled once and stay the same while
+  you look at them. It is an ordinary creature from then on, never gilded. It counts in the Creature Log, but not
+  for the daily tasks, the login streak or trainer XP, because it is not a catch.
+
+  The offer shows only while your team and Storage are empty and you have caught nothing. You can ignore it and
+  catch a wild creature instead; your first catch ends the offer. The Gnome Archer starts a new line: Gnome Archer,
+  Archer (Lv 20), Tower Archer (Lv 40), Elf Archer (Lv 60).
+
 - **Your XP trains your creatures**
 
   Every XP drop you earn, in any skill, also trains your team of up to six creatures. The creature in the lead
@@ -242,6 +255,17 @@ Every feature and every number, in detail. For the short version, see the [READM
   Many creatures grow into a stronger relative when they reach a certain level: an Imp becomes a Lesser demon,
   then a Greater demon, then a Black demon. There are over 150 evolutions to find.
 
+- **Releasing creatures**
+
+  Right-click a creature in Storage and choose **Release**, or press **Select** at the top of the Storage tab, tick
+  as many creatures as you like and press **Release selected**. One confirm lists the names and the total XP. Your
+  lead creature gains creature XP for each one: 20 plus 4 for every level of the released creature, times 1 for a
+  Common, 1.5 for an Uncommon, 2 for a Rare, 3 for an Epic and 4 for a Legendary. A Level 10 Common pays 60 XP. The
+  XP counts like any other, so it can level the lead, teach it moves and evolve it. A release never pays jars or
+  items, so catching and releasing cannot make jars. With no creature on your team the release pays nothing. A
+  gilded creature, one rated Strong or Exceptional, and one with a nickname ask a second time. A creature promised
+  in a trade is skipped.
+
 - **Eggs hatch as you walk**
 
   Battle wins sometimes drop an egg. Carry up to three, and each hatches into a new creature once you have
@@ -294,12 +318,12 @@ Every feature and every number, in detail. For the short version, see the [READM
   unlocked, or 100 trainer XP, for a daily task; 5 jars and a Rare egg for the weekly one. When you have no room
   for an egg you get 5 jars instead.
 
-- **Login streak**
+- **Days played**
 
-  The first catch of each UTC day pays 2 Bronze jars and adds a day to your streak. Miss a day and it starts again
-  at 1. Every 7th day in a row pays an Uncommon egg. The Team tab shows your streak and how many days are left to
-  the next egg. The plugin goes by your computer's clock, so changing the clock would cheat; nothing stops that in
-  a single-player side game.
+  The first catch of each UTC day pays 2 Bronze jars and adds a day to your days played. The count only goes up:
+  missing a day costs nothing. Every 7th day played pays an Uncommon egg. The Team tab shows the day you are on
+  and how many days are left to the next egg. The plugin goes by your computer's clock, so changing the clock would
+  cheat; nothing stops that in a single-player side game.
 
 ### Creature Log milestones
 
@@ -409,6 +433,17 @@ Every feature and every number, in detail. For the short version, see the [READM
   the eggs you carry and whatever you put in a trade (never nicknames), and only to the people in your own party. You can turn
   battle challenges off in the settings.
 
+### Sounds
+
+- **Game sounds**
+
+  A short sound from the game itself plays for a catch, a creature breaking free, a creature gaining a level, an
+  evolution, an egg hatching, a gilded creature appearing, a sigil and a Creature Log milestone. No sound file is
+  added: the plugin asks the game to play one of its own sound effects, so the game's sound effect volume applies
+  and muting the game mutes them. Only one sound plays at a time (a second one within 0.6 seconds is dropped),
+  except the gilded creature's sound, which always plays. Battle hits, jar finds and task progress are silent, and
+  so is everything while the plugin is hidden in PvP areas. Switch them off with **Sounds** in the settings.
+
 ### Side panel
 
 - **Team, Storage, Creature Log and Battle**
@@ -422,6 +457,15 @@ Every feature and every number, in detail. For the short version, see the [READM
   10 tiles of a banker, a bank booth or a bank chest. Anywhere else the panel says "Go to a city or a bank to change
   your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
   your team is full, a creature you receive in a trade, a hatched egg and releasing a stored creature.
+
+- **Starting over**
+
+  **Reset progress...** is a small link at the very bottom of the Team tab. It asks once, listing what you would lose
+  (team, Storage, Log species, sigils, eggs), and only the **Yes, reset** button goes ahead; **No** is the default. A
+  reset puts your whole save back to a new player's, with 10 Bronze jars. Settings and hotkeys are kept, and other
+  accounts are not touched. It is refused with a reason while a battle, a trade or an Elite run is on, and while you
+  are logged out. The old save is copied aside first as a safety net. There is no button to bring it back, so if you
+  reset by mistake, ask for help and it can be copied back by hand.
 
 - **Change log**
 

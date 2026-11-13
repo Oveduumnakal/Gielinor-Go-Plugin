@@ -175,6 +175,7 @@ public class GielinorGoPlugin extends Plugin
 	private WildOverlay wildOverlay;
 	private WildBodies bodies;
 	private final NoticeBoard noticeBoard = new NoticeBoard();
+	private final CueGate cueGate = new CueGate();
 	private List<Notice> heldNotices;
 	private FloatingTextOverlay floatingText;
 	private FollowerTagOverlay followerTag;
@@ -228,6 +229,7 @@ public class GielinorGoPlugin extends Plugin
 		calendar = new SpawnCalendar(species);
 		game.milestones(loadMilestones(species));
 		game.bosses(loadBosses(species));
+		game.setCues(this::playCue);
 		game.elite(loadElite(species));
 		game.moves(loadMoves());
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
@@ -1135,6 +1137,35 @@ public class GielinorGoPlugin extends Plugin
 		return loaded && (state == GameState.LOGGED_IN || state == GameState.LOADING);
 	}
 
+	/**
+	 * Resets the account's progress after the player confirmed in the panel. Refused while a battle, a trade or an
+	 * Elite run is on. The old save is copied to a safety key first, then everything drawn for it is cleared.
+	 */
+	private void resetProgress()
+	{
+		if (battleOpen())
+			return;
+
+		String blocker = game.resetBlocker();
+		if (blocker != null)
+		{
+			announce(Notice.player(blocker, Tone.BAD));
+			return;
+		}
+
+		persistence.save(game.data());
+		persistence.backUp();
+		game.reset();
+		persistence.save(game.data());
+		game.takeDirty();
+		unsaved = false;
+		stage.clear();
+		arena.clear();
+		effects.clear();
+		jarFlight.clear();
+		helloDue = true;
+	}
+
 	private void challengeFriend(long memberId)
 	{
 		friends.challenge(memberId, friendName(partyService.getMemberById(memberId)), game.data());
@@ -1197,6 +1228,29 @@ public class GielinorGoPlugin extends Plugin
 		SaveData data = game.data();
 		List<Creature> kept = pick.from() == Holding.TEAM ? data.team : data.storage;
 		game.rename(kept.get(pick.index()), name);
+	}
+
+	/**
+	 * Releases the creatures a panel picked, once it is checked that every one is still where it was listed.
+	 *
+	 * @param picks the creatures as the Storage tab showed them
+	 */
+	private void releaseMany(List<TradePick> picks)
+	{
+		PanelState state = game.snapshot();
+		List<Integer> places = new ArrayList<>();
+		for (TradePick pick : picks)
+		{
+			if (pick.from() != Holding.STORAGE || !pick.matches(state))
+			{
+				announce(Notice.player("What you picked has changed. Pick again", Tone.BAD));
+				return;
+			}
+
+			places.add(pick.index());
+		}
+
+		game.release(places);
 	}
 
 	/**
@@ -1269,6 +1323,28 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
+	 * Plays the game sound for a cue, on the client thread, when sounds are on, the plugin is not hidden for PvP and
+	 * no other sound played a moment ago. The game's own sound effect volume applies.
+	 *
+	 * @param cue the moment that happened
+	 */
+	private void playCue(Cue cue)
+	{
+		clientThread.invoke(() ->
+		{
+			try
+			{
+				if (config.sounds() && !hiddenForPvp() && cueGate.allow(cue, System.currentTimeMillis()))
+					client.playSoundEffect(cue.soundId());
+			}
+			catch (RuntimeException e)
+			{
+				log.debug("Could not play a sound", e);
+			}
+		});
+	}
+
+	/**
 	 * Works out which species a monster is, for turning it wild.
 	 *
 	 * @param npc the monster
@@ -1338,6 +1414,9 @@ public class GielinorGoPlugin extends Plugin
 		}
 
 		game.markSeen(entry);
+		if (entry.gilded())
+			playCue(Cue.GILDED);
+
 		String kind = entry.gilded() ? "A gilded " : entry.roaming() ? "A roaming " : "A wild ";
 		announce(Notice.creature(entry.wildId(), kind + species.name() + " appeared!",
 			entry.gilded() || entry.roaming() ? Tone.FIND : Tone.INFO));
@@ -2233,6 +2312,18 @@ public class GielinorGoPlugin extends Plugin
 			}
 
 			@Override
+			public void pickStarter(int index)
+			{
+				onGameThread(() -> game.pickStarter(index));
+			}
+
+			@Override
+			public void resetProgress()
+			{
+				onGameThread(GielinorGoPlugin.this::resetProgress);
+			}
+
+			@Override
 			public void setLead(int teamIndex)
 			{
 				onGameThread(() -> game.setLead(teamIndex));
@@ -2254,6 +2345,12 @@ public class GielinorGoPlugin extends Plugin
 			public void release(int storageIndex)
 			{
 				onGameThread(() -> game.release(storageIndex));
+			}
+
+			@Override
+			public void releaseMany(List<TradePick> picks)
+			{
+				onGameThread(() -> GielinorGoPlugin.this.releaseMany(picks));
 			}
 
 			@Override
