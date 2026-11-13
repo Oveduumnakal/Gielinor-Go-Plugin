@@ -333,4 +333,33 @@ public class TilePathTest
 		assertTrue(map.path().lineClear(0, 1, 4, 1));
 		assertTrue(map.path().lineClear(2, 2, 2, 2));
 	}
+
+	@Test
+	public void theLeadFindsASpotOnOpenGround()
+	{
+		ArenaSpots.Lead lead = ArenaSpots.lead(open(12).path(), 8, 5, 1.0, 2, 5, 12);
+
+		assertNotNull(lead);
+		assertTrue(lead.gap >= TurnMotion.CONTACT_TILES);
+	}
+
+	@Test
+	public void theLeadHasNoSpotWhenAFenceRunsBetweenItAndTheOpponent()
+	{
+		Map2d map = open(12);
+		for (int y = 0; y < 12; y++)
+			map.wallEast(5, y);
+
+		assertNull(ArenaSpots.lead(map.path(), 8, 5, 1.0, 2, 5, 12));
+	}
+
+	@Test
+	public void theLeadHasNoSpotWhenTheOpponentStandsInsideAWall()
+	{
+		Map2d map = new Map2d("............", "............", "............", "............", "........#...",
+			"............", "............", "............", "............", "............", "............",
+			"............");
+
+		assertNull(ArenaSpots.lead(map.path(), 8, 7, 1.0, 2, 7, 12));
+	}
 }
