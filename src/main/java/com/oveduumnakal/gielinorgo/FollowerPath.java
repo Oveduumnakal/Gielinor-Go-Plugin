@@ -59,6 +59,21 @@ final class FollowerPath
 		 * @return true when nothing blocks the tile
 		 */
 		boolean free(int x, int y);
+
+		/**
+		 * Checks whether the follower can walk from the player's tile onto a neighbouring one in one step. The
+		 * default only asks {@link #free(int, int)}; a ground that knows about walls overrides it.
+		 *
+		 * @param fromX world x of the player's tile
+		 * @param fromY world y of the player's tile
+		 * @param toX world x of the neighbouring tile
+		 * @param toY world y of the neighbouring tile
+		 * @return true when the step is open
+		 */
+		default boolean reachable(int fromX, int fromY, int toX, int toY)
+		{
+			return free(toX, toY);
+		}
 	}
 
 	/** Finds a way between two tiles that does not cross a wall, for the walk back from an errand. */
@@ -305,7 +320,7 @@ final class FollowerPath
 			int tileX = playerX + step[0];
 			int tileY = playerY + step[1];
 			double distance = Math.max(Math.abs(tileX - x), Math.abs(tileY - y));
-			if (distance < bestDistance && ground.free(tileX, tileY))
+			if (distance < bestDistance && ground.reachable(playerX, playerY, tileX, tileY))
 			{
 				best = new int[]{tileX, tileY};
 				bestDistance = distance;
@@ -472,7 +487,7 @@ final class FollowerPath
 		y = py;
 		for (int[] step : NEIGHBOURS)
 		{
-			if (!ground.free(px + step[0], py + step[1]))
+			if (!ground.reachable(px, py, px + step[0], py + step[1]))
 				continue;
 
 			x = px + step[0];
