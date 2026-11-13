@@ -52,4 +52,6 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **Report a bug and Request a feature.** The Feedback button in the panel opens GitHub with your text filled in.
+  (#81)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

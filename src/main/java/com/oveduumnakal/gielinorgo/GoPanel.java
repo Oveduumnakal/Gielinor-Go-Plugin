@@ -22,7 +22,9 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.border.EmptyBorder;
 
 import net.runelite.client.ui.ColorScheme;
@@ -212,7 +214,22 @@ final class GoPanel extends PluginPanel
 		footer.setBorder(new EmptyBorder(4, 8, 6, 8));
 		whatsNew(false);
 		footer.add(changelogButton);
+		JButton feedback = PanelUi.button("Feedback", e -> showFeedbackMenu((Component) e.getSource()));
+		feedback.setToolTipText("Report a bug or request a feature on GitHub, in your browser");
+		footer.add(feedback);
 		return footer;
+	}
+
+	private void showFeedbackMenu(Component anchor)
+	{
+		JPopupMenu menu = new JPopupMenu();
+		JMenuItem bug = PanelUi.menuItem("Report a bug", () -> FeedbackDialog.reportBug(this));
+		bug.setToolTipText("Opens GitHub in your browser with what you wrote filled in");
+		JMenuItem feature = PanelUi.menuItem("Request a feature", () -> FeedbackDialog.requestFeature(this));
+		feature.setToolTipText("Opens GitHub in your browser with what you wrote filled in");
+		menu.add(bug);
+		menu.add(feature);
+		menu.show(anchor, 0, -menu.getPreferredSize().height);
 	}
 
 	private void openChangelog()
