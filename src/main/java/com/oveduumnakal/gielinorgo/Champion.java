@@ -126,6 +126,19 @@ final class Champion
 		return team == null ? Collections.emptyList() : team;
 	}
 
+	/**
+	 * Makes the same champion with another team, which is how a rematch is fought: same city, id and rewards.
+	 *
+	 * @param other the creatures the champion sends out instead
+	 * @return a new champion
+	 */
+	Champion withTeam(List<Member> other)
+	{
+		Champion copy = new Champion(id, city, minX, minY, maxX, maxY, other, rewardJar(), jars);
+		copy.jar = jar;
+		return copy;
+	}
+
 	/** @return the level of the champion's strongest creature */
 	int topLevel()
 	{

@@ -73,6 +73,12 @@ final class SaveData
 	/** Ids of the City Champions the player has beaten. */
 	Set<String> sigils = new LinkedHashSet<>();
 
+	/** Ids of the cities whose champion has been beaten again in a rematch, the gold sigils. Null in older saves. */
+	Set<String> goldSigils = new LinkedHashSet<>();
+
+	/** The UTC day each champion last paid its daily rematch reward, by champion id. Null in older saves. */
+	Map<String, Long> rematchDay = new HashMap<>();
+
 	/** Progress on the daily and weekly tasks and the login streak. Null in saves from before tasks existed. */
 	TaskProgress tasks = new TaskProgress();
 
@@ -124,6 +130,9 @@ final class SaveData
 		eggs = eggs == null ? new ArrayList<>() : new ArrayList<>(eggs);
 		gilded = gilded == null ? new LinkedHashSet<>() : new LinkedHashSet<>(gilded);
 		sigils = sigils == null ? new LinkedHashSet<>() : new LinkedHashSet<>(sigils);
+		goldSigils = goldSigils == null ? new LinkedHashSet<>() : new LinkedHashSet<>(goldSigils);
+		rematchDay = rematchDay == null ? new HashMap<>() : new HashMap<>(rematchDay);
+		rematchDay.values().removeIf(day -> day == null);
 		tasks = tasks == null ? new TaskProgress() : tasks.sanitized();
 		milestones = milestones == null ? new LinkedHashSet<>() : new LinkedHashSet<>(milestones);
 		bossKills = bossKills == null ? new LinkedHashSet<>() : new LinkedHashSet<>(bossKills);

@@ -424,6 +424,17 @@ Every feature and every number, in detail. For the short version, see the [READM
   follower. The result is decided before the scene starts, so nothing in it can change the outcome. With the setting
   off, or when there is no room or no follower on screen, the battle is text only.
 
+- **Rematches**
+
+  Once you have cleared the Elite challenge, every City Champion fields a second team of six creatures at levels 80
+  to 99, harder in each later city. The **Rematch** button on the champion's card fights it in the same way as the
+  first battle, in the city, automatic or turn by turn. Your first rematch win in a city turns its sigil **gold** and
+  pays 5 Dragon jars. Win in all eight cities and the Log pays an Epic egg and 3 of every specialty jar. After that
+  each champion pays 1 Dragon jar once per UTC day, the same day as the daily tasks; the card says "Reward ready" or
+  when it comes back. A rematch won on a day that champion has already paid gives half the creature XP and nothing
+  else. Rematches are not open during an Elite run. Before the first Elite clear, a champion is fought with the first
+  team only.
+
 ### Your rival
 
 - **Bryn, from the Battle tab**

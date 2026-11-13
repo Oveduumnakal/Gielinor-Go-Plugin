@@ -85,4 +85,6 @@ A Creature Log, daily tasks and daily events give you goals.
 - **A rival.** Bryn takes the starter that beats yours and challenges you five times from the Battle tab. (#95)
 - **Bond.** Your lead earns hearts as it walks and wins with you: a heart on its name tag, and up to 5% more XP.
   (#96)
+- **Champion rematches.** After the Elite clear each City Champion fights again with six creatures at levels 80 to 99,
+  for a gold sigil and a daily reward. (#97)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

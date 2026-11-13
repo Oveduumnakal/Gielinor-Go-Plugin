@@ -16,6 +16,9 @@ final class ChampionView
 	private final boolean beaten;
 	private final boolean here;
 	private final JarType rewardJar;
+	private final String rematchTeam;
+	private final boolean gold;
+	private final String rematchNote;
 
 	ChampionView(String id, String city, String team, String reward, boolean beaten, boolean here)
 	{
@@ -32,6 +35,60 @@ final class ChampionView
 		this.beaten = beaten;
 		this.here = here;
 		this.rewardJar = rewardJar;
+		this.rematchTeam = null;
+		this.gold = false;
+		this.rematchNote = null;
+	}
+
+	private ChampionView(ChampionView base, String rematchTeam, boolean gold, String rematchNote)
+	{
+		this.id = base.id;
+		this.city = base.city;
+		this.team = base.team;
+		this.reward = base.reward;
+		this.beaten = base.beaten;
+		this.here = base.here;
+		this.rewardJar = base.rewardJar;
+		this.rematchTeam = rematchTeam;
+		this.gold = gold;
+		this.rematchNote = rematchNote;
+	}
+
+	/**
+	 * Makes the same card with the rematch line, shown once the Elite challenge has been cleared.
+	 *
+	 * @param rematchTeam the rematch creatures in one line
+	 * @param gold whether the rematch has been won, which turns the sigil gold
+	 * @param rematchNote when the daily reward is ready, such as {@code Reward ready}
+	 * @return a new view
+	 */
+	ChampionView withRematch(String rematchTeam, boolean gold, String rematchNote)
+	{
+		return new ChampionView(this, rematchTeam, gold, rematchNote);
+	}
+
+	/** @return whether the card offers a rematch, which needs a cleared Elite challenge */
+	boolean rematchOpen()
+	{
+		return rematchTeam != null;
+	}
+
+	/** @return the rematch creatures in one line, or null before the Elite challenge is cleared */
+	String rematchTeam()
+	{
+		return rematchTeam;
+	}
+
+	/** @return whether the rematch has been won, so the city's sigil is gold */
+	boolean gold()
+	{
+		return gold;
+	}
+
+	/** @return when the daily rematch reward is ready, or null before the Elite challenge is cleared */
+	String rematchNote()
+	{
+		return rematchNote;
 	}
 
 	/** @return the id the panel passes back when the player challenges this champion */
@@ -89,6 +146,9 @@ final class ChampionView
 		return beaten == that.beaten
 			&& here == that.here
 			&& rewardJar == that.rewardJar
+			&& gold == that.gold
+			&& Objects.equals(rematchTeam, that.rematchTeam)
+			&& Objects.equals(rematchNote, that.rematchNote)
 			&& Objects.equals(id, that.id)
 			&& Objects.equals(city, that.city)
 			&& Objects.equals(team, that.team)
@@ -98,6 +158,6 @@ final class ChampionView
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(id, city, team, reward, beaten, here, rewardJar);
+		return Objects.hash(id, city, team, reward, beaten, here, rewardJar, rematchTeam, gold, rematchNote);
 	}
 }
