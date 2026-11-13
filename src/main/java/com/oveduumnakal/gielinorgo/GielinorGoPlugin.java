@@ -253,6 +253,7 @@ public class GielinorGoPlugin extends Plugin
 			config::itemKey, () -> choiceOpen, this::hotkeyPressed);
 		keyManager.registerKeyListener(hotkeys);
 		panel = new GoPanel(panelActions(), portraits);
+		panel.whatsNew(detectVersionChange());
 		BufferedImage icon = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
 		navButton = NavigationButton.builder()
 			.tooltip("Gielinor Go")
@@ -2022,11 +2023,48 @@ public class GielinorGoPlugin extends Plugin
 			: Notice.creature(wildId, line.text(), line.tone());
 	}
 
+	/**
+	 * Compares the version in the change log with the one stored the last time the change log was opened. A first
+	 * install records the current version without telling the player what changed.
+	 *
+	 * @return true when the panel should show What's New
+	 */
+	private boolean detectVersionChange()
+	{
+		String current = Changelog.load().currentVersion();
+		String lastSeen = config.lastSeenVersion();
+		if (WhatsNew.recordSilently(lastSeen, current))
+		{
+			configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.LAST_SEEN_VERSION, current);
+			return false;
+		}
+
+		boolean dismissed = config.whatsNewDismissed();
+		if (dismissed && current != null && !current.equals(lastSeen))
+		{
+			configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.WHATS_NEW_DISMISSED, false);
+			dismissed = false;
+		}
+
+		return WhatsNew.shouldShow(lastSeen, current, dismissed);
+	}
+
 	/** @return the panel's actions, each carried over to the game thread and followed by a panel refresh */
 	private PanelActions panelActions()
 	{
 		return new PanelActions()
 		{
+			@Override
+			public void whatsNewSeen()
+			{
+				String current = Changelog.load().currentVersion();
+				if (current == null)
+					return;
+
+				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.LAST_SEEN_VERSION, current);
+				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.WHATS_NEW_DISMISSED, true);
+			}
+
 			@Override
 			public void setLead(int teamIndex)
 			{
