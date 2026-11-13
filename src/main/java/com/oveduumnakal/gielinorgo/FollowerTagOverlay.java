@@ -104,4 +104,18 @@ final class FollowerTagOverlay extends Overlay
 	{
 		return nickname == null || nickname.isEmpty() ? species : nickname;
 	}
+
+	/**
+	 * Picks the text the tag shows for a creature with a bond: a heart in front of the name from the first heart.
+	 *
+	 * @param nickname the creature's nickname, or null for none
+	 * @param species the creature's species name
+	 * @param hearts the creature's bond hearts
+	 * @return the name, with a heart in front of it when there is a bond
+	 */
+	static String nameFor(String nickname, String species, int hearts)
+	{
+		String name = nameFor(nickname, species);
+		return hearts >= BondRules.TAG_HEARTS ? "\u2665 " + name : name;
+	}
 }

@@ -1426,7 +1426,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		Creature lead = config.showFollower() && !hiddenForPvp() ? game.data().lead() : null;
 		leadTag = lead != null && config.showLeadName()
-			? FollowerTagOverlay.nameFor(lead.nickname, game.speciesNameOf(lead)) : null;
+			? FollowerTagOverlay.nameFor(lead.nickname, game.speciesNameOf(lead), BondRules.hearts(lead.bond)) : null;
 		follower.gameTick(lead == null ? null : lead.species, lead == null ? 0 : lead.npcId,
 			lead != null && lead.gilded);
 	}

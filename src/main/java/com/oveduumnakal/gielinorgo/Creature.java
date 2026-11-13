@@ -69,6 +69,12 @@ final class Creature
 	 */
 	List<String> pendingMoves;
 
+	/**
+	 * Bond points earned while this creature was the lead, see {@link BondRules}. 0 is no bond, and what an older save
+	 * loads as. Local only: it is never sent to other players, so a traded creature starts again at 0.
+	 */
+	int bond;
+
 	/** Used by Gson. */
 	Creature()
 	{

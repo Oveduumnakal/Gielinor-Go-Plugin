@@ -317,6 +317,15 @@ Every feature and every number, in detail. For the short version, see the [READM
   One wild creature in 500 is gilded: gold outline in the world, gold name in your panel. They are only for
   showing off.
 
+- **Bond**
+
+  Each creature has a bond, shown as up to five hearts under its name on its card. Only your lead earns it: 1 point
+  for every 100 tiles you walk with it following, 5 for a battle it wins, and 20 for a City Champion or Elite win
+  with it as your lead. The hearts come at 100, 400, 1,200, 3,000 and 6,000 points. From the first heart a small
+  heart shows beside its name over the follower. Three hearts give it 2% more creature XP, four give 4%, and five
+  give 5% and gold hearts. A bond never changes a battle. It stays through evolution, Storage and renaming, is lost
+  when you release the creature, and starts at zero after a trade.
+
 ### Spawn variety
 
 - **Featured today**
