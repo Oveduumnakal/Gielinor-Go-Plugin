@@ -240,14 +240,14 @@ public class BattleStateTest
 	}
 
 	@Test
-	public void anItemCannotBeChosenYet()
+	public void anItemWithNoneNamedIsRefused()
 	{
 		BattleState state = wild(team(new Combatant(GOBLIN, 20, 1.0)), new Combatant(GOBLIN, 20, 1.0), 1, null);
 
 		try
 		{
 			state.step(BattleChoice.item());
-			fail("an item was allowed");
+			fail("an item with none picked was allowed");
 		}
 		catch (IllegalArgumentException expected)
 		{

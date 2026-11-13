@@ -250,7 +250,7 @@ public class GielinorGoPlugin extends Plugin
 		promptOverlay = new BattlePromptOverlay();
 		overlayManager.add(promptOverlay);
 		hotkeys = new BattleHotkeys(config::attackKey, config::switchKey, config::catchKey, config::runKey,
-			() -> choiceOpen, this::hotkeyPressed);
+			config::itemKey, () -> choiceOpen, this::hotkeyPressed);
 		keyManager.registerKeyListener(hotkeys);
 		panel = new GoPanel(panelActions(), portraits);
 		BufferedImage icon = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
@@ -1722,6 +1722,16 @@ public class GielinorGoPlugin extends Plugin
 		refreshPanel();
 	}
 
+	/** Uses the first item that would help, as the Item hotkey does; says so when none would. */
+	private void quickItem(BattleSession battle)
+	{
+		BattleChoice choice = game.quickItem(battle);
+		if (choice == null)
+			announce(Notice.player("No item would help right now", Tone.BAD));
+		else
+			chooseBattle(choice);
+	}
+
 	/** Shows whatever the game announced while a turn was played and nobody took, so no line is lost. */
 	private void flushHeld()
 	{
@@ -1760,6 +1770,8 @@ public class GielinorGoPlugin extends Plugin
 
 			if (kind == BattleChoice.Kind.ATTACK)
 				chooseBattle(BattleChoice.attack());
+			else if (kind == BattleChoice.Kind.ITEM)
+				quickItem(battle);
 			else if (kind == BattleChoice.Kind.CATCH && battle.wild())
 				chooseBattle(BattleChoice.catching(null));
 			else if (kind == BattleChoice.Kind.RUN)
@@ -1803,7 +1815,8 @@ public class GielinorGoPlugin extends Plugin
 			return Collections.emptyList();
 
 		String hotkeyText = BattlePrompt.hotkeys(keyText(config.attackKey()), keyText(config.switchKey()),
-			keyText(config.catchKey()), keyText(config.runKey()), view.canCatch(), view.forcedSwitch());
+			keyText(config.catchKey()), keyText(config.itemKey()), keyText(config.runKey()), view.canCatch(),
+			view.forcedSwitch());
 		return BattlePrompt.lines(view, hotkeyText);
 	}
 

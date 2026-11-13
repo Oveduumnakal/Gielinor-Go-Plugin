@@ -317,4 +317,22 @@ public interface GielinorGoConfig extends Config
 	{
 		return Keybind.NOT_SET;
 	}
+
+	/**
+	 * Hotkey for Item while a battle waits for a choice.
+	 *
+	 * @return the key, unset by default
+	 */
+	@ConfigItem(
+		keyName = "itemKey",
+		name = "Item hotkey",
+		description = "Uses the first healing item that would help while a battle waits for your choice: Small"
+			+ " salve, Large salve, Revive draught, then Antidote.\nIt costs your turn. To pick the item and the"
+			+ " creature, use the Item button in the side panel. Unset by default.",
+		position = 17
+	)
+	default Keybind itemKey()
+	{
+		return Keybind.NOT_SET;
+	}
 }

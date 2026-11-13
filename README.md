@@ -54,8 +54,8 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
 - **Healing items**
 
   Four items help a hurt creature. A **Small salve** restores 25% health and a **Large salve** 60%. A **Revive
-  draught** lifts a creature that is too tired to battle (below 25% health) to 50%. An **Antidote** is meant to cure
-  poison, venom and burn in battle; battles do not use items yet, so it is only collected for now. Small salves turn
+  draught** lifts a creature that is too tired to battle (below 25% health) to 50%. An **Antidote** cures poison,
+  venom and burn, in battle only. Small salves turn
   up while training Herblore or Cooking and after about one battle win in ten; Herblore also finds Antidotes.
   Bigger XP drops find more, up to a 30% chance, and the roll is separate from the specialty jar's, so one drop can
   give a jar, an item, both or neither. Battle wins can also drop a Large salve (3%) or a Revive draught (2%), and
@@ -177,7 +177,7 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   Turn on **Choose battle actions** in the settings (it is off by default, and then every battle plays itself as
   described above, with your whole team: the next creature steps in on its own). A battle with a wild creature or a City Champion then waits for you each
   turn, and the battle box appears at the top of the side panel, above the tabs, with both creatures' health, a
-  countdown bar and four buttons:
+  countdown bar and five buttons:
 
   - **Attack**: your creature attacks, then the other one does (or the other way round: the faster creature is
     first, and a level tie is a coin toss). A creature that knows more than one move opens the list of its moves
@@ -190,14 +190,21 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
     creature has lost, from the normal chance at full health up to 1.5 times it near zero (the right-click menu shows
     the odds). A jar that does not hold costs your turn and the creature attacks; a catch or a creature that runs off
     ends the battle with the usual catch scene.
+  - **Item**: uses a healing item you own as your turn, so the other creature attacks. A Small or Large salve heals
+    a creature of your team that is still up and hurt, a Revive draught brings back a creature that fainted in this
+    battle at half health, and an Antidote cures poison, venom or burn on the creature in the fight. The button lists
+    only items that would do something and asks which creature when an item could help several. The item is spent
+    once the turn is played, and nothing is spent when it would do nothing. From a creature's card in the panel,
+    items cannot be used while a battle is on.
   - **Run**: ends the battle. Nothing is won and that creature cannot be battled again. Logging out, hopping, walking
     more than 15 tiles away or the monster going away counts as running.
 
   Choose nothing for 10 seconds (set **Seconds per turn** from 5 to 30) and your creature attacks by itself, or steps
   in the next creature after a faint. A small prompt on the game screen shows whose turn it is, the time left and both
-  health values, and you can set **Attack**, **Switch**, **Catch** and **Run** hotkeys (none are set by default, so no
+  health values, and you can set **Attack**, **Switch**, **Catch**, **Item** and **Run** hotkeys (none are set by default, so no
   key is taken from chat or dialogue, and they work only while a choice is open). The Switch hotkey steps in the first
-  creature that can fight; use the panel button to pick one.
+  creature that can fight, and the Item hotkey uses the first item that would help (Small salve, Large salve, Revive
+  draught, Antidote); use the panel buttons to pick a creature or an item.
 
   Every blow and every switch ("Go, Bob!", "Bob comes back", "You ran away") floats as it happens, with no summary.
   With **Battle animations** on, the scene waits for you between turns: the lead and the wild creature (or the two

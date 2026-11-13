@@ -322,4 +322,27 @@ final class Combatant
 
 		return skip;
 	}
+
+	/**
+	 * Restores health, as a salve does. Health never goes above full.
+	 *
+	 * @param share the share of full health to restore, from 0 to 1
+	 * @return the health restored, a whole number of points
+	 */
+	int heal(double share)
+	{
+		double before = hp;
+		hp = Math.min(maxHp, hp + share * maxHp);
+		return (int) Math.round(hp - before);
+	}
+
+	/**
+	 * Brings a fainted fighter back, as a Revive draught does.
+	 *
+	 * @param share the share of full health it comes back with
+	 */
+	void revive(double share)
+	{
+		hp = Math.max(hp, maxHp * Math.max(0.0, Math.min(1.0, share)));
+	}
 }

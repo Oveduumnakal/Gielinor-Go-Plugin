@@ -63,6 +63,46 @@ final class BattleView
 		}
 	}
 
+	/** One healing item the player owns that would do something now, with the creatures it could be used on. */
+	static final class ItemOption
+	{
+		private final ItemType type;
+		private final int count;
+		private final List<Option> targets;
+
+		/**
+		 * Describes an item that could be used.
+		 *
+		 * @param type the item
+		 * @param count how many the player owns
+		 * @param targets the creatures it would do something for, in team order; never empty
+		 */
+		ItemOption(ItemType type, int count, List<Option> targets)
+		{
+			this.type = type;
+			this.count = count;
+			this.targets = Collections.unmodifiableList(new ArrayList<>(targets));
+		}
+
+		/** @return the item */
+		ItemType type()
+		{
+			return type;
+		}
+
+		/** @return how many the player owns */
+		int count()
+		{
+			return count;
+		}
+
+		/** @return the creatures it would do something for, with their places in the battle's team */
+		List<Option> targets()
+		{
+			return targets;
+		}
+	}
+
 	private final String mineName;
 	private final int mineLevel;
 	private final double mineHp;
@@ -79,6 +119,7 @@ final class BattleView
 	private final double timeLeft;
 	private final List<Option> options;
 	private final List<Move> moves;
+	private final List<ItemOption> items;
 
 	/**
 	 * Describes the battle at one moment.
@@ -96,6 +137,28 @@ final class BattleView
 	BattleView(Combatant mine, Combatant foe, boolean forcedSwitch, boolean canCatch, JarType jar, int jarCount,
 		int secondsLeft, double timeLeft, List<Option> options)
 	{
+		this(mine, foe, forcedSwitch, canCatch, jar, jarCount, secondsLeft, timeLeft, options,
+			Collections.emptyList());
+	}
+
+	/**
+	 * Describes the battle at one moment, with the items that could be used.
+	 *
+	 * @param mine the player's creature in the fight
+	 * @param foe the opposing creature in the fight
+	 * @param forcedSwitch whether the creature in the fight fainted and the next one must be picked
+	 * @param canCatch whether a jar can be thrown: a wild creature and at least one jar
+	 * @param jar the jar a throw uses, or null when there is none
+	 * @param jarCount how many of that jar are left
+	 * @param secondsLeft the whole seconds left to choose
+	 * @param timeLeft the share of the time left, from 0 to 1
+	 * @param options the creatures that could step in
+	 * @param items the owned items that would do something now
+	 */
+	BattleView(Combatant mine, Combatant foe, boolean forcedSwitch, boolean canCatch, JarType jar, int jarCount,
+		int secondsLeft, double timeLeft, List<Option> options, List<ItemOption> items)
+	{
+		this.items = Collections.unmodifiableList(new ArrayList<>(items));
 		this.mineName = mine.name();
 		this.mineLevel = mine.level();
 		this.mineHp = mine.hpFraction();
@@ -112,6 +175,18 @@ final class BattleView
 		this.timeLeft = timeLeft;
 		this.options = Collections.unmodifiableList(new ArrayList<>(options));
 		this.moves = mine.moves();
+	}
+
+	/** @return the owned items that would do something now, in item order; empty when none would */
+	List<ItemOption> items()
+	{
+		return items;
+	}
+
+	/** @return whether an item could be used: the player owns one that would do something */
+	boolean canUseItem()
+	{
+		return !items.isEmpty();
 	}
 
 	/** @return the moves the player's creature in the fight can use, in the order it knows them; never empty */
