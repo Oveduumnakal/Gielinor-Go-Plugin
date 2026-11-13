@@ -40,7 +40,12 @@ Then replace this comment with:
 - **Monsters near you turn wild**
 
   A wild creature is its own smaller copy that stands beside the real monster for about three minutes. There are
-  1,094 species to find, from chickens to bosses. Wild creatures do not appear inside instances.
+  1,096 species to find, from chickens to bosses. Wild creatures do not appear inside instances.
+
+- **Boss eggs**
+
+  Kill a boss and the game's kill-count line can give you its egg: always the first time, then one kill in 20.
+  It hatches into that boss when you walk, and it works inside instances.
 
 - **Catch them with jars**
 
@@ -228,10 +233,12 @@ Then replace this comment with:
 |---|---|---|
 | Wild creature rarity | 1 in 8 | How often a nearby monster turns wild. Lower numbers mean more wild creatures. |
 | Left-click wild creatures | Not while in combat | Whether a left click on a wild creature battles or catches it. |
+| Skilling encounters | On | Fishing, Woodcutting, Mining, Farming and Hunter XP sometimes bring a wild creature. |
 | Choose battle actions | Off | Each battle turn waits for you instead of playing itself. |
 | Battle animations | On | Battles are acted out in the game view. Off shows them as floating text. |
 | Lead creature follows you | On | Your lead walks a step behind you. |
 | Also print to chat | Off | Writes catches, battles and rewards to your chatbox as well. Only you see them. |
+| Sounds | On | A short game sound for a catch, a level-up, an evolution and other big moments. Uses the game's sound effect volume. |
 
 The rest of the settings are described in the [full guide](docs/GUIDE.md).
 

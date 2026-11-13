@@ -58,6 +58,16 @@ A Creature Log, daily tasks and daily events give you goals.
   combat. (#87)
 - **Report a bug and Request a feature.** The Feedback button in the panel opens GitHub with your text filled in.
   (#81)
+- **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
+  beside you, and three species are only met this way. (#90)
+- **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final
+  boss. (#91)
+- **Days played.** The login streak became a count of days played that never resets; every 7th day still pays
+  an egg. (#89)
+- **Sound effects.** Game sounds for a catch, a level-up, an evolution, a hatch, a gilded creature and other
+  big moments, with a setting to turn them off. (#94)
+- **A reward for releasing.** Releasing creatures pays creature XP to your lead, and Storage can release several
+  at once. (#92)
 - **Reset progress.** A link at the bottom of the Team tab starts you over after two clicks; the old save is kept
   aside. (#84)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

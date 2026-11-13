@@ -105,8 +105,8 @@ final class TaskView
 	 * Creates a view.
 	 *
 	 * @param rows the three daily rows, then the weekly row
-	 * @param streak days in a row with a catch, 0 when the streak is broken
-	 * @param eggIn catches on separate days still needed for the next streak egg, from 1 to 7
+	 * @param streak days played, days with at least one catch
+	 * @param eggIn catches on separate days still needed for the next egg, from 1 to 7
 	 * @param millisToReset milliseconds until the daily tasks reset
 	 * @param millisToWeeklyReset milliseconds until the weekly task resets
 	 */
@@ -125,13 +125,13 @@ final class TaskView
 		return rows;
 	}
 
-	/** @return days in a row with a catch, 0 when the streak is broken */
+	/** @return days played, days with at least one catch */
 	int streak()
 	{
 		return streak;
 	}
 
-	/** @return days of catching still needed for the next streak egg, from 1 to 7 */
+	/** @return days of catching still needed for the next egg, from 1 to 7 */
 	int eggIn()
 	{
 		return eggIn;

@@ -10,16 +10,16 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Today's tasks and this week's, with the player's progress on them and the login streak. It has no RuneLite types:
+ * Today's tasks and this week's, with the player's progress on them and the days played. It has no RuneLite types:
  * the game calls {@link #rollover(long)} and then an event method, and each event method returns the tasks that
  * finished because of it. A finished task is marked paid here, so it is returned once; paying it is up to the caller.
  */
 final class TaskBoard
 {
-	/** Days in a row after which the streak pays an egg. */
+	/** Days played between two eggs: every day this many pays an egg. */
 	static final int STREAK_EGG_EVERY = 7;
 
-	/** What the first catch of a day did to the streak. */
+	/** What the first catch of a day did to the days-played count. */
 	static final class Streak
 	{
 		private final int days;
@@ -29,13 +29,13 @@ final class TaskBoard
 			this.days = days;
 		}
 
-		/** @return the streak after this catch, at least 1 */
+		/** @return the days played after this catch, at least 1 */
 		int days()
 		{
 			return days;
 		}
 
-		/** @return whether this day earns the streak egg */
+		/** @return whether this day earns an egg */
 		boolean eggDue()
 		{
 			return days % STREAK_EGG_EVERY == 0;
@@ -122,16 +122,16 @@ final class TaskBoard
 	}
 
 	/**
-	 * Notes a catch for the streak. Only the first catch of a UTC day counts.
+	 * Notes a catch for the days played. Only the first catch of a UTC day counts.
 	 *
-	 * @return what the streak became, or null when today already had a catch
+	 * @return what the days played became, or null when today already had a catch
 	 */
 	Streak recordCatch()
 	{
 		if (progress.lastCatchDay == progress.day)
 			return null;
 
-		progress.streak = progress.lastCatchDay == progress.day - 1 ? progress.streak + 1 : 1;
+		progress.streak++;
 		progress.lastCatchDay = progress.day;
 		return new Streak(progress.streak);
 	}
@@ -209,7 +209,7 @@ final class TaskBoard
 			rows.add(row(daily.get(i), progress.daily[i], progress.dailyPaid[i], best));
 
 		rows.add(row(weekly, progress.weekly, progress.weeklyPaid, best));
-		int alive = progress.lastCatchDay >= progress.day - 1 ? progress.streak : 0;
+		int alive = progress.streak;
 		return new TaskView(rows, alive, STREAK_EGG_EVERY - alive % STREAK_EGG_EVERY, calendar.millisToReset(now),
 			calendar.millisToWeeklyReset(now));
 	}

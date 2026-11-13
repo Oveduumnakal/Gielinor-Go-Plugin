@@ -20,6 +20,21 @@ Every feature and every number, in detail. For the short version, see the [READM
   the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
   seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
+- **While skilling**
+
+  Fishing, Woodcutting, Mining, Farming and Hunter XP drops sometimes bring a wild creature to a free tile one or
+  two tiles from you: "A wild Crab surfaced!" (Woodcutting: "dropped from the branches", Mining: "crawled out of the
+  rock", Farming: "came out of the patch", Hunter: "broke cover"). It is an ordinary wild creature: Battle, Catch,
+  about 3 minutes, and it counts toward the limit of three. The bigger the XP drop, the likelier the creature, so
+  fast small drops and slow big ones find creatures at about the same rate per XP: about one every 6 to 10 minutes
+  of steady skilling at the default **Wild creature rarity**, never two within 3 minutes. Each skill has its own
+  species (Fishing water creatures, Woodcutting birds and tree dwellers, Mining cave and rock creatures, Farming
+  pests and field animals, Hunter prey). The species follows your level in the skill: a level 90 fisher meets
+  stronger creatures than a level 20 one. Three species are met **only** this way, one time in 20 and from skill
+  level 40: the River troll while Fishing, the Rock Golem while Mining and the Tree spirit while Woodcutting. Nothing
+  appears with the **Skilling encounters** setting off, in an instance or in a PvP area, or when there is no free
+  tile.
+
 - **Catch them with jars**
 
   Throwing a jar has a chance to catch the creature. The menu shows your odds before you click. Stronger monsters
@@ -64,6 +79,19 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   News about a creature floats over that creature: it appeared, you caught it, it broke free. Things you find or
   earn, such as jars and level-ups, float over your own head.
+
+- **Boss eggs from real kills**
+
+  When the game tells you a boss kill count (`Your Vorkath kill count is: 12.`), you may find that boss's egg. The
+  first kill of each boss the plugin sees always gives its egg, and after that one kill in 20 does. A completed
+  raid counts as one kill of its final boss: the Great Olm for the Chambers of Xeric, Verzik Vitur for the Theatre
+  of Blood and Elidinis' Warden for the Tombs of Amascut, solo or in a group. The egg appears after the fight
+  (`You found a Vorkath egg!`) and works in instances, where no wild creature ever turns up. It shows on the Team
+  tab as `Vorkath egg` and hatches by walking into a level 1 creature of that exact boss, rolled and gilded like any
+  other egg. Nothing about loot is read, only the kill-count line. With three eggs already carried the new one
+  waits, one per boss, and arrives when a slot frees up (a waiting egg is lost if you log out, and the first-kill
+  egg is then given again at the next kill). Re-fightable instance bosses such as Vorkath are in the Creature Log
+  because of this, though they never turn wild. A boss egg can be given to a friend in a trade.
 
 ### Your team
 
@@ -214,6 +242,17 @@ Every feature and every number, in detail. For the short version, see the [READM
   Many creatures grow into a stronger relative when they reach a certain level: an Imp becomes a Lesser demon,
   then a Greater demon, then a Black demon. There are over 150 evolutions to find.
 
+- **Releasing creatures**
+
+  Right-click a creature in Storage and choose **Release**, or press **Select** at the top of the Storage tab, tick
+  as many creatures as you like and press **Release selected**. One confirm lists the names and the total XP. Your
+  lead creature gains creature XP for each one: 20 plus 4 for every level of the released creature, times 1 for a
+  Common, 1.5 for an Uncommon, 2 for a Rare, 3 for an Epic and 4 for a Legendary. A Level 10 Common pays 60 XP. The
+  XP counts like any other, so it can level the lead, teach it moves and evolve it. A release never pays jars or
+  items, so catching and releasing cannot make jars. With no creature on your team the release pays nothing. A
+  gilded creature, one rated Strong or Exceptional, and one with a nickname ask a second time. A creature promised
+  in a trade is skipped.
+
 - **Eggs hatch as you walk**
 
   Battle wins sometimes drop an egg. Carry up to three, and each hatches into a new creature once you have
@@ -266,12 +305,12 @@ Every feature and every number, in detail. For the short version, see the [READM
   unlocked, or 100 trainer XP, for a daily task; 5 jars and a Rare egg for the weekly one. When you have no room
   for an egg you get 5 jars instead.
 
-- **Login streak**
+- **Days played**
 
-  The first catch of each UTC day pays 2 Bronze jars and adds a day to your streak. Miss a day and it starts again
-  at 1. Every 7th day in a row pays an Uncommon egg. The Team tab shows your streak and how many days are left to
-  the next egg. The plugin goes by your computer's clock, so changing the clock would cheat; nothing stops that in
-  a single-player side game.
+  The first catch of each UTC day pays 2 Bronze jars and adds a day to your days played. The count only goes up:
+  missing a day costs nothing. Every 7th day played pays an Uncommon egg. The Team tab shows the day you are on
+  and how many days are left to the next egg. The plugin goes by your computer's clock, so changing the clock would
+  cheat; nothing stops that in a single-player side game.
 
 ### Creature Log milestones
 
@@ -372,12 +411,23 @@ Every feature and every number, in detail. For the short version, see the [READM
   the eggs you carry and whatever you put in a trade (never nicknames), and only to the people in your own party. You can turn
   battle challenges off in the settings.
 
+### Sounds
+
+- **Game sounds**
+
+  A short sound from the game itself plays for a catch, a creature breaking free, a creature gaining a level, an
+  evolution, an egg hatching, a gilded creature appearing, a sigil and a Creature Log milestone. No sound file is
+  added: the plugin asks the game to play one of its own sound effects, so the game's sound effect volume applies
+  and muting the game mutes them. Only one sound plays at a time (a second one within 0.6 seconds is dropped),
+  except the gilded creature's sound, which always plays. Battle hits, jar finds and task progress are silent, and
+  so is everything while the plugin is hidden in PvP areas. Switch them off with **Sounds** in the settings.
+
 ### Side panel
 
 - **Team, Storage, Creature Log and Battle**
 
   The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, your daily and weekly tasks, the
-  creatures you have stored, and a Creature Log of every species you can meet in the game (1,094) so you can see what
+  creatures you have stored, and a Creature Log of every species you can meet in the game (1,096) so you can see what
   you have caught, what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
   you can challenge. The top of the Log tab shows what is featured today and which event is on.
 
