@@ -2424,27 +2424,27 @@ public class GielinorGoPlugin extends Plugin
 			}
 
 			@Override
-			public void setLead(int teamIndex)
+			public void setLead(TradePick pick)
 			{
-				onGameThread(() -> game.setLead(teamIndex));
+				onGameThread(() -> game.setLead(pick));
 			}
 
 			@Override
-			public void moveToStorage(int teamIndex)
+			public void moveToStorage(TradePick pick)
 			{
-				onGameThread(() -> game.moveToStorage(teamIndex));
+				onGameThread(() -> game.moveToStorage(pick));
 			}
 
 			@Override
-			public void moveToTeam(int storageIndex)
+			public void moveToTeam(TradePick pick)
 			{
-				onGameThread(() -> game.moveToTeam(storageIndex));
+				onGameThread(() -> game.moveToTeam(pick));
 			}
 
 			@Override
-			public void release(int storageIndex)
+			public void release(TradePick pick)
 			{
-				onGameThread(() -> game.release(storageIndex));
+				onGameThread(() -> game.release(pick));
 			}
 
 			@Override

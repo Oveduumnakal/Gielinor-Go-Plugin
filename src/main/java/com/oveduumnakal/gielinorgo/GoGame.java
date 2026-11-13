@@ -1492,6 +1492,66 @@ final class GoGame
 	}
 
 	/**
+	 * Checks that a creature a panel picked is still where the panel listed it. When it is not, says so and the
+	 * caller does nothing.
+	 *
+	 * @param pick the creature as the panel showed it
+	 * @return true when the pick still points at the same creature
+	 */
+	private boolean stillThere(TradePick pick)
+	{
+		if (pick.matches(snapshot()))
+			return true;
+
+		tell("That creature moved. Try again.", Tone.BAD);
+		return false;
+	}
+
+	/**
+	 * Makes the creature a panel picked the lead, if it is still where the panel listed it.
+	 *
+	 * @param pick the team member as the panel showed it
+	 */
+	void setLead(TradePick pick)
+	{
+		if (stillThere(pick))
+			setLead(pick.index());
+	}
+
+	/**
+	 * Moves the team member a panel picked into storage, if it is still where the panel listed it.
+	 *
+	 * @param pick the team member as the panel showed it
+	 */
+	void moveToStorage(TradePick pick)
+	{
+		if (stillThere(pick))
+			moveToStorage(pick.index());
+	}
+
+	/**
+	 * Moves the stored creature a panel picked onto the team, if it is still where the panel listed it.
+	 *
+	 * @param pick the stored creature as the panel showed it
+	 */
+	void moveToTeam(TradePick pick)
+	{
+		if (stillThere(pick))
+			moveToTeam(pick.index());
+	}
+
+	/**
+	 * Releases the stored creature a panel picked, if it is still where the panel listed it.
+	 *
+	 * @param pick the stored creature as the panel showed it
+	 */
+	void release(TradePick pick)
+	{
+		if (stillThere(pick))
+			release(pick.index());
+	}
+
+	/**
 	 * Moves a team member into storage.
 	 *
 	 * @param teamIndex position in the team
