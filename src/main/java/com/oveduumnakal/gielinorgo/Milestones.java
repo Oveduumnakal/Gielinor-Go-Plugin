@@ -9,14 +9,21 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The Creature Log milestones: a reward at 25, 50, 100, 250 and 500 species caught, and one for completing a
- * family such as all goblins. Pure rules with no RuneLite types: the game asks which milestones are reached and what
+ * The Creature Log milestones: a reward at 25, 50, 100, 250, 500, 750 and 1,000 species caught, one for a
+ * complete Log (every catchable species, which earns a title), and one for completing a family such as all
+ * goblins. Pure rules with no RuneLite types: the game asks which milestones are reached and what
  * each one pays, and keeps the paid ones in {@link SaveData#milestones}.
  */
 final class Milestones
 {
 	/** The species counts that pay a milestone, in order. */
-	static final int[] SPECIES_STEPS = {25, 50, 100, 250, 500};
+	static final int[] SPECIES_STEPS = {25, 50, 100, 250, 500, 750, 1000};
+
+	/** The id of the milestone for a complete Log: every catchable species caught. */
+	static final String COMPLETE_ID = "log-complete";
+
+	/** Specialty jars of each type paid at 1,000 species. */
+	static final int SPECIALTY_STEP_JARS = 3;
 
 	/** The species count whose reward is the Gilded charm. */
 	static final int CHARM_STEP = 250;
@@ -47,14 +54,16 @@ final class Milestones
 		private final Rarity egg;
 		private final boolean charm;
 		private final int specialtyJars;
+		private final boolean title;
 
 		Reward(JarType jar, int jars, Rarity egg, boolean charm)
 		{
-			this(jar, jars, egg, charm, 0);
+			this(jar, jars, egg, charm, 0, false);
 		}
 
-		Reward(JarType jar, int jars, Rarity egg, boolean charm, int specialtyJars)
+		Reward(JarType jar, int jars, Rarity egg, boolean charm, int specialtyJars, boolean title)
 		{
+			this.title = title;
 			this.jar = jar;
 			this.jars = jars;
 			this.egg = egg;
@@ -92,6 +101,12 @@ final class Milestones
 			return charm;
 		}
 
+		/** @return whether the reward is the Master Collector title */
+		boolean title()
+		{
+			return title;
+		}
+
 		/** @return the reward in a few words, such as {@code 5 Rune jars + Rare egg} */
 		String text()
 		{
@@ -99,11 +114,14 @@ final class Milestones
 			if (jars > 0)
 				parts.add(jars + " " + jar.label() + (jars == 1 ? " jar" : " jars"));
 
+			if (specialtyJars > 0)
+				parts.add(specialtyJars + " of every specialty jar");
+
 			if (egg != null)
 				parts.add(egg.label() + " egg");
 
-			if (specialtyJars > 0)
-				parts.add(specialtyJars + " of every specialty jar");
+			if (title)
+				parts.add("Master Collector title");
 
 			if (charm)
 				parts.add("Gilded charm");
@@ -176,7 +194,11 @@ final class Milestones
 		this.species = species;
 		List<Milestone> built = new ArrayList<>();
 		for (int step : SPECIES_STEPS)
-			built.add(new Milestone("species-" + step, step + " species", step, null, countReward(step)));
+			built.add(new Milestone("species-" + step, count(step) + " species", step, null, countReward(step)));
+
+		int size = species.catchable().size();
+		built.add(new Milestone(COMPLETE_ID, "Complete Log", Math.max(1, size), null,
+			new Reward(null, 0, Rarity.LEGENDARY, false, 0, true)));
 
 		for (Family family : families)
 		{
@@ -201,8 +223,14 @@ final class Milestones
 		}
 
 		built.add(new Milestone(GOLD_SIGILS_ID, "Gold sigils in all " + GOLD_SIGILS_NEEDED + " cities",
-			GOLD_SIGILS_NEEDED, null, new Reward(null, 0, Rarity.EPIC, false, GOLD_SIGILS_SPECIALTY_JARS)));
+			GOLD_SIGILS_NEEDED, null, new Reward(null, 0, Rarity.EPIC, false, GOLD_SIGILS_SPECIALTY_JARS, false)));
 		all = Collections.unmodifiableList(built);
+	}
+
+	/** @return a species count with a thousands separator, such as {@code 1,000} */
+	static String count(int value)
+	{
+		return String.format("%,d", value);
 	}
 
 	private static Reward countReward(int step)
@@ -217,6 +245,10 @@ final class Milestones
 				return new Reward(JarType.DRAGON, 5, Rarity.EPIC, false);
 			case CHARM_STEP:
 				return new Reward(null, 0, null, true);
+			case 750:
+				return new Reward(JarType.DRAGON, 10, Rarity.EPIC, false);
+			case 1000:
+				return new Reward(null, 0, Rarity.LEGENDARY, false, SPECIALTY_STEP_JARS, false);
 			default:
 				return new Reward(JarType.DRAGON, 10, Rarity.LEGENDARY, false);
 		}
@@ -348,14 +380,21 @@ final class Milestones
 		int caught = caughtCount(data);
 		String nextLabel = null;
 		int nextTarget = 0;
+		int size = species.catchable().size();
 		for (int step : SPECIES_STEPS)
 		{
-			if (caught < step)
+			if (step < size && caught < step)
 			{
-				nextLabel = "Next: " + step + " species";
+				nextLabel = "Next: " + count(step) + " species";
 				nextTarget = step;
 				break;
 			}
+		}
+
+		if (nextLabel == null && size > 0 && !data.milestones.contains(COMPLETE_ID) && caught < size)
+		{
+			nextLabel = "Next: complete Log";
+			nextTarget = size;
 		}
 
 		List<MilestoneView.Row> rows = new ArrayList<>();

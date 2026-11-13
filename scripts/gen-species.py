@@ -3,10 +3,18 @@
 
 Run from the repo root: python3 scripts/gen-species.py [dump.tar.gz]
 
+Combat styles (issue #85): a species gets STAB, SLASH, CRUSH, RANGED or MAGIC from the first wiki attack style. The
+ones the wiki does not decide (no style, Melee, Typeless, All, Dragonfire first) take STAB, SLASH or CRUSH from
+scripts/species-melee-style.txt; a line there also wins over the wiki. A species with neither fails the run.
+
+Stats (issue #86): the per-species stat factors live in the "stats" field, written by scripts/gen-species-stats.py,
+which reads species.json and evolutions.json. This script keeps the field of every species it already has.
+
 Quest monsters (issue #50): a species whose every wiki row sits on a page of Category:Quest_monsters (read through the
 MediaWiki API, list=categorymembers) gets "quest": true. scripts/species-quest-add.txt lists names to flag although the
 wiki does not, scripts/species-quest-keep.txt names to keep catchable although it does. The flagged names are written
-to src/test/resources/quest-species.txt so they can be reviewed. A flagged species stays in species.json, so a creature
+to src/test/resources/quest-species.txt so they can be reviewed. examine.json (species key to the wiki's examine line,
+issue #93) is written beside species.json and kept apart from it. A flagged species stays in species.json, so a creature
 already owned keeps its species, but it never turns wild and does not count toward the Creature Log.
 
 The wiki lists the NPC ids of only some of the NPCs that carry a monster's name (the Goblin page lists 43 of about 150;
@@ -26,14 +34,17 @@ import urllib.request
 API = "https://oldschool.runescape.wiki/api.php"
 OUT = "src/main/resources/com/oveduumnakal/gielinorgo/species.json"
 BLOCKLIST = "scripts/species-blocklist.txt"
+MELEE_STYLES = "scripts/species-melee-style.txt"
+MELEE_STYLE_NAMES = ("STAB", "SLASH", "CRUSH")
 QUEST_ADD = "scripts/species-quest-add.txt"
 QUEST_KEEP = "scripts/species-quest-keep.txt"
+EXAMINE_OUT = "src/main/resources/com/oveduumnakal/gielinorgo/examine.json"
 QUEST_LIST = "src/test/resources/quest-species.txt"
 QUEST_CATEGORY = "Category:Quest_monsters"
 UA = "species-data-script/1.0"
 PAGE = 500
 QUERY = ("bucket('infobox_monster').select('page_name','name','combat_level','attack_style','attribute',"
-         "'attack_speed','size','poisonous','slayer_level','id').limit(%d).offset(%d).run()")
+         "'attack_speed','size','poisonous','slayer_level','id','examine').limit(%d).offset(%d).run()")
 
 # NPC ids kept per species: those of every wiki row (variant or version) with its name, the row the species' level and
 # style come from first, so ids()[0] stays the id the portrait and old saves know. Every id needs animations (see
@@ -83,16 +94,39 @@ def page_key(title):
 
 
 def style_of(styles):
-    if isinstance(styles, str):
-        styles = [styles]
+    """Returns STAB, SLASH, CRUSH, RANGED or MAGIC when the first wiki style names one, else None (undecided).
+
+    As before, only the first style listed counts, so a monster listed as Melee, Magic stays a melee monster and gets
+    its style from scripts/species-melee-style.txt.
+    """
+    styles = as_list(styles)
     if not styles:
-        return "MELEE"
+        return None
     first = str(styles[0]).lower()
     if "magic" in first or "spell" in first:
         return "MAGIC"
     if "range" in first or "ranging" in first:
         return "RANGED"
-    return "MELEE"
+    for word in ("stab", "slash", "crush"):
+        if word in first:
+            return word.upper()
+    return None
+
+
+def load_melee_styles(path=MELEE_STYLES):
+    """Returns {lowercase name: STYLE} from scripts/species-melee-style.txt (name = STYLE, # starts a comment)."""
+    found = {}
+    with open(path, encoding="utf-8") as f:
+        for number, line in enumerate(f, 1):
+            line = line.split("#")[0].strip()
+            if not line:
+                continue
+            name, _, style = line.rpartition("=")
+            name, style = name.strip().lower(), style.strip().upper()
+            if style not in MELEE_STYLE_NAMES:
+                raise SystemExit("%s:%d: %r is not STAB, SLASH or CRUSH" % (path, number, style))
+            found[name] = style
+    return found
 
 
 def as_list(value):
@@ -151,6 +185,17 @@ def traits_of(name, row):
     return [t for t in TRAIT_ORDER if t in found]
 
 
+def examine_of(row):
+    """The first non-empty examine line of a wiki row, without wiki markup, or an empty string."""
+    for value in as_list(row.get("examine")):
+        text = re.sub(r"<[^>]*>", "", str(value or ""))
+        text = re.sub(r"\[\[(?:[^|\]]*\|)?([^\]]*)\]\]", r"\1", text)
+        text = re.sub(r"\s+", " ", text).strip()
+        if text:
+            return text
+    return ""
+
+
 def clean_name(name):
     name = re.sub(r"<[^>]*>", "", name or "")
     name = re.sub(r"\[\[(?:[^|\]]*\|)?([^\]]*)\]\]", r"\1", name)
@@ -159,7 +204,7 @@ def clean_name(name):
     return name
 
 
-def record(entry):
+def record(entry, stats=None):
     name, level, style, traits, ids = entry[:5]
     data = {"name": name, "level": level, "style": style}
     if traits:
@@ -168,7 +213,21 @@ def record(entry):
         data["ids"] = ids
     if len(entry) > 5 and entry[5]:
         data["quest"] = True
+    if stats:
+        data["stats"] = stats
     return data
+
+
+def kept_stats(path=OUT):
+    """Returns {lowercase name: [h, a, d, s]} from the current species.json, so a regenerated file keeps its stats.
+
+    gen-species-stats.py writes the stats; run it again after this script when the wiki rows or levels changed.
+    """
+    try:
+        with open(path, encoding="utf-8") as f:
+            return {d["name"].lower(): d["stats"] for d in json.load(f) if d.get("stats")}
+    except (OSError, ValueError, KeyError):
+        return {}
 
 
 NPC_DEF = re.compile(r"(?:^|/)npc_defs/(\d+)\.json$")
@@ -194,6 +253,57 @@ def load_blocklist(path=BLOCKLIST):
     with open(path, encoding="utf-8") as f:
         lines = [line.split("#")[0].strip().lower() for line in f]
     return {line for line in lines if line}
+
+
+def resolve_styles(entries):
+    """Gives every species its style from the wiki, or from the melee style file where the wiki has none.
+
+    A line in the file also wins over the wiki (the generator prints each such override). A species with no wiki style
+    and no line fails the run.
+    """
+    chosen = load_melee_styles()
+    missing = [e[0] for e in entries if e[2] is None and e[0].lower() not in chosen]
+    if missing:
+        print("species-melee-style.txt has no line for %d species:" % len(missing), file=sys.stderr)
+        print("\n".join(missing), file=sys.stderr)
+        raise SystemExit("nothing written")
+    known = {e[0].lower() for e in entries}
+    unknown = sorted(set(chosen) - known)
+    if unknown:
+        print("species-melee-style.txt names no known species (ignored):", unknown)
+    for e in entries:
+        if e[2] is not None and e[0].lower() in chosen and chosen[e[0].lower()] != e[2]:
+            print("override: %s is %s on the wiki, %s here" % (e[0], e[2], chosen[e[0].lower()]))
+    return [(e[0], e[1], chosen.get(e[0].lower(), e[2])) + e[3:] for e in entries]
+
+
+def usable_rows(rows, blocked_names, blocked=None):
+    """Yields (key, name, page, level, row) for every wiki row that can describe a species.
+
+    Variants from special pages (minigames, unused, historical) inflate levels, so when a name has rows on its own main
+    page, only those rows are used. gen-species-stats.py picks the same rows, so a species' stats and its level come
+    from one row.
+    """
+    main_names = {clean_name(r.get("name")).lower() for r in rows
+                  if clean_name(r.get("name")).lower() == clean_name(r.get("page_name")).lower()}
+    for row in rows:
+        name = clean_name(row.get("name") or row.get("page_name"))
+        page = clean_name(row.get("page_name")).lower()
+        if name.lower() in blocked_names or page in blocked_names:
+            if blocked is not None:
+                blocked.add(name.lower() if name.lower() in blocked_names else page)
+            continue
+        if name.lower() in main_names and page != name.lower():
+            continue
+        if re.search(r"\((unused|historical)", row.get("page_name") or "", re.I):
+            continue
+        try:
+            level = int(row.get("combat_level"))
+        except (TypeError, ValueError):
+            continue
+        if not name or level < 1 or any(c in name for c in "[]{}<>|()"):
+            continue
+        yield name.lower(), name, page, level, row
 
 
 def is_quest(key, row_pages, quest_titles, quest_add, quest_keep):
@@ -222,30 +332,14 @@ def main():
         rows.extend(page)
         offset += PAGE
         time.sleep(1)
-    # Variants from special pages (minigames, unused, historical) inflate levels, so when a
-    # name has rows on its own main page, only those rows are used.
-    main_names = {clean_name(r.get("name")).lower() for r in rows
-                  if clean_name(r.get("name")).lower() == clean_name(r.get("page_name")).lower()}
     best = {}
-    for row in rows:
-        name = clean_name(row.get("name") or row.get("page_name"))
-        page = clean_name(row.get("page_name")).lower()
-        if name.lower() in blocked_names or page in blocked_names:
-            blocked.add(name.lower() if name.lower() in blocked_names else page)
-            continue
-        if name.lower() in main_names and page != name.lower():
-            continue
-        if re.search(r"\((unused|historical)", row.get("page_name") or "", re.I):
-            continue
-        try:
-            level = int(row.get("combat_level"))
-        except (TypeError, ValueError):
-            continue
-        if not name or level < 1 or any(c in name for c in "[]{}<>|()"):
-            continue
-        key = name.lower()
+    examines = {}
+    for key, name, page, level, row in usable_rows(rows, blocked_names, blocked):
         row_pages.setdefault(key, set()).add(page_key(row.get("page_name")))
         row_ids = ids_of(row)
+        examine = examine_of(row)
+        if examine and (key not in best or level > best[key][1] or key not in examines):
+            examines[key] = examine
         if key not in best or level > best[key][1]:
             kept = best[key][4] if key in best else []
             best[key] = (name, level, style_of(row.get("attack_style")), traits_of(name, row),
@@ -253,23 +347,32 @@ def main():
         else:
             best[key] = best[key][:4] + (merge_ids(best[key][4], row_ids),)
     entries = sorted(best.values(), key=lambda e: e[0].lower())
+    entries = resolve_styles(entries)
     entries = [e + (is_quest(e[0].lower(), row_pages, quest_titles, quest_add, quest_keep),) for e in entries]
     if len(sys.argv) > 1:
         extra = dump_ids(sys.argv[1])
         entries = [e[:4] + (merge_ids(e[4], extra.get(e[0].lower(), [])),) + e[5:] for e in entries]
     entries = [e[:4] + (e[4][:MAX_IDS],) + e[5:] for e in entries]
+    stats = kept_stats()
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("[\n")
-        f.write(",\n".join(json.dumps(record(e), separators=(",", ":"), ensure_ascii=False) for e in entries))
+        f.write(",\n".join(json.dumps(record(e, stats.get(e[0].lower())), separators=(",", ":"), ensure_ascii=False) for e in entries))
         f.write("\n]\n")
+    with open(EXAMINE_OUT, "w", encoding="utf-8") as f:
+        f.write("{\n")
+        f.write(",\n".join(json.dumps(e[0].lower(), ensure_ascii=False) + ":" + json.dumps(
+            examines[e[0].lower()], ensure_ascii=False) for e in entries if e[0].lower() in examines))
+        f.write("\n}\n")
     quest = [e[0] for e in entries if e[5]]
     with open(QUEST_LIST, "w", encoding="utf-8") as f:
         f.write("# Species flagged quest-only by gen-species.py (see scripts/species-quest-*.txt). Generated.\n")
         f.write("".join(name + "\n" for name in quest))
     print("quest species:", len(quest))
     print("species:", len(entries))
-    for s in ("MELEE", "RANGED", "MAGIC"):
-        print(s, sum(1 for e in entries if e[2] == s))
+    print("with examine:", sum(1 for e in entries if e[0].lower() in examines))
+    for s in ("STAB", "SLASH", "CRUSH", "RANGED", "MAGIC"):
+        print(s, sum(1 for e in entries if e[2] == s), "(catchable:", sum(1 for e in entries if e[2] == s and not e[5]) , ")")
+    print("from the melee style file:", sum(1 for e in entries if e[0].lower() in load_melee_styles()))
     for t in TRAIT_ORDER:
         print(t, sum(1 for e in entries if t in e[3]))
     print("with ids", sum(1 for e in entries if e[4]))

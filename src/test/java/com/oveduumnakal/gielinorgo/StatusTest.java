@@ -18,9 +18,9 @@ import static org.junit.Assert.assertTrue;
 /** Checks the five statuses on a fighter, one block each, without a battle around them. */
 public class StatusTest
 {
-	private static final Species PLAIN = new Species("Plain", 20, CombatType.MELEE);
-	private static final Species SPIDER = new Species("Spider", 20, CombatType.MELEE, Trait.POISONOUS);
-	private static final Species IMP = new Species("Imp", 20, CombatType.MELEE, Trait.FIERY);
+	private static final Species PLAIN = new Species("Plain", 20, CombatType.STAB);
+	private static final Species SPIDER = new Species("Spider", 20, CombatType.STAB, Trait.POISONOUS);
+	private static final Species IMP = new Species("Imp", 20, CombatType.STAB, Trait.FIERY);
 
 	private static Combatant plain()
 	{
@@ -67,7 +67,7 @@ public class StatusTest
 		Combatant fresh = plain();
 		Combatant target = plain();
 		burned.afflict(Status.BURN, new Random(1));
-		Move melee = Move.basic(CombatType.MELEE);
+		Move melee = Move.basic(CombatType.STAB);
 		Move magic = Move.basic(CombatType.MAGIC);
 
 		int cut = BattleSim.damage(burned, melee, target, new Random(7));

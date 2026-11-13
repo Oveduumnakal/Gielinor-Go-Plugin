@@ -24,11 +24,11 @@ import static org.junit.Assert.assertTrue;
 /** Plays the later features through the game service: gilded creatures, eggs, evolution and City Champions. */
 public class GoGameExtrasTest
 {
-	private static final Species IMP = new Species("Imp", 7, CombatType.MELEE);
-	private static final Species LESSER = new Species("Lesser demon", 94, CombatType.MELEE);
-	private static final Species GREATER = new Species("Greater demon", 113, CombatType.MELEE);
-	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.MELEE);
-	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
+	private static final Species IMP = new Species("Imp", 7, CombatType.STAB);
+	private static final Species LESSER = new Species("Lesser demon", 94, CombatType.STAB);
+	private static final Species GREATER = new Species("Greater demon", 113, CombatType.STAB);
+	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.STAB);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.STAB);
 
 	private final List<String> messages = new ArrayList<>();
 	private final List<Notice> notices = new ArrayList<>();

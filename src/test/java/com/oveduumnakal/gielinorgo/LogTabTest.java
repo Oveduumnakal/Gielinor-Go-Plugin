@@ -24,8 +24,8 @@ public class LogTabTest
 	@Test
 	public void theTodaySectionAndTheFeaturedFilterWork()
 	{
-		SpeciesTable table = new SpeciesTable(Arrays.asList(new Species("Rat", 1, CombatType.MELEE),
-			new Species("Goblin", 13, CombatType.MELEE), new Species("Dragon", 300, CombatType.MELEE)));
+		SpeciesTable table = new SpeciesTable(Arrays.asList(new Species("Rat", 1, CombatType.STAB),
+			new Species("Goblin", 13, CombatType.STAB), new Species("Dragon", 300, CombatType.STAB)));
 		GoGame game = new GoGame(table, new Random(1), () -> 0L, notice ->
 		{
 		});

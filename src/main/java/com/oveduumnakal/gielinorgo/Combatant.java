@@ -86,11 +86,24 @@ final class Combatant
 		this.type = species.style();
 		this.moves = Collections.singletonList(Move.basic(species.style()));
 		this.level = level;
-		this.maxHp = (int) Math.round((20 + 2.0 * level + tier * level / 2.0) * rolls.factor(Stat.HEALTH));
-		this.attack = (int) Math.round((5 + level / 2.0 + tier * level / 8.0) * rolls.factor(Stat.ATTACK));
-		this.defence = (int) Math.round((5 + level / 2.0 + tier * level / 10.0) * rolls.factor(Stat.DEFENCE));
-		this.speed = (int) Math.round((5 + level / 2) * rolls.factor(Stat.SPEED));
+		this.maxHp = scaled(20 + 2.0 * level + tier * level / 2.0, Stat.HEALTH, rolls);
+		this.attack = scaled(5 + level / 2.0 + tier * level / 8.0, Stat.ATTACK, rolls);
+		this.defence = scaled(5 + level / 2.0 + tier * level / 10.0, Stat.DEFENCE, rolls);
+		this.speed = scaled(5 + level / 2, Stat.SPEED, rolls);
 		this.hp = maxHp * Math.max(0.0, Math.min(1.0, hpFraction));
+	}
+
+	/**
+	 * Applies the species' factor, then the creature's rolls and temperament, to a stat the level formula gave.
+	 *
+	 * @param base the stat from the species level and the creature level
+	 * @param stat which stat it is
+	 * @param rolls the creature's rolls and temperament
+	 * @return the stat, rounded
+	 */
+	private int scaled(double base, Stat stat, StatRolls rolls)
+	{
+		return (int) Math.round(base * species.factor(stat) * rolls.factor(stat));
 	}
 
 	/** @return the name the battle lines use: the species name, or a nickname */

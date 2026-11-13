@@ -83,7 +83,7 @@ enum ProjectileLook
 	 */
 	static ProjectileLook of(CombatType style, boolean special, boolean icy)
 	{
-		if (style == null || style == CombatType.MELEE)
+		if (style == null || style.melee())
 			return null;
 
 		if (special)

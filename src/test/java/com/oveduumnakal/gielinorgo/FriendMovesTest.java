@@ -26,16 +26,16 @@ public class FriendMovesTest
 {
 	private static final long ANN = 11L;
 	private static final long BOB = 22L;
-	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
-	private static final Species IMP = new Species("Imp", 7, CombatType.MELEE);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.STAB);
+	private static final Species IMP = new Species("Imp", 7, CombatType.STAB);
 	private static final String MOVES = "{\"moves\":["
-		+ "{\"id\":\"bite\",\"name\":\"Bite\",\"style\":\"MELEE\",\"power\":1.0,\"accuracy\":1.0},"
-		+ "{\"id\":\"claw\",\"name\":\"Claw\",\"style\":\"MELEE\",\"power\":1.3,\"accuracy\":0.9},"
+		+ "{\"id\":\"bite\",\"name\":\"Bite\",\"style\":\"STAB\",\"power\":1.0,\"accuracy\":1.0},"
+		+ "{\"id\":\"claw\",\"name\":\"Claw\",\"style\":\"STAB\",\"power\":1.3,\"accuracy\":0.9},"
 		+ "{\"id\":\"fire\",\"name\":\"Fire\",\"style\":\"MAGIC\",\"power\":1.6,\"accuracy\":0.8,\"slot\":\"SECOND\"},"
 		+ "{\"id\":\"inferno\",\"name\":\"Inferno\",\"style\":\"MAGIC\",\"power\":2.2,\"accuracy\":0.7,"
 		+ "\"slot\":\"SECOND\"}],"
-		+ "\"defaults\":{\"MELEE\":\"all\"},"
-		+ "\"pools\":{\"all\":{\"styles\":[\"MELEE\"],"
+		+ "\"defaults\":{\"STAB\":\"all\"},"
+		+ "\"pools\":{\"all\":{\"styles\":[\"STAB\"],"
 		+ "\"learns\":[[\"bite\",1],[\"claw\",10],[\"fire\",20],[\"inferno\",40]]}},"
 		+ "\"species\":{}}";
 
@@ -102,7 +102,7 @@ public class FriendMovesTest
 		assertEquals(1, hello.moves().length);
 		assertArrayEquals(new String[] {"bite", "fire", "claw"}, hello.moves()[0]);
 		assertEquals(GielinorGoPartyMessage.PROTOCOL, hello.version());
-		assertEquals(5, GielinorGoPartyMessage.PROTOCOL);
+		assertEquals(7, GielinorGoPartyMessage.PROTOCOL);
 	}
 
 	@Test

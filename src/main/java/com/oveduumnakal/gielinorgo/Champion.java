@@ -52,6 +52,7 @@ final class Champion
 	private List<Member> team;
 	private String jar;
 	private int jars;
+	private int rivalBattle;
 
 	/** Used by Gson. */
 	Champion()
@@ -72,6 +73,35 @@ final class Champion
 		this.jars = jars;
 	}
 
+	/**
+	 * Makes the rival's team for one battle, fought like a champion's.
+	 *
+	 * @param name the rival's name
+	 * @param battle which of the rival's battles this is, counted from 1
+	 * @param team the rival's creatures, in order
+	 * @param jar the jar a first win pays
+	 * @param jars how many of them
+	 * @return the rival as a champion with no city
+	 */
+	static Champion rival(String name, int battle, List<Member> team, JarType jar, int jars)
+	{
+		Champion rival = new Champion(RivalRules.ID, name, 0, 0, 0, 0, team, jar, jars);
+		rival.rivalBattle = battle;
+		return rival;
+	}
+
+	/** @return whether this is the rival rather than a City Champion */
+	boolean rival()
+	{
+		return rivalBattle > 0;
+	}
+
+	/** @return which of the rival's battles this is, counted from 1, or 0 for any other champion */
+	int rivalBattle()
+	{
+		return rivalBattle;
+	}
+
 	/** @return the key this champion is saved under */
 	String id()
 	{
@@ -84,10 +114,10 @@ final class Champion
 		return city;
 	}
 
-	/** @return the champion's title, such as {@code Champion of Lumbridge} */
+	/** @return the champion's title, such as {@code Champion of Lumbridge}; the rival's name for the rival */
 	String title()
 	{
-		return "Champion of " + city;
+		return rival() ? city : "Champion of " + city;
 	}
 
 	/** @return the creatures the champion sends out, in order */

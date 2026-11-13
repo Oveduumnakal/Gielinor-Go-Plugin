@@ -22,11 +22,11 @@ import static org.junit.Assert.fail;
 /** Checks moves in the turn engine: power, accuracy, the choice of a move, the pick and the order of random draws. */
 public class MoveBattleTest
 {
-	private static final Species FIGHTER = new Species("Fighter", 20, CombatType.MELEE);
-	private static final Species DUMMY = new Species("Dummy", 20, CombatType.MELEE);
-	private static final Move WEAK = new Move("weak", "Weak", CombatType.MELEE, 1.0, 1.0);
-	private static final Move STRONG = new Move("strong", "Strong", CombatType.MELEE, 2.0, 1.0);
-	private static final Move SHAKY = new Move("shaky", "Shaky", CombatType.MELEE, 2.0, 0.5);
+	private static final Species FIGHTER = new Species("Fighter", 20, CombatType.STAB);
+	private static final Species DUMMY = new Species("Dummy", 20, CombatType.STAB);
+	private static final Move WEAK = new Move("weak", "Weak", CombatType.STAB, 1.0, 1.0);
+	private static final Move STRONG = new Move("strong", "Strong", CombatType.STAB, 2.0, 1.0);
+	private static final Move SHAKY = new Move("shaky", "Shaky", CombatType.STAB, 2.0, 0.5);
 
 	/** A random source that returns scripted doubles first and counts every draw. */
 	private static final class Scripted extends Random

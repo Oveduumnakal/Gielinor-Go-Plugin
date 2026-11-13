@@ -68,7 +68,8 @@ final class MilestoneStrip extends JPanel
 		view = milestones;
 		boolean any = milestones.nextLabel() != null;
 		next.setText(any ? milestones.nextLabel() : "All species milestones reached");
-		count.setText(any ? milestones.nextCurrent() + " / " + milestones.nextTarget() : "");
+		String total = Milestones.count(milestones.nextTarget());
+		count.setText(any ? Milestones.count(milestones.nextCurrent()) + " / " + total : "");
 		bar.set(any ? (double) milestones.nextCurrent() / milestones.nextTarget() : 1.0,
 			ColorScheme.PROGRESS_COMPLETE_COLOR);
 		setVisible(!milestones.rows().isEmpty());
@@ -119,7 +120,7 @@ final class MilestoneStrip extends JPanel
 		box.setAlignmentX(Component.LEFT_ALIGNMENT);
 		JLabel title = PanelUi.label(tick + row.label(), FontManager.getRunescapeSmallFont(),
 			color);
-		JLabel counts = PanelUi.caption(row.current() + " / " + row.target());
+		JLabel counts = PanelUi.caption(Milestones.count(row.current()) + " / " + Milestones.count(row.target()));
 		BarComponent progress = new BarComponent(color, ROW_BAR_HEIGHT);
 		progress.setTrack(ColorScheme.DARKER_GRAY_COLOR);
 		progress.set((double) row.current() / Math.max(1, row.target()), color);

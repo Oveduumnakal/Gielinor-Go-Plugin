@@ -26,9 +26,9 @@ public class BossEggTest
 	private static final long ANN = 11L;
 	private static final long BOB = 22L;
 
-	private static final Species IMP = new Species("Imp", 7, CombatType.MELEE);
-	private static final Species VORKATH = new Species("Vorkath", 732, CombatType.MELEE);
-	private static final Species MOLE = new Species("Giant Mole", 230, CombatType.MELEE);
+	private static final Species IMP = new Species("Imp", 7, CombatType.STAB);
+	private static final Species VORKATH = new Species("Vorkath", 732, CombatType.STAB);
+	private static final Species MOLE = new Species("Giant Mole", 230, CombatType.STAB);
 
 	private final SpeciesTable table = new SpeciesTable(Arrays.asList(IMP, VORKATH, MOLE));
 	private final List<String> told = new ArrayList<>();
@@ -269,7 +269,7 @@ public class BossEggTest
 		GielinorGoPartyMessage old = gson.fromJson(wire, GielinorGoPartyMessage.class);
 		old.setMemberId(ANN);
 
-		assertEquals(5, GielinorGoPartyMessage.PROTOCOL);
+		assertEquals(7, GielinorGoPartyMessage.PROTOCOL);
 		assertFalse(bob.receive(old, BOB, "Ann"));
 		assertEquals("", bob.offerFrom(ANN));
 		assertEquals("Ann runs a different version of Gielinor Go", bobTold.get(bobTold.size() - 1));

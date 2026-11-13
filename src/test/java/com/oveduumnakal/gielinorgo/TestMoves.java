@@ -14,7 +14,7 @@ import com.google.gson.Gson;
 final class TestMoves
 {
 	/** A plain bite. */
-	static final Move BITE = new Move("bite", "Bite", CombatType.MELEE, 1.0, 1.0);
+	static final Move BITE = new Move("bite", "Bite", CombatType.STAB, 1.0, 1.0);
 
 	/** A fire breath, which plays the second animation. */
 	static final Move DRAGONFIRE = new Move("dragonfire", "Dragonfire", CombatType.MAGIC, 1.6, 0.9)
@@ -56,7 +56,7 @@ final class TestMoves
 	 */
 	static Move causing(String id, Status status, double chance)
 	{
-		String json = "{\"id\":\"" + id + "\",\"name\":\"" + id + "\",\"style\":\"MELEE\",\"power\":1.0,"
+		String json = "{\"id\":\"" + id + "\",\"name\":\"" + id + "\",\"style\":\"STAB\",\"power\":1.0,"
 			+ "\"accuracy\":1.0,\"effect\":{\"status\":\"" + status.name() + "\",\"chance\":" + chance + "}}";
 		return new Gson().fromJson(json, Move.class);
 	}

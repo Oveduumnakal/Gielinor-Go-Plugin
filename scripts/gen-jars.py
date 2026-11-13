@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draws the 15 capture-jar pictures that Gielinor Go shows in the panel and beside jar finds.
+"""Draws the 17 capture-jar pictures that Gielinor Go shows in the panel and beside jar finds.
 
 Run from the repository root (needs Pillow):
 
@@ -141,11 +141,24 @@ def wave(d):
         line(d, pts, 2.6, WHITE)
 
 
-def sword(d):
-    polygon(d, [(16, 9.5), (18.6, 12.5), (18.6, 21.5), (13.4, 21.5), (13.4, 12.5)], WHITE)
-    d.rounded_rectangle(px(10, 21.5, 22, 23.8), radius=0.8 * SCALE, fill=WHITE)
-    d.rectangle(px(14.8, 23.8, 17.2, 27.5), fill=WHITE)
-    disc(d, 16, 28, 1.5, WHITE)
+def dagger(d):
+    polygon(d, [(16, 9), (17.8, 13), (17.8, 21), (14.2, 21), (14.2, 13)], WHITE)
+    d.rounded_rectangle(px(11.5, 21, 20.5, 22.8), radius=0.8 * SCALE, fill=WHITE)
+    d.rectangle(px(15, 22.8, 17, 27), fill=WHITE)
+    disc(d, 16, 27.6, 1.3, WHITE)
+
+
+def scimitar(d):
+    polygon(d, [(21.5, 9.5), (22.5, 15), (20, 20), (16.5, 22.5), (14, 22), (17.5, 19), (19.5, 14.5)], WHITE)
+    d.rounded_rectangle(px(10, 20.5, 17, 22.3), radius=0.8 * SCALE, fill=WHITE)
+    line(d, [(12.8, 22), (10.5, 27.5)], 2.0, WHITE)
+
+
+def mace(d):
+    line(d, [(16, 17), (16, 28)], 2.2, WHITE)
+    disc(d, 16, 14, 4.6, WHITE)
+    for dx, dy in ((0, -6.6), (6.2, -2.4), (-6.2, -2.4), (4.6, 4.2), (-4.6, 4.2)):
+        disc(d, 16 + dx * 0.9, 14 + dy * 0.9, 1.4, WHITE)
 
 
 def arrow(d):
@@ -177,7 +190,9 @@ JARS = [
     ("ember", DARK_LID, (225, 95, 25, 235), flame, None),
     ("giant", DARK_LID, (150, 150, 40, 235), footprint, None),
     ("tide", DARK_LID, (40, 105, 210, 235), wave, None),
-    ("warrior", DARK_LID, (190, 55, 55, 235), sword, None),
+    ("stab", DARK_LID, (200, 70, 120, 235), dagger, None),
+    ("slash", DARK_LID, (190, 55, 55, 235), scimitar, None),
+    ("crush", DARK_LID, (215, 125, 45, 235), mace, None),
     ("archer", DARK_LID, (30, 140, 118, 235), arrow, None),
     ("mystic", DARK_LID, (140, 80, 200, 235), rune, None),
 ]
@@ -191,7 +206,7 @@ def make(entry):
 def contact_sheet(images, path):
     """Writes every jar at 32 px, at 16 px, and the 16 px version enlarged 4x so it can be inspected."""
     cell_w, cell_h = 100, 120
-    sheet = Image.new("RGBA", (cell_w * 5, cell_h * 3), PANEL)
+    sheet = Image.new("RGBA", (cell_w * 5, cell_h * 4), PANEL)
     font = ImageFont.load_default()
     d = ImageDraw.Draw(sheet)
     for i, (name, image) in enumerate(images):

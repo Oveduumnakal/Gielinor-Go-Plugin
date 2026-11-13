@@ -72,6 +72,19 @@ A Creature Log, daily tasks and daily events give you goals.
   aside. (#84)
 - **Starter creatures.** New players pick an Imp, a Gnome Archer or a Wizard at level 5; the Gnome Archer starts a
   new evolution line. (#83)
+- **Richer Log entries.** Click a species in the Creature Log for its examine text, evolution line and how many
+  you caught; right-click it to open its wiki page. (#93)
+- **Log rewards and titles.** The Creature Log pays at 750 species, 1,000 and a complete Log, which earns the
+  Master Collector title; with Grand Champion you pick which one the header shows. (#88)
+- **Evolutions by night or underground.** Some creatures evolve only at night or in a cave, and the Rat and Wolf
+  lines branch. (#99)
+- **Five combat styles.** Melee splits into Stab, Slash and Crush, each with its own jar from Attack, Strength or
+  Defence XP. (#85)
+- **Species stats.** Every species has its own health, attack, defence and speed from the real monster, within 25%,
+  and evolving never lowers one. (#86)
+- **A rival.** Bryn takes the starter that beats yours and challenges you five times from the Battle tab. (#95)
+- **Bond.** Your lead earns hearts as it walks and wins with you: a heart on its name tag, and up to 5% more XP.
+  (#96)
 - **Champion rematches.** After the Elite clear each City Champion fights again with six creatures at levels 80 to 99,
   for a gold sigil and a daily reward. (#97)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

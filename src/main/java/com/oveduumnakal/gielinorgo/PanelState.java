@@ -34,6 +34,9 @@ final class PanelState
 	private final BattleView battle;
 	private MilestoneView milestones = MilestoneView.NONE;
 	private EliteView elite = EliteView.NONE;
+	private RivalView rival = RivalView.NONE;
+	private String shownTitle;
+	private List<String> titles = Collections.emptyList();
 	private String resetSummary = "";
 	private List<StarterView> starters = Collections.emptyList();
 	private final Map<ItemType, Integer> items;
@@ -135,7 +138,8 @@ final class PanelState
 			team, storage, log, caughtSpecies, seenSpecies, eggs, champions, today, tasks, items, waiting);
 		copy.resetSummary = resetSummary;
 		copy.starters = starters;
-		return copy.withGoals(milestones, elite);
+		copy.rival = rival;
+		return copy.withGoals(milestones, elite).withTitle(shownTitle, titles);
 	}
 
 	/**
@@ -160,6 +164,24 @@ final class PanelState
 	{
 		this.starters = Collections.unmodifiableList(new ArrayList<>(offer));
 		return this;
+	}
+
+	/**
+	 * Adds the rival card, to a state that is still being built.
+	 *
+	 * @param card what the rival card shows
+	 * @return this state
+	 */
+	PanelState withRival(RivalView card)
+	{
+		this.rival = card;
+		return this;
+	}
+
+	/** @return what the rival card on the Battle tab shows */
+	RivalView rival()
+	{
+		return rival;
 	}
 
 	/** @return the starter creatures on offer to a new player; empty when none is */
@@ -287,6 +309,32 @@ final class PanelState
 		this.milestones = milestoneView;
 		this.elite = eliteView;
 		return this;
+	}
+
+	/**
+	 * Sets the titles for the header.
+	 *
+	 * @param shown the title the header shows, or null for none
+	 * @param earned every title earned, in order
+	 * @return this snapshot
+	 */
+	PanelState withTitle(String shown, List<String> earned)
+	{
+		this.shownTitle = shown;
+		this.titles = Collections.unmodifiableList(new ArrayList<>(earned));
+		return this;
+	}
+
+	/** @return the title the header shows, a {@code GoGame.TITLE_} constant, or null when none is earned */
+	String shownTitle()
+	{
+		return shownTitle;
+	}
+
+	/** @return every title earned, in order, so the header can switch between them */
+	List<String> titles()
+	{
+		return titles;
 	}
 
 	/** @return the Elite challenge card for the Battle tab */

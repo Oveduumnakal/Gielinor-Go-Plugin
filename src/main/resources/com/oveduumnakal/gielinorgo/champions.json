@@ -1,10 +1,10 @@
 [
 {"id":"lumbridge","city":"Lumbridge","minX":3201,"minY":3200,"maxX":3260,"maxY":3250,"team":[{"species":"Goblin","level":4},{"species":"Cow","level":5},{"species":"Giant rat","level":6}],"jar":"IRON","jars":2},
-{"id":"draynor-village","city":"Draynor Village","minX":3072,"minY":3230,"maxX":3112,"maxY":3280,"team":[{"species":"Mugger","level":9},{"species":"Dark wizard","level":10},{"species":"Count Draynor","level":12}],"jar":"IRON","jars":3},
-{"id":"al-kharid","city":"Al Kharid","minX":3262,"minY":3150,"maxX":3325,"maxY":3200,"team":[{"species":"Al Kharid warrior","level":14},{"species":"Scorpion","level":16},{"species":"Ugthanki","level":18}],"jar":"IRON","jars":3},
+{"id":"draynor-village","city":"Draynor Village","minX":3072,"minY":3230,"maxX":3112,"maxY":3280,"team":[{"species":"Highwayman","level":9},{"species":"Dark wizard","level":10},{"species":"Count Draynor","level":12}],"jar":"IRON","jars":3},
+{"id":"al-kharid","city":"Al Kharid","minX":3262,"minY":3150,"maxX":3325,"maxY":3200,"team":[{"species":"Al Kharid warrior","level":14},{"species":"Scorpion","level":16},{"species":"Desert Lizard","level":18}],"jar":"IRON","jars":3},
 {"id":"varrock","city":"Varrock","minX":3175,"minY":3380,"maxX":3270,"maxY":3470,"team":[{"species":"Guard","level":22},{"species":"Dark wizard","level":24},{"species":"Black Knight","level":26}],"jar":"RUNE","jars":3},
 {"id":"falador","city":"Falador","minX":2935,"minY":3335,"maxX":3030,"maxY":3400,"team":[{"species":"White Knight","level":32},{"species":"Dwarf","level":34},{"species":"Black Knight","level":36}],"jar":"RUNE","jars":4},
-{"id":"east-ardougne","city":"East Ardougne","minX":2560,"minY":3265,"maxX":2690,"maxY":3340,"team":[{"species":"Knight of Ardougne","level":44},{"species":"Paladin","level":46},{"species":"Hero","level":48}],"jar":"RUNE","jars":4},
+{"id":"east-ardougne","city":"East Ardougne","minX":2560,"minY":3265,"maxX":2690,"maxY":3340,"team":[{"species":"Knight of Ardougne","level":44},{"species":"Paladin","level":46},{"species":"Skeleton hero","level":48}],"jar":"RUNE","jars":4},
 {"id":"seers-village","city":"Seers' Village","minX":2690,"minY":3455,"maxX":2740,"maxY":3510,"team":[{"species":"Hobgoblin","level":56},{"species":"Moss giant","level":58},{"species":"Ice giant","level":60}],"jar":"DRAGON","jars":4},
-{"id":"yanille","city":"Yanille","minX":2540,"minY":3070,"maxX":2625,"maxY":3110,"team":[{"species":"Ogre","level":66},{"species":"Zogre","level":69},{"species":"Ogre shaman","level":72}],"jar":"DRAGON","jars":5}
+{"id":"yanille","city":"Yanille","minX":2540,"minY":3070,"maxX":2625,"maxY":3110,"team":[{"species":"Jogre Champion","level":66},{"species":"Zogre","level":69},{"species":"Ogre shaman","level":72}],"jar":"DRAGON","jars":5}
 ]

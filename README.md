@@ -56,7 +56,7 @@ Then replace this comment with:
 
 - **Specialty jars**
 
-  Eleven more jars turn up while skilling, each much better on one kind of creature: Mining finds Cave jars for
+  Thirteen more jars turn up while skilling, each much better on one kind of creature: Mining finds Cave jars for
   creatures underground, Prayer finds Blessed jars for undead and demons, and so on.
 
 <!--
@@ -91,7 +91,8 @@ Then replace this comment with:
 - **Every creature is one of a kind**
 
   Each creature rolls hidden bonuses for health, attack, defence and speed, and one of ten temperaments. The best
-  are rated Strong or Exceptional. You can give any of them a nickname.
+  are rated Strong or Exceptional. Each species also has its own strengths, from the real monster (Tough, Fast, ...).
+  You can give any of them a nickname.
 
 - **Moves and evolutions**
 
@@ -130,7 +131,7 @@ Then replace this comment with:
 
 - **Styles and status effects**
 
-  Melee beats Ranged, Ranged beats Magic, and Magic beats Melee. Some moves poison, burn, freeze or stun.
+  Five styles (Stab, Slash, Crush, Ranged, Magic), each strong against two and weak against two. Some moves poison, burn, freeze or stun.
 
 - **Choose your own turns**
 
@@ -179,6 +180,10 @@ Then replace this comment with:
 
   Hold all eight sigils, then fight five trainers back to back with no resting to earn the title **Grand
   Champion**.
+
+- **A rival**
+
+  Bryn picks the starter that beats yours and challenges you five times as you earn sigils, from the Battle tab.
 
 - **Daily events**
 

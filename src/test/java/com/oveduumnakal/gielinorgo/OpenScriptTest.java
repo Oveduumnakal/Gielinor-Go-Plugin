@@ -21,9 +21,9 @@ import static org.junit.Assert.assertTrue;
 /** Checks the script of a team battle the player steers: it waits, takes turns, and turns each one into entries. */
 public class OpenScriptTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 	private static final Species ARCHER = new Species("Archer", 13, CombatType.RANGED);
-	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.STAB);
 
 	private static List<TeamScript.Kind> kinds(List<TeamScript.Entry> entries)
 	{

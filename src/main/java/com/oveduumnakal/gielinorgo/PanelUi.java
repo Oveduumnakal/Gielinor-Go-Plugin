@@ -203,6 +203,17 @@ final class PanelUi
 	}
 
 	/**
+	 * Words the bond line of a creature's tooltip.
+	 *
+	 * @param view the creature
+	 * @return a line break and the bond line, or an empty string while it has no hearts
+	 */
+	static String tooltipBond(CreatureView view)
+	{
+		return view.hearts() > 0 ? "<br>" + BondRules.describe(view.hearts()) : "";
+	}
+
+	/**
 	 * Picks the colour of a rating word.
 	 *
 	 * @param rating the rating
@@ -227,6 +238,21 @@ final class PanelUi
 	{
 		return view.rating().label() + " \u00b7 " + view.temperamentLabel() + ": " + view.temperamentEffect()
 			+ "<br>" + view.rollsNetLines();
+	}
+
+	/**
+	 * Says what a creature's species is good or bad at, for its tooltip.
+	 *
+	 * @param view the creature
+	 * @return HTML lines starting with a line break, or an empty text when the species is not known
+	 */
+	static String tooltipSpecies(CreatureView view)
+	{
+		if (view.speciesFactors().isEmpty())
+			return "";
+
+		String words = view.speciesWords();
+		return "<br>Species: " + (words.isEmpty() ? "all-round" : words) + " (" + view.speciesFactors() + ")";
 	}
 
 	/**

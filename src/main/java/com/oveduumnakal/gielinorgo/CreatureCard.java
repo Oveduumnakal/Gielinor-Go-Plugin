@@ -50,6 +50,8 @@ final class CreatureCard extends JPanel
 	private final JLabel style = PanelUi.caption("");
 	private final JLabel badge = PanelUi.label("", FontManager.getRunescapeSmallFont(), ColorScheme.BRAND_ORANGE);
 	private final JLabel newMove = PanelUi.label("New move", FontManager.getRunescapeSmallFont(), PanelUi.GOLD);
+	private final BondHearts bond = new BondHearts();
+	private final JLabel waiting = PanelUi.label("", FontManager.getRunescapeSmallFont(), XP_COLOR);
 	private final BarComponent hp = new BarComponent(ColorScheme.PROGRESS_COMPLETE_COLOR, HP_BAR_HEIGHT);
 	private final BarComponent xp = new BarComponent(XP_COLOR, XP_BAR_HEIGHT);
 	private Map<ItemType, Integer> items = Collections.emptyMap();
@@ -73,7 +75,9 @@ final class CreatureCard extends JPanel
 		text.add(PanelUi.sides(name, level));
 		text.add(Box.createVerticalStrut(1));
 		text.add(PanelUi.sides(style, badge));
+		text.add(bond);
 		text.add(newMove);
+		text.add(waiting);
 		text.add(Box.createVerticalStrut(5));
 		text.add(hp);
 		text.add(Box.createVerticalStrut(2));
@@ -84,6 +88,8 @@ final class CreatureCard extends JPanel
 			((JComponent) child).setAlignmentX(Component.LEFT_ALIGNMENT);
 
 		newMove.setVisible(false);
+		bond.setVisible(false);
+		waiting.setVisible(false);
 		newMove.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		newMove.addMouseListener(new MouseAdapter()
 		{
@@ -117,6 +123,14 @@ final class CreatureCard extends JPanel
 		});
 	}
 
+	private static String xpHint(CreatureView view)
+	{
+		if (view.evolvesWhen() != null)
+			return view.evolvesWhen();
+
+		return Math.round(view.xpProgress() * 100) + "% to level " + Math.min(XpRules.MAX_LEVEL, view.level() + 1);
+	}
+
 	/**
 	 * Shows a creature on this card.
 	 *
@@ -131,11 +145,16 @@ final class CreatureCard extends JPanel
 		name.setText(PanelUi.displayName(view));
 		name.setForeground(PanelUi.nameColor(view));
 		level.setText("Lv " + view.level());
-		style.setText(view.type().label() + " \u00b7 " + view.temperamentLabel());
+		style.setText(view.type().label() + (view.speciesWord().isEmpty() ? "" : " \u00b7 " + view.speciesWord())
+			+ " \u00b7 " + view.temperamentLabel());
 		showBadge(view, isLead);
+		bond.set(view.hearts());
+		bond.setVisible(view.hearts() > 0);
 		newMove.setVisible(!view.pending().isEmpty());
 		newMove.setToolTipText(view.pending().isEmpty() ? null : "Wants to learn "
 			+ view.pending().get(0).name() + ". Click to choose.");
+		waiting.setVisible(view.evolvesWhen() != null);
+		waiting.setText(view.evolvesWhen() == null ? "" : view.evolvesWhen());
 		hp.set(view.hpFraction(), hpColor(view.hpFraction()));
 		xp.set(view.xpProgress(), XP_COLOR);
 		Color stripe = isLead ? ColorScheme.BRAND_ORANGE : ColorScheme.DARKER_GRAY_COLOR;
@@ -143,11 +162,13 @@ final class CreatureCard extends JPanel
 			BorderFactory.createMatteBorder(0, STRIPE, 0, 0, view.gilded() ? PanelUi.GOLD : stripe),
 			BorderFactory.createEmptyBorder(6, 6, 7, 8)));
 		setCursor(Cursor.getPredefinedCursor(isLead ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR));
-		setToolTipText("<html>" + PanelUi.tooltipName(view) + "<br>" + PanelUi.tooltipRolls(view) + "<br>Health "
+		setToolTipText("<html>" + PanelUi.tooltipName(view) + PanelUi.tooltipSpecies(view) + "<br>"
+			+ PanelUi.tooltipRolls(view) + "<br>Health "
 			+ Math.round(view.hpFraction() * 100) + "%<br>"
-			+ Math.round(view.xpProgress() * 100) + "% to level " + Math.min(XpRules.MAX_LEVEL, view.level() + 1)
+			+ xpHint(view)
 			+ "<br>" + (isLead ? "Your lead: fights battles and trains twice as fast" : "Click to make lead")
-			+ "<br>" + view.type().matchup() + PanelUi.tooltipMoves(view) + "<br>Right-click for more</html>");
+			+ "<br>" + view.type().matchup() + PanelUi.tooltipBond(view)
+			+ PanelUi.tooltipMoves(view) + "<br>Right-click for more</html>");
 		String wanted = PortraitSource.cacheKey(view.name(), view.npcId());
 		if (wanted.equals(portraitOf))
 			return;

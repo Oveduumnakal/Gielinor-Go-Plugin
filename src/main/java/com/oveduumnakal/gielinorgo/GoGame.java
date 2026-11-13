@@ -5,10 +5,13 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -26,6 +29,12 @@ import java.util.function.Supplier;
  */
 final class GoGame
 {
+	/** The title for clearing the Elite challenge. */
+	static final String TITLE_GRAND_CHAMPION = "GRAND_CHAMPION";
+
+	/** The title for a complete Creature Log. */
+	static final String TITLE_MASTER_COLLECTOR = "MASTER_COLLECTOR";
+
 	/** Tiles the player walks to find one Bronze jar. */
 	static final int TILES_PER_JAR = 150;
 
@@ -109,6 +118,8 @@ final class GoGame
 
 	private final SpeciesTable species;
 	private final EvolutionTable evolutions;
+	private Conditions conditions = Conditions.NONE;
+	private ExamineTable examine = ExamineTable.empty();
 	private final ChampionTable champions;
 	private RematchTable rematches = RematchTable.empty();
 	private final Random random;
@@ -138,9 +149,12 @@ final class GoGame
 	private Milestones milestoneTable = Milestones.NONE;
 	private boolean milestonesDue;
 	private boolean walking;
+	private Creature bondLead;
+	private int bondTiles;
 	private BossTable bossTable = BossTable.empty();
 	private final Set<String> bossEggsWaiting = new LinkedHashSet<>();
 	private EliteTable elite = EliteTable.empty();
+	private RivalTable rivals = RivalTable.empty();
 	private EliteRun run;
 	private boolean atGuild;
 	private boolean bankNear;
@@ -180,6 +194,17 @@ final class GoGame
 		this.random = random;
 		this.clock = clock;
 		this.notices = notices;
+	}
+
+	/**
+	 * Sets the examine lines the Creature Log shows.
+	 *
+	 * @param table the wiki's examine line for each species
+	 */
+	void examine(ExamineTable table)
+	{
+		this.examine = table;
+		this.log = null;
 	}
 
 	/**
@@ -276,6 +301,9 @@ final class GoGame
 		settleMoves(picked);
 		keep(picked);
 		recordOwned(picked);
+		if (data.rival == null && RivalRules.counterOf(picked.species) != null)
+			data.rival = new RivalProgress(RivalRules.counterOf(picked.species));
+
 		tell(nameOf(picked) + " joined your team", Tone.GOOD);
 		String rating = ratingNote(picked);
 		if (!rating.isEmpty())
@@ -471,6 +499,7 @@ final class GoGame
 			return;
 
 		payTasks(startTasks().walked(tiles));
+		walkWithLead(tiles);
 		data.stepProgress += tiles;
 		dirty = true;
 		while (data.stepProgress >= TILES_PER_JAR)
@@ -505,6 +534,48 @@ final class GoGame
 	}
 
 	/**
+	 * Gives the lead a bond point for every {@link BondRules#TILES_PER_POINT} tiles walked. The part of a point
+	 * walked so far is kept in memory only, and starts again when another creature takes the lead.
+	 *
+	 * @param tiles tiles walked since the last call
+	 */
+	private void walkWithLead(int tiles)
+	{
+		Creature lead = data.lead();
+		if (lead != bondLead)
+		{
+			bondLead = lead;
+			bondTiles = 0;
+		}
+
+		if (lead == null)
+			return;
+
+		bondTiles += tiles;
+		int points = bondTiles / BondRules.TILES_PER_POINT;
+		bondTiles -= points * BondRules.TILES_PER_POINT;
+		addBond(lead, points);
+	}
+
+	/**
+	 * Adds bond points to a creature, and tells the player when that earns a heart.
+	 *
+	 * @param creature the creature
+	 * @param points the points to add; nothing happens for 0 or less
+	 */
+	private void addBond(Creature creature, int points)
+	{
+		if (creature == null || points <= 0)
+			return;
+
+		int before = BondRules.hearts(creature.bond);
+		creature.bond = (int) Math.min(Integer.MAX_VALUE, (long) creature.bond + points);
+		dirty = true;
+		if (BondRules.hearts(creature.bond) > before)
+			tell(nameOf(creature) + "'s bond grew", Tone.GOOD);
+	}
+
+	/**
 	 * Records where the player is standing, so the game knows which City Champion can be challenged.
 	 *
 	 * @param x world x
@@ -523,6 +594,33 @@ final class GoGame
 			return guildChanged;
 
 		cityId = id;
+		return true;
+	}
+
+	/**
+	 * Tells the game what the world is like, so evolutions with a condition can fire. Call it every tick; nothing
+	 * happens unless something changed. A team creature that has its level and now meets the condition evolves on
+	 * the spot. Creatures in Storage do not evolve.
+	 *
+	 * @param now whether it is night and whether the player is underground
+	 * @return true when the conditions changed, so the panel needs a refresh
+	 */
+	boolean setConditions(Conditions now)
+	{
+		if (now.equals(conditions))
+			return false;
+
+		conditions = now;
+		boolean evolved = false;
+		for (Creature creature : new ArrayList<>(data.team))
+			evolved |= evolveIfReady(creature);
+
+		if (evolved)
+		{
+			dirty = true;
+			cues.accept(Cue.EVOLVE);
+		}
+
 		return true;
 	}
 
@@ -567,11 +665,11 @@ final class GoGame
 		if (eliteBusy())
 			return null;
 
-		Champion champion = champions.byId(championId);
+		Champion champion = foe(championId);
 		if (champion == null)
 			return null;
 
-		if (!champion.id().equals(cityId))
+		if (!champion.rival() && !champion.id().equals(cityId))
 		{
 			tell("Go to " + champion.city() + " to challenge its champion", Tone.BAD);
 			return null;
@@ -616,23 +714,11 @@ final class GoGame
 
 		dirty = true;
 		List<BattleLine> lines = new ArrayList<>();
-		lines.add(new BattleLine(openingText(champion, again), Tone.INFO, true));
+		lines.add(openingLine(champion, again));
 		lines.addAll(fought.lines());
+		lines.addAll(verdictLines(champion, fought.won()));
 		if (fought.won())
-		{
-			lines.add(new BattleLine("You beat the " + champion.title() + "!", Tone.GOOD, true));
-			if (again)
-				rewardRematchWin(foe);
-			else
-				rewardChampionWin(champion);
-
-			payTasks(startTasks().battleWon());
-			payTasks(startTasks().championBeaten());
-		}
-		else
-		{
-			lines.add(new BattleLine("The " + champion.title() + " won. Rest and try again", Tone.BAD, true));
-		}
+			payChampionWin(foe, again);
 
 		return new TeamBattleResult(fought.won(), lines, fought.duels())
 			.withLeadFirst(fighters.get(0) == data.lead());
@@ -936,11 +1022,11 @@ final class GoGame
 		if (eliteBusy())
 			return null;
 
-		Champion champion = champions.byId(championId);
+		Champion champion = foe(championId);
 		if (champion == null)
 			return null;
 
-		if (!champion.id().equals(cityId))
+		if (!champion.rival() && !champion.id().equals(cityId))
 		{
 			tell("Go to " + champion.city() + " to challenge its champion", Tone.BAD);
 			return null;
@@ -961,8 +1047,7 @@ final class GoGame
 			theirs.add(foeOf(species.find(member.species()), member.level()));
 
 		BattleState state = new BattleState(mine, theirs, random, BattleState.Mode.CHAMPION);
-		BattleLine opening = new BattleLine(openingText(champion, again), Tone.INFO, true);
-		BattleSession session = new BattleSession(state, fighters, null, foe, opening);
+		BattleSession session = new BattleSession(state, fighters, null, foe, openingLine(champion, again));
 		return again ? session.rematch() : session;
 	}
 
@@ -1099,12 +1184,7 @@ final class GoGame
 			return Collections.singletonList(BattleSim.closing(state.mine(), state.foe(), won));
 		}
 
-		String title = session.champion().title();
-		if (won)
-			return Collections.singletonList(new BattleLine("You beat the " + title + "!", Tone.GOOD, true));
-
-		return Collections.singletonList(new BattleLine("The " + title + " won. Rest and try again", Tone.BAD,
-			true));
+		return verdictLines(session.champion(), won);
 	}
 
 	/**
@@ -1225,15 +1305,7 @@ final class GoGame
 		}
 
 		if (status == TurnResult.Status.WON)
-		{
-			if (session.isRematch())
-				rewardRematchWin(session.champion());
-			else
-				rewardChampionWin(session.champion());
-
-			payTasks(startTasks().battleWon());
-			payTasks(startTasks().championBeaten());
-		}
+			payChampionWin(session.champion(), session.isRematch());
 
 		dirty = true;
 	}
@@ -1600,7 +1672,9 @@ final class GoGame
 			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get(), tasks, itemCounts())
 			.withGoals(milestoneTable.progress(data), eliteView())
 			.withResetSummary(resetSummary())
-			.withStarters(starterOffer());
+			.withRival(rivalView())
+			.withStarters(starterOffer())
+			.withTitle(shownTitle(), titles());
 	}
 
 	/** @return how many caught species count toward the Log: known ones that are not quest-only */
@@ -1734,7 +1808,7 @@ final class GoGame
 	private boolean evolveIfReady(Creature creature)
 	{
 		boolean evolved = false;
-		EvolutionTable.Step step = evolutions.next(creature.species);
+		EvolutionTable.Step step = evolutions.next(creature.species, conditions);
 		for (int i = 0; i < MAX_EVOLUTIONS_AT_ONCE && step != null && creature.level() >= step.level(); i++)
 		{
 			Species grown = species.find(step.to());
@@ -1745,11 +1819,185 @@ final class GoGame
 			recordOwned(creature);
 			tell(before + " evolved into " + grown.name() + "!", Tone.GOOD);
 			evolved = true;
-			step = evolutions.next(creature.species);
+			step = evolutions.next(creature.species, conditions);
 		}
 
 		settleMilestones();
 		return evolved;
+	}
+
+	/**
+	 * Pays a won champion battle: the champion's or the rival's reward and the tasks it finishes.
+	 *
+	 * @param champion the champion or rival that was beaten, as fought: with the rematch team for a rematch
+	 * @param rematch whether the battle was a City Champion rematch
+	 */
+	private void payChampionWin(Champion champion, boolean rematch)
+	{
+		if (champion.rival())
+		{
+			rewardRivalWin(champion);
+			payTasks(startTasks().battleWon());
+			return;
+		}
+
+		if (rematch)
+			rewardRematchWin(champion);
+		else
+			rewardChampionWin(champion);
+
+		payTasks(startTasks().battleWon());
+		payTasks(startTasks().championBeaten());
+	}
+
+	/**
+	 * Finds who a challenge is against.
+	 *
+	 * @param id a City Champion's id, or {@link RivalRules#ID} for the rival
+	 * @return the champion; the rival with the team for the next battle; or null when there is none, in which case
+	 *     the player is told why for the rival
+	 */
+	private Champion foe(String id)
+	{
+		if (!RivalRules.ID.equals(id))
+			return champions.byId(id);
+
+		if (!rivals.available())
+			return null;
+
+		int won = data.rival == null ? 0 : data.rival.won;
+		if (won >= RivalRules.BATTLES)
+		{
+			tell(rivals.name() + " has nothing left to prove", Tone.INFO);
+			return null;
+		}
+
+		if (RivalRules.unlocked(data.sigils.size(), data.eliteClears) <= won)
+		{
+			tell(RivalRules.requirement(won + 1) + " to meet " + rivals.name() + " again", Tone.BAD);
+			return null;
+		}
+
+		List<Champion.Member> team = rivals.team(rivalStarter(), won + 1);
+		if (team.isEmpty())
+			return null;
+
+		return Champion.rival(rivals.name(), won + 1, team, bestUnlockedJar(), RivalRules.jars(won + 1));
+	}
+
+	/**
+	 * Fixes the rival's starter when it is first needed and gives it.
+	 *
+	 * @return the species key of the rival's starter
+	 */
+	private String rivalStarter()
+	{
+		if (data.rival == null)
+		{
+			Creature lead = data.lead();
+			Species leading = lead == null ? null : species.find(lead.species);
+			data.rival = new RivalProgress(RivalRules.starterAgainst(leading, species));
+			dirty = true;
+		}
+
+		return data.rival.starter;
+	}
+
+	private BattleLine openingLine(Champion champion, boolean rematch)
+	{
+		if (champion.rival())
+			return new BattleLine(champion.title() + ": \"" + rivals.before(champion.rivalBattle()) + "\"",
+				Tone.INFO, true);
+
+		return new BattleLine((rematch ? "Rematch with the " : "Challenging the ") + champion.title() + "!",
+			Tone.INFO, true);
+	}
+
+	private List<BattleLine> verdictLines(Champion champion, boolean won)
+	{
+		String title = champion.title();
+		if (champion.rival())
+		{
+			if (!won)
+				return Collections.singletonList(new BattleLine(title + " won. Rest and try again", Tone.BAD, true));
+
+			return Arrays.asList(new BattleLine("You beat " + title + "!", Tone.GOOD, true),
+				new BattleLine(title + ": \"" + rivals.after(champion.rivalBattle()) + "\"", Tone.INFO, true));
+		}
+
+		if (won)
+			return Collections.singletonList(new BattleLine("You beat the " + title + "!", Tone.GOOD, true));
+
+		return Collections.singletonList(new BattleLine("The " + title + " won. Rest and try again", Tone.BAD, true));
+	}
+
+	/**
+	 * Pays the first win of one of the rival's battles: team XP, jars of the best tier, an egg and trainer XP. A
+	 * battle already won pays nothing, and none can be won out of order.
+	 *
+	 * @param champion the rival's team that was beaten
+	 */
+	private void rewardRivalWin(Champion champion)
+	{
+		data.battlesWon++;
+		int battle = champion.rivalBattle();
+		if (data.rival == null || data.rival.won >= battle)
+			return;
+
+		data.rival.won = battle;
+		long creatureXp = 0;
+		for (Champion.Member member : champion.team())
+			creatureXp += 20L + 5L * member.level();
+
+		shareXp(creatureXp);
+		tell(champion.title() + " is beaten (" + battle + " of " + RivalRules.BATTLES + ")", Tone.FIND);
+		data.addJars(champion.rewardJar(), champion.rewardJars());
+		tell(foundJars(champion.rewardJar(), champion.rewardJars(), "rival"), Tone.FIND, champion.rewardJar());
+		tell(eggOrJars(RivalRules.egg(battle)), Tone.FIND);
+		addTrainerXp(50L + 10L * champion.topLevel());
+	}
+
+	/** @return what the rival card on the Battle tab shows */
+	private RivalView rivalView()
+	{
+		if (!rivals.available())
+			return RivalView.NONE;
+
+		String name = rivals.name();
+		int won = data.rival == null ? 0 : data.rival.won;
+		if (won >= RivalRules.BATTLES)
+			return new RivalView(RivalView.Mode.BEATEN, name, RivalRules.BATTLES, rivals.after(RivalRules.BATTLES),
+				null, null, "Beaten. " + name + " has nothing left to prove", null);
+
+		int battle = won + 1;
+		String line = won == 0 ? null : rivals.after(won);
+		if (RivalRules.unlocked(data.sigils.size(), data.eliteClears) <= won)
+			return new RivalView(RivalView.Mode.LOCKED, name, battle, line, null, null,
+				RivalRules.requirement(battle) + " to meet " + name + (won == 0 ? "" : " again"), null);
+
+		List<Champion.Member> members = rivals.team(rivalStarter(), battle);
+		if (members.isEmpty())
+			return RivalView.NONE;
+
+		List<String> team = new ArrayList<>();
+		for (Champion.Member member : members)
+			team.add(species.find(member.species()).name() + " " + member.level());
+
+		JarType jar = bestUnlockedJar();
+		String reward = RivalRules.jars(battle) + " " + jar.label() + " jars, a " + RivalRules.egg(battle).label()
+			+ " egg";
+		return new RivalView(RivalView.Mode.READY, name, battle, rivals.before(battle), String.join(", ", team),
+			reward, "Ready to fight anywhere", jar);
+	}
+
+	/**
+	 * Sets the rival. Without this call there is none.
+	 *
+	 * @param table the rival's name, lines and teams
+	 */
+	void rival(RivalTable table)
+	{
+		rivals = table == null ? RivalTable.empty() : table;
 	}
 
 	/**
@@ -1767,6 +2015,7 @@ final class GoGame
 			creatureXp += 20L + 5L * member.level();
 
 		shareXp(first ? creatureXp : creatureXp / 2);
+		addBond(data.lead(), BondRules.CHAMPION_POINTS);
 		if (!first)
 			return;
 
@@ -1800,11 +2049,6 @@ final class GoGame
 	private boolean rematchOpen(Champion champion)
 	{
 		return data.eliteClears >= 1 && !rematches.teamOf(champion.id()).isEmpty();
-	}
-
-	private static String openingText(Champion champion, boolean rematch)
-	{
-		return (rematch ? "Rematch with the " : "Challenging the ") + champion.title() + "!";
 	}
 
 	/**
@@ -1998,6 +2242,9 @@ final class GoGame
 			if (reward.charm())
 				parts.add("Gilded charm: gilded odds doubled");
 
+			if (reward.title())
+				parts.add("Title: Master Collector");
+
 			String line = "Milestone: " + milestone.label() + "! " + String.join(", ", parts);
 			if (reward.jar() == null)
 				tell(line, Tone.FIND);
@@ -2007,6 +2254,46 @@ final class GoGame
 
 		if (paid)
 			cues.accept(Cue.MILESTONE);
+	}
+
+	/** @return the titles the player has earned, Grand Champion first and Master Collector second */
+	List<String> titles()
+	{
+		List<String> earned = new ArrayList<>();
+		if (data.eliteClears > 0)
+			earned.add(TITLE_GRAND_CHAMPION);
+
+		if (data.milestones.contains(Milestones.COMPLETE_ID))
+			earned.add(TITLE_MASTER_COLLECTOR);
+
+		return earned;
+	}
+
+	/** @return the title the header shows: the one picked if it is earned, else the newest earned, or null for none */
+	String shownTitle()
+	{
+		List<String> earned = titles();
+		if (earned.isEmpty())
+			return null;
+
+		if (data.title != null && earned.contains(data.title))
+			return data.title;
+
+		return earned.get(earned.size() - 1);
+	}
+
+	/**
+	 * Picks which earned title the header shows. A title that is not earned is ignored.
+	 *
+	 * @param title {@link #TITLE_GRAND_CHAMPION} or {@link #TITLE_MASTER_COLLECTOR}
+	 */
+	void pickTitle(String title)
+	{
+		if (!titles().contains(title))
+			return;
+
+		data.title = title;
+		dirty = true;
 	}
 
 	/**
@@ -2242,6 +2529,7 @@ final class GoGame
 			creatureXp += 20L + 5L * member.level();
 
 		shareXp(data.eliteClears == 0 ? creatureXp : creatureXp / 2);
+		addBond(data.lead(), BondRules.CHAMPION_POINTS);
 		payTasks(startTasks().battleWon());
 	}
 
@@ -2430,7 +2718,11 @@ final class GoGame
 	{
 		data.battlesWon++;
 		int before = lead.level();
-		lead.xp = XpRules.capped(lead.xp + 20L + 5L * entry.level());
+		long won = BondRules.withBonus(20L + 5L * entry.level(), BondRules.hearts(lead.bond));
+		lead.xp = XpRules.capped(lead.xp + won);
+		if (lead == data.lead())
+			addBond(lead, BondRules.WIN_POINTS);
+
 		if (lead.level() > before)
 			tell(nameOf(lead) + " grew to Lv " + lead.level() + "!", Tone.GOOD);
 
@@ -2502,7 +2794,18 @@ final class GoGame
 		for (int i = 0; i < before.length; i++)
 			before[i] = data.team.get(i).level();
 
+		long[] xpBefore = new long[before.length];
+		for (int i = 0; i < before.length; i++)
+			xpBefore[i] = data.team.get(i).xp;
+
 		XpRules.share(data.team, creatureXp);
+		for (int i = 0; i < before.length; i++)
+		{
+			Creature member = data.team.get(i);
+			long gained = member.xp - xpBefore[i];
+			member.xp = XpRules.capped(xpBefore[i] + BondRules.withBonus(gained, BondRules.hearts(member.bond)));
+		}
+
 		dirty = true;
 		Cue loudest = null;
 		for (int i = 0; i < before.length; i++)
@@ -2785,6 +3088,12 @@ final class GoGame
 		return found == null ? creature.species : found.name();
 	}
 
+	private String waitingText(Creature creature)
+	{
+		EvolutionCondition waiting = evolutions.waitingFor(creature.species, creature.level(), conditions);
+		return waiting == null ? null : waiting.waitingText();
+	}
+
 	private List<CreatureView> views(List<Creature> creatures, long now)
 	{
 		List<CreatureView> views = new ArrayList<>(creatures.size());
@@ -2792,15 +3101,87 @@ final class GoGame
 		{
 			Species found = species.find(creature.species);
 			Rarity rarity = found == null ? Rarity.COMMON : found.rarity();
-			CombatType type = found == null ? CombatType.MELEE : found.style();
+			CombatType type = found == null ? CombatType.CRUSH : found.style();
 			views.add(new CreatureView(speciesNameOf(creature), creature.level(), XpRules.progress(creature.xp),
 				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname,
 				creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId),
 				found == null ? Collections.emptyList() : MoveLearning.known(creature, found, moves),
-				MoveLearning.pending(creature, moves)));
+				MoveLearning.pending(creature, moves), BondRules.hearts(creature.bond), waitingText(creature))
+				.withSpecies(found));
 		}
 
 		return views;
+	}
+
+	private List<LogEntry.Stage> evolutionLine(Species entry)
+	{
+		LinkedList<Species> stages = new LinkedList<>();
+		stages.add(entry);
+		Set<String> visited = new HashSet<>();
+		visited.add(entry.key());
+		EvolutionTable.Step step = evolutions.previous(entry.key());
+		while (step != null)
+		{
+			Species before = species.find(step.from());
+			if (before == null || !visited.add(before.key()))
+				break;
+
+			stages.addFirst(before);
+			step = evolutions.previous(before.key());
+		}
+
+		step = evolutions.next(entry.key());
+		while (step != null)
+		{
+			Species after = species.find(step.to());
+			if (after == null || !visited.add(after.key()))
+				break;
+
+			stages.addLast(after);
+			step = evolutions.next(after.key());
+		}
+
+		if (stages.size() < 2)
+			return Collections.emptyList();
+
+		List<LogEntry.Stage> line = new ArrayList<>(stages.size());
+		Set<String> inLine = new HashSet<>();
+		for (Species stage : stages)
+			inLine.add(stage.key());
+
+		for (Species stage : stages)
+			line.add(stageOf(stage, inLine));
+
+		return line;
+	}
+
+	private boolean knownSpecies(Species stage)
+	{
+		Integer count = data.caught.get(stage.key());
+		return data.seen.contains(stage.key()) || count != null && count > 0;
+	}
+
+	private LogEntry.Stage stageOf(Species stage, Set<String> inLine)
+	{
+		EvolutionTable.Step into = evolutions.previous(stage.key());
+		if (into == null)
+			return new LogEntry.Stage(stage.name(), knownSpecies(stage));
+
+		List<LogEntry.Stage> others = new ArrayList<>();
+		for (EvolutionTable.Step sibling : evolutions.steps(into.from()))
+		{
+			Species other = species.find(sibling.to());
+			if (other != null && !inLine.contains(other.key()))
+				others.add(new LogEntry.Stage(other.name(), knownSpecies(other), conditionOf(sibling),
+					Collections.emptyList()));
+		}
+
+		return new LogEntry.Stage(stage.name(), knownSpecies(stage), conditionOf(into), others);
+	}
+
+	private static String conditionOf(EvolutionTable.Step step)
+	{
+		return step.when() == null ? null : step.when().phrase();
 	}
 
 	private List<LogEntry> log()
@@ -2817,7 +3198,7 @@ final class GoGame
 
 			entries.add(new LogEntry(entry.name(), entry.level(), entry.rarity(), entry.style(),
 				count == null ? 0 : count, data.seen.contains(entry.key()), data.gilded.contains(entry.key()),
-				entry.questOnly()));
+				entry.questOnly(), examine.textFor(entry.key()), evolutionLine(entry)));
 		}
 
 		log = Collections.unmodifiableList(entries);

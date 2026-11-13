@@ -27,8 +27,8 @@ public class FriendTradesTest
 	private static final long ANN = 11L;
 	private static final long BOB = 22L;
 	private static final long CAT = 33L;
-	private static final Species IMP = new Species("Imp", 7, CombatType.MELEE);
-	private static final Species COW = new Species("Cow", 2, CombatType.MELEE);
+	private static final Species IMP = new Species("Imp", 7, CombatType.STAB);
+	private static final Species COW = new Species("Cow", 2, CombatType.STAB);
 
 	private final SpeciesTable table = new SpeciesTable(Arrays.asList(IMP, COW));
 	private final List<GielinorGoPartyMessage> fromAnn = new ArrayList<>();
@@ -58,6 +58,7 @@ public class FriendTradesTest
 		bobGame.tradeLocks(bob);
 		annImp = new Creature("imp", 20, now);
 		annImp.gilded = true;
+		annImp.bond = 4000;
 		annGame.data().team.add(annImp);
 		bobCow = new Creature("cow", 5, now);
 		bobGame.data().team.add(bobCow);
@@ -96,6 +97,7 @@ public class FriendTradesTest
 		assertEquals("imp", bobGot.species);
 		assertEquals(annImp.xp, bobGot.xp);
 		assertTrue("a gilded creature stays gilded", bobGot.gilded);
+		assertEquals("a traded creature arrives with no bond", 0, bobGot.bond);
 		assertTrue(annGame.takeDirty());
 		assertTrue(bobGame.takeDirty());
 		assertTrue(ann.takeTraded());
@@ -890,12 +892,12 @@ public class FriendTradesTest
 	}
 
 	private static final String MOVES = "{\"moves\":["
-		+ "{\"id\":\"a\",\"name\":\"Aa\",\"style\":\"MELEE\",\"power\":1.0,\"accuracy\":1.0},"
-		+ "{\"id\":\"b\",\"name\":\"Bb\",\"style\":\"MELEE\",\"power\":1.3,\"accuracy\":0.9},"
-		+ "{\"id\":\"c\",\"name\":\"Cc\",\"style\":\"MELEE\",\"power\":1.6,\"accuracy\":0.8},"
-		+ "{\"id\":\"d\",\"name\":\"Dd\",\"style\":\"MELEE\",\"power\":2.0,\"accuracy\":0.7}],"
-		+ "\"defaults\":{\"MELEE\":\"all\"},"
-		+ "\"pools\":{\"all\":{\"styles\":[\"MELEE\"],\"learns\":[[\"a\",1],[\"b\",10],[\"c\",20],[\"d\",40]]}},"
+		+ "{\"id\":\"a\",\"name\":\"Aa\",\"style\":\"STAB\",\"power\":1.0,\"accuracy\":1.0},"
+		+ "{\"id\":\"b\",\"name\":\"Bb\",\"style\":\"STAB\",\"power\":1.3,\"accuracy\":0.9},"
+		+ "{\"id\":\"c\",\"name\":\"Cc\",\"style\":\"STAB\",\"power\":1.6,\"accuracy\":0.8},"
+		+ "{\"id\":\"d\",\"name\":\"Dd\",\"style\":\"STAB\",\"power\":2.0,\"accuracy\":0.7}],"
+		+ "\"defaults\":{\"STAB\":\"all\"},"
+		+ "\"pools\":{\"all\":{\"styles\":[\"STAB\"],\"learns\":[[\"a\",1],[\"b\",10],[\"c\",20],[\"d\",40]]}},"
 		+ "\"species\":{}}";
 
 	private void giveBothTheMoves()

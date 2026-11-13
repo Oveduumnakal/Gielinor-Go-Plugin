@@ -39,8 +39,8 @@ public class GoGameRematchTest
 	@Before
 	public void setUp()
 	{
-		species = new SpeciesTable(Arrays.asList(new Species("Mite", 1, CombatType.MELEE),
-			new Species("Titan", 400, CombatType.MELEE)));
+		species = new SpeciesTable(Arrays.asList(new Species("Mite", 1, CombatType.STAB),
+			new Species("Titan", 400, CombatType.STAB)));
 		Champion lumbridge = new Champion("lumbridge", "Lumbridge", 3201, 3200, 3260, 3250,
 			Arrays.asList(new Champion.Member("Mite", 5), new Champion.Member("Mite", 6),
 				new Champion.Member("Mite", 7)), JarType.IRON, 3);
