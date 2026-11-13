@@ -55,4 +55,24 @@ public class SceneReloadTest
 		reload.reset();
 		assertEquals(SceneReload.Step.NONE, reload.next(true));
 	}
+
+	/** A load seen with no objects is used up, so the first object added after it is not dropped and added. */
+	@Test
+	public void aLoadSeenWithNoObjectsIsUsedUp()
+	{
+		SceneReload reload = new SceneReload();
+		reload.loading();
+		assertEquals(SceneReload.Step.NONE, reload.next(true, false));
+		assertEquals(SceneReload.Step.NONE, reload.next(true, true));
+	}
+
+	/** With objects, the sequence is the same as without the flag. */
+	@Test
+	public void objectsStillDropThenAdd()
+	{
+		SceneReload reload = new SceneReload();
+		reload.loading();
+		assertEquals(SceneReload.Step.DROP, reload.next(true, true));
+		assertEquals(SceneReload.Step.ADD, reload.next(true, true));
+	}
 }

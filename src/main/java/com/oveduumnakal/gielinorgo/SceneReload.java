@@ -62,6 +62,24 @@ final class SceneReload
 		return Step.NONE;
 	}
 
+	/**
+	 * Asks what to do on this client tick for a set of objects that may be empty. A load seen while there are no
+	 * objects is used up at once, so an object added later is not taken out and put back for it.
+	 *
+	 * @param playable whether the game is fully logged in, with its scene ready
+	 * @param anyObjects whether there is at least one object to act on
+	 * @return what {@link #next} says when there are objects, else {@link Step#NONE}
+	 */
+	Step next(boolean playable, boolean anyObjects)
+	{
+		Step step = next(playable);
+		if (anyObjects)
+			return step;
+
+		reset();
+		return Step.NONE;
+	}
+
 	/** Forgets any load seen, for when the object is gone for good. */
 	void reset()
 	{
