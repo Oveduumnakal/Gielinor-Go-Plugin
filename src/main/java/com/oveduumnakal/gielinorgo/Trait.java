@@ -18,7 +18,9 @@ enum Trait
 	FIERY("dragons and fiery creatures"),
 	LARGE("large creatures"),
 	AQUATIC("water creatures"),
-	MELEE("melee creatures"),
+	STAB("stabbing creatures"),
+	SLASH("slashing creatures"),
+	CRUSH("crushing creatures"),
 	RANGED("ranged creatures"),
 	MAGIC("magic creatures");
 
@@ -49,6 +51,12 @@ enum Trait
 		if (style == CombatType.MAGIC)
 			return MAGIC;
 
-		return MELEE;
+		if (style == CombatType.STAB)
+			return STAB;
+
+		if (style == CombatType.SLASH)
+			return SLASH;
+
+		return CRUSH;
 	}
 }

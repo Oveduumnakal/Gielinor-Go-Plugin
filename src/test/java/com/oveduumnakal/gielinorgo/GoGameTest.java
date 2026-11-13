@@ -25,9 +25,9 @@ import static org.junit.Assert.assertTrue;
 /** Plays the game through its service class with a fixed seed and a fake clock. */
 public class GoGameTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
-	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.MELEE);
-	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
+	private static final Species CHICKEN = new Species("Chicken", 1, CombatType.STAB);
+	private static final Species DRAGON = new Species("King Black Dragon", 276, CombatType.STAB);
 
 	private final List<String> messages = new ArrayList<>();
 	private long now = 1_000_000L;

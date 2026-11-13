@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 /** Checks that the opening line is kept for the scene but takes no text slot, and that the match-up has a tooltip. */
 public class OpeningLineHiddenTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 
 	private static BattleResult longBattle()
 	{
@@ -76,7 +76,7 @@ public class OpeningLineHiddenTest
 	public void theTextWaitsOneBeatForTheTextlessFaceOff()
 	{
 		BattleTimeline.Step face = new BattleTimeline.Step(BattleTimeline.Beat.FACE_OFF, null);
-		BattleTimeline.Step hit = new BattleTimeline.Step(BattleTimeline.Beat.LEAD_ATTACKS, CombatType.MELEE);
+		BattleTimeline.Step hit = new BattleTimeline.Step(BattleTimeline.Beat.LEAD_ATTACKS, CombatType.STAB);
 		BattleTimeline timeline = new BattleTimeline(Arrays.asList(face, hit), true);
 
 		timeline.tick(true);
@@ -92,8 +92,10 @@ public class OpeningLineHiddenTest
 	@Test
 	public void theStyleSentenceSaysWhatItBeatsAndWhatBeatsIt()
 	{
-		assertEquals("Melee beats Ranged, loses to Magic", CombatType.MELEE.matchup());
-		assertEquals("Ranged beats Magic, loses to Melee", CombatType.RANGED.matchup());
-		assertEquals("Magic beats Melee, loses to Ranged", CombatType.MAGIC.matchup());
+		assertEquals("Stab beats Slash and Ranged, loses to Crush and Magic", CombatType.STAB.matchup());
+		assertEquals("Slash beats Crush and Ranged, loses to Stab and Magic", CombatType.SLASH.matchup());
+		assertEquals("Crush beats Stab and Magic, loses to Slash and Ranged", CombatType.CRUSH.matchup());
+		assertEquals("Ranged beats Crush and Magic, loses to Stab and Slash", CombatType.RANGED.matchup());
+		assertEquals("Magic beats Stab and Slash, loses to Crush and Ranged", CombatType.MAGIC.matchup());
 	}
 }

@@ -24,14 +24,14 @@ public class RulesTest
 	private static final double EPSILON = 0.005;
 
 	@Test
-	public void typeTriangleRunsMeleeRangedMagic()
+	public void theOldTriangleStillHoldsForStabRangedMagic()
 	{
-		assertEquals(CombatType.STRONG, CombatType.MELEE.multiplierAgainst(CombatType.RANGED), 0);
+		assertEquals(CombatType.STRONG, CombatType.STAB.multiplierAgainst(CombatType.RANGED), 0);
 		assertEquals(CombatType.STRONG, CombatType.RANGED.multiplierAgainst(CombatType.MAGIC), 0);
-		assertEquals(CombatType.STRONG, CombatType.MAGIC.multiplierAgainst(CombatType.MELEE), 0);
-		assertEquals(CombatType.WEAK, CombatType.RANGED.multiplierAgainst(CombatType.MELEE), 0);
+		assertEquals(CombatType.STRONG, CombatType.MAGIC.multiplierAgainst(CombatType.STAB), 0);
+		assertEquals(CombatType.WEAK, CombatType.RANGED.multiplierAgainst(CombatType.STAB), 0);
 		assertEquals(CombatType.WEAK, CombatType.MAGIC.multiplierAgainst(CombatType.RANGED), 0);
-		assertEquals(CombatType.WEAK, CombatType.MELEE.multiplierAgainst(CombatType.MAGIC), 0);
+		assertEquals(CombatType.WEAK, CombatType.STAB.multiplierAgainst(CombatType.MAGIC), 0);
 		for (CombatType type : CombatType.values())
 			assertEquals(1.0, type.multiplierAgainst(type), 0);
 	}
@@ -91,8 +91,8 @@ public class RulesTest
 	@Test
 	public void aSpecialtyJarOnlyHelpsOnItsTrait()
 	{
-		Set<Trait> fast = EnumSet.of(Trait.MELEE, Trait.FAST);
-		Set<Trait> plain = EnumSet.of(Trait.MELEE);
+		Set<Trait> fast = EnumSet.of(Trait.STAB, Trait.FAST);
+		Set<Trait> plain = EnumSet.of(Trait.STAB);
 
 		double bronze = CatchRules.chance(JarType.BRONZE, 200, false, plain);
 		assertEquals(bronze, CatchRules.chance(JarType.SWIFT, 200, false, plain), 0);
@@ -147,13 +147,13 @@ public class RulesTest
 		Species spectre = new Species("Aberrant spectre", 96, CombatType.MAGIC, Trait.UNHOLY, Trait.SLAYER);
 
 		assertEquals(EnumSet.of(Trait.MAGIC, Trait.UNHOLY, Trait.SLAYER), spectre.traits());
-		assertEquals(EnumSet.of(Trait.MELEE), new Species("Goblin", 13, null).traits());
+		assertEquals(EnumSet.of(Trait.CRUSH), new Species("Goblin", 13, null).traits());
 	}
 
 	@Test
 	public void aCreatureMetUndergroundGainsTheCaveTrait()
 	{
-		Species goblin = new Species("Goblin", 13, CombatType.MELEE);
+		Species goblin = new Species("Goblin", 13, CombatType.STAB);
 
 		assertFalse(new WildEntry(1, goblin, 4, 13, false).traits().contains(Trait.CAVE));
 		assertTrue(new WildEntry(1, goblin, 4, 13, true).traits().contains(Trait.CAVE));

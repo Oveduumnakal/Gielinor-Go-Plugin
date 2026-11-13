@@ -45,10 +45,10 @@ public class QuestSpeciesTest
 	private static SpeciesTable smallTable()
 	{
 		List<Species> all = new ArrayList<>();
-		all.add(new Species("Quest Beast", 1, CombatType.MELEE).asQuestOnly());
-		all.add(new Species("Plain Beast", 1, CombatType.MELEE));
+		all.add(new Species("Quest Beast", 1, CombatType.STAB).asQuestOnly());
+		all.add(new Species("Plain Beast", 1, CombatType.STAB));
 		for (int i = 0; i < 24; i++)
-			all.add(new Species(String.format("Beast %03d", i), 2 + i, CombatType.MELEE));
+			all.add(new Species(String.format("Beast %03d", i), 2 + i, CombatType.STAB));
 
 		return new SpeciesTable(all);
 	}
@@ -97,7 +97,7 @@ public class QuestSpeciesTest
 	@Test
 	public void aFlaggedSpeciesNeverTurnsWildWhateverTheRoll()
 	{
-		Species quest = new Species("Quest Beast", 40, CombatType.MELEE).asQuestOnly();
+		Species quest = new Species("Quest Beast", 40, CombatType.STAB).asQuestOnly();
 		WildTracker tracker = new WildTracker(new Random(5));
 		for (int i = 0; i < 400; i++)
 		{
@@ -108,7 +108,7 @@ public class QuestSpeciesTest
 			assertTrue(tracker.all().isEmpty());
 		}
 
-		Species plain = new Species("Plain Beast", 40, CombatType.MELEE);
+		Species plain = new Species("Plain Beast", 40, CombatType.STAB);
 		assertNotNull(tracker.offer(999, 7, plain, 40, false, 10_000_000L, 1.0, 1, true));
 	}
 

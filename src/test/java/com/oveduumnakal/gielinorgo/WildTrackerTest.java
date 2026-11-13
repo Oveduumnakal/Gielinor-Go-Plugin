@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 /** Checks when monsters may turn wild: the odds, the cap, the cooldown and the memory of past rolls. */
 public class WildTrackerTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 
 	private static final int ID = 3029;
 
@@ -338,7 +338,7 @@ public class WildTrackerTest
 	@Test
 	public void roamingIsCappedAtLevelNinetyNine()
 	{
-		Species boss = new Species("Boss", 1000, CombatType.MELEE);
+		Species boss = new Species("Boss", 1000, CombatType.STAB);
 		int capped = 0;
 		for (int seed = 0; seed < 2000; seed++)
 		{

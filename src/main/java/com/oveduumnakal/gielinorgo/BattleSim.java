@@ -189,7 +189,7 @@ final class BattleSim
 	{
 		double spread = VARIANCE_FLOOR + VARIANCE_RANGE * random.nextDouble();
 		double raw = attacker.attack() * move.style().multiplierAgainst(defender.type()) * move.power() * spread;
-		if (attacker.status() == Status.BURN && move.style() == CombatType.MELEE)
+		if (attacker.status() == Status.BURN && move.style().melee())
 			raw *= Status.BURN_MELEE;
 
 		return Math.max(1, (int) Math.round(raw - defender.defence() / 2.0));

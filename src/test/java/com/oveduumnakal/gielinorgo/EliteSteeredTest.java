@@ -45,8 +45,8 @@ public class EliteSteeredTest
 	@Before
 	public void setUp()
 	{
-		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Mite", 1, CombatType.MELEE),
-			new Species("Brute", 200, CombatType.MELEE), new Species("Titan", 400, CombatType.MELEE)));
+		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Mite", 1, CombatType.STAB),
+			new Species("Brute", 200, CombatType.STAB), new Species("Titan", 400, CombatType.STAB)));
 		weak = EliteTable.load(new Gson(), new StringReader(json("Mite", 70)), species);
 		game = new GoGame(species, new Random(7), () -> now, notice -> messages.add(notice.text()));
 		game.elite(weak);
@@ -156,8 +156,8 @@ public class EliteSteeredTest
 	@Test
 	public void aLostBattleEndsTheRun()
 	{
-		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Brute", 200, CombatType.MELEE),
-			new Species("Titan", 400, CombatType.MELEE)));
+		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Brute", 200, CombatType.STAB),
+			new Species("Titan", 400, CombatType.STAB)));
 		game.elite(EliteTable.load(new Gson(), new StringReader(json("Titan", 99)), species));
 		BattleSession battle = game.eliteSteered();
 

@@ -62,6 +62,29 @@ Every feature and every number, in detail. For the short version, see the [READM
   you, it shows up as its own **Catch** option with its odds. Every jar has its own small picture, in the jar list on
   the panel, on the champion cards and beside the "Found a ... jar" lines that float over your head.
 
+  The Attack, Strength and Defence skills find their own jars: **Stab** jars (Attack), **Slash** jars (Strength)
+  and **Crush** jars (Defence), each ×2.5 on creatures of that style. A save from before the split turns its old
+  Warrior jars into the three, a third each, with any left over going to Crush.
+
+- **Combat styles**
+
+  Every creature has one of five styles, taken from how the monster really fights on the wiki; monsters the wiki
+  does not give a style (an Imp, a Chompy bird, a Void Flare) have one picked by hand. An attack of the right style
+  does 25% more damage and the wrong one 20% less.
+
+  | Style  | Strong against | Weak against  |
+  |--------|----------------|---------------|
+  | Stab   | Slash, Ranged  | Crush, Magic  |
+  | Slash  | Crush, Ranged  | Stab, Magic   |
+  | Crush  | Stab, Magic    | Slash, Ranged |
+  | Ranged | Crush, Magic   | Stab, Slash   |
+  | Magic  | Stab, Slash    | Crush, Ranged |
+
+  To remember it: Stab and Slash beat Ranged, Ranged beats Magic, Magic beats Stab and Slash. Crush is the odd one
+  out: it beats Magic and falls to Ranged. Among the melee styles, Stab beats Slash, Slash beats Crush and Crush
+  beats Stab. The starters hold the old triangle: Imp (Slash) beats Gnome Archer (Ranged), which beats Wizard
+  (Magic), which beats Imp. Friends on an older version cannot battle or trade with you.
+
 - **Healing items**
 
   Four items help a hurt creature. A **Small salve** restores 25% health and a **Large salve** 60%. A **Revive
@@ -147,7 +170,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Moves**
 
-  Every creature knows up to four moves. A move has a style (Melee, Ranged or Magic), a power (1 is a plain
+  Every creature knows up to four moves. A move has a style (Stab, Slash, Crush, Ranged or Magic), a power (1 is a plain
   attack), an accuracy (a move below 100% can miss and does no damage then) and sometimes an effect. A creature
   starts with the newest four moves its level has unlocked. New moves unlock at set levels: a dragon bites at level
   1, claws at 10, uses Dragonfire at 20 and Inferno at 40, a wizard goes from a strike to a bind to a blast, a spider
@@ -180,8 +203,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   your team that can fight steps in by itself ("Go, Bob!") and the battle goes on; it is lost only when your whole
   team is down. Creatures below a quarter of their health sit out, so when the lead is too tired the first rested
   creature opens. A win pays once and the creature that lands the last blow gets the creature XP. Each hit floats over the creature's
-  head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. Melee beats Ranged, Ranged beats Magic, and Magic beats
-  Melee. A creature's card tooltip reminds you of its style's match-up. There is no opening line: the fight goes
+  head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. There are five styles and each beats two and loses to two (see the chart below). A creature's
+  card tooltip reminds you of its style's match-up. There is no opening line: the fight goes
   straight from the face-off to the first blow. A creature that loses to you is easier to catch. Every attack is one of the creature's moves, and the
   line says which ("Bob uses Dragonfire: -14" or "Bob's Bite missed"); see **Moves** below.
 
@@ -190,7 +213,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   every step of a melee attacker is over open ground. When the lead has no way to get to the wild creature (it
   stands behind a fence), the battle is shown as text and says so once. Each hit plays as an attack by one and a flinch by the
   other, one every 3 game ticks, and the flinch and the floating line come at the same moment of the turn for every
-  attack. A Melee attacker steps up, strikes and steps back. A Ranged or Magic attacker stays where it is and an
+  attack. A Stab, Slash or Crush attacker steps up, strikes and steps back. A Ranged or Magic attacker stays where it is and an
   arrow or a bolt flies from one body to the other, at the height each is drawn at; a dragon steps in to bite but
   stays put to use Dragonfire, and a wyvern uses Icy breath. A move that misses is acted out like a hit, but the
   other creature does not flinch.

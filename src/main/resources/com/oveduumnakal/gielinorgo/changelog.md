@@ -78,4 +78,6 @@ A Creature Log, daily tasks and daily events give you goals.
   Master Collector title; with Grand Champion you pick which one the header shows. (#88)
 - **Evolutions by night or underground.** Some creatures evolve only at night or in a cave, and the Rat and Wolf
   lines branch. (#99)
+- **Five combat styles.** Melee splits into Stab, Slash and Crush, each with its own jar from Attack, Strength or
+  Defence XP. (#85)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

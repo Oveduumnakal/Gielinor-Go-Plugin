@@ -63,17 +63,17 @@ public class DataTest
 		Species demon = table.find("Abyssal demon");
 		Species dragon = table.find("Blue dragon");
 		Species zulrah = table.find("Zulrah");
-		assertEquals(EnumSet.of(Trait.MELEE, Trait.UNHOLY, Trait.SLAYER), demon.traits());
+		assertEquals(EnumSet.of(Trait.STAB, Trait.UNHOLY, Trait.SLAYER), demon.traits());
 		assertTrue(dragon.traits().contains(Trait.FIERY));
 		assertTrue(zulrah.traits().contains(Trait.POISONOUS));
-		assertEquals(EnumSet.of(Trait.MELEE), table.find("Goblin").traits());
+		assertEquals(EnumSet.of(Trait.CRUSH), table.find("Goblin").traits());
 	}
 
 	@Test
 	public void everySpeciesTraitIsOneTheGameKnows()
 	{
-		assertEquals(EnumSet.of(Trait.MELEE), SpeciesTable.load(gson, new StringReader(
-			"[{\"name\":\"Oddity\",\"level\":5,\"style\":\"MELEE\",\"traits\":[\"NOT_A_TRAIT\"]}]"))
+		assertEquals(EnumSet.of(Trait.STAB), SpeciesTable.load(gson, new StringReader(
+			"[{\"name\":\"Oddity\",\"level\":5,\"style\":\"STAB\",\"traits\":[\"NOT_A_TRAIT\"]}]"))
 			.find("Oddity")
 			.traits());
 	}

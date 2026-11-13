@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 /** Checks the words of the on-screen prompt and of the hotkey hints. */
 public class BattlePromptTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 
 	private static BattleView view(boolean forced)
 	{

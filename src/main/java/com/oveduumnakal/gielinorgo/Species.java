@@ -45,10 +45,10 @@ final class Species
 		return level;
 	}
 
-	/** @return the combat style, melee when the data file leaves it out */
+	/** @return the combat style, Crush when the data file leaves it out */
 	CombatType style()
 	{
-		return style == null ? CombatType.MELEE : style;
+		return style == null ? CombatType.CRUSH : style;
 	}
 
 	/**

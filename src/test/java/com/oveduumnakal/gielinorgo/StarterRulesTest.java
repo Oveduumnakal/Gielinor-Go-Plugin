@@ -110,7 +110,7 @@ public class StarterRulesTest
 	@Test
 	public void theStartersAreOneOfEachStyleAndAllExist()
 	{
-		assertEquals(CombatType.MELEE, table.find("Imp").style());
+		assertEquals(CombatType.SLASH, table.find("Imp").style());
 		assertEquals(CombatType.RANGED, table.find("Gnome Archer").style());
 		assertEquals(CombatType.MAGIC, table.find("Wizard").style());
 		for (String name : StarterRules.STARTERS)
@@ -203,7 +203,7 @@ public class StarterRulesTest
 	@Test
 	public void noOfferWhenASpeciesIsMissingAndNoneAfterAReset()
 	{
-		GoGame bare = new GoGame(new SpeciesTable(Arrays.asList(new Species("Imp", 7, CombatType.MELEE))),
+		GoGame bare = new GoGame(new SpeciesTable(Arrays.asList(new Species("Imp", 7, CombatType.SLASH))),
 			new Random(1), () -> now, notice -> messages.add(notice.text()));
 
 		assertTrue(bare.starterOffer().isEmpty());

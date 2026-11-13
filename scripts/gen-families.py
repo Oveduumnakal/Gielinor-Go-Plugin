@@ -22,7 +22,7 @@ DATA = os.path.join(HERE, "..", "src", "main", "resources", "com", "oveduumnakal
 MIN_MEMBERS = 3
 
 FAMILIES = [
-    ("goblins", "Goblins", "WARRIOR", r"\bgoblin\b", None),
+    ("goblins", "Goblins", "CRUSH", r"\bgoblin\b", None),
     ("dragons", "Dragons", "EMBER", r"\bdragon\b", None),
     ("giants", "Giants", "GIANT", r"\b(hill|moss|fire|ice) giant\b|\bgiant champion\b", None),
     ("demons", "Demons", "SLAYER", r"\bdemon\b", r"^demon of "),

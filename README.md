@@ -56,7 +56,7 @@ Then replace this comment with:
 
 - **Specialty jars**
 
-  Eleven more jars turn up while skilling, each much better on one kind of creature: Mining finds Cave jars for
+  Thirteen more jars turn up while skilling, each much better on one kind of creature: Mining finds Cave jars for
   creatures underground, Prayer finds Blessed jars for undead and demons, and so on.
 
 <!--
@@ -130,7 +130,7 @@ Then replace this comment with:
 
 - **Styles and status effects**
 
-  Melee beats Ranged, Ranged beats Magic, and Magic beats Melee. Some moves poison, burn, freeze or stun.
+  Five styles (Stab, Slash, Crush, Ranged, Magic), each strong against two and weak against two. Some moves poison, burn, freeze or stun.
 
 - **Choose your own turns**
 

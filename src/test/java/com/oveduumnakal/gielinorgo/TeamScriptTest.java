@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 /** Checks the order and the length of a team battle's scene, and the duels it is made from. */
 public class TeamScriptTest
 {
-	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.MELEE);
+	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
 	private static final Species ARCHER = new Species("Archer", 13, CombatType.RANGED);
 	private static final int PINNED_3V3_TICKS = 71;
 	private static final int PINNED_6V6_TICKS = 155;
@@ -269,7 +269,7 @@ public class TeamScriptTest
 		{
 			boolean mine = i % 2 == 0;
 			hits.add(new BattleLine("hit " + i, mine ? Tone.GOOD : Tone.BAD, !mine,
-				mine ? BattleLine.Kind.LEAD_HIT : BattleLine.Kind.FOE_HIT, false, CombatType.MELEE, false));
+				mine ? BattleLine.Kind.LEAD_HIT : BattleLine.Kind.FOE_HIT, false, CombatType.STAB, false));
 		}
 
 		return hits;

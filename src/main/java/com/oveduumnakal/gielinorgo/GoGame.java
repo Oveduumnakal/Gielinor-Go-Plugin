@@ -2769,7 +2769,7 @@ final class GoGame
 		{
 			Species found = species.find(creature.species);
 			Rarity rarity = found == null ? Rarity.COMMON : found.rarity();
-			CombatType type = found == null ? CombatType.MELEE : found.style();
+			CombatType type = found == null ? CombatType.CRUSH : found.style();
 			views.add(new CreatureView(speciesNameOf(creature), creature.level(), XpRules.progress(creature.xp),
 				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname,
 				creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId),

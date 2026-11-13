@@ -53,8 +53,8 @@ public class ProjectileLookTest
 	@Test
 	public void aMeleeAttackHasNoProjectile()
 	{
-		assertNull(ProjectileLook.of(CombatType.MELEE, false, false));
-		assertNull(ProjectileLook.of(CombatType.MELEE, true, false));
+		assertNull(ProjectileLook.of(CombatType.STAB, false, false));
+		assertNull(ProjectileLook.of(CombatType.STAB, true, false));
 		assertNull(ProjectileLook.of(null, false, false));
 	}
 

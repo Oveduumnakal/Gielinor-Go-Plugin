@@ -415,6 +415,6 @@ public class GameDataTest
 		assertEquals("dragon", table.poolOf(species.find("Vorkath")));
 		assertEquals("wyvern", table.poolOf(species.find("Spitting Wyvern")));
 		assertEquals("wizard", table.poolOf(species.find("Dark wizard")));
-		assertEquals("default_melee", table.poolOf(species.find("Man")));
+		assertEquals("default_crush", table.poolOf(species.find("Man")));
 	}
 }
