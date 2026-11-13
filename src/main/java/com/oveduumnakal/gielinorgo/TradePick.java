@@ -81,7 +81,8 @@ final class TradePick
 				return false;
 
 			EggView now = eggs.get(index);
-			return now.rarity() == egg.rarity() && now.tilesLeft() <= egg.tilesLeft();
+			return now.rarity() == egg.rarity() && Objects.equals(now.bossName(), egg.bossName())
+				&& now.tilesLeft() <= egg.tilesLeft();
 		}
 
 		List<CreatureView> kept = from == Holding.TEAM ? state.team() : state.storage();
