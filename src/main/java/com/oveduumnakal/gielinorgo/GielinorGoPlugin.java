@@ -154,6 +154,7 @@ public class GielinorGoPlugin extends Plugin
 	private WSClient wsClient;
 
 	private final Random random = new Random();
+	private final CombatWatch combatWatch = new CombatWatch();
 	private final Map<Integer, NPC> candidates = new HashMap<>();
 	private final Map<Skill, Integer> lastXp = new EnumMap<>(Skill.class);
 	private final Map<Skill, Integer> lastLevel = new EnumMap<>(Skill.class);
@@ -544,6 +545,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		ticks++;
+		watchCombat();
 		steering();
 		battleScene();
 		noticeBoard.tick(System.currentTimeMillis());
@@ -1262,6 +1264,40 @@ public class GielinorGoPlugin extends Plugin
 		game.setBankNear(bankSpots.near(point.getX(), point.getY(), point.getPlane()));
 	}
 
+	/**
+	 * Notes whether the player is fighting a real monster this tick: they are interacting with an NPC, or an NPC is
+	 * interacting with them.
+	 */
+	private void watchCombat()
+	{
+		try
+		{
+			Player player = client.getLocalPlayer();
+			WorldView view = client.getTopLevelWorldView();
+			if (player == null || view == null)
+			{
+				combatWatch.reset();
+				return;
+			}
+
+			boolean fighting = player.getInteracting() instanceof NPC;
+			for (NPC npc : view.npcs())
+			{
+				if (fighting)
+					break;
+
+				fighting = npc.getInteracting() == player;
+			}
+
+			if (fighting)
+				combatWatch.noteFighting(System.currentTimeMillis());
+		}
+		catch (RuntimeException e)
+		{
+			log.debug("Gielinor Go: could not tell whether the player is in combat", e);
+		}
+	}
+
 	private void addWildOptions(WildEntry entry)
 	{
 		Species species = entry.species();
@@ -1270,26 +1306,31 @@ public class GielinorGoPlugin extends Plugin
 		String target = entry.prefix() + name + " (Lv " + entry.level() + ")";
 		int wildId = entry.wildId();
 		WildBody body = bodies.get(wildId);
-		boolean withBattle = !entry.battled() && !director.active() && body != null && !body.life().leaving();
+		boolean canBattle = game.canBattle(System.currentTimeMillis());
+		boolean withBattle = !entry.battled() && !director.active() && body != null && !body.life().leaving()
+			&& canBattle;
 		List<WildMenu.Item> items = WildMenu.topFirst(game.jarToThrow(), game.matchingSpecialtyJars(entry),
-			withBattle, WildMenu.leftClickCatches(knockedOut(wildId)));
+			withBattle, WildMenu.leftClickCatches(knockedOut(wildId), canBattle));
+		boolean leftClick = WildMenu.leftClickAllowed(config.leftClickWild(),
+			combatWatch.inCombat(System.currentTimeMillis()));
 		for (int i = items.size() - 1; i >= 0; i--)
 		{
 			WildMenu.Item item = items.get(i);
 			if (item.isCatch())
-				addCatchOption(entry, target, item.jar());
+				addCatchOption(entry, target, item.jar(), leftClick);
 			else
-				addBattleOption(wildId, target);
+				addBattleOption(wildId, target, leftClick);
 		}
 	}
 
-	private void addBattleOption(int wildId, String target)
+	private void addBattleOption(int wildId, String target, boolean leftClick)
 	{
 		client.getMenu()
 			.createMenuEntry(-1)
 			.setOption(WildMenu.BATTLE)
 			.setTarget(target)
 			.setType(MenuAction.RUNELITE)
+			.setDeprioritized(!leftClick)
 			.onClick(clicked -> battle(wildId));
 	}
 
@@ -1299,8 +1340,9 @@ public class GielinorGoPlugin extends Plugin
 	 * @param entry the wild creature
 	 * @param target the coloured creature name and level
 	 * @param jar the jar this option throws, or null when the player has none
+	 * @param leftClick whether the entry may take the left click; false sinks it below the game's own entries
 	 */
-	private void addCatchOption(WildEntry entry, String target, JarType jar)
+	private void addCatchOption(WildEntry entry, String target, JarType jar, boolean leftClick)
 	{
 		int wildId = entry.wildId();
 		String odds = " - no jars";
@@ -1317,6 +1359,7 @@ public class GielinorGoPlugin extends Plugin
 			.setOption(WildMenu.CATCH)
 			.setTarget(target + odds)
 			.setType(MenuAction.RUNELITE)
+			.setDeprioritized(!leftClick)
 			.onClick(clicked -> throwJar(wildId, jar));
 	}
 
