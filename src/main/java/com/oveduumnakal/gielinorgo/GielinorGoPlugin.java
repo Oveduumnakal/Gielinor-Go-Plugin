@@ -1174,7 +1174,7 @@ public class GielinorGoPlugin extends Plugin
 		try
 		{
 			TeamBattleResult result = friends.receive(message, me.getMemberId(), sender, game.data(),
-				config.friendBattles() && !director.active(), config.chooseBattleActions());
+				config.friendBattles() && !director.active(), config.chooseBattleActions(), !director.active());
 			FriendTurnBattle started = friends.takeStarted();
 			if (started != null)
 				beginFriendBattle(started);
@@ -1742,6 +1742,8 @@ public class GielinorGoPlugin extends Plugin
 		if (entry == null || body == null || body.life().leaving() || director.active())
 			return;
 
+		friends.cancelChallenge();
+
 		if (config.chooseBattleActions())
 		{
 			startSteeredBattle(wildId, entry);
@@ -1830,6 +1832,8 @@ public class GielinorGoPlugin extends Plugin
 		if (director.active())
 			return;
 
+		friends.cancelChallenge();
+
 		if (config.chooseBattleActions())
 		{
 			startSteeredChallenge(championId);
@@ -1845,6 +1849,8 @@ public class GielinorGoPlugin extends Plugin
 		if (battleOpen())
 			return;
 
+		friends.cancelChallenge();
+
 		if (config.chooseBattleActions())
 		{
 			startSteeredElite(true);
@@ -1859,6 +1865,8 @@ public class GielinorGoPlugin extends Plugin
 	{
 		if (battleOpen())
 			return;
+
+		friends.cancelChallenge();
 
 		if (config.chooseBattleActions())
 		{

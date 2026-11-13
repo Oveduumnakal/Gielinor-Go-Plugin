@@ -99,6 +99,7 @@ final class FriendBattles
 	private final Consumer<Notice> notices;
 	private final Map<Long, Friend> friends = new LinkedHashMap<>();
 	private Pending pending;
+	private Pending cancelled;
 	private FriendTurnBattle turnBattle;
 	private FriendTurnBattle started;
 	private boolean helloWanted;
@@ -193,6 +194,34 @@ final class FriendBattles
 	}
 
 	/**
+	 * Cancels the challenge this player sent, because another battle is starting. A battle already on is left
+	 * alone. If the friend accepts the cancelled challenge anyway, they are sent a
+	 * {@link GielinorGoPartyMessage#LEAVE} instead of a battle.
+	 */
+	void cancelChallenge()
+	{
+		if (pending == null)
+			return;
+
+		cancelled = pending;
+		pending = null;
+		changed = true;
+	}
+
+	/**
+	 * Tells whether an answer belongs to a challenge that was cancelled and is still within its time.
+	 *
+	 * @param friendId the party member id of the sender
+	 * @param battle the battle id the message names
+	 * @return true when it does
+	 */
+	private boolean cancelledBy(long friendId, long battle)
+	{
+		return cancelled != null && cancelled.friendId == friendId && cancelled.battle == battle
+			&& clock.getAsLong() - cancelled.sentMs <= CHALLENGE_TIMEOUT_MS;
+	}
+
+	/**
 	 * Challenges a friend with the whole team. The battle happens when their answer arrives.
 	 *
 	 * @param friendId the friend's party member id
@@ -281,6 +310,28 @@ final class FriendBattles
 	TeamBattleResult receive(GielinorGoPartyMessage message, long myId, String senderName, SaveData data,
 		boolean accepting, boolean steering)
 	{
+		return receive(message, myId, senderName, data, accepting, steering, true);
+	}
+
+	/**
+	 * Handles a message from another party member, for a player who may be busy with a battle of their own. A friend
+	 * who accepts a challenge to a battle both players choose the turns of, while the player is busy, starts no
+	 * battle: the player is told and the friend is sent a {@link GielinorGoPartyMessage#LEAVE} so their side ends
+	 * too.
+	 *
+	 * @param message the message; nothing in it is trusted
+	 * @param myId this player's party member id
+	 * @param senderName the sender's name, as the party service knows it
+	 * @param data the player's save
+	 * @param accepting whether the player takes battles from friends
+	 * @param steering whether the player has Choose battle actions on
+	 * @param free whether the player can start a battle now; false while another battle is on
+	 * @return the battle the message led to, seen from this player's side, or null when it led to none or to a battle
+	 *     that is played turn by turn
+	 */
+	TeamBattleResult receive(GielinorGoPartyMessage message, long myId, String senderName, SaveData data,
+		boolean accepting, boolean steering, boolean free)
+	{
 		long sender = message.getMemberId();
 		String kind = message.kind();
 		if (kind == null || sender == myId)
@@ -311,6 +362,13 @@ final class FriendBattles
 		if (kind.equals(GielinorGoPartyMessage.CHALLENGE))
 			return challenged(message, senderName, data, accepting, steering);
 
+		if (kind.equals(GielinorGoPartyMessage.ACCEPT) && cancelledBy(sender, message.battle()))
+		{
+			cancelled = null;
+			outbox.accept(GielinorGoPartyMessage.leave(sender, message.battle()));
+			return null;
+		}
+
 		if (pending == null || pending.friendId != sender || pending.battle != message.battle()
 			|| !waiting(clock.getAsLong()))
 			return null;
@@ -331,6 +389,13 @@ final class FriendBattles
 			return null;
 
 		remember(message);
+		if (!free && answered.steered && message.steered())
+		{
+			tell(senderName + " accepted, but you are in a battle", Tone.BAD);
+			outbox.accept(GielinorGoPartyMessage.leave(sender, answered.battle));
+			return null;
+		}
+
 		lastBattleMs = clock.getAsLong();
 		long seed = answered.seed ^ message.seed();
 		if (answered.steered && message.steered())
