@@ -22,6 +22,8 @@ final class BattleSession
 	private final WildEntry entry;
 	private final Champion champion;
 	private final BattleLine opening;
+	private int eliteNumber;
+	private List<BattleLine> verdict = Collections.emptyList();
 
 	/**
 	 * Builds a session.
@@ -42,6 +44,46 @@ final class BattleSession
 		this.startHealth = new double[fighters.size()];
 		for (int i = 0; i < startHealth.length; i++)
 			startHealth[i] = fighter(i).hpFraction();
+	}
+
+	/**
+	 * Marks the battle as one of the open Elite run, against the Elite team held as the champion.
+	 *
+	 * @param number which battle of the run this is, counted from 1
+	 * @return this session
+	 */
+	BattleSession elite(int number)
+	{
+		this.eliteNumber = number;
+		return this;
+	}
+
+	/** @return whether the battle is a battle of the Elite challenge */
+	boolean isElite()
+	{
+		return eliteNumber > 0;
+	}
+
+	/** @return which battle of the Elite run this is, counted from 1, or 0 for any other battle */
+	int eliteNumber()
+	{
+		return eliteNumber;
+	}
+
+	/**
+	 * Keeps the lines that close an Elite battle, written when its result is settled.
+	 *
+	 * @param lines the lines
+	 */
+	void verdict(List<BattleLine> lines)
+	{
+		this.verdict = Collections.unmodifiableList(new ArrayList<>(lines));
+	}
+
+	/** @return the lines that close an Elite battle once it is settled, none before */
+	List<BattleLine> verdict()
+	{
+		return verdict;
 	}
 
 	/** @return the engine */

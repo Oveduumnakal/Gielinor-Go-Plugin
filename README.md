@@ -336,7 +336,14 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   card shows `Elite 3 of 5` with **Continue** and **Forfeit**. While a run is open you cannot change your team or
   battle anything else. Lose a battle, forfeit or log out and the run is over; the next attempt starts at the first
   trainer. You cannot start with a full egg bag (`Free an egg slot first`). The battles are acted out like a City
-  Champion battle and are decided automatically.
+  Champion battle. With **Choose battle actions** off they are decided automatically.
+
+- **Choosing your turns**
+
+  With **Choose battle actions** on, every Elite battle waits for you each turn, as a City Champion battle does:
+  Attack, Switch or use an item such as a salve. There is no catching. **Run**, walking far away or logging out
+  during a battle loses it, and the run is over. While a battle waits, **Continue** and healing items on the cards
+  are blocked (`Finish the battle first`); **Forfeit** gives the run up.
 
 - **Rewards**
 

@@ -1496,6 +1496,12 @@ public class GielinorGoPlugin extends Plugin
 		if (battleOpen())
 			return;
 
+		if (config.chooseBattleActions())
+		{
+			startSteeredElite(true);
+			return;
+		}
+
 		heldNotices = new ArrayList<>();
 		playTeamBattle(game.eliteChallenge(), true);
 	}
@@ -1504,6 +1510,12 @@ public class GielinorGoPlugin extends Plugin
 	{
 		if (battleOpen())
 			return;
+
+		if (config.chooseBattleActions())
+		{
+			startSteeredElite(false);
+			return;
+		}
 
 		heldNotices = new ArrayList<>();
 		playTeamBattle(game.eliteContinue(), true);
@@ -1527,6 +1539,15 @@ public class GielinorGoPlugin extends Plugin
 	private void eliteForfeit()
 	{
 		heldNotices = new ArrayList<>();
+		BattleSession battle = director.session();
+		if (battle != null && battle.isElite())
+		{
+			director.giveUp();
+			flushHeld();
+			refreshPanel();
+			return;
+		}
+
 		game.eliteForfeit();
 		playBack(null, Notice.PLAYER);
 	}
@@ -1683,7 +1704,29 @@ public class GielinorGoPlugin extends Plugin
 	private void startSteeredChallenge(String championId)
 	{
 		heldNotices = new ArrayList<>();
-		BattleSession battle = game.startChallenge(championId);
+		beginSteeredTeam(game.startChallenge(championId));
+	}
+
+	/**
+	 * Starts the next battle of the Elite challenge, which waits for the player's choice each turn.
+	 *
+	 * @param start whether this starts a run, rather than carrying on with the one that is open
+	 */
+	private void startSteeredElite(boolean start)
+	{
+		heldNotices = new ArrayList<>();
+		BattleSession battle = start || game.eliteOpen() ? game.eliteSteered() : null;
+		beginSteeredTeam(battle);
+	}
+
+	/**
+	 * Opens a team battle the player steers, a City Champion's or an Elite team's: the scene, the director and the
+	 * opening line.
+	 *
+	 * @param battle the battle, or null when none could start
+	 */
+	private void beginSteeredTeam(BattleSession battle)
+	{
 		if (battle == null)
 		{
 			playBack(null, Notice.PLAYER, false);
