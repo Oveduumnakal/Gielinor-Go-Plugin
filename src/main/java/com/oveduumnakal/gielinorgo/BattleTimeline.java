@@ -361,11 +361,13 @@ final class BattleTimeline
 				case LEAD_HIT:
 					steps.add(new Step(line.special() ? Beat.LEAD_SPECIAL : Beat.LEAD_ATTACKS, line.style(),
 						ProjectileLook.of(line.style(), line.special(), line.icy()), line.miss()));
+					steps.get(steps.size() - 1).tags = line.tagged() ? line : null;
 					break;
 
 				case FOE_HIT:
 					steps.add(new Step(line.special() ? Beat.FOE_SPECIAL : Beat.FOE_ATTACKS, line.style(),
 						ProjectileLook.of(line.style(), line.special(), line.icy()), line.miss()));
+					steps.get(steps.size() - 1).tags = line.tagged() ? line : null;
 					break;
 
 				case STATUS_DAMAGE:

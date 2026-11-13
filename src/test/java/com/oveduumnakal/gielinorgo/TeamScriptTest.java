@@ -40,6 +40,38 @@ public class TeamScriptTest
 	}
 
 	@Test
+	public void aKeptBlowShowsTheTagsAsTheyAreAfterTheDroppedLinesThatChangedThem()
+	{
+		List<BattleLine> hits = hits(7);
+		hits.set(1, hits.get(1).withTags(null, Status.POISON));
+		hits.set(2, new BattleLine("poison wears off", Tone.INFO, false, BattleLine.Kind.STATUS)
+			.withTags(null, null));
+
+		List<BattleLine> shown = TeamScript.cut(hits);
+		List<BattleTimeline.Step> steps = BattleTimeline.stepsOf(shown);
+
+		assertEquals(3, steps.size());
+		assertTrue(!steps.get(0).tagged());
+		assertTrue(steps.get(1).tagged());
+		assertEquals(null, steps.get(1).foeStatus());
+		assertTrue(steps.get(2).tagged());
+		assertEquals(null, steps.get(2).foeStatus());
+	}
+
+	@Test
+	public void aKeptBlowShowsAStatusPutOnByADroppedLine()
+	{
+		List<BattleLine> hits = hits(7);
+		hits.set(1, new BattleLine("poisoned", Tone.INFO, false, BattleLine.Kind.STATUS)
+			.withTags(null, Status.POISON));
+
+		List<BattleTimeline.Step> steps = BattleTimeline.stepsOf(TeamScript.cut(hits));
+
+		assertEquals(Status.POISON, steps.get(1).foeStatus());
+		assertEquals(Status.POISON, steps.get(2).foeStatus());
+	}
+
+	@Test
 	public void aSingleDuelPlaysEnterHitsDownAndExit()
 	{
 		TeamScript script = TeamScript.of(Arrays.asList(duel(0, 0, true, 5)), false);
