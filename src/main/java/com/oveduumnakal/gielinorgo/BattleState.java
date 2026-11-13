@@ -442,7 +442,8 @@ final class BattleState
 	{
 		Status mineShows = aboutMine ? shown : mine().status();
 		Status foeShows = aboutMine ? foe().status() : shown;
-		BattleLine tagged = line.withTags(mineShows, foeShows);
+		BattleLine tagged = mode.mineFirstWording ? line.withTags(mineShows, foeShows)
+			: line.withTags(foeShows, mineShows);
 		turn.hits.add(tagged);
 		turn.lines.add(tagged);
 		duelHits.add(tagged);
