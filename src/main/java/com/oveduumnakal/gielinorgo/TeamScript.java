@@ -214,6 +214,18 @@ final class TeamScript
 			entries.addAll(more);
 		}
 
+		/**
+		 * Makes the entry that just started last longer, for an attack that takes more than
+		 * {@link BattleTimeline#BEAT_TICKS}. Call it on the tick the entry started.
+		 *
+		 * @param extraTicks game ticks to add, 0 or less for none
+		 */
+		void stretch(int extraTicks)
+		{
+			if (extraTicks > 0 && current != null)
+				left += extraTicks;
+		}
+
 		/** Closes the script: it is done once the entries it has are played. */
 		void close()
 		{

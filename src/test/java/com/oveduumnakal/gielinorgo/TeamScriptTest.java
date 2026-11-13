@@ -196,6 +196,37 @@ public class TeamScriptTest
 	}
 
 	@Test
+	public void aStretchedHitDelaysTheNextEntry()
+	{
+		Duel duel = duel(0, 0, true, 2);
+		TeamScript.Run run = TeamScript.of(Arrays.asList(duel), true).run();
+		int ticks = 0;
+		int stretched = -1;
+		int nextHit = -1;
+		TeamScript.Tick tick = run.tick();
+		while (!tick.done() && nextHit < 0)
+		{
+			ticks++;
+			if (tick.started() != null && tick.started().kind() == TeamScript.Kind.HIT)
+			{
+				if (stretched < 0)
+				{
+					stretched = ticks;
+					run.stretch(2);
+				}
+				else
+				{
+					nextHit = ticks;
+				}
+			}
+
+			tick = run.tick();
+		}
+
+		assertEquals(stretched + BattleTimeline.BEAT_TICKS + 2, nextHit);
+	}
+
+	@Test
 	public void hitsFloatOverTheCreatureThatWasHitAndKnockOutsOverThePlayer()
 	{
 		BattleLine mine = new BattleLine("-9", Tone.GOOD, false, BattleLine.Kind.LEAD_HIT);

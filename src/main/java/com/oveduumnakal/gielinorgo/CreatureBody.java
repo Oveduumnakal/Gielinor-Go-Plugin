@@ -401,6 +401,46 @@ final class CreatureBody extends RuneLiteObject
 	}
 
 	/**
+	 * Tells how long the animation of a move runs, so a battle can wait for it to end.
+	 *
+	 * @param act the move
+	 * @return the animation's length in client ticks (20 ms each), 0 when the move has no animation of its own or
+	 *     it cannot be read
+	 */
+	int actTicks(Act act)
+	{
+		try
+		{
+			switch (act)
+			{
+				case ATTACK:
+					return ticksOf(animations.attack(npcId));
+
+				case SPECIAL:
+					int second = ticksOf(animations.secondAttack(npcId));
+					return second > 0 ? second : ticksOf(animations.attack(npcId));
+
+				case HIT:
+					return ticksOf(animations.defend(npcId));
+
+				default:
+					return 0;
+			}
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not read an animation length", e);
+			return 0;
+		}
+	}
+
+	private int ticksOf(int animationId)
+	{
+		Animation animation = animationId == AnimationTable.NONE ? null : client.loadAnimation(animationId);
+		return animation == null ? 0 : AttackLength.clientTicks(animation.getFrameLengths());
+	}
+
+	/**
 	 * Steps up to the target, strikes and steps back, as {@link TurnMotion} times it: it walks along the way it
 	 * faces, its attack animation starts at {@link TurnMotion#strikeTick()}, and it is back on its spot when
 	 * {@link TurnMotion#TURN_TICKS} client ticks are up. It keeps facing the target all the way, so on the way back

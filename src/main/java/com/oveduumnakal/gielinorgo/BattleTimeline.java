@@ -451,6 +451,18 @@ final class BattleTimeline
 		return null;
 	}
 
+	/**
+	 * Makes the beat that just started last longer, because its attack takes more than {@link #BEAT_TICKS}: the next
+	 * beat starts that many game ticks later. Call it on the tick {@link #tick(boolean)} returned the step.
+	 *
+	 * @param extraTicks game ticks to add, 0 or less for none
+	 */
+	void stretch(int extraTicks)
+	{
+		if (extraTicks > 0)
+			wait += extraTicks;
+	}
+
 	/** @return how many game ticks the loser stays down: {@link #KNOCKED_OUT_TICKS} for a wild loser */
 	int holdTicks()
 	{

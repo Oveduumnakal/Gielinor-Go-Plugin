@@ -495,6 +495,17 @@ final class FollowerService
 	}
 
 	/**
+	 * Tells how long the animation of a move of the lead creature runs.
+	 *
+	 * @param act the move
+	 * @return its length in client ticks, 0 when it has none or there is no body
+	 */
+	int actTicks(CreatureBody.Act act)
+	{
+		return body == null ? 0 : body.actTicks(act);
+	}
+
+	/**
 	 * Has the lead creature step up to its target, strike and step back ({@link CreatureBody#meleeTurn}).
 	 *
 	 * @param distance how far it steps, in tiles
