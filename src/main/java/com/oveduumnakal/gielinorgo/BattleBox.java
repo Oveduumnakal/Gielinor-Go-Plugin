@@ -17,6 +17,8 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.border.EmptyBorder;
@@ -26,7 +28,7 @@ import net.runelite.client.ui.FontManager;
 
 /**
  * The battle box at the top of the side panel, shown only while a battle the player steers waits for a choice: both
- * creatures with their health, the time left, and the buttons for Attack, Switch, Catch and Run. Attack opens the
+ * creatures with their health, the time left, and the buttons for Attack, Switch, Catch, Item and Run. Attack opens the
  * creature's moves when it knows more than one. It is built once and updated in place, and it reports each choice to a
  * consumer.
  */
@@ -49,6 +51,8 @@ final class BattleBox extends JPanel
 	private final JButton swap;
 	private final JButton jar;
 	private final JButton run;
+	private final JButton item;
+	private List<BattleView.ItemOption> items = Collections.emptyList();
 	private List<BattleView.Option> options = Collections.emptyList();
 	private List<Move> moves = Collections.emptyList();
 
@@ -68,6 +72,7 @@ final class BattleBox extends JPanel
 		attack = PanelUi.button("Attack", e -> openMoveMenu());
 		swap = PanelUi.button("Switch", e -> openSwitchMenu());
 		jar = PanelUi.button("Catch", e -> choose.accept(BattleChoice.catching(null)));
+		item = PanelUi.button("Item", e -> openItemMenu());
 		run = PanelUi.button("Run", e -> choose.accept(BattleChoice.run()));
 		mineBar.setTrack(ColorScheme.DARK_GRAY_COLOR);
 		foeBar.setTrack(ColorScheme.DARK_GRAY_COLOR);
@@ -88,11 +93,12 @@ final class BattleBox extends JPanel
 
 	private JPanel buttons()
 	{
-		JPanel grid = new JPanel(new GridLayout(2, 2, 4, 4));
+		JPanel grid = new JPanel(new GridLayout(0, 2, 4, 4));
 		grid.setOpaque(false);
 		grid.add(attack);
 		grid.add(swap);
 		grid.add(jar);
+		grid.add(item);
 		grid.add(run);
 		JPanel wrap = new JPanel(new BorderLayout());
 		wrap.setOpaque(false);
@@ -113,6 +119,7 @@ final class BattleBox extends JPanel
 
 		options = view.options();
 		moves = view.moves();
+		items = view.items();
 		title.setText(view.forcedSwitch() ? "CHOOSE YOUR NEXT CREATURE" : "YOUR TURN · " + view.secondsLeft() + "s");
 		mineName.setText(view.mineName() + " Lv " + view.mineLevel() + BattleView.tagText(view.mineStatus()));
 		foeName.setText(view.foeName() + " Lv " + view.foeLevel() + BattleView.tagText(view.foeStatus()));
@@ -128,6 +135,9 @@ final class BattleBox extends JPanel
 		swap.setEnabled(view.canSwitch());
 		swap.setToolTipText(view.canSwitch() ? "Choose a creature to step in. It costs your turn."
 			: "No other creature can fight");
+		item.setEnabled(view.canUseItem());
+		item.setToolTipText(view.canUseItem() ? "Use a healing item. It costs your turn."
+			: "No item would help right now");
 		jar.setEnabled(view.canCatch());
 		jar.setText(view.jarLabel() == null ? "Catch" : "Catch x" + view.jarCount());
 		jar.setToolTipText(catchTip(view));
@@ -178,6 +188,53 @@ final class BattleBox extends JPanel
 		return menu;
 	}
 
+	/** Opens the list of items that would do something, under the Item button. */
+	private void openItemMenu()
+	{
+		JPopupMenu menu = itemMenu();
+		if (menu.getComponentCount() > 0 && item.isShowing())
+			menu.show(item, 0, item.getHeight());
+	}
+
+	/**
+	 * Builds the list of items that would do something now. An item that helps one creature is used on it at once;
+	 * one that could help several opens a list of them.
+	 *
+	 * @return a menu with one entry per item, each choosing that item
+	 */
+	JPopupMenu itemMenu()
+	{
+		JPopupMenu menu = new JPopupMenu();
+		for (BattleView.ItemOption option : items)
+		{
+			ItemType type = option.type();
+			String text = type.label() + "  x" + option.count();
+			if (option.targets().size() == 1)
+			{
+				BattleView.Option only = option.targets().get(0);
+				int place = only.teamIndex();
+				JMenuItem entry = PanelUi.menuItem(text, () -> choose.accept(BattleChoice.item(type, place)));
+				entry.setIcon(ItemIcons.swing(type));
+				menu.add(entry);
+				continue;
+			}
+
+			JMenu sub = new JMenu(text);
+			sub.setIcon(ItemIcons.swing(type));
+			for (BattleView.Option target : option.targets())
+			{
+				String name = target.name() + " Lv " + target.level() + " \u00b7 "
+					+ Math.round(target.hpFraction() * 100) + "%";
+				int place = target.teamIndex();
+				sub.add(PanelUi.menuItem(name, () -> choose.accept(BattleChoice.item(type, place))));
+			}
+
+			menu.add(sub);
+		}
+
+		return menu;
+	}
+
 	/** Opens the list of creatures that could step in, under the Switch button. */
 	private void openSwitchMenu()
 	{
@@ -215,6 +272,12 @@ final class BattleBox extends JPanel
 	JButton switchButton()
 	{
 		return swap;
+	}
+
+	/** @return the Item button */
+	JButton itemButton()
+	{
+		return item;
 	}
 
 	/** @return the Catch button */

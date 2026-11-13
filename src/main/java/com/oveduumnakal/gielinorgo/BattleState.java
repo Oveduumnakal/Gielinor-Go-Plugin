@@ -32,10 +32,12 @@ import java.util.Random;
  * {@code nextInt} draw for its length. At the end of a round, poison, venom and burn take health with no draw, the
  * creature that moved first taking its share first.
  *
- * <p>The other choices come first in their turn: a switch, a jar or a run happens before the opposing creature
- * attacks, whoever is faster. A switch costs the turn: the opposing creature attacks the one that stepped in. A
- * switch after a faint is free. A jar that does not catch lets the opposing creature attack. Running ends the battle
- * at once.
+ * <p>The other choices come first in their turn: a switch, a jar, an item or a run happens before the opposing
+ * creature attacks, whoever is faster. A switch costs the turn: the opposing creature attacks the one that stepped
+ * in. A switch after a faint is free. An item costs the turn too, and uses no random draw: a salve heals a creature
+ * that is up and hurt, a Revive draught brings back one that fainted in this battle, and an Antidote cures poison,
+ * venom or burn on the creature in the fight. A jar that does not catch lets the opposing creature attack. Running
+ * ends the battle at once.
  */
 final class BattleState
 {
@@ -278,7 +280,8 @@ final class BattleState
 				break;
 
 			default:
-				throw new IllegalArgumentException("Items cannot be used yet");
+				useItem(choice.itemType(), choice.teamIndex(), turn);
+				break;
 		}
 
 		return turn.result();
@@ -520,6 +523,97 @@ final class BattleState
 		attackIfAble(false, turn, -1);
 		endRound(turn);
 		settle(turn);
+	}
+
+	/**
+	 * Finds the creatures of the player's team an item would do something for right now.
+	 *
+	 * @param type the item
+	 * @return the places, in team order; empty when the item would do nothing, or when the player must pick the next
+	 *     creature first
+	 */
+	List<Integer> itemTargets(ItemType type)
+	{
+		List<Integer> places = new ArrayList<>();
+		if (type == null || over != null || needsSwitch)
+			return places;
+
+		if (type.cures())
+		{
+			Status held = mine().status();
+			if (held != null && held.curable())
+				places.add(myIndex);
+
+			return places;
+		}
+
+		for (int i = 0; i < mine.size(); i++)
+		{
+			Combatant one = mine.get(i);
+			boolean fits = type.revives() ? one.fainted() : !one.fainted() && one.hpFraction() < 1.0;
+			if (fits)
+				places.add(i);
+		}
+
+		return places;
+	}
+
+	/**
+	 * Uses an item as the turn's action. The opposing creature then attacks, and the round ends as it does for a
+	 * switch.
+	 *
+	 * @throws IllegalArgumentException when no item was picked or it would do nothing for that creature
+	 */
+	private void useItem(ItemType type, int place, Turn turn)
+	{
+		if (type == null)
+			throw new IllegalArgumentException("Pick an item first");
+
+		if (!itemTargets(type).contains(place))
+			throw new IllegalArgumentException(itemRefusal(type, place));
+
+		Combatant target = mine.get(place);
+		if (type.cures())
+		{
+			Status cured = target.status();
+			target.clearStatus();
+			note(turn, new BattleLine(target.name() + " is cured of " + cured.noun(), Tone.GOOD, true,
+				BattleLine.Kind.STATUS), true, null);
+		}
+		else if (type.revives())
+		{
+			target.revive(ItemRules.REVIVE_TO);
+			turn.lines.add(new BattleLine(target.name() + " is back on their feet (" + (int) Math.ceil(target.hp())
+				+ "/" + target.maxHp() + ")", Tone.GOOD, true));
+		}
+		else
+		{
+			int healed = target.heal(type.heal());
+			turn.lines.add(new BattleLine(target.name() + " is healed +" + healed + " (" + (int) Math.ceil(target.hp())
+				+ "/" + target.maxHp() + ")", Tone.GOOD, true));
+		}
+
+		attackIfAble(false, turn, -1);
+		endRound(turn);
+		settle(turn);
+	}
+
+	private String itemRefusal(ItemType type, int place)
+	{
+		if (needsSwitch)
+			return "A creature must be picked first";
+
+		if (place < 0 || place >= mine.size())
+			return "No such creature: " + place;
+
+		String name = mine.get(place).name();
+		if (type.cures())
+			return "Nothing to cure";
+
+		if (type.revives())
+			return name + " has not fainted";
+
+		return mine.get(place).fainted() ? name + " has fainted" : name + " is already at full health";
 	}
 
 	private void throwJar(JarType jar, Turn turn)

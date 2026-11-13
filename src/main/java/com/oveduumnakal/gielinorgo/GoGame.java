@@ -826,6 +826,13 @@ final class GoGame
 		if (session.over())
 			return null;
 
+		ItemType item = choice.kind() == BattleChoice.Kind.ITEM ? choice.itemType() : null;
+		if (item != null && data.itemCount(item) <= 0)
+		{
+			tell("No " + item.label() + " left", Tone.BAD);
+			return null;
+		}
+
 		TurnResult turn;
 		try
 		{
@@ -833,7 +840,16 @@ final class GoGame
 		}
 		catch (IllegalArgumentException e)
 		{
+			if (item != null)
+				tell(e.getMessage(), Tone.BAD);
+
 			return null;
+		}
+
+		if (item != null)
+		{
+			data.addItems(item, -1);
+			dirty = true;
 		}
 
 		writeHealth(session);
@@ -904,7 +920,55 @@ final class GoGame
 		JarType jar = jarToThrow();
 		boolean canCatch = session.wild() && jar != null && !state.needsSwitch();
 		return new BattleView(state.mine(), state.foe(), state.needsSwitch(), canCatch, jar,
-			jar == null ? 0 : data.jarCount(jar), secondsLeft, timeLeft, options);
+			jar == null ? 0 : data.jarCount(jar), secondsLeft, timeLeft, options, itemOptions(state));
+	}
+
+	/**
+	 * Lists the items the player owns that would do something in a battle right now, with their targets.
+	 *
+	 * @param state the battle
+	 * @return one option per such item, in item order
+	 */
+	private List<BattleView.ItemOption> itemOptions(BattleState state)
+	{
+		List<BattleView.ItemOption> items = new ArrayList<>();
+		for (ItemType type : ItemType.values())
+		{
+			int count = data.itemCount(type);
+			List<BattleView.Option> targets = new ArrayList<>();
+			for (int place : state.itemTargets(type))
+			{
+				Combatant one = state.team().get(place);
+				targets.add(new BattleView.Option(place, one.name(), one.level(), one.hpFraction()));
+			}
+
+			if (count > 0 && !targets.isEmpty())
+				items.add(new BattleView.ItemOption(type, count, targets));
+		}
+
+		return items;
+	}
+
+	/**
+	 * Picks the item a hotkey uses: the first owned item, in item order, that would do something, on the creature in
+	 * the fight when it is a target and otherwise on the first creature it would help.
+	 *
+	 * @param session the battle
+	 * @return the choice, or null when no owned item would do anything now
+	 */
+	BattleChoice quickItem(BattleSession session)
+	{
+		BattleState state = session.state();
+		for (ItemType type : ItemType.values())
+		{
+			List<Integer> targets = state.itemTargets(type);
+			if (data.itemCount(type) <= 0 || targets.isEmpty())
+				continue;
+
+			return BattleChoice.item(type, targets.contains(state.myIndex()) ? state.myIndex() : targets.get(0));
+		}
+
+		return null;
 	}
 
 	private void writeHealth(BattleSession session)

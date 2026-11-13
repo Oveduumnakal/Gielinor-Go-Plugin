@@ -23,6 +23,7 @@ final class BattleHotkeys implements KeyListener
 	private final Supplier<Keybind> swap;
 	private final Supplier<Keybind> jar;
 	private final Supplier<Keybind> run;
+	private final Supplier<Keybind> item;
 	private final BooleanSupplier open;
 	private final Consumer<BattleChoice.Kind> pressed;
 
@@ -39,6 +40,24 @@ final class BattleHotkeys implements KeyListener
 	BattleHotkeys(Supplier<Keybind> attack, Supplier<Keybind> swap, Supplier<Keybind> jar, Supplier<Keybind> run,
 		BooleanSupplier open, Consumer<BattleChoice.Kind> pressed)
 	{
+		this(attack, swap, jar, run, () -> Keybind.NOT_SET, open, pressed);
+	}
+
+	/**
+	 * Creates the listener with an Item hotkey as well.
+	 *
+	 * @param attack the Attack hotkey, read at each key press
+	 * @param swap the Switch hotkey
+	 * @param jar the Catch hotkey
+	 * @param run the Run hotkey
+	 * @param item the Item hotkey
+	 * @param open whether a choice is open; read on the key thread, so it must be a cached value
+	 * @param pressed called with the kind of choice a key stands for
+	 */
+	BattleHotkeys(Supplier<Keybind> attack, Supplier<Keybind> swap, Supplier<Keybind> jar, Supplier<Keybind> run,
+		Supplier<Keybind> item, BooleanSupplier open, Consumer<BattleChoice.Kind> pressed)
+	{
+		this.item = item;
 		this.attack = attack;
 		this.swap = swap;
 		this.jar = jar;
@@ -63,6 +82,9 @@ final class BattleHotkeys implements KeyListener
 
 		if (matches(jar, event))
 			return BattleChoice.Kind.CATCH;
+
+		if (matches(item, event))
+			return BattleChoice.Kind.ITEM;
 
 		return matches(run, event) ? BattleChoice.Kind.RUN : null;
 	}

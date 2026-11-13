@@ -49,6 +49,24 @@ final class BattlePrompt
 	 */
 	static String hotkeys(String attack, String swap, String jar, String run, boolean catching, boolean forced)
 	{
+		return hotkeys(attack, swap, jar, null, run, catching, forced);
+	}
+
+	/**
+	 * Lists the hotkeys that are set, with the Item key.
+	 *
+	 * @param attack the Attack hotkey text, or null when unset
+	 * @param swap the Switch hotkey text, or null when unset
+	 * @param jar the Catch hotkey text, or null when unset
+	 * @param item the Item hotkey text, or null when unset
+	 * @param run the Run hotkey text, or null when unset
+	 * @param catching whether a jar can be thrown, so the Catch hotkey is worth showing
+	 * @param forced whether the next creature must be picked, so only Switch counts
+	 * @return the hotkeys joined with a dot, or an empty text when none applies
+	 */
+	static String hotkeys(String attack, String swap, String jar, String item, String run, boolean catching,
+		boolean forced)
+	{
 		List<String> parts = new ArrayList<>();
 		if (swap != null)
 			parts.add("Switch " + swap);
@@ -58,6 +76,9 @@ final class BattlePrompt
 
 		if (!forced && catching && jar != null)
 			parts.add("Catch " + jar);
+
+		if (!forced && item != null)
+			parts.add("Item " + item);
 
 		if (!forced && run != null)
 			parts.add("Run " + run);
