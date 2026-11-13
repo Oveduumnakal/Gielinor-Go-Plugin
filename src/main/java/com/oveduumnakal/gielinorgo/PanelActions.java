@@ -92,9 +92,10 @@ interface PanelActions
 	 * Answers the trade a friend is offering.
 	 *
 	 * @param memberId the friend's {@link FriendView#memberId()}
+	 * @param offerId the {@link FriendView#offerId()} the card showed; a different current offer is not answered
 	 * @param accept true to take the trade, false to turn it down
 	 */
-	void answerTrade(long memberId, boolean accept);
+	void answerTrade(long memberId, long offerId, boolean accept);
 
 	/**
 	 * Gives a team member or stored creature a nickname. The pick is checked again on the game thread, and a

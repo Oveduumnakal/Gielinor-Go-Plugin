@@ -172,14 +172,21 @@ final class FriendTrades implements GoGame.TradeLocks
 	 *
 	 * @param friendId the friend's party member id
 	 * @param friendName the friend's name
+	 * @param offerId the {@link #offerId(long)} the card showed; an answer to any other offer is refused
 	 * @param accept true to take the trade, false to turn it down
 	 */
-	void answer(long friendId, String friendName, boolean accept)
+	void answer(long friendId, String friendName, long offerId, boolean accept)
 	{
 		Incoming offer = incoming.get(friendId);
 		long now = clock.getAsLong();
 		if (offer == null || offer.agreedMs != 0 || now - offer.receivedMs > OFFER_TIMEOUT_MS)
 			return;
+
+		if (offer.id != offerId)
+		{
+			tell(friendName + "'s offer changed. Look at it again", Tone.BAD);
+			return;
+		}
 
 		if (!accept)
 		{
@@ -362,6 +369,21 @@ final class FriendTrades implements GoGame.TradeLocks
 			return theirs + " as a gift";
 
 		return theirs + " for your " + label(describe(offer.asked), species);
+	}
+
+	/**
+	 * Names the offer a friend's card shows, so an answer can say which offer it is for.
+	 *
+	 * @param friendId the friend's party member id
+	 * @return the offer's id, or 0 when there is no offer to answer
+	 */
+	long offerId(long friendId)
+	{
+		Incoming offer = incoming.get(friendId);
+		if (offer == null || offer.agreedMs != 0 || clock.getAsLong() - offer.receivedMs > OFFER_TIMEOUT_MS)
+			return 0;
+
+		return offer.id;
 	}
 
 	/**

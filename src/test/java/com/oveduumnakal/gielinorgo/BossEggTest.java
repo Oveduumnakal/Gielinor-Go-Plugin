@@ -235,7 +235,7 @@ public class BossEggTest
 		FriendTrades bob = tradesOf(bobGame, BOB, bobTold);
 		ann.offer(BOB, "Bob", game.data().eggs.get(0), null);
 		bob.receive(fromAnn.get(fromAnn.size() - 1), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(fromAnn.get(fromAnn.size() - 1), ANN, "Bob");
 		bob.receive(fromAnn.get(fromAnn.size() - 1), BOB, "Ann");
 

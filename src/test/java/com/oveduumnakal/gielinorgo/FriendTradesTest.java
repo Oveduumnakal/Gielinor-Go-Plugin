@@ -78,7 +78,7 @@ public class FriendTradesTest
 		assertEquals("gilded Imp (Lv 20) for your Cow (Lv 5)", bob.offerFrom(ANN));
 		assertSame("nothing moves before Bob accepts", bobCow, bobGame.data().team.get(0));
 
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		assertEquals(GielinorGoPartyMessage.AGREE, last(fromBob).kind());
 		assertSame("nothing moves before Ann confirms", bobCow, bobGame.data().team.get(0));
 		assertEquals("", bob.offerFrom(ANN));
@@ -134,7 +134,7 @@ public class FriendTradesTest
 		bob.receive(last(fromAnn), BOB, "Ann");
 		assertEquals("gilded Imp (Lv 20) as a gift", bob.offerFrom(ANN));
 
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		bob.receive(last(fromAnn), BOB, "Ann");
 
@@ -151,7 +151,7 @@ public class FriendTradesTest
 
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		bob.receive(last(fromAnn), BOB, "Ann");
 
@@ -172,7 +172,7 @@ public class FriendTradesTest
 		assertEquals("Offered Rare egg to Bob", last(annTold));
 		bob.receive(last(fromAnn), BOB, "Ann");
 		assertEquals("Rare egg for your Cow (Lv 5)", bob.offerFrom(ANN));
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		bob.receive(last(fromAnn), BOB, "Ann");
 
@@ -193,7 +193,7 @@ public class FriendTradesTest
 		ann.offer(BOB, "Bob", annImp, Item.egg("EPIC", 0));
 		bob.receive(last(fromAnn), BOB, "Ann");
 		assertEquals("gilded Imp (Lv 20) for your Epic egg", bob.offerFrom(ANN));
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		bob.receive(last(fromAnn), BOB, "Ann");
 
@@ -207,7 +207,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", false);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), false);
 
 		assertEquals(GielinorGoPartyMessage.REFUSE, last(fromBob).kind());
 		assertTrue(ann.receive(last(fromBob), ANN, "Bob"));
@@ -234,7 +234,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		annGame.data().team.clear();
 
 		assertTrue(ann.receive(last(fromBob), ANN, "Bob"));
@@ -252,7 +252,7 @@ public class FriendTradesTest
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
 		bobGame.data().team.clear();
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 
 		assertEquals(GielinorGoPartyMessage.REFUSE, last(fromBob).kind());
 		assertEquals("You no longer have what Ann asked for", last(bobTold));
@@ -343,7 +343,7 @@ public class FriendTradesTest
 		ann.offer(BOB, "Bob", egg, null);
 		bob.receive(last(fromAnn), BOB, "Ann");
 		int sent = fromBob.size();
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 
 		assertEquals("You cannot carry another egg", last(bobTold));
 		assertEquals("nothing is sent, so Bob can make room and accept again", sent, fromBob.size());
@@ -360,7 +360,7 @@ public class FriendTradesTest
 
 		ann.offer(BOB, "Bob", mine, Item.egg("COMMON", 0));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		bob.receive(last(fromAnn), BOB, "Ann");
 
@@ -403,7 +403,7 @@ public class FriendTradesTest
 		assertEquals("Your trade offer got no answer", last(annTold));
 		assertTrue(bob.expire());
 		assertFalse(ann.expire());
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		assertTrue("an offer that ran out cannot be accepted", fromBob.isEmpty());
 	}
 
@@ -429,8 +429,8 @@ public class FriendTradesTest
 		assertTrue(bob.receive(annOffer, BOB, "Ann"));
 		assertTrue(ann.receive(bobOffer, ANN, "Bob"));
 
-		bob.answer(ANN, "Ann", true);
-		ann.answer(BOB, "Bob", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
+		ann.answer(BOB, "Bob", ann.offerId(BOB), true);
 
 		assertEquals("Bob sent only his offer", bobOffer, last(fromBob));
 		assertEquals("Ann sent only her offer", annOffer, last(fromAnn));
@@ -455,15 +455,15 @@ public class FriendTradesTest
 		cat.offer(BOB, "Cat", catImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
 		bob.receive(last(fromCat), BOB, "Cat");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		int sent = fromBob.size();
-		bob.answer(CAT, "Cat", true);
+		bob.answer(CAT, "Cat", bob.offerId(CAT), true);
 
 		assertEquals("no agreement goes to Cat", sent, fromBob.size());
 		assertEquals("That is already promised in another trade", last(bobTold));
 		ann.receive(last(fromBob), ANN, "Bob");
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(CAT, "Cat", true);
+		bob.answer(CAT, "Cat", bob.offerId(CAT), true);
 
 		assertEquals(GielinorGoPartyMessage.REFUSE, last(fromBob).kind());
 		assertEquals(1, copies("cow"));
@@ -477,7 +477,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		int sent = fromBob.size();
 
 		bob.offer(CAT, "Cat", bobCow, null);
@@ -491,7 +491,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		bobGame.data().team.clear();
 		bobGame.takeDirty();
@@ -512,7 +512,7 @@ public class FriendTradesTest
 		annGame.data().eggs.add(egg);
 		ann.offer(BOB, "Bob", egg, null);
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		for (int i = 0; i < SaveData.MAX_EGGS; i++)
 			bobGame.data().eggs.add(new Egg(Rarity.COMMON));
@@ -530,7 +530,7 @@ public class FriendTradesTest
 		bobGame.data().eggs.add(new Egg(Rarity.EPIC));
 		ann.offer(BOB, "Bob", annImp, Item.egg("EPIC", 0));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		for (int i = 0; i < SaveData.MAX_EGGS; i++)
 			annGame.data().eggs.add(new Egg(Rarity.COMMON));
 
@@ -547,7 +547,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		annImp.xp += 10;
 
 		assertTrue(ann.receive(last(fromBob), ANN, "Bob"));
@@ -563,7 +563,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		bobCow.species = "imp";
 
@@ -583,7 +583,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		bobCow.xp += 500;
 
@@ -626,7 +626,7 @@ public class FriendTradesTest
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
 		assertFalse("an offer not yet accepted promises nothing", bob.locked(bobCow));
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		bobGame.moveToStorage(0);
 
 		assertTrue(bob.locked(bobCow));
@@ -664,7 +664,7 @@ public class FriendTradesTest
 		assertEquals(0, bob.reservedCreatureSlots());
 		assertTrue(bobGame.hasRoomForCreature());
 
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 
 		assertEquals(1, bob.reservedCreatureSlots());
 		assertEquals(0, bob.reservedEggSlots());
@@ -692,7 +692,7 @@ public class FriendTradesTest
 		bob.receive(last(fromAnn), BOB, "Ann");
 		assertTrue(bobGame.hasRoomForEgg());
 
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 
 		assertEquals(1, bob.reservedEggSlots());
 		assertEquals(0, bob.reservedCreatureSlots());
@@ -713,7 +713,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 
 		assertEquals(0, ann.reservedCreatureSlots());
 		assertEquals(0, bob.reservedCreatureSlots());
@@ -732,13 +732,13 @@ public class FriendTradesTest
 
 		ann.offer(BOB, "Bob", annImp, null);
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", false);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), false);
 		ann.receive(last(fromBob), ANN, "Bob");
 		assertFalse("refused", ann.locked(annImp));
 
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		assertTrue(bob.locked(bobCow));
 		bob.clear();
 		assertFalse("cleared", bob.locked(bobCow));
@@ -748,7 +748,7 @@ public class FriendTradesTest
 
 		ann.offer(BOB, "Bob", annImp, null);
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		bob.forget(ANN);
 		assertEquals(0, bob.reservedCreatureSlots());
 		ann.forget(BOB);
@@ -760,7 +760,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		assertTrue(bob.locked(bobCow));
 
 		now += FriendTrades.CONFIRM_TIMEOUT_MS + 1;
@@ -774,7 +774,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		bobGame.moveToStorage(0);
 
@@ -797,7 +797,7 @@ public class FriendTradesTest
 		annGame.data().eggs.add(egg);
 		ann.offer(BOB, "Bob", egg, null);
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		egg.tilesLeft -= 40;
 		ann.receive(last(fromBob), ANN, "Bob");
 		bob.receive(last(fromAnn), BOB, "Ann");
@@ -952,7 +952,7 @@ public class FriendTradesTest
 		annImp.moves = new ArrayList<>(Arrays.asList("a", "b"));
 		ann.offer(BOB, "Bob", annImp, null);
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 
 		annImp.moves = new ArrayList<>(Arrays.asList("a", "c"));
 		ann.receive(last(fromBob), ANN, "Bob");
@@ -963,6 +963,28 @@ public class FriendTradesTest
 	}
 
 	@Test
+	public void acceptOnAnOfferThatChangedAgreesToNothing()
+	{
+		ann.offer(BOB, "Bob", annImp, null);
+		bob.receive(last(fromAnn), BOB, "Ann");
+		long shown = bob.offerId(ANN);
+		GielinorGoPartyMessage withdrawn = new GielinorGoPartyMessage(GielinorGoPartyMessage.REFUSE, BOB, shown, 0, 0,
+			new String[0], new int[0]);
+		bob.receive(sentBy(withdrawn, ANN), BOB, "Ann");
+		ann.forget(BOB);
+		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
+		assertTrue(bob.receive(last(fromAnn), BOB, "Ann"));
+		int sent = fromBob.size();
+
+		bob.answer(ANN, "Ann", shown, true);
+
+		assertEquals("no AGREE went out", sent, fromBob.size());
+		assertEquals("Ann's offer changed. Look at it again", last(bobTold));
+		assertEquals("the new offer is still waiting", "gilded Imp (Lv 20) for your Cow (Lv 5)", bob.offerFrom(ANN));
+		assertTrue(bob.offerId(ANN) != shown);
+	}
+
+	@Test
 	public void aNewOfferFromSomeoneWithAnOpenOfferIsIgnored()
 	{
 		long xp = XpRules.xpForLevel(20);
@@ -970,7 +992,7 @@ public class FriendTradesTest
 		assertFalse(bob.receive(offerOf(Item.creature("cow", 20, xp, false)), BOB, "Ann"));
 		assertEquals("Imp (Lv 20) as a gift", bob.offerFrom(ANN));
 
-		bob.answer(ANN, "Ann", false);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), false);
 		GielinorGoPartyMessage again = offerOf(Item.creature("cow", 20, xp, false));
 		assertTrue("after a decline a new offer is welcome", bob.receive(again, BOB, "Ann"));
 		assertEquals("Cow (Lv 20) as a gift", bob.offerFrom(ANN));
@@ -981,7 +1003,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, null);
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 
 		assertFalse(bob.receive(offerOf(Item.creature("cow", 20, XpRules.xpForLevel(20), false)), BOB, "Ann"));
 		ann.receive(last(fromBob), ANN, "Bob");
@@ -998,7 +1020,7 @@ public class FriendTradesTest
 		for (int i = 0; i < 4; i++)
 		{
 			bob.receive(offerOf(Item.creature("imp", 20, xp, false)), BOB, "Ann");
-			bob.answer(ANN, "Ann", false);
+			bob.answer(ANN, "Ann", bob.offerId(ANN), false);
 			now += 1_000L;
 		}
 
@@ -1150,7 +1172,7 @@ public class FriendTradesTest
 
 		assertTrue(bob.receive(old, BOB, "Ann"));
 		assertEquals("gilded Imp (Lv 20) as a gift", bob.offerFrom(ANN));
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		bob.receive(last(fromAnn), BOB, "Ann");
 
@@ -1163,7 +1185,7 @@ public class FriendTradesTest
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
 		bob.receive(last(fromAnn), BOB, "Ann");
-		bob.answer(ANN, "Ann", true);
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
 		ann.receive(last(fromBob), ANN, "Bob");
 		bob.receive(last(fromAnn), BOB, "Ann");
 	}

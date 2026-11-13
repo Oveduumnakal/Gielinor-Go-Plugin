@@ -20,16 +20,17 @@ final class FriendView
 	private final boolean waiting;
 	private final List<String> tradeable;
 	private final String offer;
+	private final long offerId;
 	private final boolean offered;
 
 	FriendView(long memberId, String name, int trainerLevel, String team, boolean challengeable, boolean waiting,
 		List<String> tradeable)
 	{
-		this(memberId, name, trainerLevel, team, challengeable, waiting, tradeable, "", false);
+		this(memberId, name, trainerLevel, team, challengeable, waiting, tradeable, "", 0, false);
 	}
 
 	private FriendView(long memberId, String name, int trainerLevel, String team, boolean challengeable,
-		boolean waiting, List<String> tradeable, String offer, boolean offered)
+		boolean waiting, List<String> tradeable, String offer, long offerId, boolean offered)
 	{
 		this.memberId = memberId;
 		this.name = name;
@@ -39,6 +40,7 @@ final class FriendView
 		this.waiting = waiting;
 		this.tradeable = Collections.unmodifiableList(new ArrayList<>(tradeable));
 		this.offer = offer;
+		this.offerId = offerId;
 		this.offered = offered;
 	}
 
@@ -46,13 +48,14 @@ final class FriendView
 	 * Adds where trading with this friend stands.
 	 *
 	 * @param theirOffer the trade this friend is offering the player, in words, or empty when there is none
+	 * @param theirOfferId the id of that offer, which the answer passes back, or 0 when there is none
 	 * @param mineWaits whether the player has offered this friend a trade that is not answered yet
 	 * @return a copy of this view with the trade details
 	 */
-	FriendView withTrade(String theirOffer, boolean mineWaits)
+	FriendView withTrade(String theirOffer, long theirOfferId, boolean mineWaits)
 	{
 		return new FriendView(memberId, name, trainerLevel, team, challengeable, waiting, tradeable, theirOffer,
-			mineWaits);
+			theirOfferId, mineWaits);
 	}
 
 	/** @return the id the panel passes back when the player challenges this friend */
@@ -103,6 +106,12 @@ final class FriendView
 		return offer;
 	}
 
+	/** @return the id of the offer in {@link #offer()}, or 0 when there is none */
+	long offerId()
+	{
+		return offerId;
+	}
+
 	/** @return whether the player has offered this friend a trade that is not answered yet */
 	boolean offered()
 	{
@@ -124,6 +133,7 @@ final class FriendView
 			&& challengeable == that.challengeable
 			&& waiting == that.waiting
 			&& offered == that.offered
+			&& offerId == that.offerId
 			&& Objects.equals(name, that.name)
 			&& Objects.equals(team, that.team)
 			&& Objects.equals(tradeable, that.tradeable)
@@ -133,6 +143,7 @@ final class FriendView
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(memberId, name, trainerLevel, team, challengeable, waiting, tradeable, offer, offered);
+		return Objects.hash(memberId, name, trainerLevel, team, challengeable, waiting, tradeable, offer, offerId,
+			offered);
 	}
 }
