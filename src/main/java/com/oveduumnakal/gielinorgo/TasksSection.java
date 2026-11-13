@@ -68,10 +68,11 @@ final class TasksSection extends JPanel
 			dailyRows.get(i).update(rows.get(i));
 
 		weeklyRow.update(rows.get(rows.size() - 1));
-		streakLine.setText("Streak " + view.streak() + (view.streak() == 1 ? " day" : " days") + " · egg in "
-			+ view.eggIn());
-		streakLine.setToolTipText("Catch a creature every day. The first catch of each day pays " + GoGame.STREAK_JARS
-			+ " Bronze jars, and every " + TaskBoard.STREAK_EGG_EVERY + "th day in a row pays an Uncommon egg.");
+		streakLine.setText("Day " + view.streak() + " · egg in " + view.eggIn()
+			+ (view.eggIn() == 1 ? " day" : " days"));
+		streakLine.setToolTipText("Days played: days you caught something. The first catch of each day pays "
+			+ GoGame.STREAK_JARS + " Bronze jars, and every " + TaskBoard.STREAK_EGG_EVERY
+			+ "th day played pays an Uncommon egg. Missing a day costs nothing.");
 	}
 
 	private static <T extends JComponent> T left(T component)

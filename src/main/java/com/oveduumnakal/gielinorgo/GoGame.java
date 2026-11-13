@@ -1974,7 +1974,7 @@ final class GoGame
 			if (streak.eggDue())
 				bonus += ", " + eggOrJars(Rarity.UNCOMMON);
 
-			tell("Day " + streak.days() + " streak: " + bonus, Tone.FIND);
+			tell("Day " + streak.days() + ": " + bonus, Tone.FIND);
 		}
 
 		boolean underground = entry.traits().contains(Trait.CAVE);
