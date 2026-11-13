@@ -87,4 +87,6 @@ A Creature Log, daily tasks and daily events give you goals.
   (#96)
 - **Champion rematches.** After the Elite clear each City Champion fights again with six creatures at levels 80 to 99,
   for a gold sigil and a daily reward. (#97)
+- **Choose your turns against friends.** When you both have Choose battle actions on, a friend battle is played
+  turn by turn. (#98)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

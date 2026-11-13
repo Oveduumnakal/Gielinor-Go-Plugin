@@ -53,6 +53,7 @@ final class TurnResult
 	private final boolean foeFainted;
 	private final boolean voluntarySwitch;
 	private final CatchOutcome thrown;
+	private final boolean voluntaryFoeSwitch;
 
 	/**
 	 * Builds a result.
@@ -95,6 +96,31 @@ final class TurnResult
 		Combatant enteredMine, Combatant enteredFoe, boolean mineFainted, boolean foeFainted,
 		boolean voluntarySwitch, CatchOutcome thrown)
 	{
+		this(status, lines, hits, duel, turnUsed, enteredMine, enteredFoe, mineFainted, foeFainted, voluntarySwitch,
+			thrown, false);
+	}
+
+	/**
+	 * Builds a result for a turn of a battle in which the opposing side makes its own choices.
+	 *
+	 * @param status where the battle stands
+	 * @param lines every line of the turn, in order
+	 * @param hits the lines that are blows, in order
+	 * @param duel the finished pairing when this turn ended one in a team battle, else null
+	 * @param turnUsed whether the turn was used
+	 * @param enteredMine the player's creature that stepped in during this turn, or null
+	 * @param enteredFoe the opposing creature that stepped in during this turn, or null
+	 * @param mineFainted whether the player's creature in the fight fell this turn
+	 * @param foeFainted whether the opposing creature in the fight fell this turn
+	 * @param voluntarySwitch whether the player switched by choice, so the creature before it came back
+	 * @param thrown what the thrown jar did, or null when no jar was thrown this turn
+	 * @param voluntaryFoeSwitch whether the opposing side switched by choice, so its creature before came back
+	 */
+	TurnResult(Status status, List<BattleLine> lines, List<BattleLine> hits, Duel duel, boolean turnUsed,
+		Combatant enteredMine, Combatant enteredFoe, boolean mineFainted, boolean foeFainted,
+		boolean voluntarySwitch, CatchOutcome thrown, boolean voluntaryFoeSwitch)
+	{
+		this.voluntaryFoeSwitch = voluntaryFoeSwitch;
 		this.thrown = thrown;
 		this.status = status;
 		this.lines = Collections.unmodifiableList(new ArrayList<>(lines));
@@ -106,6 +132,12 @@ final class TurnResult
 		this.mineFainted = mineFainted;
 		this.foeFainted = foeFainted;
 		this.voluntarySwitch = voluntarySwitch;
+	}
+
+	/** @return whether the opposing side switched by choice this turn, so the creature before it came back */
+	boolean voluntaryFoeSwitch()
+	{
+		return voluntaryFoeSwitch;
 	}
 
 	/** @return what the jar thrown this turn did, or null when no jar was thrown */

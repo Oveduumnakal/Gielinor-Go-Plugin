@@ -25,10 +25,15 @@ final class BattlePrompt
 	{
 		List<String> lines = new ArrayList<>();
 		String time = " · " + view.secondsLeft() + "s";
-		lines.add(view.forcedSwitch() ? "Pick your next creature" + time : "Your turn" + time);
+		if (view.waitingForFriend())
+			lines.add("Waiting for " + view.friendName() + "...");
+		else
+			lines.add(view.forcedSwitch() ? "Pick your next creature" + time : "Your turn" + time);
+
 		lines.add(view.mineName() + " Lv " + view.mineLevel() + BattleView.tagText(view.mineStatus()) + " "
 			+ percent(view.mineHp()));
-		lines.add(view.foeName() + " Lv " + view.foeLevel() + BattleView.tagText(view.foeStatus()) + " "
+		String owner = view.friendName() == null ? "" : view.friendName() + "'s ";
+		lines.add(owner + view.foeName() + " Lv " + view.foeLevel() + BattleView.tagText(view.foeStatus()) + " "
 			+ percent(view.foeHp()));
 		if (!hotkeys.isEmpty())
 			lines.add(hotkeys);

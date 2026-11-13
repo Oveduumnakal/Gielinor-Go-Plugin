@@ -120,27 +120,41 @@ final class BattleBox extends JPanel
 		options = view.options();
 		moves = view.moves();
 		items = view.items();
-		title.setText(view.forcedSwitch() ? "CHOOSE YOUR NEXT CREATURE" : "YOUR TURN · " + view.secondsLeft() + "s");
+		title.setText(titleOf(view));
 		mineName.setText(view.mineName() + " Lv " + view.mineLevel() + BattleView.tagText(view.mineStatus()));
-		foeName.setText(view.foeName() + " Lv " + view.foeLevel() + BattleView.tagText(view.foeStatus()));
+		foeName.setText((view.friendName() == null ? "" : view.friendName() + "'s ") + view.foeName() + " Lv "
+			+ view.foeLevel() + BattleView.tagText(view.foeStatus()));
 		mineBar.set(view.mineHp(), MINE);
 		foeBar.set(view.foeHp(), FOE);
 		mineBar.setToolTipText(Math.round(view.mineHp() * 100) + "% health");
 		foeBar.setToolTipText(Math.round(view.foeHp() * 100) + "% health");
 		timeBar.set(view.timeLeft(), TIME);
-		attack.setEnabled(!view.forcedSwitch());
+		boolean waiting = view.waitingForFriend();
+		attack.setEnabled(!view.forcedSwitch() && !waiting);
 		attack.setText(view.canChooseMove() ? "Attack..." : "Attack");
 		attack.setToolTipText(view.canChooseMove() ? "Choose one of your creature's moves" : null);
-		run.setEnabled(!view.forcedSwitch());
-		swap.setEnabled(view.canSwitch());
+		run.setEnabled(!view.forcedSwitch() || view.friendName() != null);
+		run.setToolTipText(view.friendName() == null ? null : "Leave the battle. Nothing is won or lost.");
+		swap.setEnabled(view.canSwitch() && !waiting);
 		swap.setToolTipText(view.canSwitch() ? "Choose a creature to step in. It costs your turn."
 			: "No other creature can fight");
-		item.setEnabled(view.canUseItem());
+		item.setEnabled(view.canUseItem() && !waiting);
 		item.setToolTipText(view.canUseItem() ? "Use a healing item. It costs your turn."
 			: "No item would help right now");
 		jar.setEnabled(view.canCatch());
 		jar.setText(view.jarLabel() == null ? "Catch" : "Catch x" + view.jarCount());
 		jar.setToolTipText(catchTip(view));
+	}
+
+	private static String titleOf(BattleView view)
+	{
+		if (view.waitingForFriend())
+			return "WAITING FOR " + view.friendName().toUpperCase() + "...";
+
+		if (view.forcedSwitch())
+			return "CHOOSE YOUR NEXT CREATURE";
+
+		return "YOUR TURN · " + view.secondsLeft() + "s";
 	}
 
 	private static String catchTip(BattleView view)

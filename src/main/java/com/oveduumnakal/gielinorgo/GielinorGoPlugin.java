@@ -1163,7 +1163,10 @@ public class GielinorGoPlugin extends Plugin
 		if (!saveLive() || me == null || message.getMemberId() == me.getMemberId())
 			return;
 
-		if (!partyRate.allow(message.getMemberId(), System.currentTimeMillis()))
+		boolean turnMessage = GielinorGoPartyMessage.TURN.equals(message.kind())
+			|| GielinorGoPartyMessage.LEAVE.equals(message.kind());
+		if (!(turnMessage && friends.inTurnBattleWith(message.getMemberId()))
+			&& !partyRate.allow(message.getMemberId(), System.currentTimeMillis()))
 			return;
 
 		String sender = friendName(partyService.getMemberById(message.getMemberId()));
@@ -1171,8 +1174,12 @@ public class GielinorGoPlugin extends Plugin
 		try
 		{
 			TeamBattleResult result = friends.receive(message, me.getMemberId(), sender, game.data(),
-				config.friendBattles());
-			boolean changed = friends.takeChanged() | result != null;
+				config.friendBattles() && !director.active(), config.chooseBattleActions());
+			FriendTurnBattle started = friends.takeStarted();
+			if (started != null)
+				beginFriendBattle(started);
+
+			boolean changed = friends.takeChanged() | result != null | started != null;
 			changed |= trades.receive(message, me.getMemberId(), sender);
 			saveNow();
 			playTeamBattle(result, !GielinorGoPartyMessage.CHALLENGE.equals(message.kind()) || !interacting());
@@ -1228,7 +1235,35 @@ public class GielinorGoPlugin extends Plugin
 
 	private void challengeFriend(long memberId)
 	{
-		friends.challenge(memberId, friendName(partyService.getMemberById(memberId)), game.data());
+		if (battleOpen())
+			return;
+
+		friends.challenge(memberId, friendName(partyService.getMemberById(memberId)), game.data(),
+			config.chooseBattleActions());
+	}
+
+	/**
+	 * Opens a battle against a friend in which both players choose the turns: the scene, the director and the
+	 * opening line. The battle pays nothing and writes nothing back to the save but the items used.
+	 *
+	 * @param friend the battle shared with the friend
+	 */
+	private void beginFriendBattle(FriendTurnBattle friend)
+	{
+		heldNotices = new ArrayList<>();
+		BattleSession battle = game.startFriendBattle(friend);
+		BattleState state = battle.state();
+		Combatant first = state.mine();
+		boolean leadFirst = !battle.fighters().isEmpty() && battle.fighters().get(0) == game.data().lead();
+		boolean staged = config.battleAnimations() && !stage.active()
+			&& arena.startOpen(state.foe().speciesKey(), first.speciesKey(), first.isGilded(), first.npcId(),
+				leadFirst);
+		Player player = client.getLocalPlayer();
+		steerWild = Notice.PLAYER;
+		steerHome = player == null ? null : player.getWorldLocation();
+		director.begin(battle, staged ? new ArenaScene(arena) : null);
+		playBack(Collections.singletonList(battle.opening()), Notice.PLAYER, false);
+		refreshPanel();
 	}
 
 	/**

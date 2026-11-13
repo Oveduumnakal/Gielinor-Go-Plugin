@@ -39,6 +39,12 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	/** Kind of a message that turns an offer down or calls a trade off. */
 	static final String REFUSE = "REFUSE";
 
+	/** Kind of a message that carries one player's choice for one turn of a battle both players steer. */
+	static final String TURN = "TURN";
+
+	/** Kind of a message that tells the other player the sender has left a battle both players steer. */
+	static final String LEAVE = "LEAVE";
+
 	/**
 	 * The version of the battle rules and message layout this build speaks. Two players can only fight each other
 	 * when it matches, since a different rule would give each of them a different winner. A message from a build
@@ -47,9 +53,11 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	 * status effects (poison, venom, burn, freeze and stun), so a battle draws more random numbers and ends
 	 * differently. Version 5 added the species of a boss egg in a trade. Version 6 split Melee into
 	 * Stab, Slash and Crush, with a new chart of five styles. Version 7 gave every species its own stat factors, so the
-	 * same species at the same level has other health, attack, defence and speed.
+	 * same species at the same level has other health, attack, defence and speed. Version 8 added battles that both
+	 * players steer turn by turn, with the messages {@link #TURN} and {@link #LEAVE} and the {@code steered} flag of a
+	 * challenge and its answer.
 	 */
-	static final int PROTOCOL = 7;
+	static final int PROTOCOL = 8;
 
 	/** One creature or one egg named in a trade. Exactly one of the species and the egg rarity is set. */
 	static final class Item
@@ -236,6 +244,10 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	private String[] eggs;
 	private Item give;
 	private Item want;
+	private boolean steered;
+	private int turn;
+	private String choice;
+	private int hash;
 
 	/** Used by Gson. */
 	public GielinorGoPartyMessage()
@@ -263,6 +275,74 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 		this.species = species;
 		this.levels = levels;
 		this.version = PROTOCOL;
+	}
+
+	/**
+	 * Makes the message that carries one player's choice for one turn of a battle both players steer.
+	 *
+	 * @param to the other player's party member id
+	 * @param battle the battle's number
+	 * @param turn the number of the turn, from 1
+	 * @param choice the choice, as {@link FriendTurnBattle#encode(BattleChoice)} writes it
+	 * @param hash the sender's {@link BattleState#stateHash()} before the turn
+	 * @return the message
+	 */
+	static GielinorGoPartyMessage turn(long to, long battle, int turn, String choice, int hash)
+	{
+		GielinorGoPartyMessage message = new GielinorGoPartyMessage(TURN, to, battle, 0, 0, new String[0], new int[0]);
+		message.turn = turn;
+		message.choice = choice;
+		message.hash = hash;
+		return message;
+	}
+
+	/**
+	 * Makes the message that tells the other player the sender has left a battle both players steer.
+	 *
+	 * @param to the other player's party member id
+	 * @param battle the battle's number
+	 * @return the message
+	 */
+	static GielinorGoPartyMessage leave(long to, long battle)
+	{
+		return new GielinorGoPartyMessage(LEAVE, to, battle, 0, 0, new String[0], new int[0]);
+	}
+
+	/**
+	 * Says whether the sender wants to play the battle turn by turn, because it has Choose battle actions on. The
+	 * battle is steered only when both players say so.
+	 *
+	 * @param wants whether the sender steers
+	 * @return this message
+	 */
+	GielinorGoPartyMessage steering(boolean wants)
+	{
+		steered = wants;
+		return this;
+	}
+
+	/** @return whether the sender wants to play the battle turn by turn */
+	boolean steered()
+	{
+		return steered;
+	}
+
+	/** @return the number of the turn a {@link #TURN} message is for; as sent, so it may be anything */
+	int turn()
+	{
+		return turn;
+	}
+
+	/** @return the choice a {@link #TURN} message carries, as sent, so it may be null or nonsense */
+	String choice()
+	{
+		return choice;
+	}
+
+	/** @return the state hash the sender had before the turn, as sent */
+	int hash()
+	{
+		return hash;
 	}
 
 	/** @return what the message is for; anything a party member sent, so it may be null or unknown */

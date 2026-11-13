@@ -603,6 +603,103 @@ public class FriendBattlesTest
 		assertTrue(bobTold.isEmpty());
 	}
 
+	@Test
+	public void whenBothPlayersChooseTheirTurnsTheBattleIsPlayedTurnByTurn()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData, true);
+		assertTrue(last(fromAnn).steered());
+
+		assertNull(bob.receive(last(fromAnn), BOB, "Ann", bobData, true, true));
+		assertTrue(last(fromBob).steered());
+		assertNull(ann.receive(last(fromBob), ANN, "Bob", annData, true, true));
+
+		FriendTurnBattle annBattle = ann.takeStarted();
+		FriendTurnBattle bobBattle = bob.takeStarted();
+		assertNotNull(annBattle);
+		assertNotNull(bobBattle);
+		assertNull(ann.takeStarted());
+		BattleState annState = annBattle.state();
+		BattleState bobState = bobBattle.state();
+		assertEquals(annState.stateHash(), bobState.stateHash());
+		assertEquals("Bob", annBattle.friendName());
+		assertEquals("Ann", bobBattle.friendName());
+	}
+
+	@Test
+	public void whenOnlyOnePlayerChoosesTheBattlePlaysItself()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData, true);
+
+		TeamBattleResult bobSaw = bob.receive(last(fromAnn), BOB, "Ann", bobData, true, false);
+		TeamBattleResult annSaw = ann.receive(last(fromBob), ANN, "Bob", annData, true, true);
+
+		assertNotNull(bobSaw);
+		assertNotNull(annSaw);
+		assertNull(ann.takeStarted());
+		assertNull(bob.takeStarted());
+	}
+
+	@Test
+	public void aPlayerWhoDoesNotChooseChallengesForAnAutomaticBattle()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+
+		assertFalse(last(fromAnn).steered());
+		assertNotNull(bob.receive(last(fromAnn), BOB, "Ann", bobData, true, true));
+		assertNull(bob.takeStarted());
+	}
+
+	@Test
+	public void aBattleOnTheirTurnsEndsWhenTheFriendLeavesTheParty()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData, true);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true, true);
+		ann.receive(last(fromBob), ANN, "Bob", annData, true, true);
+		FriendTurnBattle battle = ann.takeStarted();
+
+		assertTrue(ann.inTurnBattleWith(BOB));
+		ann.forget(BOB);
+
+		assertEquals(FriendTurnBattle.End.LEFT, battle.ended());
+		assertFalse(ann.inTurnBattleWith(BOB));
+	}
+
+	@Test
+	public void aTurnMessageOfAnOlderProtocolEndsTheBattle()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData, true);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true, true);
+		ann.receive(last(fromBob), ANN, "Bob", annData, true, true);
+		FriendTurnBattle battle = ann.takeStarted();
+		GielinorGoPartyMessage old = otherVersion(sentBy(GielinorGoPartyMessage.leave(ANN, battle.battle()), BOB),
+			GielinorGoPartyMessage.PROTOCOL - 1);
+
+		ann.receive(old, ANN, "Bob", annData, true, true);
+
+		assertEquals(FriendTurnBattle.End.OUT_OF_STEP, battle.ended());
+	}
+
+	@Test
+	public void aChallengeIsRefusedWhileATurnBattleIsOn()
+	{
+		meet();
+		ann.challenge(BOB, "Bob", annData, true);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true, true);
+		ann.receive(last(fromBob), ANN, "Bob", annData, true, true);
+		fromAnn.clear();
+		now += FriendBattles.REST_MS;
+
+		ann.challenge(BOB, "Bob", annData, true);
+
+		assertTrue(fromAnn.isEmpty());
+		assertEquals("Finish your battle first", last(annTold));
+	}
+
 	private void rejects(int[][] rolls, String[] temperaments)
 	{
 		GielinorGoPartyMessage bad = withRolls(new String[] {"imp"}, new int[] {20}, rolls, temperaments);

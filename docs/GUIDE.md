@@ -280,7 +280,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   teams in a champion battle) stand ready, a creature that steps in takes the lead's place and one that faints lies
   down and is replaced. With it off, the same battle is played with floating text only. Winning pays the same as an
   automatic win (XP for the creature that won, jar and egg drops, the champion's sigil, tasks), and a beaten wild
-  creature lies knocked out and can be caught at the x2.0 odds. Friend battles always play themselves.
+  creature lies knocked out and can be caught at the x2.0 odds. A friend battle is played turn by turn only when you and the friend both choose (see Friends below).
 
 - **Creatures evolve**
 
@@ -499,6 +499,12 @@ Every feature and every number, in detail. For the short version, see the [READM
   Join a RuneLite party with a friend, using RuneLite's Party plugin, and everyone in it who plays Gielinor Go
   shows up on your Battle tab. Challenge one and your two teams fight it out at once, with the result floating
   over both your heads. Friend battles are for fun: both teams fight at full health and nothing is won or lost.
+  When you and the friend both have **Choose battle actions** on, the battle is played turn by turn instead: each of
+  you picks Attack, Switch or Item, and the turn is played when both choices are in. You have 20 seconds each turn;
+  if the time runs out your creature picks for itself, and if your friend has not answered 10 seconds after that, the
+  battle ends with no result. Items are allowed and are really spent. Run, logging out, leaving the party or walking
+  away ends it with no result. If either of you has the setting off, the battle plays itself as before. You only see
+  your friend's choice once yours is in, but nothing is at stake, so nothing here is checked against cheating.
   With **Battle animations** on, you each see the battle acted out beside you, the same way as a champion battle,
   drawn from the teams you both already showed each other: nothing extra is sent. A battle a friend starts with you
   is only acted out when you are not busy fighting or talking to something, so it never takes over a boss fight; you

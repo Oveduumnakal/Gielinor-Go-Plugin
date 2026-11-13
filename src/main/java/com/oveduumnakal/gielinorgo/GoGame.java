@@ -1052,6 +1052,113 @@ final class GoGame
 	}
 
 	/**
+	 * Starts the player's side of a battle against a friend, played turn by turn. The teams are the ones both players
+	 * sent, at full health, so nothing is read from the save but the creatures behind the fighters; nothing is paid
+	 * when it ends and no health is written back. Only an item used in it is taken from the save.
+	 *
+	 * @param battle the battle shared with the friend
+	 * @return the battle
+	 */
+	BattleSession startFriendBattle(FriendTurnBattle battle)
+	{
+		BattleState state = battle.state();
+		List<Creature> fighters = new ArrayList<>();
+		for (Creature creature : data.team)
+		{
+			if (species.find(creature.species) != null && fighters.size() < state.team().size())
+				fighters.add(creature);
+		}
+
+		BattleLine opening = new BattleLine("Battle with " + battle.friendName() + "!", Tone.INFO, true);
+		return new BattleSession(state, fighters, null, null, opening).friend(battle);
+	}
+
+	/**
+	 * Takes the player's choice for a turn of a battle against a friend and sends it. The turn is played when the
+	 * friend's choice is in as well, and then comes out of {@link #friendTurn}. An item must be owned.
+	 *
+	 * @param session the battle
+	 * @param choice what the player does
+	 * @return false when the choice cannot be made now, which changes nothing
+	 */
+	boolean actFriend(BattleSession session, BattleChoice choice)
+	{
+		FriendTurnBattle battle = session.friendTurn();
+		ItemType item = choice.kind() == BattleChoice.Kind.ITEM ? choice.itemType() : null;
+		if (item != null && data.itemCount(item) <= 0)
+		{
+			tell("No " + item.label() + " left", Tone.BAD);
+			return false;
+		}
+
+		String why = battle.refusal(choice);
+		if (why != null)
+		{
+			if (item != null)
+				tell(why, Tone.BAD);
+
+			return false;
+		}
+
+		return battle.local(choice, clock.getAsLong());
+	}
+
+	/**
+	 * Takes the next turn of a battle against a friend that has been played since the last call. An item the player
+	 * chose in it is taken from the save now.
+	 *
+	 * @param session the battle
+	 * @return the turn, from the player's side, or null when none has been played
+	 */
+	TurnResult friendTurn(BattleSession session)
+	{
+		FriendTurnBattle.Played played = session.friendTurn().poll();
+		if (played == null)
+			return null;
+
+		BattleChoice mine = played.mine();
+		ItemType item = mine != null && mine.kind() == BattleChoice.Kind.ITEM ? mine.itemType() : null;
+		if (item != null && data.itemCount(item) > 0)
+		{
+			data.addItems(item, -1);
+			dirty = true;
+		}
+
+		return played.result();
+	}
+
+	/**
+	 * Opens the clock of the turn of a battle against a friend that waits, now that the player can see it.
+	 *
+	 * @param session the battle
+	 */
+	void friendOpened(BattleSession session)
+	{
+		session.friendTurn().opened(clock.getAsLong());
+	}
+
+	/**
+	 * Moves the clock of a battle against a friend on, and finds out whether it ended with no result. When it did,
+	 * the player is told why.
+	 *
+	 * @param session the battle
+	 * @return what to tell the player when the friend left, stopped answering or went out of step; null while the
+	 *     battle goes on, was played to the end, or was left by the player
+	 */
+	String friendEnded(BattleSession session)
+	{
+		FriendTurnBattle battle = session.friendTurn();
+		battle.timeout(clock.getAsLong());
+		FriendTurnBattle.End end = battle.ended();
+		if (end == null || end == FriendTurnBattle.End.MINE)
+			return null;
+
+		String words = end.words(battle.friendName());
+		tell(words, Tone.INFO);
+		return words;
+	}
+
+	/**
 	 * Tells whether a Battle against a wild creature would be accepted now: the lead exists and is rested to
 	 * {@link #MIN_BATTLE_HP}. It is the same test {@link #startBattle} and {@link #battle} refuse on, with no
 	 * message and no side effect, so a menu can leave the Battle entry out when it would only be refused.
@@ -1150,6 +1257,13 @@ final class GoGame
 	 */
 	TurnResult forfeit(BattleSession session)
 	{
+		if (session.friendTurn() != null)
+		{
+			session.friendTurn().leave();
+			tell("You left the battle", Tone.INFO);
+			return null;
+		}
+
 		TurnResult turn = act(session, BattleChoice.run());
 		if (turn != null && session.isElite())
 		{
@@ -1178,6 +1292,13 @@ final class GoGame
 			return Collections.emptyList();
 
 		boolean won = status == TurnResult.Status.WON;
+		if (session.friendTurn() != null)
+		{
+			String name = session.friendTurn().friendName();
+			return Collections.singletonList(won ? new BattleLine("You beat " + name + "!", Tone.GOOD, true)
+				: new BattleLine(name + " won this one", Tone.BAD, true));
+		}
+
 		if (session.wild())
 		{
 			BattleState state = session.state();
@@ -1207,8 +1328,10 @@ final class GoGame
 
 		JarType jar = jarToThrow();
 		boolean canCatch = session.wild() && jar != null && !state.needsSwitch();
-		return new BattleView(state.mine(), state.foe(), state.needsSwitch(), canCatch, jar,
+		BattleView view = new BattleView(state.mine(), state.foe(), state.needsSwitch(), canCatch, jar,
 			jar == null ? 0 : data.jarCount(jar), secondsLeft, timeLeft, options, itemOptions(state));
+		FriendTurnBattle friend = session.friendTurn();
+		return friend == null ? view : view.againstFriend(friend.friendName(), !friend.mustChoose());
 	}
 
 	/**
