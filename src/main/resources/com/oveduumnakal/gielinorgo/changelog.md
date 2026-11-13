@@ -58,4 +58,6 @@ A Creature Log, daily tasks and daily events give you goals.
   combat. (#87)
 - **Report a bug and Request a feature.** The Feedback button in the panel opens GitHub with your text filled in.
   (#81)
+- **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
+  beside you, and three species are only met this way. (#90)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
