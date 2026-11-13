@@ -5,9 +5,11 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -15,6 +17,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -37,6 +40,8 @@ import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 final class GoPanel extends PluginPanel
 {
 	private static final int TRAINER_BAR_HEIGHT = 4;
+	private static final String TABS_CARD = "tabs";
+	private static final String CHANGELOG_CARD = "changelog";
 
 	/** One line of the jar drop-down: a jar type and how many the player owns. */
 	private static final class JarChoice
@@ -104,6 +109,9 @@ final class GoPanel extends PluginPanel
 	private final LogTab logTab;
 	private final ChampionsTab championsTab;
 	private final BattleBox battleBox;
+	private final JPanel footer = new JPanel(new GridLayout(1, 0, 4, 0));
+	private final JPanel body = new JPanel(new CardLayout());
+	private final JButton changelogButton = PanelUi.button("Change log", e -> openChangelog());
 	private List<JarChoice> shownJars = new ArrayList<>();
 	private boolean fillingJars;
 	private PanelState latest;
@@ -130,7 +138,23 @@ final class GoPanel extends PluginPanel
 		top.add(buildHeader(), BorderLayout.NORTH);
 		top.add(battleBox, BorderLayout.CENTER);
 		add(top, BorderLayout.NORTH);
-		add(buildTabs(), BorderLayout.CENTER);
+		body.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		body.add(buildTabs(), TABS_CARD);
+		body.add(new ChangelogView(Changelog.load(), this::closeChangelog), CHANGELOG_CARD);
+		add(body, BorderLayout.CENTER);
+		add(buildFooter(), BorderLayout.SOUTH);
+	}
+
+	/**
+	 * Makes the change log button read What's New and stand out, or read Change log and look plain.
+	 *
+	 * @param show true after an update the player has not read about yet
+	 */
+	void whatsNew(boolean show)
+	{
+		changelogButton.setText(show ? "What's New" : "Change log");
+		changelogButton.setForeground(show ? ColorScheme.BRAND_ORANGE : Color.WHITE);
+		changelogButton.setToolTipText(show ? "See what changed in this update" : "See what changed in each update");
 	}
 
 	/**
@@ -180,6 +204,27 @@ final class GoPanel extends PluginPanel
 	{
 		if (latest != null)
 			TradeDialog.ask(this, latest, friend, actions);
+	}
+
+	private JPanel buildFooter()
+	{
+		footer.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		footer.setBorder(new EmptyBorder(4, 8, 6, 8));
+		whatsNew(false);
+		footer.add(changelogButton);
+		return footer;
+	}
+
+	private void openChangelog()
+	{
+		actions.whatsNewSeen();
+		whatsNew(false);
+		((CardLayout) body.getLayout()).show(body, CHANGELOG_CARD);
+	}
+
+	private void closeChangelog()
+	{
+		((CardLayout) body.getLayout()).show(body, TABS_CARD);
 	}
 
 	private JPanel buildHeader()
