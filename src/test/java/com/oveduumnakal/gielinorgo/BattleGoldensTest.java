@@ -28,8 +28,8 @@ import static org.junit.Assert.assertTrue;
  * fights and the single duels friend battles are made of. The recording lives in the test resource
  * {@code battle-goldens.txt}: a failure here means the battle rules changed. When moves replaced the second style
  * (issue 21) the 49 cases that have a dragon, a wyvern or the always-casting mage in them were re-recorded on
- * purpose; the 40 others are exactly as first recorded. For issue 85 (Melee split into Stab, Slash and Crush) the whole file was re-recorded
- * with {@code MELEE} and {@code Melee} turned into {@code STAB} and {@code Stab} and nothing else: every roll, hit and
+ * purpose; the 40 others are exactly as first recorded. For issue 85 (Melee split into Stab, Slash and Crush)
+ * the whole file was re-recorded with {@code MELEE} and {@code Melee} turned into {@code STAB} and {@code Stab} and nothing else: every roll, hit and
  * verdict is as before.
  */
 public class BattleGoldensTest
