@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import com.google.gson.Gson;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -384,7 +385,7 @@ public class GoGameTest
 		game.moveToStorage(1);
 		game.release(0);
 		assertTrue(game.data().storage.isEmpty());
-		assertTrue(messages.contains("Released Chicken"));
+		assertTrue(messages.contains("Goblin +28 XP (released Chicken)"));
 	}
 
 	@Test
@@ -672,5 +673,17 @@ public class GoGameTest
 	private static WildEntry wild(Species species, int level, int combatLevel)
 	{
 		return new WildEntry(1, species, level, combatLevel);
+	}
+
+	@Test
+	public void aLooseCreatureCanBeBattledAndCaughtAndTheLogCountsIt()
+	{
+		Species goblin = new Gson().fromJson("{\"name\":\"Goblin\",\"level\":13,\"ids\":[3029]}", Species.class);
+		WildTracker tracker = new WildTracker(new Random(2));
+		WildEntry loose = tracker.offerLoose(goblin, false, WildTracker.GILDED_ONE_IN, false);
+		game.markSeen(loose);
+
+		assertEquals(CatchOutcome.CAUGHT, catchUntilCaught(loose));
+		assertEquals(1, game.snapshot().caughtSpecies());
 	}
 }

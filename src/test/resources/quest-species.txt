@@ -58,7 +58,6 @@ Fareed
 Fire Warrior of Lesarkus
 Flambeed
 Gadderanks
-Galvek
 Gelatinnoth Mother
 General Khazard
 Giant Roc
@@ -153,7 +152,6 @@ Ulfric
 Ungadulu
 Vanstrom Klause
 Viyeldi
-Vorkath
 White golem
 Wighted Leech
 Witch's experiment
