@@ -70,4 +70,6 @@ A Creature Log, daily tasks and daily events give you goals.
   at once. (#92)
 - **Reset progress.** A link at the bottom of the Team tab starts you over after two clicks; the old save is kept
   aside. (#84)
+- **Starter creatures.** New players pick an Imp, a Gnome Archer or a Wizard at level 5; the Gnome Archer starts a
+  new evolution line. (#83)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

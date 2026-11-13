@@ -2312,6 +2312,12 @@ public class GielinorGoPlugin extends Plugin
 			}
 
 			@Override
+			public void pickStarter(int index)
+			{
+				onGameThread(() -> game.pickStarter(index));
+			}
+
+			@Override
 			public void resetProgress()
 			{
 				onGameThread(GielinorGoPlugin.this::resetProgress);

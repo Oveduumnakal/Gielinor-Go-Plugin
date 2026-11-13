@@ -95,6 +95,19 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 ### Your team
 
+- **Your first creature**
+
+  A new player sees **Choose your first creature** at the top of the Team tab: an Imp (Melee), a Gnome Archer
+  (Ranged) or a Wizard (Magic), one of each style. Each card shows the portrait, the style, the temperament and
+  rating it rolled (rolled like a catch, so two Imps differ) and what it grows into. Click a card, then **Yes**: the
+  creature joins as your lead at level 5 and starts following you. The three are rolled once and stay the same while
+  you look at them. It is an ordinary creature from then on, never gilded. It counts in the Creature Log, but not
+  for the daily tasks, the login streak or trainer XP, because it is not a catch.
+
+  The offer shows only while your team and Storage are empty and you have caught nothing. You can ignore it and
+  catch a wild creature instead; your first catch ends the offer. The Gnome Archer starts a new line: Gnome Archer,
+  Archer (Lv 20), Tower Archer (Lv 40), Elf Archer (Lv 60).
+
 - **Your XP trains your creatures**
 
   Every XP drop you earn, in any skill, also trains your team of up to six creatures. The creature in the lead

@@ -135,6 +135,8 @@ final class GoGame
 	private boolean atGuild;
 	private boolean bankNear;
 	private MoveTable moves = MoveTable.empty();
+	private Random starterRandom = new Random();
+	private List<Creature> starters;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -196,11 +198,98 @@ final class GoGame
 		data = loaded.sanitized();
 		settleMoves();
 		log = null;
+		starters = null;
 		xpCarry = 0;
 		dirty = false;
 		run = null;
 		milestonesDue = true;
 		settleMilestones();
+	}
+
+	/**
+	 * Sets the random source of the starter rolls. It is separate from the game's own, so showing the offer never
+	 * moves the rolls of a catch.
+	 *
+	 * @param random the source
+	 */
+	void starterRandom(Random random)
+	{
+		starterRandom = random;
+	}
+
+	/**
+	 * Gives the starters on offer. They are rolled when first asked for and kept until picked or the offer ends,
+	 * so closing and opening the panel never rerolls them.
+	 *
+	 * @return the three starters with what they grow into; empty when no starter is offered
+	 */
+	List<StarterView> starterOffer()
+	{
+		if (!StarterRules.offered(data))
+		{
+			starters = null;
+			return Collections.emptyList();
+		}
+
+		for (String name : StarterRules.STARTERS)
+		{
+			if (species.find(name) == null)
+				return Collections.emptyList();
+		}
+
+		if (starters == null)
+			starters = StarterRules.roll(starterRandom, clock.getAsLong());
+
+		List<CreatureView> shown = views(starters, clock.getAsLong());
+		List<StarterView> offer = new ArrayList<>();
+		for (int i = 0; i < shown.size(); i++)
+			offer.add(new StarterView(shown.get(i), growsInto(starters.get(i).species)));
+
+		return offer;
+	}
+
+	/**
+	 * Takes one of the starters on offer: it joins as the lead. It is marked caught and seen in the Log, but pays
+	 * no task, no streak and no trainer XP, because it is not a catch.
+	 *
+	 * @param index the place in {@link #starterOffer()}
+	 * @return true when the starter joined; false when none is on offer or the place does not exist
+	 */
+	boolean pickStarter(int index)
+	{
+		List<StarterView> offer = starterOffer();
+		if (offer.isEmpty() || index < 0 || index >= offer.size())
+			return false;
+
+		Creature picked = starters.get(index);
+		starters = null;
+		settleMoves(picked);
+		keep(picked);
+		recordOwned(picked);
+		tell(nameOf(picked) + " joined your team", Tone.GOOD);
+		String rating = ratingNote(picked);
+		if (!rating.isEmpty())
+			tell(rating, Tone.FIND);
+
+		settleMilestones();
+		return true;
+	}
+
+	private String growsInto(String speciesKey)
+	{
+		List<String> steps = new ArrayList<>();
+		EvolutionTable.Step step = evolutions.next(speciesKey);
+		for (int i = 0; i < MAX_EVOLUTIONS_AT_ONCE * 2 && step != null; i++)
+		{
+			Species grown = species.find(step.to());
+			if (grown == null)
+				break;
+
+			steps.add(grown.name() + " (" + step.level() + ")");
+			step = evolutions.next(grown.key());
+		}
+
+		return steps.isEmpty() ? "Does not evolve" : "Grows into " + String.join(", ", steps);
 	}
 
 	/**
@@ -1487,7 +1576,8 @@ final class GoGame
 			selectedJar(), data.stepProgress, views(data.team, now), views(data.storage, now), log(),
 			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get(), tasks, itemCounts())
 			.withGoals(milestoneTable.progress(data), eliteView())
-			.withResetSummary(resetSummary());
+			.withResetSummary(resetSummary())
+			.withStarters(starterOffer());
 	}
 
 	/** @return how many caught species count toward the Log: known ones that are not quest-only */
