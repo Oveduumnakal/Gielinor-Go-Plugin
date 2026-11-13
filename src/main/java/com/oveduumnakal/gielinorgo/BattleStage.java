@@ -45,6 +45,7 @@ final class BattleStage implements StageAnchors
 	private boolean unreachable;
 	private boolean frozen;
 	private final DuelActing acting;
+	private int extraTicks;
 
 	/**
 	 * Creates the stage with nothing playing.
@@ -76,6 +77,12 @@ final class BattleStage implements StageAnchors
 		{
 			if (foe != null && foe.body() != null)
 				foe.body().meleeTurn(distance, act);
+		}
+
+		@Override
+		public int actTicks(CreatureBody.Act act)
+		{
+			return foe == null || foe.body() == null ? 0 : foe.body().actTicks(act);
 		}
 
 		@Override
@@ -201,6 +208,19 @@ final class BattleStage implements StageAnchors
 	}
 
 	/**
+	 * Hands over the game ticks the beats played since the last call lasted beyond {@link BattleTimeline#BEAT_TICKS},
+	 * so the battle lines can wait for them ({@link NoticeBoard#stretch(int)}).
+	 *
+	 * @return game ticks, 0 for none
+	 */
+	int takeExtraTicks()
+	{
+		int taken = extraTicks;
+		extraTicks = 0;
+		return taken;
+	}
+
+	/**
 	 * Moves the battle on by one game tick. Called once per game tick, before the battle lines are shown, so the
 	 * first line and the first blow come on the same tick.
 	 */
@@ -252,7 +272,12 @@ final class BattleStage implements StageAnchors
 			follower.arriveNow();
 
 		if (step != null)
+		{
 			acting.play(step, timeline.leadLost());
+			int extra = acting.beatTicks(step) - BattleTimeline.BEAT_TICKS;
+			timeline.stretch(extra);
+			extraTicks += Math.max(0, extra);
+		}
 
 		if (step != null && step.beat() == BattleTimeline.Beat.LEAD_ENTERS)
 			showLead(step.entered());

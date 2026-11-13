@@ -1838,6 +1838,7 @@ public class GielinorGoPlugin extends Plugin
 			arena.clear();
 
 		stage.gameTick();
+		noticeBoard.stretch(stage.takeExtraTicks());
 		if (pendingTicks > 0 && --pendingTicks == 0)
 		{
 			noticeBoard.queue(pendingLines);

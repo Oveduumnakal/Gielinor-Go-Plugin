@@ -60,6 +60,7 @@ final class NoticeBoard
 	private final Deque<Notice> queued = new ArrayDeque<>();
 	private final List<Notice> held = new ArrayList<>();
 	private int wait;
+	private int owed;
 
 	/**
 	 * Shows a line straight away. When its head already has {@link #MAX_PER_HEAD} lines, the oldest one goes.
@@ -115,6 +116,18 @@ final class NoticeBoard
 			queue(notices);
 	}
 
+	/**
+	 * Delays the line after the next one that shows, for a battle beat that lasts longer than
+	 * {@link #LINE_TICKS}, so the lines keep pace with the acting. Cleared by {@link #clear()}.
+	 *
+	 * @param extraTicks game ticks to add, 0 or less for none
+	 */
+	void stretch(int extraTicks)
+	{
+		if (extraTicks > 0)
+			owed += extraTicks;
+	}
+
 	/** @return whether lines are being held back for a battle that is acted out on screen */
 	boolean holding()
 	{
@@ -151,7 +164,8 @@ final class NoticeBoard
 		Notice next = queued.poll();
 
 		show(next, nowMs);
-		wait = LINE_TICKS - 1;
+		wait = LINE_TICKS - 1 + owed;
+		owed = 0;
 	}
 
 	/** Removes every line, shown, queued or held. */
@@ -161,6 +175,7 @@ final class NoticeBoard
 		queued.clear();
 		held.clear();
 		wait = 0;
+		owed = 0;
 	}
 
 	/**
