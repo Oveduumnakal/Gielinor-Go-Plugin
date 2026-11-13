@@ -5,9 +5,14 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -15,11 +20,14 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.border.EmptyBorder;
 
 import net.runelite.client.ui.ColorScheme;
@@ -37,6 +45,8 @@ import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 final class GoPanel extends PluginPanel
 {
 	private static final int TRAINER_BAR_HEIGHT = 4;
+	private static final String TABS_CARD = "tabs";
+	private static final String CHANGELOG_CARD = "changelog";
 
 	/** One line of the jar drop-down: a jar type and how many the player owns. */
 	private static final class JarChoice
@@ -104,6 +114,9 @@ final class GoPanel extends PluginPanel
 	private final LogTab logTab;
 	private final ChampionsTab championsTab;
 	private final BattleBox battleBox;
+	private final JPanel footer = new JPanel(new GridLayout(1, 0, 4, 0));
+	private final JPanel body = new JPanel(new CardLayout());
+	private final JButton changelogButton = PanelUi.button("Change log", e -> openChangelog());
 	private List<JarChoice> shownJars = new ArrayList<>();
 	private boolean fillingJars;
 	private PanelState latest;
@@ -116,6 +129,14 @@ final class GoPanel extends PluginPanel
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
 		trainerLabel = PanelUi.label("", FontManager.getRunescapeSmallFont(), Color.WHITE);
+		trainerLabel.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				nextTitle();
+			}
+		});
 		trainerBar = new BarComponent(ColorScheme.BRAND_ORANGE, TRAINER_BAR_HEIGHT);
 		winsLabel = PanelUi.caption("");
 		stepsLabel = PanelUi.caption("");
@@ -130,7 +151,23 @@ final class GoPanel extends PluginPanel
 		top.add(buildHeader(), BorderLayout.NORTH);
 		top.add(battleBox, BorderLayout.CENTER);
 		add(top, BorderLayout.NORTH);
-		add(buildTabs(), BorderLayout.CENTER);
+		body.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		body.add(buildTabs(), TABS_CARD);
+		body.add(new ChangelogView(Changelog.load(), this::closeChangelog), CHANGELOG_CARD);
+		add(body, BorderLayout.CENTER);
+		add(buildFooter(), BorderLayout.SOUTH);
+	}
+
+	/**
+	 * Makes the change log button read What's New and stand out, or read Change log and look plain.
+	 *
+	 * @param show true after an update the player has not read about yet
+	 */
+	void whatsNew(boolean show)
+	{
+		changelogButton.setText(show ? "What's New" : "Change log");
+		changelogButton.setForeground(show ? ColorScheme.BRAND_ORANGE : Color.WHITE);
+		changelogButton.setToolTipText(show ? "See what changed in this update" : "See what changed in each update");
 	}
 
 	/**
@@ -141,8 +178,14 @@ final class GoPanel extends PluginPanel
 	void update(PanelState state)
 	{
 		latest = state;
-		trainerLabel.setText((state.elite().titled() ? "Grand Champion Lv " : "Trainer Lv ") + state.trainerLevel());
-		trainerLabel.setForeground(state.elite().titled() ? PanelUi.GOLD : Color.WHITE);
+		String shown = state.shownTitle();
+		String name = GoGame.TITLE_GRAND_CHAMPION.equals(shown) ? "Grand Champion"
+			: GoGame.TITLE_MASTER_COLLECTOR.equals(shown) ? "Master Collector" : "Trainer";
+		trainerLabel.setText(name + " Lv " + state.trainerLevel());
+		trainerLabel.setForeground(shown != null ? PanelUi.GOLD : Color.WHITE);
+		boolean switchable = state.titles().size() > 1;
+		trainerLabel.setCursor(Cursor.getPredefinedCursor(switchable ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR));
+		trainerLabel.setToolTipText(switchable ? "Click to change title" : null);
 		trainerBar.set(state.trainerProgress(), ColorScheme.BRAND_ORANGE);
 		trainerBar.setToolTipText(Math.round(state.trainerProgress() * 100) + "% to the next trainer level");
 		winsLabel.setText(state.battlesWon() + (state.battlesWon() == 1 ? " battle won" : " battles won"));
@@ -154,6 +197,8 @@ final class GoPanel extends PluginPanel
 		itemsRow.update(state.items());
 		teamTab.items(state.items());
 		storageTab.items(state.items());
+		teamTab.resetSummary(state.resetSummary());
+		teamTab.starters(state.starters());
 		teamTab.update(state.team(), state.eggs(), state.tasks());
 		storageTab.update(state.storage());
 		logTab.update(state);
@@ -180,6 +225,52 @@ final class GoPanel extends PluginPanel
 	{
 		if (latest != null)
 			TradeDialog.ask(this, latest, friend, actions);
+	}
+
+	private JPanel buildFooter()
+	{
+		footer.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		footer.setBorder(new EmptyBorder(4, 8, 6, 8));
+		whatsNew(false);
+		footer.add(changelogButton);
+		JButton feedback = PanelUi.button("Feedback", e -> showFeedbackMenu((Component) e.getSource()));
+		feedback.setToolTipText("Report a bug or request a feature on GitHub, in your browser");
+		footer.add(feedback);
+		return footer;
+	}
+
+	private void showFeedbackMenu(Component anchor)
+	{
+		JPopupMenu menu = new JPopupMenu();
+		JMenuItem bug = PanelUi.menuItem("Report a bug", () -> FeedbackDialog.reportBug(this));
+		bug.setToolTipText("Opens GitHub in your browser with what you wrote filled in");
+		JMenuItem feature = PanelUi.menuItem("Request a feature", () -> FeedbackDialog.requestFeature(this));
+		feature.setToolTipText("Opens GitHub in your browser with what you wrote filled in");
+		menu.add(bug);
+		menu.add(feature);
+		menu.show(anchor, 0, -menu.getPreferredSize().height);
+	}
+
+	private void openChangelog()
+	{
+		actions.whatsNewSeen();
+		whatsNew(false);
+		((CardLayout) body.getLayout()).show(body, CHANGELOG_CARD);
+	}
+
+	private void closeChangelog()
+	{
+		((CardLayout) body.getLayout()).show(body, TABS_CARD);
+	}
+
+	private void nextTitle()
+	{
+		PanelState state = latest;
+		if (state == null || state.titles().size() < 2)
+			return;
+
+		int at = state.titles().indexOf(state.shownTitle());
+		actions.pickTitle(state.titles().get((at + 1) % state.titles().size()));
 	}
 
 	private JPanel buildHeader()

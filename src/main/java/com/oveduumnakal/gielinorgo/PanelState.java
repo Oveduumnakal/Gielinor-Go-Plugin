@@ -34,6 +34,10 @@ final class PanelState
 	private final BattleView battle;
 	private MilestoneView milestones = MilestoneView.NONE;
 	private EliteView elite = EliteView.NONE;
+	private String shownTitle;
+	private List<String> titles = Collections.emptyList();
+	private String resetSummary = "";
+	private List<StarterView> starters = Collections.emptyList();
 	private final Map<ItemType, Integer> items;
 
 	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
@@ -131,7 +135,45 @@ final class PanelState
 	{
 		PanelState copy = new PanelState(trainerLevel, trainerProgress, battlesWon, jars, selectedJar, stepProgress,
 			team, storage, log, caughtSpecies, seenSpecies, eggs, champions, today, tasks, items, waiting);
-		return copy.withGoals(milestones, elite);
+		copy.resetSummary = resetSummary;
+		copy.starters = starters;
+		return copy.withGoals(milestones, elite).withTitle(shownTitle, titles);
+	}
+
+	/**
+	 * Adds the line the reset confirm dialog shows, to a state that is still being built.
+	 *
+	 * @param summary what a reset would lose, in words
+	 * @return this state
+	 */
+	PanelState withResetSummary(String summary)
+	{
+		this.resetSummary = summary;
+		return this;
+	}
+
+	/**
+	 * Adds the starters on offer, to a state that is still being built.
+	 *
+	 * @param offer the starters, or an empty list when none is offered
+	 * @return this state
+	 */
+	PanelState withStarters(List<StarterView> offer)
+	{
+		this.starters = Collections.unmodifiableList(new ArrayList<>(offer));
+		return this;
+	}
+
+	/** @return the starter creatures on offer to a new player; empty when none is */
+	List<StarterView> starters()
+	{
+		return starters;
+	}
+
+	/** @return what a reset would lose, in words, for the confirm dialog */
+	String resetSummary()
+	{
+		return resetSummary;
 	}
 
 	/** @return the battle that waits for the player's choice, or null when none does */
@@ -247,6 +289,32 @@ final class PanelState
 		this.milestones = milestoneView;
 		this.elite = eliteView;
 		return this;
+	}
+
+	/**
+	 * Sets the titles for the header.
+	 *
+	 * @param shown the title the header shows, or null for none
+	 * @param earned every title earned, in order
+	 * @return this snapshot
+	 */
+	PanelState withTitle(String shown, List<String> earned)
+	{
+		this.shownTitle = shown;
+		this.titles = Collections.unmodifiableList(new ArrayList<>(earned));
+		return this;
+	}
+
+	/** @return the title the header shows, a {@code GoGame.TITLE_} constant, or null when none is earned */
+	String shownTitle()
+	{
+		return shownTitle;
+	}
+
+	/** @return every title earned, in order, so the header can switch between them */
+	List<String> titles()
+	{
+		return titles;
 	}
 
 	/** @return the Elite challenge card for the Battle tab */

@@ -15,7 +15,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-/** Checks which events move which tasks, that rewards come out once, and the day, week and streak rules. */
+/** Checks which events move which tasks, that rewards come out once, and the day, week and days-played rules. */
 public class TaskBoardTest
 {
 	private static final long DAY = 86_400_000L;
@@ -215,7 +215,7 @@ public class TaskBoardTest
 	}
 
 	@Test
-	public void theStreakStartsAtOneAndGrowsOnConsecutiveDays()
+	public void theDaysPlayedStartAtOneAndGrowOnConsecutiveDays()
 	{
 		startOn(20_000L);
 		assertEquals(1, board.recordCatch().days());
@@ -228,7 +228,7 @@ public class TaskBoardTest
 	}
 
 	@Test
-	public void aSkippedDayStartsTheStreakOverAtOne()
+	public void aSkippedDayDoesNotResetTheDaysPlayed()
 	{
 		startOn(20_000L);
 		board.recordCatch();
@@ -237,7 +237,7 @@ public class TaskBoardTest
 
 		board.rollover(20_003L * DAY);
 
-		assertEquals(1, board.recordCatch().days());
+		assertEquals(3, board.recordCatch().days());
 	}
 
 	@Test
@@ -264,7 +264,7 @@ public class TaskBoardTest
 	}
 
 	@Test
-	public void theViewShowsTheStreakAsBrokenAfterAMissedDay()
+	public void theViewKeepsTheDaysPlayedAfterAMissedDay()
 	{
 		startOn(20_000L);
 		board.recordCatch();
@@ -272,9 +272,8 @@ public class TaskBoardTest
 		board.recordCatch();
 
 		assertEquals(2, board.view(20_001L * DAY + 1000L, JarType.BRONZE).streak());
-		assertEquals(2, board.view(20_002L * DAY + 1000L, JarType.BRONZE).streak());
-		assertEquals(0, board.view(20_003L * DAY + 1000L, JarType.BRONZE).streak());
-		assertEquals(7, board.view(20_003L * DAY + 1000L, JarType.BRONZE).eggIn());
+		assertEquals(2, board.view(20_003L * DAY + 1000L, JarType.BRONZE).streak());
+		assertEquals(5, board.view(20_003L * DAY + 1000L, JarType.BRONZE).eggIn());
 	}
 
 	@Test

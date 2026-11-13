@@ -24,6 +24,7 @@ final class CreatureView
 	private final int npcId;
 	private final List<Move> moves;
 	private final List<Move> pending;
+	private final String evolvesWhen;
 	private final Species species;
 
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
@@ -64,13 +65,40 @@ final class CreatureView
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname, StatRolls rolls, int npcId, List<Move> moves, List<Move> pending)
 	{
-		this(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId, moves, pending, null);
+		this(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId, moves, pending,
+			(String) null);
+	}
+
+	/**
+	 * Describes a creature with its moves and what it is waiting to evolve.
+	 *
+	 * @param name the species name
+	 * @param level the creature level
+	 * @param xpProgress progress to the next level, from 0 to 1
+	 * @param hpFraction the share of full health
+	 * @param rarity the species' rarity
+	 * @param type the species' combat style
+	 * @param gilded whether it is gilded
+	 * @param nickname its nickname, or null
+	 * @param rolls its rolls and temperament
+	 * @param npcId the NPC id its portrait is drawn from, or 0
+	 * @param moves the moves it knows, in the order learned
+	 * @param pending the moves that wait for a choice, oldest first
+	 * @param evolvesWhen what it has the level for but not the condition, such as {@code Evolves at night}, or null
+	 */
+	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
+		boolean gilded, String nickname, StatRolls rolls, int npcId, List<Move> moves, List<Move> pending,
+		String evolvesWhen)
+	{
+		this(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId, moves, pending,
+			evolvesWhen, null);
 	}
 
 	private CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname, StatRolls rolls, int npcId, List<Move> moves, List<Move> pending,
-		Species species)
+		String evolvesWhen, Species species)
 	{
+		this.evolvesWhen = evolvesWhen;
 		this.species = species;
 		this.moves = Collections.unmodifiableList(new ArrayList<>(moves));
 		this.pending = Collections.unmodifiableList(new ArrayList<>(pending));
@@ -95,7 +123,7 @@ final class CreatureView
 	CreatureView withSpecies(Species shaped)
 	{
 		return new CreatureView(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId,
-			moves, pending, shaped);
+			moves, pending, evolvesWhen, shaped);
 	}
 
 	/** @return up to two words for what the species is good or bad at, such as {@code Tough, Fast}; may be empty */
@@ -120,6 +148,12 @@ final class CreatureView
 	String name()
 	{
 		return name;
+	}
+
+	/** @return what the creature waits for before it evolves, such as {@code Evolves at night}, or null */
+	String evolvesWhen()
+	{
+		return evolvesWhen;
 	}
 
 	/** @return the NPC id its portrait is drawn from, or 0 for the species' first */
@@ -239,6 +273,7 @@ final class CreatureView
 			&& npcId == that.npcId
 			&& moves.equals(that.moves)
 			&& pending.equals(that.pending)
+			&& Objects.equals(evolvesWhen, that.evolvesWhen)
 			&& rolls.equals(that.rolls);
 	}
 
