@@ -187,6 +187,7 @@ final class GoPanel extends PluginPanel
 		logTab.update(state);
 		championsTab.update(state.champions());
 		championsTab.updateElite(state.elite());
+		championsTab.updateRival(state.rival());
 	}
 
 	/**

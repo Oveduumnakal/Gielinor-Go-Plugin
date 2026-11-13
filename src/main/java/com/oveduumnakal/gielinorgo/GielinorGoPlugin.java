@@ -222,6 +222,7 @@ public class GielinorGoPlugin extends Plugin
 		calendar = new SpawnCalendar(species);
 		game.milestones(loadMilestones(species));
 		game.elite(loadElite(species));
+		game.rival(loadRival(species));
 		game.moves(loadMoves());
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
 		friends = new FriendBattles(species, random, System::currentTimeMillis, this::sendToParty, this::announce)
@@ -780,6 +781,25 @@ public class GielinorGoPlugin extends Plugin
 		{
 			log.warn("Gielinor Go: could not read the Elite challenge", e);
 			return EliteTable.empty();
+		}
+	}
+
+	private RivalTable loadRival(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(RivalTable.RESOURCE))
+		{
+			if (in == null)
+				return RivalTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return RivalTable.load(gson, reader, species);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the rival", e);
+			return RivalTable.empty();
 		}
 	}
 

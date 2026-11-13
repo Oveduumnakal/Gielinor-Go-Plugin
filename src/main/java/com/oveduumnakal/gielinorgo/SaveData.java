@@ -82,6 +82,9 @@ final class SaveData
 	/** How many times the player has cleared the Elite challenge. 0 in saves from before it existed. */
 	int eliteClears;
 
+	/** The rival's starter and how many of the rival's battles are won. Null until the rival is first needed. */
+	RivalProgress rival;
+
 	/** Healing items owned, keyed by {@link ItemType#name()}. Null in saves from before items existed. */
 	Map<String, Integer> items = new HashMap<>();
 
@@ -122,6 +125,13 @@ final class SaveData
 
 		while (team.size() > TEAM_SIZE)
 			storage.add(team.remove(team.size() - 1));
+
+		if (rival != null)
+		{
+			rival.won = Math.max(0, Math.min(RivalRules.BATTLES, rival.won));
+			if (rival.starter == null)
+				rival = null;
+		}
 
 		if (selectedJar == null)
 			selectedJar = JarType.BRONZE.name();
