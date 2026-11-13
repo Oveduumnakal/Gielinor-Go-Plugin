@@ -68,8 +68,9 @@ final class ProjectileModels
 	}
 
 	/**
-	 * Builds a look's model: load, recolour, resize (only for a model that does not animate, as an animated one is
-	 * resized after it is posed, see {@link BattleProjectile}), light.
+	 * Builds a look's model: load, copy (the client's own arrays are shared and must stay as they are),
+	 * recolour, resize (only for a model that does not animate, as an animated one is resized after it is posed, see
+	 * {@link BattleProjectile}), light.
 	 *
 	 * @param look the look
 	 * @return the model, or null when the cache has no such model or building it fails
@@ -78,9 +79,12 @@ final class ProjectileModels
 	{
 		try
 		{
-			ModelData data = client.loadModelData(look.modelId());
-			if (data == null)
+			ModelData loaded = client.loadModelData(look.modelId());
+			if (loaded == null)
 				return null;
+
+			ModelData data = loaded.shallowCopy();
+			data.cloneColors();
 
 			short[] from = look.recolorFrom();
 			short[] to = look.recolorTo();
@@ -88,7 +92,10 @@ final class ProjectileModels
 				data.recolor(from[i], to[i]);
 
 			if (!look.animated() && look.size() != ProjectileLook.NORMAL_SIZE)
+			{
+				data.cloneVertices();
 				data.scale(look.size(), look.size(), look.size());
+			}
 
 			return data.light(look.ambient(), look.contrast(), LIGHT_X, LIGHT_Y, LIGHT_Z);
 		}
