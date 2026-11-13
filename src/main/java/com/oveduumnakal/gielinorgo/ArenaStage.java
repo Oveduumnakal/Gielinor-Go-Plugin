@@ -293,32 +293,26 @@ final class ArenaStage implements StageAnchors
 	}
 
 	/**
-	 * Works out where the lead should stand to face the opponent: on the line from the opponent to where the lead is
-	 * now, {@link TurnMotion#GAP_TILES} tiles outside the opponent's edge, or {@link TurnMotion#NEAR_GAP_TILES} when
-	 * the tile of that spot is blocked. The gap that worked is kept for the steps of melee attackers.
+	 * Works out where the lead should stand to face the opponent and sends it there by a route that goes round walls
+	 * and objects, as {@link ArenaSpots#lead} says. The gap that worked is kept for the steps of melee attackers.
 	 *
 	 * @param x the opponent's middle, world x in tiles
 	 * @param y the opponent's middle, world y in tiles
-	 * @return whether the lead set off; false when neither spot is free
+	 * @return whether the lead set off; false when no spot can be reached
 	 */
 	private boolean sendLead(double x, double y)
 	{
-		double dx = follower.x() - x;
-		double dy = follower.y() - y;
-		double length = Math.hypot(dx, dy);
-		for (double tryGap : new double[]{TurnMotion.GAP_TILES, TurnMotion.NEAR_GAP_TILES})
-		{
-			double reach = FOE_TILES / 2.0 + tryGap;
-			double toX = length < 0.01 ? x : x + dx / length * reach;
-			double toY = length < 0.01 ? y - reach : y + dy / length * reach;
-			if (follower.spotFree(toX, toY) && follower.beginErrand(toX, toY, x, y))
-			{
-				acting.setGap(tryGap);
-				return true;
-			}
-		}
+		TilePath tiles = follower.tilePath();
+		if (tiles == null || !follower.shown())
+			return false;
 
-		return false;
+		int[] lead = follower.tile();
+		ArenaSpots.Lead spot = ArenaSpots.lead(tiles, x, y, FOE_TILES, lead[0], lead[1], FollowerPath.MAX_ERRAND);
+		if (spot == null || !follower.beginErrand(spot.route, x, y))
+			return false;
+
+		acting.setGap(spot.gap);
+		return true;
 	}
 
 	/** @return whether a team battle is on stage */
