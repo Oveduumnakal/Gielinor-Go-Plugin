@@ -146,6 +146,27 @@ public class BattleStatusTest
 	}
 
 	@Test
+	public void theTagsOfAChallengedPlayersDuelAreFlippedLikeTheWording()
+	{
+		Combatant theirs = dummy(40);
+		Combatant challenger = dummy(40);
+		theirs.afflict(Status.POISON, new Random(1));
+		BattleState state = new BattleState(Collections.singletonList(challenger),
+			Collections.singletonList(theirs), new Random(4), BattleState.Mode.duel(false));
+
+		TurnResult turn = state.step(BattleChoice.attack());
+
+		BattleLine hurt = null;
+		for (BattleLine line : turn.hits())
+			if (line.kind() == BattleLine.Kind.STATUS_DAMAGE)
+				hurt = line;
+
+		assertTrue(hurt != null && hurt.overPlayer());
+		assertEquals(Status.POISON, hurt.mineStatus());
+		assertNull(hurt.foeStatus());
+	}
+
+	@Test
 	public void aFrozenCreatureLosesItsTurnAndTheLineSaysSo()
 	{
 		Combatant foe = dummy(10);
