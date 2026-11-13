@@ -436,6 +436,15 @@ Every feature and every number, in detail. For the short version, see the [READM
   your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
   your team is full, a creature you receive in a trade, a hatched egg and releasing a stored creature.
 
+- **Starting over**
+
+  **Reset progress...** is a small link at the very bottom of the Team tab. It asks once, listing what you would lose
+  (team, Storage, Log species, sigils, eggs), and only the **Yes, reset** button goes ahead; **No** is the default. A
+  reset puts your whole save back to a new player's, with 10 Bronze jars. Settings and hotkeys are kept, and other
+  accounts are not touched. It is refused with a reason while a battle, a trade or an Elite run is on, and while you
+  are logged out. The old save is copied aside first as a safety net. There is no button to bring it back, so if you
+  reset by mistake, ask for help and it can be copied back by hand.
+
 - **Change log**
 
   The button at the bottom of the panel opens the change log: every release, newest first, with a short overview and

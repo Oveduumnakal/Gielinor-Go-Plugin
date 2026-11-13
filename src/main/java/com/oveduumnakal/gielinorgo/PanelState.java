@@ -34,6 +34,7 @@ final class PanelState
 	private final BattleView battle;
 	private MilestoneView milestones = MilestoneView.NONE;
 	private EliteView elite = EliteView.NONE;
+	private String resetSummary = "";
 	private final Map<ItemType, Integer> items;
 
 	PanelState(int trainerLevel, double trainerProgress, int battlesWon, Map<JarType, Integer> jars,
@@ -131,7 +132,26 @@ final class PanelState
 	{
 		PanelState copy = new PanelState(trainerLevel, trainerProgress, battlesWon, jars, selectedJar, stepProgress,
 			team, storage, log, caughtSpecies, seenSpecies, eggs, champions, today, tasks, items, waiting);
+		copy.resetSummary = resetSummary;
 		return copy.withGoals(milestones, elite);
+	}
+
+	/**
+	 * Adds the line the reset confirm dialog shows, to a state that is still being built.
+	 *
+	 * @param summary what a reset would lose, in words
+	 * @return this state
+	 */
+	PanelState withResetSummary(String summary)
+	{
+		this.resetSummary = summary;
+		return this;
+	}
+
+	/** @return what a reset would lose, in words, for the confirm dialog */
+	String resetSummary()
+	{
+		return resetSummary;
 	}
 
 	/** @return the battle that waits for the player's choice, or null when none does */

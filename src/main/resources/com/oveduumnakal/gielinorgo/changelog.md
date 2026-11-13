@@ -68,4 +68,6 @@ A Creature Log, daily tasks and daily events give you goals.
   big moments, with a setting to turn them off. (#94)
 - **A reward for releasing.** Releasing creatures pays creature XP to your lead, and Storage can release several
   at once. (#92)
+- **Reset progress.** A link at the bottom of the Team tab starts you over after two clicks; the old save is kept
+  aside. (#84)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

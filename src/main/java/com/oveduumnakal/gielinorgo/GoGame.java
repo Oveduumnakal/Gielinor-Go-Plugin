@@ -84,6 +84,12 @@ final class GoGame
 			return false;
 		}
 
+		/** @return whether any trade is open, offered or waiting to be confirmed */
+		default boolean open()
+		{
+			return false;
+		}
+
 		/** @return creature slots, in the team and storage together, that open trades will need */
 		default int reservedCreatureSlots()
 		{
@@ -195,6 +201,53 @@ final class GoGame
 		run = null;
 		milestonesDue = true;
 		settleMilestones();
+	}
+
+	/**
+	 * Tells why the save cannot be reset right now.
+	 *
+	 * @return the reason, worded for the player, or null when a reset is allowed. A battle on screen is checked by the
+	 *     plugin, which owns it
+	 */
+	String resetBlocker()
+	{
+		if (eliteOpen())
+			return "Finish or forfeit the Elite run first";
+
+		if (tradeLocks.open())
+			return "Finish or cancel the trade first";
+
+		return null;
+	}
+
+	/**
+	 * Puts the save back to a fresh one: the starting jars and nothing else. Settings are not part of the save. Call
+	 * {@link #resetBlocker()} first.
+	 */
+	void reset()
+	{
+		load(SaveData.fresh());
+		dirty = true;
+		tell("Progress reset", Tone.INFO);
+	}
+
+	/**
+	 * Words what a reset would lose, for the confirm dialog.
+	 *
+	 * @return for example {@code 6 creatures in your team, 41 in Storage, 212 species in the Log, 5 sigils}
+	 */
+	String resetSummary()
+	{
+		return data.team.size() + plural(data.team.size(), " creature", " creatures") + " in your team, "
+			+ data.storage.size() + " in Storage, "
+			+ data.caught.size() + " species in the Log, "
+			+ data.sigils.size() + plural(data.sigils.size(), " sigil", " sigils") + ", "
+			+ data.eggs.size() + plural(data.eggs.size(), " egg", " eggs");
+	}
+
+	private static String plural(int count, String one, String many)
+	{
+		return count == 1 ? one : many;
 	}
 
 	/**
@@ -1433,7 +1486,8 @@ final class GoGame
 		return new PanelState(trainerLevel(), XpRules.trainerProgress(data.trainerXp), data.battlesWon, jars,
 			selectedJar(), data.stepProgress, views(data.team, now), views(data.storage, now), log(),
 			knownCaughtSpecies(), data.seen.size(), eggs, championViews(), today.get(), tasks, itemCounts())
-			.withGoals(milestoneTable.progress(data), eliteView());
+			.withGoals(milestoneTable.progress(data), eliteView())
+			.withResetSummary(resetSummary());
 	}
 
 	/** @return how many caught species count toward the Log: known ones that are not quest-only */

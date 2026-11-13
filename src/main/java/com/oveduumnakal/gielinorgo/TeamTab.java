@@ -6,6 +6,9 @@ package com.oveduumnakal.gielinorgo;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +17,7 @@ import java.util.Objects;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
@@ -39,6 +43,8 @@ final class TeamTab extends JPanel
 	private final TasksSection taskSection = new TasksSection();
 	private Map<ItemType, Integer> items = Collections.emptyMap();
 	private final JLabel hint = PanelUi.hint("Click a creature to make it your lead. Right-click for more.");
+	private final JLabel resetLink = PanelUi.hint("<u>Reset progress...</u>");
+	private String resetSummary = "";
 
 	TeamTab(PanelActions actions, PortraitSource portraits)
 	{
@@ -68,7 +74,43 @@ final class TeamTab extends JPanel
 		stack.add(eggBox);
 		taskSection.setAlignmentX(Component.LEFT_ALIGNMENT);
 		stack.add(taskSection);
+		resetLink.setAlignmentX(Component.LEFT_ALIGNMENT);
+		resetLink.setBorder(new EmptyBorder(14, 8, 8, 8));
+		resetLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		resetLink.setToolTipText("Start over with a fresh save");
+		resetLink.addMouseListener(new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked(MouseEvent e)
+			{
+				confirmReset();
+			}
+		});
+		stack.add(resetLink);
 		add(PanelUi.scroll(column), BorderLayout.CENTER);
+	}
+
+	/**
+	 * Tells the tab what a reset would lose, for the confirm dialog. Call it before
+	 * {@link #update(List, List, TaskView)}.
+	 *
+	 * @param summary what a reset would lose, in words
+	 */
+	void resetSummary(String summary)
+	{
+		resetSummary = summary;
+	}
+
+	/** Asks once more, with No as the default button, and resets only on Yes. */
+	private void confirmReset()
+	{
+		Object[] buttons = {"Yes, reset", "No"};
+		int answer = JOptionPane.showOptionDialog(this,
+			"Reset all progress? You will lose everything in this account's save:\n" + resetSummary
+				+ ".\nYou start again with 10 Bronze jars. Settings are kept.",
+			"Reset progress", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, buttons, buttons[1]);
+		if (answer == 0)
+			actions.resetProgress();
 	}
 
 	/**

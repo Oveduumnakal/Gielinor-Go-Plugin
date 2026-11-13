@@ -314,6 +314,17 @@ final class FriendTrades implements GoGame.TradeLocks
 	}
 
 	@Override
+	public boolean open()
+	{
+		return waitingOnAnyone() || !incoming.isEmpty();
+	}
+
+	private boolean waitingOnAnyone()
+	{
+		return outgoing != null && clock.getAsLong() - outgoing.sentMs <= OFFER_TIMEOUT_MS;
+	}
+
+	@Override
 	public int reservedCreatureSlots()
 	{
 		return reserved(false);

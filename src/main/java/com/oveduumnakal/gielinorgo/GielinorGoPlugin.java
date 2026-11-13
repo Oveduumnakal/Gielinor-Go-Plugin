@@ -1137,6 +1137,35 @@ public class GielinorGoPlugin extends Plugin
 		return loaded && (state == GameState.LOGGED_IN || state == GameState.LOADING);
 	}
 
+	/**
+	 * Resets the account's progress after the player confirmed in the panel. Refused while a battle, a trade or an
+	 * Elite run is on. The old save is copied to a safety key first, then everything drawn for it is cleared.
+	 */
+	private void resetProgress()
+	{
+		if (battleOpen())
+			return;
+
+		String blocker = game.resetBlocker();
+		if (blocker != null)
+		{
+			announce(Notice.player(blocker, Tone.BAD));
+			return;
+		}
+
+		persistence.save(game.data());
+		persistence.backUp();
+		game.reset();
+		persistence.save(game.data());
+		game.takeDirty();
+		unsaved = false;
+		stage.clear();
+		arena.clear();
+		effects.clear();
+		jarFlight.clear();
+		helloDue = true;
+	}
+
 	private void challengeFriend(long memberId)
 	{
 		friends.challenge(memberId, friendName(partyService.getMemberById(memberId)), game.data());
@@ -2280,6 +2309,12 @@ public class GielinorGoPlugin extends Plugin
 
 				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.LAST_SEEN_VERSION, current);
 				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.WHATS_NEW_DISMISSED, true);
+			}
+
+			@Override
+			public void resetProgress()
+			{
+				onGameThread(GielinorGoPlugin.this::resetProgress);
 			}
 
 			@Override
