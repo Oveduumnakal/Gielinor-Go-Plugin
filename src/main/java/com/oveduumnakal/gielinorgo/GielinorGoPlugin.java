@@ -206,6 +206,7 @@ public class GielinorGoPlugin extends Plugin
 	private NavigationButton navButton;
 	private boolean loaded;
 	private boolean unsaved;
+	private String saveProfileKey;
 	private int ticks;
 
 	/**
@@ -355,7 +356,11 @@ public class GielinorGoPlugin extends Plugin
 	@Subscribe
 	public void onRuneScapeProfileChanged(RuneScapeProfileChanged event)
 	{
-		clientThread.invoke(this::loadSave);
+		clientThread.invoke(() ->
+		{
+			saveNow();
+			loadSave();
+		});
 	}
 
 	/**
@@ -1044,6 +1049,7 @@ public class GielinorGoPlugin extends Plugin
 
 		director.end();
 		game.load(persistence.load());
+		saveProfileKey = configManager.getRSProfileKey();
 		loaded = true;
 		helloDue = true;
 		helloAsksBack = true;
@@ -1057,11 +1063,7 @@ public class GielinorGoPlugin extends Plugin
 		if (!loaded || game == null)
 			return;
 
-		unsaved |= game.takeDirty();
-		if (!unsaved)
-			return;
-
-		persistence.save(game.data());
+		SaveFlush.write(game, persistence, saveProfileKey, unsaved);
 		unsaved = false;
 	}
 
