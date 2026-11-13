@@ -29,12 +29,12 @@ public class GoGameConditionTest
 	@Before
 	public void setUp()
 	{
-		SpeciesTable table = new SpeciesTable(Arrays.asList(new Species("Imp", 7, CombatType.MELEE),
-			new Species("Lesser demon", 82, CombatType.MELEE), new Species("Zombie", 24, CombatType.MELEE),
-			new Species("Armoured zombie", 105, CombatType.MELEE), new Species("Rat", 1, CombatType.MELEE),
-			new Species("Giant rat", 26, CombatType.MELEE), new Species("Crypt rat", 43, CombatType.MELEE),
-			new Species("Bat", 6, CombatType.MELEE), new Species("Giant bat", 27, CombatType.MELEE),
-			new Species("Dire bat", 142, CombatType.MELEE)));
+		SpeciesTable table = new SpeciesTable(Arrays.asList(new Species("Imp", 7, CombatType.STAB),
+			new Species("Lesser demon", 82, CombatType.STAB), new Species("Zombie", 24, CombatType.STAB),
+			new Species("Armoured zombie", 105, CombatType.STAB), new Species("Rat", 1, CombatType.STAB),
+			new Species("Giant rat", 26, CombatType.STAB), new Species("Crypt rat", 43, CombatType.STAB),
+			new Species("Bat", 6, CombatType.STAB), new Species("Giant bat", 27, CombatType.STAB),
+			new Species("Dire bat", 142, CombatType.STAB)));
 		EvolutionTable evolutions = new EvolutionTable(Arrays.asList(
 			new EvolutionTable.Step("Imp", "Lesser demon", 20),
 			new EvolutionTable.Step("Zombie", "Armoured zombie", 40, EvolutionCondition.NIGHT),

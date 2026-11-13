@@ -32,9 +32,9 @@ public class LogRewardsTest
 	{
 		List<Species> all = new ArrayList<>();
 		for (int i = 0; i < CATCHABLE; i++)
-			all.add(new Species(String.format("Beast %04d", i), 1 + i, CombatType.MELEE));
+			all.add(new Species(String.format("Beast %04d", i), 1 + i, CombatType.STAB));
 
-		all.add(new Species("Quest Beast", 5, CombatType.MELEE).asQuestOnly());
+		all.add(new Species("Quest Beast", 5, CombatType.STAB).asQuestOnly());
 		SpeciesTable table = new SpeciesTable(all);
 		milestones = new Milestones(table, Collections.emptyList());
 		game = new GoGame(table, new Random(3), () -> 0L, notice ->

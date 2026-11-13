@@ -23,8 +23,8 @@ public class LogLineTest
 	public void setUp()
 	{
 		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Imp", 7, CombatType.MAGIC),
-			new Species("Lesser demon", 82, CombatType.MELEE), new Species("Greater demon", 92, CombatType.MELEE),
-			new Species("Rat", 1, CombatType.MELEE)));
+			new Species("Lesser demon", 82, CombatType.STAB), new Species("Greater demon", 92, CombatType.STAB),
+			new Species("Rat", 1, CombatType.STAB)));
 		EvolutionTable evolutions = new EvolutionTable(Arrays.asList(
 			new EvolutionTable.Step("Imp", "Lesser demon", 10),
 			new EvolutionTable.Step("Lesser demon", "Greater demon", 20)), species);
@@ -81,8 +81,8 @@ public class LogLineTest
 	@Test
 	public void aConditionAndABranchShowBesideKnownStages()
 	{
-		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Wolf", 64, CombatType.MELEE),
-			new Species("Dire Wolf", 88, CombatType.MELEE), new Species("Werewolf", 93, CombatType.MELEE)));
+		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Wolf", 64, CombatType.STAB),
+			new Species("Dire Wolf", 88, CombatType.STAB), new Species("Werewolf", 93, CombatType.STAB)));
 		EvolutionTable evolutions = new EvolutionTable(Arrays.asList(
 			new EvolutionTable.Step("Wolf", "Dire Wolf", 55, EvolutionCondition.DAY),
 			new EvolutionTable.Step("Wolf", "Werewolf", 55, EvolutionCondition.NIGHT)), species);
