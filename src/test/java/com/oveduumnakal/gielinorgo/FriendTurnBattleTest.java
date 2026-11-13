@@ -131,8 +131,9 @@ public class FriendTurnBattleTest
 		assertTrue(ann.waitingForFriend());
 		assertFalse(ann.mustChoose());
 		assertEquals(1, ann.turn());
-		assertEquals(1, fromAnn.size());
-		assertEquals(GielinorGoPartyMessage.TURN, fromAnn.get(0).kind());
+		assertEquals(2, fromAnn.size());
+		assertEquals(GielinorGoPartyMessage.READY, fromAnn.get(0).kind());
+		assertEquals(GielinorGoPartyMessage.TURN, fromAnn.get(1).kind());
 
 		bob.opened(0);
 		bob.local(BattleChoice.attack(), 0);
@@ -150,11 +151,11 @@ public class FriendTurnBattleTest
 		ann.opened(0);
 
 		ann.timeout(FriendTurnBattle.TURN_MS - 1);
-		assertTrue(fromAnn.isEmpty());
+		assertEquals(1, fromAnn.size());
 
 		ann.timeout(FriendTurnBattle.TURN_MS);
-		assertEquals(1, fromAnn.size());
-		assertEquals("A", fromAnn.get(0).choice());
+		assertEquals(2, fromAnn.size());
+		assertEquals("A", fromAnn.get(1).choice());
 		assertFalse(ann.mustChoose());
 		assertNull(ann.ended());
 	}
@@ -327,5 +328,117 @@ public class FriendTurnBattleTest
 		assertNotNull(played);
 		assertEquals(ItemType.LARGE_SALVE, played.mine().itemType());
 		assertEquals(hurtAnn.state().stateHash(), seenByBob.state().stateHash());
+	}
+
+	private static boolean sentKind(List<GielinorGoPartyMessage> sent, String kind)
+	{
+		for (GielinorGoPartyMessage message : sent)
+		{
+			if (kind.equals(message.kind()))
+				return true;
+		}
+
+		return false;
+	}
+
+	@Test
+	public void openingATurnTellsTheFriendOncePerTurn()
+	{
+		ann.opened(0);
+		ann.opened(5_000);
+
+		assertEquals(1, fromAnn.size());
+		assertEquals(GielinorGoPartyMessage.READY, fromAnn.get(0).kind());
+		assertEquals(BOB, fromAnn.get(0).to());
+		assertEquals(BATTLE, fromAnn.get(0).battle());
+		assertEquals(1, fromAnn.get(0).turn());
+	}
+
+	@Test
+	public void aFriendWhoStopsAnsweringEndsItAndIsToldWithLeave()
+	{
+		ann.opened(0);
+		ann.local(BattleChoice.attack(), 0);
+		fromAnn.clear();
+
+		ann.timeout(FriendTurnBattle.TURN_MS + FriendTurnBattle.GRACE_MS);
+
+		assertEquals(FriendTurnBattle.End.SILENT, ann.ended());
+		assertTrue(sentKind(fromAnn, GielinorGoPartyMessage.LEAVE));
+	}
+
+	@Test
+	public void aBattleThatGoesOutOfStepIsToldToTheFriendWithLeave()
+	{
+		ann.opened(0);
+		fromAnn.clear();
+
+		ann.remote(from(BOB, GielinorGoPartyMessage.turn(ANN, BATTLE, 9, "A", 0)), 0);
+
+		assertEquals(FriendTurnBattle.End.OUT_OF_STEP, ann.ended());
+		assertTrue(sentKind(fromAnn, GielinorGoPartyMessage.LEAVE));
+	}
+
+	@Test
+	public void aFriendWhoLeavesIsNotToldWithLeaveInReturn()
+	{
+		ann.opened(0);
+		fromAnn.clear();
+
+		ann.remote(from(BOB, GielinorGoPartyMessage.leave(ANN, BATTLE)), 0);
+
+		assertEquals(FriendTurnBattle.End.LEFT, ann.ended());
+		assertFalse(sentKind(fromAnn, GielinorGoPartyMessage.LEAVE));
+	}
+
+	@Test
+	public void theWaitForTheFriendCountsFromTheLaterOfTheTwoOpenings()
+	{
+		ann.opened(0);
+		ann.local(BattleChoice.attack(), 0);
+		ann.remote(from(BOB, GielinorGoPartyMessage.ready(ANN, BATTLE, 1)), 25_000);
+
+		ann.timeout(FriendTurnBattle.TURN_MS + FriendTurnBattle.GRACE_MS);
+		assertNull(ann.ended());
+
+		ann.timeout(25_000 + FriendTurnBattle.TURN_MS + FriendTurnBattle.GRACE_MS - 1);
+		assertNull(ann.ended());
+
+		ann.timeout(25_000 + FriendTurnBattle.TURN_MS + FriendTurnBattle.GRACE_MS);
+		assertEquals(FriendTurnBattle.End.SILENT, ann.ended());
+	}
+
+	@Test
+	public void aFriendWhoNeverOpensTheTurnEndsItThirtySecondsAfterMine()
+	{
+		ann.opened(4_000);
+		ann.local(BattleChoice.attack(), 4_000);
+
+		ann.timeout(4_000 + FriendTurnBattle.TURN_MS + FriendTurnBattle.GRACE_MS - 1);
+		assertNull(ann.ended());
+
+		ann.timeout(4_000 + FriendTurnBattle.TURN_MS + FriendTurnBattle.GRACE_MS);
+		assertEquals(FriendTurnBattle.End.SILENT, ann.ended());
+	}
+
+	@Test
+	public void aReadyFromThePastDoesNotDelayTheNextTurn()
+	{
+		ann.opened(0);
+		ann.local(BattleChoice.attack(), 0);
+		ann.remote(from(BOB, GielinorGoPartyMessage.ready(ANN, BATTLE, 1)), 0);
+		bob.opened(0);
+		bob.local(BattleChoice.attack(), 0);
+		for (GielinorGoPartyMessage message : fromBob)
+			ann.remote(from(BOB, message), 1_000);
+
+		assertNull(ann.ended());
+		assertEquals(2, ann.turn());
+		ann.opened(2_000);
+		ann.local(ann.automatic(), 2_000);
+
+		ann.timeout(2_000 + FriendTurnBattle.TURN_MS + FriendTurnBattle.GRACE_MS);
+
+		assertEquals(FriendTurnBattle.End.SILENT, ann.ended());
 	}
 }

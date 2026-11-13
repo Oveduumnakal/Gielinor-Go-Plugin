@@ -161,6 +161,7 @@ final class GoGame
 	private MoveTable moves = MoveTable.empty();
 	private Random starterRandom = new Random();
 	private List<Creature> starters;
+	private Long starterSeed;
 
 	/**
 	 * Creates a game with a fresh save.
@@ -234,6 +235,7 @@ final class GoGame
 		settleMoves();
 		log = null;
 		starters = null;
+		bossEggsWaiting.clear();
 		xpCarry = 0;
 		dirty = false;
 		run = null;
@@ -253,8 +255,21 @@ final class GoGame
 	}
 
 	/**
+	 * Sets a stable seed for the starter rolls, usually one made from the account. With a seed, every roll of the
+	 * offer starts from it, so the same account is offered the same three starters after a relog, a profile switch or
+	 * a reset, and a pick always means the starter that was shown.
+	 *
+	 * @param seed the seed, or null to roll from the random source of {@link #starterRandom(Random)}
+	 */
+	void starterSeed(Long seed)
+	{
+		starterSeed = seed;
+	}
+
+	/**
 	 * Gives the starters on offer. They are rolled when first asked for and kept until picked or the offer ends,
-	 * so closing and opening the panel never rerolls them.
+	 * so closing and opening the panel never rerolls them. With a seed from {@link #starterSeed(Long)} a roll after a
+	 * load gives the same three again.
 	 *
 	 * @return the three starters with what they grow into; empty when no starter is offered
 	 */
@@ -273,7 +288,8 @@ final class GoGame
 		}
 
 		if (starters == null)
-			starters = StarterRules.roll(starterRandom, clock.getAsLong());
+			starters = StarterRules.roll(starterSeed == null ? starterRandom : new Random(starterSeed),
+				clock.getAsLong());
 
 		List<CreatureView> shown = views(starters, clock.getAsLong());
 		List<StarterView> offer = new ArrayList<>();
@@ -1053,8 +1069,9 @@ final class GoGame
 
 	/**
 	 * Starts the player's side of a battle against a friend, played turn by turn. The teams are the ones both players
-	 * sent, at full health, so nothing is read from the save but the creatures behind the fighters; nothing is paid
-	 * when it ends and no health is written back. Only an item used in it is taken from the save.
+	 * sent, at full health, so nothing is read from the save but the creatures behind the fighters and how many of
+	 * each item the player owns, which is copied into a budget for this battle. Nothing is paid when it ends, no
+	 * health is written back, and no item is ever taken from the save.
 	 *
 	 * @param battle the battle shared with the friend
 	 * @return the battle
@@ -1070,12 +1087,13 @@ final class GoGame
 		}
 
 		BattleLine opening = new BattleLine("Battle with " + battle.friendName() + "!", Tone.INFO, true);
-		return new BattleSession(state, fighters, null, null, opening).friend(battle);
+		return new BattleSession(state, fighters, null, null, opening).friend(battle).friendItems(itemCounts());
 	}
 
 	/**
 	 * Takes the player's choice for a turn of a battle against a friend and sends it. The turn is played when the
-	 * friend's choice is in as well, and then comes out of {@link #friendTurn}. An item must be owned.
+	 * friend's choice is in as well, and then comes out of {@link #friendTurn}. An item must be left in the budget
+	 * the battle began with.
 	 *
 	 * @param session the battle
 	 * @param choice what the player does
@@ -1085,7 +1103,7 @@ final class GoGame
 	{
 		FriendTurnBattle battle = session.friendTurn();
 		ItemType item = choice.kind() == BattleChoice.Kind.ITEM ? choice.itemType() : null;
-		if (item != null && data.itemCount(item) <= 0)
+		if (item != null && session.friendItemsLeft(item) <= 0)
 		{
 			tell("No " + item.label() + " left", Tone.BAD);
 			return false;
@@ -1105,7 +1123,7 @@ final class GoGame
 
 	/**
 	 * Takes the next turn of a battle against a friend that has been played since the last call. An item the player
-	 * chose in it is taken from the save now.
+	 * chose in it is counted down in the battle's budget; the save is not touched.
 	 *
 	 * @param session the battle
 	 * @return the turn, from the player's side, or null when none has been played
@@ -1118,11 +1136,8 @@ final class GoGame
 
 		BattleChoice mine = played.mine();
 		ItemType item = mine != null && mine.kind() == BattleChoice.Kind.ITEM ? mine.itemType() : null;
-		if (item != null && data.itemCount(item) > 0)
-		{
-			data.addItems(item, -1);
-			dirty = true;
-		}
+		if (item != null)
+			session.useFriendItem(item);
 
 		return played.result();
 	}
@@ -1329,7 +1344,7 @@ final class GoGame
 		JarType jar = jarToThrow();
 		boolean canCatch = session.wild() && jar != null && !state.needsSwitch();
 		BattleView view = new BattleView(state.mine(), state.foe(), state.needsSwitch(), canCatch, jar,
-			jar == null ? 0 : data.jarCount(jar), secondsLeft, timeLeft, options, itemOptions(state));
+			jar == null ? 0 : data.jarCount(jar), secondsLeft, timeLeft, options, itemOptions(session));
 		FriendTurnBattle friend = session.friendTurn();
 		return friend == null ? view : view.againstFriend(friend.friendName(), !friend.mustChoose());
 	}
@@ -1337,15 +1352,16 @@ final class GoGame
 	/**
 	 * Lists the items the player owns that would do something in a battle right now, with their targets.
 	 *
-	 * @param state the battle
+	 * @param session the battle; against a friend the count is what is left of the battle's own budget
 	 * @return one option per such item, in item order
 	 */
-	private List<BattleView.ItemOption> itemOptions(BattleState state)
+	private List<BattleView.ItemOption> itemOptions(BattleSession session)
 	{
+		BattleState state = session.state();
 		List<BattleView.ItemOption> items = new ArrayList<>();
 		for (ItemType type : ItemType.values())
 		{
-			int count = data.itemCount(type);
+			int count = itemsFor(session, type);
 			List<BattleView.Option> targets = new ArrayList<>();
 			for (int place : state.itemTargets(type))
 			{
@@ -1373,13 +1389,24 @@ final class GoGame
 		for (ItemType type : ItemType.values())
 		{
 			List<Integer> targets = state.itemTargets(type);
-			if (data.itemCount(type) <= 0 || targets.isEmpty())
+			if (itemsFor(session, type) <= 0 || targets.isEmpty())
 				continue;
 
 			return BattleChoice.item(type, targets.contains(state.myIndex()) ? state.myIndex() : targets.get(0));
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param session a battle
+	 * @param type an item
+	 * @return how many of it the player may use in the battle: the budget it began with when the battle is against a
+	 *     friend, otherwise what the save holds
+	 */
+	private int itemsFor(BattleSession session, ItemType type)
+	{
+		return session.friendTurn() != null ? session.friendItemsLeft(type) : data.itemCount(type);
 	}
 
 	private void writeHealth(BattleSession session)
@@ -1854,10 +1881,10 @@ final class GoGame
 		long now = clock.getAsLong();
 		long today = taskCalendar.dayOf(now);
 		Long paid = data.rematchDay.get(champion.id());
-		if (paid == null || paid.longValue() != today)
+		if (paid == null || paid.longValue() < today)
 			return "Reward ready";
 
-		long left = (today + 1) * DAY_MILLIS - now;
+		long left = (paid.longValue() + 1) * DAY_MILLIS - now;
 		return "Reward again in " + Math.max(1L, (left + HOUR_MILLIS - 1) / HOUR_MILLIS) + " h";
 	}
 
@@ -2190,7 +2217,7 @@ final class GoGame
 		long today = taskCalendar.dayOf(clock.getAsLong());
 		boolean first = data.goldSigils.add(foe.id());
 		Long paid = data.rematchDay.get(foe.id());
-		boolean daily = paid == null || paid.longValue() != today;
+		boolean daily = paid == null || paid.longValue() < today;
 		dirty = true;
 		shareXp(daily ? creatureXp : creatureXp / 2);
 		if (!daily)

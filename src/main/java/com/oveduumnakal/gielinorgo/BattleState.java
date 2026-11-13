@@ -450,20 +450,26 @@ final class BattleState
 
 	/**
 	 * Ends a round: poison, venom and burn take their health, the creature that attacked first taking its share
-	 * first, and a creature that faints ends the round for the other. Nothing happens when either is already down.
+	 * first, or when nobody has attacked yet this pairing the one {@link BattleSim#movesFirst} puts first, and a
+	 * creature that faints ends the round for the other. Nothing happens when either is already down.
 	 */
 	private void endRound(Turn turn)
 	{
 		if (mine().fainted() || foe().fainted())
 			return;
 
-		Combatant mineNow = mine();
-		Combatant foeNow = foe();
-		boolean quicker = mineNow.speed() == foeNow.speed() ? mineIsFirst : mineNow.speed() > foeNow.speed();
-		boolean mineFirstNow = orderKnown ? mineFirst : quicker;
+		if (!orderKnown && (bites(mine()) || bites(foe())))
+			decideOrder();
+
+		boolean mineFirstNow = mineFirst;
 		hurtByStatus(turn, mineFirstNow);
 		if (!mine().fainted() && !foe().fainted())
 			hurtByStatus(turn, !mineFirstNow);
+	}
+
+	private static boolean bites(Combatant one)
+	{
+		return one.status() != null && one.status().damaging();
 	}
 
 	private void hurtByStatus(Turn turn, boolean aboutMine)

@@ -321,6 +321,21 @@ public class GoGameRematchTest
 		}
 	}
 
+	@Test
+	public void aClockSetBackDoesNotPayTheDailyRewardAgain()
+	{
+		game.data().eliteClears = 1;
+		fight();
+		int jars = game.data().jarCount(JarType.DRAGON);
+
+		now -= DAY;
+		fight();
+		now += DAY;
+		fight();
+
+		assertEquals(jars, game.data().jarCount(JarType.DRAGON));
+	}
+
 	private static Reader open(String name)
 	{
 		InputStream in = GoGameRematchTest.class.getResourceAsStream(name);

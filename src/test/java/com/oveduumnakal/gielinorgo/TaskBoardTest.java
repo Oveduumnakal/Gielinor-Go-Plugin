@@ -228,6 +228,24 @@ public class TaskBoardTest
 	}
 
 	@Test
+	public void aClockSetBackDoesNotStartADayAgain()
+	{
+		startOn(20_000L);
+		board.recordCatch();
+		board.rollover(20_001L * DAY);
+		board.recordCatch();
+		progress.daily[0] = 2;
+
+		board.rollover(20_000L * DAY);
+		board.rollover(20_001L * DAY);
+
+		assertEquals(2, progress.daily[0]);
+		assertEquals(20_001L, progress.day);
+		assertNull(board.recordCatch());
+		assertEquals(2, progress.streak);
+	}
+
+	@Test
 	public void aSkippedDayDoesNotResetTheDaysPlayed()
 	{
 		startOn(20_000L);
