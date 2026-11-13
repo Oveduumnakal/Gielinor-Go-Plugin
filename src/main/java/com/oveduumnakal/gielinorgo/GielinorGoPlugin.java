@@ -41,6 +41,7 @@ import net.runelite.api.Skill;
 import net.runelite.api.WorldType;
 import net.runelite.api.WorldView;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameObjectDespawned;
 import net.runelite.api.events.GameObjectSpawned;
@@ -95,6 +96,9 @@ public class GielinorGoPlugin extends Plugin
 
 	/** Farthest from the player, in tiles, a monster may be and still turn wild: its creature would leave beyond. */
 	private static final int SPAWN_RANGE = WildLife.LEAVE_TILES - 5;
+
+	/** Rarity used to read a species' event boost back out of the calendar's chance: the chance times this. */
+	private static final int BOOST_ONE_IN = 100;
 
 	/** Game ticks between side panel refreshes while nothing changes, so resting health still creeps up. */
 	private static final int PANEL_TICKS = 5;
@@ -154,6 +158,7 @@ public class GielinorGoPlugin extends Plugin
 	private WSClient wsClient;
 
 	private final Random random = new Random();
+	private final CombatWatch combatWatch = new CombatWatch();
 	private final Map<Integer, NPC> candidates = new HashMap<>();
 	private final Map<Skill, Integer> lastXp = new EnumMap<>(Skill.class);
 	private final Map<Skill, Integer> lastLevel = new EnumMap<>(Skill.class);
@@ -163,6 +168,8 @@ public class GielinorGoPlugin extends Plugin
 	private WildTracker tracker = new WildTracker(random);
 	private final SpawnClock spawnClock = SpawnClock.system();
 	private SpawnCalendar calendar;
+	private SkillingTable skilling = SkillingTable.empty();
+	private long lastSkillingMs = -SkillingRules.COOLDOWN_MS;
 	private GoGame game;
 	private GoPersistence persistence;
 	private WildOverlay wildOverlay;
@@ -221,6 +228,7 @@ public class GielinorGoPlugin extends Plugin
 			System::currentTimeMillis, this::announce);
 		calendar = new SpawnCalendar(species);
 		game.milestones(loadMilestones(species));
+		game.bosses(loadBosses(species));
 		game.setCues(this::playCue);
 		game.elite(loadElite(species));
 		game.moves(loadMoves());
@@ -235,6 +243,8 @@ public class GielinorGoPlugin extends Plugin
 		lastHelloTick = -HELLO_TICKS;
 		persistence = new GoPersistence(configManager, gson);
 		AnimationTable animations = loadAnimations();
+		skilling = loadSkilling(species, animations);
+		lastSkillingMs = -SkillingRules.COOLDOWN_MS;
 		bodies = new WildBodies(client, animations, random);
 		wildOverlay = new WildOverlay(client, bodies, config, outlineRenderer);
 		floatingText = new FloatingTextOverlay(client, noticeBoard, this::spotFor, this::tagFor);
@@ -256,6 +266,7 @@ public class GielinorGoPlugin extends Plugin
 			config::itemKey, () -> choiceOpen, this::hotkeyPressed);
 		keyManager.registerKeyListener(hotkeys);
 		panel = new GoPanel(panelActions(), portraits);
+		panel.whatsNew(detectVersionChange());
 		BufferedImage icon = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
 		navButton = NavigationButton.builder()
 			.tooltip("Gielinor Go")
@@ -515,6 +526,30 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
+	 * Reads the game's kill-count lines. A boss or raid the table knows can give its egg. Only game messages are
+	 * read, and nothing about the loot is looked at.
+	 *
+	 * @param event the chat message
+	 */
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		if (!loaded || game == null || event.getType() != ChatMessageType.GAMEMESSAGE)
+			return;
+
+		try
+		{
+			String name = BossRules.killedName(Text.removeTags(event.getMessage()));
+			if (name != null)
+				game.bossKilled(name);
+		}
+		catch (RuntimeException e)
+		{
+			log.warn("Gielinor Go: could not read a kill-count line", e);
+		}
+	}
+
+	/**
 	 * Trains the team from an XP drop, and rewards level-ups.
 	 *
 	 * @param event the stat change
@@ -529,8 +564,61 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		game.addSkillXp(skill.name(), event.getXp() - previousXp);
+		skillingEncounter(skill.name(), event.getXp() - previousXp, event.getLevel());
 		if (event.getLevel() > previousLevel)
 			game.onLevelUp();
+	}
+
+	/**
+	 * Gives an XP drop in a gathering skill its chance to bring a wild creature beside the player. Nothing happens
+	 * with the setting off, where creatures cannot be wild, inside the cooldown or with three creatures out already.
+	 *
+	 * @param skill the skill's name in capitals
+	 * @param xpGained OSRS XP in the drop
+	 * @param skillLevel the player's level in the skill
+	 */
+	private void skillingEncounter(String skill, int xpGained, int skillLevel)
+	{
+		try
+		{
+			long now = System.currentTimeMillis();
+			if (xpGained <= 0 || !SkillingRules.gathering(skill) || !config.skillingEncounters() || !playable()
+				|| !SkillingRules.ready(lastSkillingMs, now) || tracker.all().size() >= WildTracker.MAX_WILD)
+				return;
+
+			Species species = skilling.pick(skill, skillLevel, random);
+			if (species == null)
+				return;
+
+			boolean events = config.spawnEvents();
+			double boost = calendar.chance(species, BOOST_ONE_IN, events, spawnClock) * BOOST_ONE_IN;
+			if (random.nextDouble() >= SkillingRules.chance(xpGained, config.wildChance()) * boost)
+				return;
+
+			Player player = client.getLocalPlayer();
+			WorldPoint point = player == null ? null : player.getWorldLocation();
+			boolean underground = point != null && Terrain.underground(point.getX(), point.getY());
+			WildEntry entry = tracker.offerLoose(species, underground,
+				game.gildedOneIn(calendar.gildedOneIn(species, events, spawnClock)), events);
+			if (entry == null)
+				return;
+
+			if (bodies.spawnBesidePlayer(entry, now) == null)
+			{
+				tracker.withdrawLoose(entry);
+				return;
+			}
+
+			lastSkillingMs = now;
+			game.markSeen(entry);
+			String kind = entry.gilded() ? "A gilded " : entry.roaming() ? "A roaming " : "A wild ";
+			announce(Notice.creature(entry.wildId(), kind + species.name() + " " + skilling.message(skill) + "!",
+				entry.gilded() || entry.roaming() ? Tone.FIND : Tone.INFO));
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: a skilling encounter failed", e);
+		}
 	}
 
 	/**
@@ -546,6 +634,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		ticks++;
+		watchCombat();
 		steering();
 		battleScene();
 		noticeBoard.tick(System.currentTimeMillis());
@@ -783,6 +872,25 @@ public class GielinorGoPlugin extends Plugin
 		}
 	}
 
+	private BossTable loadBosses(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(BossTable.RESOURCE))
+		{
+			if (in == null)
+				return BossTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return BossTable.load(gson, reader, species);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the boss list", e);
+			return BossTable.empty();
+		}
+	}
+
 	private EliteTable loadElite(SpeciesTable species)
 	{
 		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(EliteTable.RESOURCE))
@@ -837,6 +945,25 @@ public class GielinorGoPlugin extends Plugin
 		{
 			log.warn("Gielinor Go: could not read the move list", e);
 			return MoveTable.empty();
+		}
+	}
+
+	private SkillingTable loadSkilling(SpeciesTable species, AnimationTable animations)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(SkillingTable.RESOURCE))
+		{
+			if (in == null)
+				return SkillingTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return SkillingTable.load(gson, reader, species, animations);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the skilling list", e);
+			return SkillingTable.empty();
 		}
 	}
 
@@ -1221,7 +1348,7 @@ public class GielinorGoPlugin extends Plugin
 			return null;
 
 		Species found = game.speciesFor(Text.removeTags(npc.getName()));
-		return found == null || found.questOnly() ? null : found;
+		return found == null || found.questOnly() || skilling.exclusive(found) ? null : found;
 	}
 
 	/** @return whether wild creatures may appear where the player is right now */
@@ -1331,6 +1458,40 @@ public class GielinorGoPlugin extends Plugin
 		game.setBankNear(bankSpots.near(point.getX(), point.getY(), point.getPlane()));
 	}
 
+	/**
+	 * Notes whether the player is fighting a real monster this tick: they are interacting with an NPC, or an NPC is
+	 * interacting with them.
+	 */
+	private void watchCombat()
+	{
+		try
+		{
+			Player player = client.getLocalPlayer();
+			WorldView view = client.getTopLevelWorldView();
+			if (player == null || view == null)
+			{
+				combatWatch.reset();
+				return;
+			}
+
+			boolean fighting = player.getInteracting() instanceof NPC;
+			for (NPC npc : view.npcs())
+			{
+				if (fighting)
+					break;
+
+				fighting = npc.getInteracting() == player;
+			}
+
+			if (fighting)
+				combatWatch.noteFighting(System.currentTimeMillis());
+		}
+		catch (RuntimeException e)
+		{
+			log.debug("Gielinor Go: could not tell whether the player is in combat", e);
+		}
+	}
+
 	private void addWildOptions(WildEntry entry)
 	{
 		Species species = entry.species();
@@ -1339,26 +1500,31 @@ public class GielinorGoPlugin extends Plugin
 		String target = entry.prefix() + name + " (Lv " + entry.level() + ")";
 		int wildId = entry.wildId();
 		WildBody body = bodies.get(wildId);
-		boolean withBattle = !entry.battled() && !director.active() && body != null && !body.life().leaving();
+		boolean canBattle = game.canBattle(System.currentTimeMillis());
+		boolean withBattle = !entry.battled() && !director.active() && body != null && !body.life().leaving()
+			&& canBattle;
 		List<WildMenu.Item> items = WildMenu.topFirst(game.jarToThrow(), game.matchingSpecialtyJars(entry),
-			withBattle, WildMenu.leftClickCatches(knockedOut(wildId)));
+			withBattle, WildMenu.leftClickCatches(knockedOut(wildId), canBattle));
+		boolean leftClick = WildMenu.leftClickAllowed(config.leftClickWild(),
+			combatWatch.inCombat(System.currentTimeMillis()));
 		for (int i = items.size() - 1; i >= 0; i--)
 		{
 			WildMenu.Item item = items.get(i);
 			if (item.isCatch())
-				addCatchOption(entry, target, item.jar());
+				addCatchOption(entry, target, item.jar(), leftClick);
 			else
-				addBattleOption(wildId, target);
+				addBattleOption(wildId, target, leftClick);
 		}
 	}
 
-	private void addBattleOption(int wildId, String target)
+	private void addBattleOption(int wildId, String target, boolean leftClick)
 	{
 		client.getMenu()
 			.createMenuEntry(-1)
 			.setOption(WildMenu.BATTLE)
 			.setTarget(target)
 			.setType(MenuAction.RUNELITE)
+			.setDeprioritized(!leftClick)
 			.onClick(clicked -> battle(wildId));
 	}
 
@@ -1368,8 +1534,9 @@ public class GielinorGoPlugin extends Plugin
 	 * @param entry the wild creature
 	 * @param target the coloured creature name and level
 	 * @param jar the jar this option throws, or null when the player has none
+	 * @param leftClick whether the entry may take the left click; false sinks it below the game's own entries
 	 */
-	private void addCatchOption(WildEntry entry, String target, JarType jar)
+	private void addCatchOption(WildEntry entry, String target, JarType jar, boolean leftClick)
 	{
 		int wildId = entry.wildId();
 		String odds = " - no jars";
@@ -1386,6 +1553,7 @@ public class GielinorGoPlugin extends Plugin
 			.setOption(WildMenu.CATCH)
 			.setTarget(target + odds)
 			.setType(MenuAction.RUNELITE)
+			.setDeprioritized(!leftClick)
 			.onClick(clicked -> throwJar(wildId, jar));
 	}
 
@@ -2092,11 +2260,48 @@ public class GielinorGoPlugin extends Plugin
 			: Notice.creature(wildId, line.text(), line.tone());
 	}
 
+	/**
+	 * Compares the version in the change log with the one stored the last time the change log was opened. A first
+	 * install records the current version without telling the player what changed.
+	 *
+	 * @return true when the panel should show What's New
+	 */
+	private boolean detectVersionChange()
+	{
+		String current = Changelog.load().currentVersion();
+		String lastSeen = config.lastSeenVersion();
+		if (WhatsNew.recordSilently(lastSeen, current))
+		{
+			configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.LAST_SEEN_VERSION, current);
+			return false;
+		}
+
+		boolean dismissed = config.whatsNewDismissed();
+		if (dismissed && current != null && !current.equals(lastSeen))
+		{
+			configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.WHATS_NEW_DISMISSED, false);
+			dismissed = false;
+		}
+
+		return WhatsNew.shouldShow(lastSeen, current, dismissed);
+	}
+
 	/** @return the panel's actions, each carried over to the game thread and followed by a panel refresh */
 	private PanelActions panelActions()
 	{
 		return new PanelActions()
 		{
+			@Override
+			public void whatsNewSeen()
+			{
+				String current = Changelog.load().currentVersion();
+				if (current == null)
+					return;
+
+				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.LAST_SEEN_VERSION, current);
+				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.WHATS_NEW_DISMISSED, true);
+			}
+
 			@Override
 			public void setLead(int teamIndex)
 			{
