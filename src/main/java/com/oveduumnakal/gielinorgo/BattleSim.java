@@ -189,6 +189,9 @@ final class BattleSim
 	{
 		double spread = VARIANCE_FLOOR + VARIANCE_RANGE * random.nextDouble();
 		double raw = attacker.attack() * move.style().multiplierAgainst(defender.type()) * move.power() * spread;
+		if (attacker.status() == Status.BURN && move.style() == CombatType.MELEE)
+			raw *= Status.BURN_MELEE;
+
 		return Math.max(1, (int) Math.round(raw - defender.defence() / 2.0));
 	}
 
@@ -254,6 +257,64 @@ final class BattleSim
 		String text = attacker.name() + "'s " + move.name() + " missed";
 		BattleLine.Kind kind = mine ? BattleLine.Kind.LEAD_HIT : BattleLine.Kind.FOE_HIT;
 		return new BattleLine(text, Tone.INFO, !mine, kind, move.second(), move.style(), move.icy(), true);
+	}
+
+	/**
+	 * The line for a status put on a creature, such as {@code Goblin is poisoned!}.
+	 *
+	 * @param victim the creature that has it now
+	 * @param status the status
+	 * @param mine whether the victim is the player's creature
+	 * @return the line, over the victim
+	 */
+	static BattleLine afflicted(Combatant victim, Status status, boolean mine)
+	{
+		return new BattleLine(victim.name() + " is " + status.past() + "!", mine ? Tone.BAD : Tone.GOOD, mine,
+			BattleLine.Kind.STATUS);
+	}
+
+	/**
+	 * The line for health lost to poison, venom or burn at the end of a round.
+	 *
+	 * @param victim the creature that was hurt
+	 * @param status the status that hurt it
+	 * @param damage the health taken
+	 * @param mine whether the victim is the player's creature
+	 * @return the line, over the victim
+	 */
+	static BattleLine statusDamage(Combatant victim, Status status, int damage, boolean mine)
+	{
+		String health = " (" + (int) Math.ceil(victim.hp()) + "/" + victim.maxHp() + ")";
+		return new BattleLine(victim.name() + " is hurt by " + status.noun() + " -" + damage + health,
+			mine ? Tone.BAD : Tone.GOOD, mine, BattleLine.Kind.STATUS_DAMAGE);
+	}
+
+	/**
+	 * The line for a creature that loses its turn to freeze or stun.
+	 *
+	 * @param victim the creature that cannot move
+	 * @param status the status that stops it
+	 * @param mine whether the victim is the player's creature
+	 * @return the line, over the victim
+	 */
+	static BattleLine skipped(Combatant victim, Status status, boolean mine)
+	{
+		String text = status == Status.FREEZE ? victim.name() + " is frozen solid"
+			: victim.name() + " is stunned and cannot move";
+		return new BattleLine(text, mine ? Tone.BAD : Tone.GOOD, mine, BattleLine.Kind.SKIPPED);
+	}
+
+	/**
+	 * The line for a status that wore off.
+	 *
+	 * @param victim the creature that is free of it
+	 * @param mine whether the creature is the player's
+	 * @return the line, over the creature
+	 */
+	static BattleLine shookOff(Combatant victim, boolean mine)
+	{
+		return new BattleLine(victim.name() + " shook it off", mine ? Tone.GOOD : Tone.INFO, mine,
+			BattleLine.Kind.STATUS);
 	}
 
 	/**

@@ -20,10 +20,17 @@ import java.util.Random;
  * decided once for each pairing of two creatures, by {@link BattleSim#movesFirst}, the first time they attack.
  *
  * <p>Every attack makes its random calls in this fixed order, and a call that has nothing to decide is not made, so
- * a creature with one move of accuracy 1 makes exactly the calls battles made before moves existed: (1) the pick of
- * the move, one draw, only when the attacker has more than one move and was not told which to use; (2) the accuracy
- * roll, one draw, only when the move's accuracy is below 1; (3) the damage spread, one draw, only when the move
- * hits. The pick is weighted by power times accuracy times the combat triangle against the opposing creature.
+ * a creature with one move of accuracy 1 and no status makes exactly the calls battles made before moves existed:
+ * (1) the stun roll, one draw, only when the attacker is stunned; a frozen or stunned creature that loses its turn
+ * makes no other call; (2) the pick of the move, one draw, only when the attacker has more than one move and was not
+ * told which to use; the pick is weighted by power times accuracy times the combat triangle against the opposing
+ * creature, and every known move keeps a weight above zero; (3) the accuracy
+ * roll, one draw, only when the move's accuracy is below 1; (4) the damage spread, one draw, only when the move
+ * hits; (5) the effect roll, one draw, only when the move hits, the defender is still up and free of a status, and
+ * the move has an effect that could be put on it; (6) the trait roll of a poisonous attacker's melee hit, one draw,
+ * only when the hit is still unaffected and the defender can be poisoned; (7) when a freeze was just put on, one
+ * {@code nextInt} draw for its length. At the end of a round, poison, venom and burn take health with no draw, the
+ * creature that moved first taking its share first.
  *
  * <p>The other choices come first in their turn: a switch, a jar or a run happens before the opposing creature
  * attacks, whoever is faster. A switch costs the turn: the opposing creature attacks the one that stepped in. A
@@ -305,6 +312,7 @@ final class BattleState
 		decideOrder();
 		attackIfAble(mineFirst, turn, moveIndex);
 		attackIfAble(!mineFirst, turn, moveIndex);
+		endRound(turn);
 		settle(turn);
 	}
 
@@ -331,9 +339,23 @@ final class BattleState
 
 		Combatant attacker = mineAttacks ? mine() : foe();
 		Combatant defender = mineAttacks ? foe() : mine();
+		Status held = attacker.status();
+		if (attacker.skipsTurn(random))
+		{
+			note(turn, BattleSim.skipped(attacker, held, wordingOf(mineAttacks)), mineAttacks, held);
+			if (attacker.status() == null)
+				note(turn, BattleSim.shookOff(attacker, wordingOf(mineAttacks)), mineAttacks, null);
+
+			return;
+		}
+
+		if (held != null && attacker.status() == null)
+			note(turn, BattleSim.shookOff(attacker, wordingOf(mineAttacks)), mineAttacks, null);
+
 		Move move = pick(attacker, defender, mineAttacks ? moveIndex : -1);
 		boolean wording = mineAttacks == mode.mineFirstWording;
 		BattleLine line;
+		Status inflicted = null;
 		if (move.accuracy() < 1.0 && random.nextDouble() >= move.accuracy())
 		{
 			line = BattleSim.miss(attacker, wording, move);
@@ -343,6 +365,7 @@ final class BattleState
 			int damage = BattleSim.damage(attacker, move, defender, random);
 			defender.hit(damage);
 			line = BattleSim.strike(attacker, defender, damage, wording, move);
+			inflicted = rollStatus(attacker, defender, move);
 		}
 
 		turn.hits.add(line);
@@ -350,6 +373,88 @@ final class BattleState
 		duelHits.add(line);
 		attacks++;
 		totalAttacks++;
+		if (inflicted != null)
+			note(turn, BattleSim.afflicted(defender, inflicted, wordingOf(!mineAttacks)), !mineAttacks, inflicted);
+	}
+
+	/**
+	 * Rolls what a hit does besides damage: the move's own effect first, then the trait rule that lets a poisonous
+	 * creature poison with a melee hit. A roll that cannot change anything is not made.
+	 *
+	 * @return the status put on the defender, or null for none
+	 */
+	private Status rollStatus(Combatant attacker, Combatant defender, Move move)
+	{
+		if (defender.fainted())
+			return null;
+
+		Move.Effect effect = move.effect();
+		Status wanted = effect == null ? null : Status.named(effect.status());
+		if (wanted != null && effect.chance() > 0 && defender.canAfflict(wanted)
+			&& random.nextDouble() < effect.chance() && defender.afflict(wanted, random))
+			return wanted;
+
+		if (move.style() == CombatType.MELEE && attacker.traits().contains(Trait.POISONOUS)
+			&& defender.canAfflict(Status.POISON) && random.nextDouble() < Status.POISONOUS_HIT_CHANCE
+			&& defender.afflict(Status.POISON, random))
+			return Status.POISON;
+
+		return null;
+	}
+
+	private boolean wordingOf(boolean playersCreature)
+	{
+		return playersCreature == mode.mineFirstWording;
+	}
+
+	/**
+	 * Records a line about a status. It is acted out as a beat of its own and carries the status each side has once
+	 * it has happened, so a scene can show the tags.
+	 *
+	 * @param turn the turn
+	 * @param line the line
+	 * @param aboutMine whether the creature the line is about is the player's
+	 * @param shown the status that creature still shows at this line, null when it has none by now
+	 */
+	private void note(Turn turn, BattleLine line, boolean aboutMine, Status shown)
+	{
+		Status mineShows = aboutMine ? shown : mine().status();
+		Status foeShows = aboutMine ? foe().status() : shown;
+		BattleLine tagged = line.withTags(mineShows, foeShows);
+		turn.hits.add(tagged);
+		turn.lines.add(tagged);
+		duelHits.add(tagged);
+	}
+
+	/**
+	 * Ends a round: poison, venom and burn take their health, the creature that attacked first taking its share
+	 * first, and a creature that faints ends the round for the other. Nothing happens when either is already down.
+	 */
+	private void endRound(Turn turn)
+	{
+		if (mine().fainted() || foe().fainted())
+			return;
+
+		Combatant mineNow = mine();
+		Combatant foeNow = foe();
+		boolean quicker = mineNow.speed() >= foeNow.speed();
+		boolean mineFirstNow = orderKnown ? mineFirst : quicker;
+		hurtByStatus(turn, mineFirstNow);
+		if (!mine().fainted() && !foe().fainted())
+			hurtByStatus(turn, !mineFirstNow);
+	}
+
+	private void hurtByStatus(Turn turn, boolean aboutMine)
+	{
+		Combatant victim = aboutMine ? mine() : foe();
+		Status held = victim.status();
+		if (held == null || !held.damaging())
+			return;
+
+		int damage = victim.endOfRound();
+		note(turn, BattleSim.statusDamage(victim, held, damage, wordingOf(aboutMine)), aboutMine, held);
+		if (!victim.fainted() && victim.status() == null)
+			note(turn, BattleSim.shookOff(victim, wordingOf(aboutMine)), aboutMine, null);
 	}
 
 	/**
@@ -393,6 +498,7 @@ final class BattleState
 
 		boolean free = needsSwitch;
 		Combatant before = mine();
+		before.clearStatus();
 		myIndex = place;
 		needsSwitch = false;
 		orderKnown = false;
@@ -412,6 +518,7 @@ final class BattleState
 			return;
 
 		attackIfAble(false, turn, -1);
+		endRound(turn);
 		settle(turn);
 	}
 
@@ -434,6 +541,7 @@ final class BattleState
 
 			case BROKE_FREE:
 				attackIfAble(false, turn, -1);
+				endRound(turn);
 				settle(turn);
 				break;
 
@@ -453,6 +561,8 @@ final class BattleState
 		boolean won = BattleSim.ahead(mine(), foe());
 		Combatant fighter = mine();
 		Combatant opponent = foe();
+		fighter.clearStatus();
+		opponent.clearStatus();
 		if (mode.knockOutLoser)
 		{
 			if (won)

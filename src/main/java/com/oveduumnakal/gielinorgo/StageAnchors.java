@@ -59,4 +59,15 @@ interface StageAnchors
 	 * @return its place, or null when that anchor is not on stage
 	 */
 	Spot spotOf(Notice.Anchor anchor);
+
+	/**
+	 * Finds the status a body shows as a tag right now. May be called from the render thread.
+	 *
+	 * @param anchor which body
+	 * @return its status, or null for none or when that body is not on stage
+	 */
+	default Status statusOf(Notice.Anchor anchor)
+	{
+		return null;
+	}
 }

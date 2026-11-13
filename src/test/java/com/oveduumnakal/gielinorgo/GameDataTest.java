@@ -342,6 +342,27 @@ public class GameDataTest
 	}
 
 	@Test
+	public void everyEffectInTheMoveTableNamesARealStatusAndAChanceBetweenZeroAndOne() throws IOException
+	{
+		int effects = 0;
+		for (JsonElement element : movesFile().getAsJsonArray("moves"))
+		{
+			JsonObject move = element.getAsJsonObject();
+			if (!move.has("effect"))
+				continue;
+
+			effects++;
+			JsonObject effect = move.getAsJsonObject("effect");
+			String id = move.get("id").getAsString();
+			assertNotNull(id + ": the status is real", Status.named(effect.get("status").getAsString()));
+			double chance = effect.get("chance").getAsDouble();
+			assertTrue(id + ": chance " + chance, chance > 0.0 && chance <= 1.0);
+		}
+
+		assertTrue("expected a dozen moves with effects, got " + effects, effects >= 10);
+	}
+
+	@Test
 	public void everySpeciesResolvesToAPoolThatStartsWithAPlainMoveAtLevelOne() throws IOException
 	{
 		MoveTable table;

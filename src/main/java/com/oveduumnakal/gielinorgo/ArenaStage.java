@@ -564,6 +564,21 @@ final class ArenaStage implements StageAnchors
 		return ground == null || view == null ? null : new Spot(ground, view.getPlane(), follower.tagHeight());
 	}
 
+	/**
+	 * Finds the status shown as a tag over a body, while a scene is on stage.
+	 *
+	 * @param anchor which body
+	 * @return its status, or null for none or when no scene is on stage
+	 */
+	@Override
+	public Status statusOf(Notice.Anchor anchor)
+	{
+		if (run == null || (anchor != Notice.Anchor.STAGE_FOE && anchor != Notice.Anchor.STAGE_LEAD))
+			return null;
+
+		return acting.tagOf(anchor == Notice.Anchor.STAGE_LEAD);
+	}
+
 	/** Ends the scene, if any: the opposing body goes, the lead is itself again and walks back to the player. */
 	void clear()
 	{

@@ -43,9 +43,11 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	 * The version of the battle rules and message layout this build speaks. Two players can only fight each other
 	 * when it matches, since a different rule would give each of them a different winner. A message from a build
 	 * that sends no version reads as 0. Version 3 added the moves of each creature and the moves of a traded one, and
-	 * changed how a creature attacks (accuracy, power, no second style).
+	 * changed how a creature attacks (accuracy, power, no second style, a move picked at random). Version 4 added
+	 * status effects (poison, venom, burn, freeze and stun), so a battle draws more random numbers and ends
+	 * differently.
 	 */
-	static final int PROTOCOL = 3;
+	static final int PROTOCOL = 4;
 
 	/** One creature or one egg named in a trade. Exactly one of the species and the egg rarity is set. */
 	static final class Item

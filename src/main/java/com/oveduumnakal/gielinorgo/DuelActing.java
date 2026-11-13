@@ -120,6 +120,8 @@ final class DuelActing
 	private boolean impactPending;
 	private boolean impactMissed;
 	private boolean impactOnLead;
+	private volatile Status leadTag;
+	private volatile Status foeTag;
 
 	/**
 	 * Creates the helper with no turn in progress.
@@ -188,6 +190,18 @@ final class DuelActing
 				foeStrikes(step, CreatureBody.Act.SPECIAL);
 				break;
 
+			case DOT:
+			case SKIP:
+				if (step.onLead())
+					lead.act(CreatureBody.Act.HIT);
+				else
+					foe.act(CreatureBody.Act.HIT);
+
+				break;
+
+			case TAG:
+				break;
+
 			case LEAD_FELL:
 				lead.act(CreatureBody.Act.DEFEATED);
 				break;
@@ -203,6 +217,29 @@ final class DuelActing
 
 				break;
 		}
+
+		if (step.tagged())
+		{
+			leadTag = step.leadStatus();
+			foeTag = step.foeStatus();
+		}
+		else if (step.beat() == BattleTimeline.Beat.FINISH || step.beat() == BattleTimeline.Beat.LEAD_FELL
+			|| step.beat() == BattleTimeline.Beat.LEAD_ENTERS)
+		{
+			leadTag = null;
+			foeTag = null;
+		}
+	}
+
+	/**
+	 * Tells which status a creature of the duel shows as a tag right now. May be called from the render thread.
+	 *
+	 * @param onLead true for the lead creature, false for the other one
+	 * @return the status, or null for none
+	 */
+	Status tagOf(boolean onLead)
+	{
+		return onLead ? leadTag : foeTag;
 	}
 
 	/**
@@ -337,6 +374,8 @@ final class DuelActing
 	/** Ends the turn and takes the projectile away for good, for when the scene is over. Safe at any time. */
 	void release()
 	{
+		leadTag = null;
+		foeTag = null;
 		impactPending = false;
 		turnAge = TurnMotion.TURN_TICKS;
 		dropProjectile();

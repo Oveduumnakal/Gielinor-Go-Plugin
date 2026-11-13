@@ -234,7 +234,7 @@ public class GielinorGoPlugin extends Plugin
 		AnimationTable animations = loadAnimations();
 		bodies = new WildBodies(client, animations, random);
 		wildOverlay = new WildOverlay(client, bodies, config, outlineRenderer);
-		floatingText = new FloatingTextOverlay(client, noticeBoard, this::spotFor);
+		floatingText = new FloatingTextOverlay(client, noticeBoard, this::spotFor, this::tagFor);
 		overlayManager.add(wildOverlay);
 		overlayManager.add(floatingText);
 		portraits = new PortraitService(client, clientThread, game::speciesFor);
@@ -314,6 +314,20 @@ public class GielinorGoPlugin extends Plugin
 		StageAnchors.Spot spot = wild == null ? null : wild.spotOf(anchor);
 		ArenaStage team = arena;
 		return spot != null || team == null ? spot : team.spotOf(anchor);
+	}
+
+	/**
+	 * Finds the status tag a body of the battle on stage shows. Called from the render thread.
+	 *
+	 * @param anchor which body
+	 * @return its status, or null for none
+	 */
+	private Status tagFor(Notice.Anchor anchor)
+	{
+		BattleStage wild = stage;
+		Status status = wild == null ? null : wild.statusOf(anchor);
+		ArenaStage team = arena;
+		return status != null || team == null ? status : team.statusOf(anchor);
 	}
 
 	/**
@@ -1892,7 +1906,7 @@ public class GielinorGoPlugin extends Plugin
 		List<Notice> timed = new ArrayList<>();
 		for (BattleLine line : turn.lines())
 		{
-			boolean blow = line.kind() == BattleLine.Kind.LEAD_HIT || line.kind() == BattleLine.Kind.FOE_HIT;
+			boolean blow = line.blow();
 			Duel duel = turn.duel();
 			boolean knockOut = duel != null && duel.knockOut() == line;
 			if (hasScene && !wild && (blow || knockOut))

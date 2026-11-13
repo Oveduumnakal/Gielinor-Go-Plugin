@@ -334,7 +334,7 @@ final class TeamScript
 	 */
 	static Notice noticeOf(BattleLine line)
 	{
-		if (line.kind() != BattleLine.Kind.LEAD_HIT && line.kind() != BattleLine.Kind.FOE_HIT)
+		if (!line.blow())
 			return Notice.player(line.text(), line.tone());
 
 		return line.overPlayer() ? Notice.stageLead(line.text(), line.tone())
