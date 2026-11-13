@@ -7,7 +7,7 @@ package com.oveduumnakal.gielinorgo;
 /**
  * When a plain left click on a wild creature belongs to this plugin. Holds no RuneLite types.
  */
-enum LeftClickMode
+public enum LeftClickMode
 {
 	/** The wild creature always answers a left click. */
 	ALWAYS("Always"),
