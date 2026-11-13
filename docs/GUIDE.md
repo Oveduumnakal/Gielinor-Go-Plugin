@@ -211,6 +211,17 @@ Every feature and every number, in detail. For the short version, see the [READM
   Many creatures grow into a stronger relative when they reach a certain level: an Imp becomes a Lesser demon,
   then a Greater demon, then a Black demon. There are over 150 evolutions to find.
 
+- **Releasing creatures**
+
+  Right-click a creature in Storage and choose **Release**, or press **Select** at the top of the Storage tab, tick
+  as many creatures as you like and press **Release selected**. One confirm lists the names and the total XP. Your
+  lead creature gains creature XP for each one: 20 plus 4 for every level of the released creature, times 1 for a
+  Common, 1.5 for an Uncommon, 2 for a Rare, 3 for an Epic and 4 for a Legendary. A Level 10 Common pays 60 XP. The
+  XP counts like any other, so it can level the lead, teach it moves and evolve it. A release never pays jars or
+  items, so catching and releasing cannot make jars. With no creature on your team the release pays nothing. A
+  gilded creature, one rated Strong or Exceptional, and one with a nickname ask a second time. A creature promised
+  in a trade is skipped.
+
 - **Eggs hatch as you walk**
 
   Battle wins sometimes drop an egg. Carry up to three, and each hatches into a new creature once you have

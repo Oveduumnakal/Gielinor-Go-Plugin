@@ -384,7 +384,7 @@ public class GoGameTest
 		game.moveToStorage(1);
 		game.release(0);
 		assertTrue(game.data().storage.isEmpty());
-		assertTrue(messages.contains("Released Chicken"));
+		assertTrue(messages.contains("Goblin +28 XP (released Chicken)"));
 	}
 
 	@Test

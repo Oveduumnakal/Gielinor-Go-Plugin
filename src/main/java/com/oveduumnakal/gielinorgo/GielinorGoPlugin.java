@@ -1075,6 +1075,29 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
+	 * Releases the creatures a panel picked, once it is checked that every one is still where it was listed.
+	 *
+	 * @param picks the creatures as the Storage tab showed them
+	 */
+	private void releaseMany(List<TradePick> picks)
+	{
+		PanelState state = game.snapshot();
+		List<Integer> places = new ArrayList<>();
+		for (TradePick pick : picks)
+		{
+			if (pick.from() != Holding.STORAGE || !pick.matches(state))
+			{
+				announce(Notice.player("What you picked has changed. Pick again", Tone.BAD));
+				return;
+			}
+
+			places.add(pick.index());
+		}
+
+		game.release(places);
+	}
+
+	/**
 	 * Settles the move the creature a panel pick points at waits to learn, once it is checked that the same creature
 	 * is still there. A battle the player steers keeps the moves it started with.
 	 *
@@ -2076,6 +2099,12 @@ public class GielinorGoPlugin extends Plugin
 			public void release(int storageIndex)
 			{
 				onGameThread(() -> game.release(storageIndex));
+			}
+
+			@Override
+			public void releaseMany(List<TradePick> picks)
+			{
+				onGameThread(() -> GielinorGoPlugin.this.releaseMany(picks));
 			}
 
 			@Override
