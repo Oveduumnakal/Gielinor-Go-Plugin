@@ -1760,7 +1760,8 @@ final class GoGame
 	/** @return whether the team or the storage can take one more creature, past the room trades will need */
 	boolean hasRoomForCreature()
 	{
-		int free = SaveData.TEAM_SIZE - data.team.size() + SaveData.STORAGE_SIZE - data.storage.size();
+		int teamRoom = eliteOpen() ? 0 : SaveData.TEAM_SIZE - data.team.size();
+		int free = teamRoom + SaveData.STORAGE_SIZE - data.storage.size();
 		return free > tradeLocks.reservedCreatureSlots();
 	}
 
@@ -2891,6 +2892,14 @@ final class GoGame
 
 	private void keep(Creature creature)
 	{
+		if (eliteOpen())
+		{
+			data.storage.add(creature);
+			tell(nameOf(creature) + " went to storage: the Elite challenge is open, so your team stays as it is",
+				Tone.INFO);
+			return;
+		}
+
 		if (data.team.size() < SaveData.TEAM_SIZE)
 			data.team.add(creature);
 		else

@@ -93,6 +93,28 @@ public class EliteRunTest
 	}
 
 	@Test
+	public void aCreatureReceivedDuringAnOpenRunGoesToStorageAndTheTeamStaysFixed()
+	{
+		assertNotNull(game.eliteChallenge());
+		assertTrue(game.eliteOpen());
+
+		assertTrue(game.receive(new Creature("mite", 5, now)));
+
+		assertEquals(1, game.data().team.size());
+		assertEquals(1, game.data().storage.size());
+		assertTrue(said("Elite challenge is open"));
+	}
+
+	@Test
+	public void aCreatureReceivedWithoutARunJoinsTheTeam()
+	{
+		assertTrue(game.receive(new Creature("mite", 5, now)));
+
+		assertEquals(2, game.data().team.size());
+		assertTrue(game.data().storage.isEmpty());
+	}
+
+	@Test
 	public void theTableLoadsFiveTeamsOrNothing()
 	{
 		assertTrue(weak.available());

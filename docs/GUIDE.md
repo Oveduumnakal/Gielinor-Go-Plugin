@@ -475,7 +475,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Your creatures' health carries from one battle to the next and nothing rests until the run ends. Between battles the
   card shows `Elite 3 of 5` with **Continue** and **Forfeit**. While a run is open you cannot change your team or
-  battle anything else. Lose a battle, forfeit or log out and the run is over; the next attempt starts at the first
+  battle anything else. A creature you catch, hatch or receive meanwhile goes to storage, so the team keeps the health
+  it carried. Lose a battle, forfeit or log out and the run is over; the next attempt starts at the first
   trainer. You cannot start with a full egg bag (`Free an egg slot first`). The battles are acted out like a City
   Champion battle. With **Choose battle actions** off they are decided automatically.
 
