@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
@@ -816,6 +817,8 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		loadSave();
+		StatBaseline.seed(Arrays.asList(Skill.values()), lastXp, lastLevel, client::getSkillExperience,
+			client::getRealSkillLevel);
 		WorldView view = client.getTopLevelWorldView();
 		if (view == null)
 			return;
