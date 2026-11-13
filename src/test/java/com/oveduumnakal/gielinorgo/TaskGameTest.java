@@ -132,18 +132,18 @@ public class TaskGameTest
 	public void theFirstCatchOfADayPaysTwoBronzeJarsAndASecondDoesNot()
 	{
 		catchOne();
-		assertTrue(said("Day 1 streak: +2 Bronze jars"));
+		assertTrue(said("Day 1: +2 Bronze jars"));
 		assertEquals(1, game.data().tasks.streak);
 
 		messages.clear();
 		catchOne();
 
-		assertFalse(said("Day 1 streak"));
+		assertFalse(said("Day 1:"));
 		assertEquals(1, game.data().tasks.streak);
 	}
 
 	@Test
-	public void theStreakGrowsOnConsecutiveDaysAndBreaksOnASkippedOne()
+	public void theDaysPlayedGrowOnConsecutiveDaysAndSurviveASkippedOne()
 	{
 		catchOne();
 		now += DAY;
@@ -157,9 +157,9 @@ public class TaskGameTest
 
 		now += 2 * DAY;
 		TaskView later = game.snapshot().tasks();
-		assertEquals(0, later.streak());
+		assertEquals(3, later.streak());
 		catchOne();
-		assertEquals(1, game.data().tasks.streak);
+		assertEquals(4, game.data().tasks.streak);
 	}
 
 	@Test
@@ -174,7 +174,7 @@ public class TaskGameTest
 		assertEquals(1, game.data().eggs.size());
 		Egg egg = game.data().eggs.get(0);
 		assertEquals(Rarity.UNCOMMON, egg.rarityTier());
-		assertTrue(said("Day 7 streak: +2 Bronze jars, +1 Uncommon egg"));
+		assertTrue(said("Day 7: +2 Bronze jars, +1 Uncommon egg"));
 	}
 
 	@Test
@@ -190,7 +190,7 @@ public class TaskGameTest
 		}
 
 		assertEquals(SaveData.MAX_EGGS, game.data().eggs.size());
-		assertTrue(said("Day 7 streak: +2 Bronze jars, +5 Bronze jars instead of an egg"));
+		assertTrue(said("Day 7: +2 Bronze jars, +5 Bronze jars instead of an egg"));
 	}
 
 	@Test

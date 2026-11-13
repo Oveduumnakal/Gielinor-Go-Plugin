@@ -21,6 +21,9 @@ final class GoPersistence
 	/** Config key a save that could not be read is copied to, so it is not lost when a fresh save replaces it. */
 	static final String KEY_UNREADABLE = "saveUnreadable";
 
+	/** Config key the save is copied to just before a reset, as a safety net. There is no way to restore it. */
+	static final String KEY_BEFORE_RESET = "saveBeforeReset";
+
 	/** Where the JSON is kept. A seam, so tests can use a plain map instead of a live {@link ConfigManager}. */
 	interface Store
 	{
@@ -103,6 +106,19 @@ final class GoPersistence
 
 		store.set(KEY_UNREADABLE, json);
 		return SaveData.fresh();
+	}
+
+	/**
+	 * Copies the stored save to {@link #KEY_BEFORE_RESET}, replacing any earlier copy. The save itself is not touched.
+	 * Nothing is copied when no save is stored.
+	 */
+	void backUp()
+	{
+		String json = store.get(KEY_SAVE);
+		if (json == null || json.trim().isEmpty())
+			return;
+
+		store.set(KEY_BEFORE_RESET, json);
 	}
 
 	/**
