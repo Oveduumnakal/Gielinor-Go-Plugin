@@ -789,6 +789,20 @@ final class GoGame
 	}
 
 	/**
+	 * Tells whether a Battle against a wild creature would be accepted now: the lead exists and is rested to
+	 * {@link #MIN_BATTLE_HP}. It is the same test {@link #startBattle} and {@link #battle} refuse on, with no
+	 * message and no side effect, so a menu can leave the Battle entry out when it would only be refused.
+	 *
+	 * @param now the time, for the health each creature has recovered
+	 * @return true when a battle could start
+	 */
+	boolean canBattle(long now)
+	{
+		Creature lead = data.lead();
+		return lead != null && species.find(lead.species) != null && lead.hpFractionAt(now) >= MIN_BATTLE_HP;
+	}
+
+	/**
 	 * Builds the fighters of a steered battle: the team in order, the creatures too tired to battle left out.
 	 *
 	 * @param now the time, for the health each creature has recovered

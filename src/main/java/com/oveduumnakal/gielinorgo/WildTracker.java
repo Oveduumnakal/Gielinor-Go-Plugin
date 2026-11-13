@@ -103,6 +103,47 @@ final class WildTracker
 	}
 
 	/**
+	 * Makes a wild creature that no real monster came from, such as one met while skilling. It is tied to no
+	 * monster, so no roll is remembered and no monster's roll can touch it. It counts toward {@link #MAX_WILD}, but
+	 * it neither waits for nor starts the {@link #COOLDOWN_MS} between monsters: the caller keeps its own cooldown.
+	 *
+	 * @param species the species
+	 * @param underground whether the player is underground, which gives the creature the cave trait
+	 * @param gildedOneIn the odds that the creature is gilded: one time in this many
+	 * @param mayRoam whether the creature may turn out to be a roaming one, one time in {@link #ROAMING_ONE_IN}
+	 * @return the new wild entry, with an id of its own, or null when {@link #MAX_WILD} creatures exist already or
+	 *     the species has no NPC id to draw it with
+	 */
+	WildEntry offerLoose(Species species, boolean underground, int gildedOneIn, boolean mayRoam)
+	{
+		if (species == null || species.questOnly() || wild.size() >= MAX_WILD || species.npcIdFor(0) <= 0)
+			return null;
+
+		int combatLevel = species.level();
+		int level = CatchRules.wildLevel(combatLevel, random);
+		boolean gilded = random.nextInt(Math.max(1, gildedOneIn)) == 0;
+		boolean roaming = mayRoam && random.nextInt(ROAMING_ONE_IN) == 0;
+		if (roaming)
+			level = Math.min(XpRules.MAX_LEVEL, level + ROAMING_LEVELS);
+
+		WildEntry entry = new WildEntry(nextId++, species, level, combatLevel, underground, gilded, roaming)
+			.withNpcId(species.npcIdFor(0));
+		wild.put(entry.wildId(), entry);
+		return entry;
+	}
+
+	/**
+	 * Takes back a creature that {@link #offerLoose} made but that could not be put on screen. Nothing else is
+	 * undone, since a loose creature touches neither the cooldown nor any roll.
+	 *
+	 * @param entry the entry that {@link #offerLoose} returned
+	 */
+	void withdrawLoose(WildEntry entry)
+	{
+		wild.remove(entry.wildId());
+	}
+
+	/**
 	 * Takes back a creature that was just rolled but could not be put on screen, such as one with no free tile near
 	 * its monster. The cooldown it started is undone, so the next monster may roll at once. The monster stays
 	 * remembered as having rolled.

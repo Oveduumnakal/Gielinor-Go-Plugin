@@ -13,9 +13,27 @@ Every feature and every number, in detail. For the short version, see the [READM
   over 2 seconds when its time is up, when you walk more than 25 tiles away or change floors. If there is no free
   tile you can walk to, no wild creature appears. Click it to **Battle** it (a plain left click does that), or
   right-click it for **Battle** and **Catch**. Once your lead has beaten it and it lies knocked out, a plain left
-  click throws your selected jar instead. A click on the copy never walks you to the tile behind it. Any monster you
-  can fight can turn wild, from chickens to bosses, and stronger monsters are rarer finds. At most three wild
-  creatures exist at once.
+  click throws your selected jar instead. When no creature can fight (your team is empty, or your lead is too tired),
+  Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
+  behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
+  finds. At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
+  the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
+  seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
+
+- **While skilling**
+
+  Fishing, Woodcutting, Mining, Farming and Hunter XP drops sometimes bring a wild creature to a free tile one or
+  two tiles from you: "A wild Crab surfaced!" (Woodcutting: "dropped from the branches", Mining: "crawled out of the
+  rock", Farming: "came out of the patch", Hunter: "broke cover"). It is an ordinary wild creature: Battle, Catch,
+  about 3 minutes, and it counts toward the limit of three. The bigger the XP drop, the likelier the creature, so
+  fast small drops and slow big ones find creatures at about the same rate per XP: about one every 6 to 10 minutes
+  of steady skilling at the default **Wild creature rarity**, never two within 3 minutes. Each skill has its own
+  species (Fishing water creatures, Woodcutting birds and tree dwellers, Mining cave and rock creatures, Farming
+  pests and field animals, Hunter prey). The species follows your level in the skill: a level 90 fisher meets
+  stronger creatures than a level 20 one. Three species are met **only** this way, one time in 20 and from skill
+  level 40: the River troll while Fishing, the Rock Golem while Mining and the Tree spirit while Woodcutting. Nothing
+  appears with the **Skilling encounters** setting off, in an instance or in a PvP area, or when there is no free
+  tile.
 
 - **Catch them with jars**
 
@@ -395,6 +413,18 @@ Every feature and every number, in detail. For the short version, see the [READM
   10 tiles of a banker, a bank booth or a bank chest. Anywhere else the panel says "Go to a city or a bank to change
   your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
   your team is full, a creature you receive in a trade, a hatched egg and releasing a stored creature.
+
+- **Change log**
+
+  The button at the bottom of the panel opens the change log: every release, newest first, with a short overview and
+  the changes by area. After the plugin updates, the button reads **What's New** in orange until you open it. A
+  first install does not show the badge.
+
+- **Feedback**
+
+  The **Feedback** button at the bottom of the panel offers **Report a bug** and **Request a feature**. Each opens a
+  short form; **Submit** opens GitHub's new-issue page in your browser with what you wrote already filled in. You
+  review it and post it there. The plugin sends nothing itself, and a bug report adds the plugin version for you.
 
 ## Links
 
