@@ -525,25 +525,41 @@ public class GoGameTest
 	}
 
 	@Test
+	public void anAutomaticBattleIsOfferedWhenAnyTeamMemberIsRested()
+	{
+		Creature goblin = new Creature("goblin", 5, now);
+		goblin.hpFraction = 0.1;
+		goblin.hpStampMs = now;
+		game.data().team.add(goblin);
+		assertFalse("a team that is only too tired", game.canBattle(now, false));
+
+		game.data().team.add(new Creature("chicken", 5, now));
+
+		assertFalse("steering needs the lead", game.canBattle(now, true));
+		assertTrue("automatic fights with whoever is rested", game.canBattle(now, false));
+		assertNotNull(game.battle(wild(CHICKEN, 3, 1)));
+	}
+
+	@Test
 	public void aBattleIsOnlyOfferedWhenTheLeadIsRested()
 	{
-		assertFalse("a fresh save has no team", game.canBattle(now));
+		assertFalse("a fresh save has no team", game.canBattle(now, true));
 
 		Creature goblin = new Creature("goblin", 5, now);
 		game.data().team.add(goblin);
-		assertTrue(game.canBattle(now));
+		assertTrue(game.canBattle(now, true));
 
 		goblin.hpFraction = 0.2;
 		goblin.hpStampMs = now;
-		assertFalse("a team that is only too tired", game.canBattle(now));
+		assertFalse("a team that is only too tired", game.canBattle(now, true));
 
 		Creature chicken = new Creature("chicken", 5, now);
 		game.data().team.add(chicken);
-		assertFalse("the lead decides, as the battle itself refuses a tired lead", game.canBattle(now));
+		assertFalse("the lead decides, as the battle itself refuses a tired lead", game.canBattle(now, true));
 		assertNull(game.startBattle(wild(CHICKEN, 3, 1)));
 
 		goblin.hpFraction = 1.0;
-		assertTrue(game.canBattle(now));
+		assertTrue(game.canBattle(now, true));
 		assertNotNull(game.startBattle(wild(CHICKEN, 3, 1)));
 	}
 

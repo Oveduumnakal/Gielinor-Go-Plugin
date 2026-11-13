@@ -1183,17 +1183,25 @@ final class GoGame
 	}
 
 	/**
-	 * Tells whether a Battle against a wild creature would be accepted now: the lead exists and is rested to
-	 * {@link #MIN_BATTLE_HP}. It is the same test {@link #startBattle} and {@link #battle} refuse on, with no
-	 * message and no side effect, so a menu can leave the Battle entry out when it would only be refused.
+	 * Tells whether a Battle against a wild creature would be accepted now, with no message and no side effect, so a
+	 * menu can leave the Battle entry out when it would only be refused. A steered battle ({@link #startBattle})
+	 * needs the lead rested to {@link #MIN_BATTLE_HP}. An automatic one ({@link #battle}) needs any team member
+	 * rested to that, and refuses only when the whole team is too tired.
 	 *
 	 * @param now the time, for the health each creature has recovered
+	 * @param steering true when the player steers the battle turn by turn
 	 * @return true when a battle could start
 	 */
-	boolean canBattle(long now)
+	boolean canBattle(long now, boolean steering)
 	{
 		Creature lead = data.lead();
-		return lead != null && species.find(lead.species) != null && lead.hpFractionAt(now) >= MIN_BATTLE_HP;
+		if (lead == null)
+			return false;
+
+		if (steering)
+			return species.find(lead.species) != null && lead.hpFractionAt(now) >= MIN_BATTLE_HP;
+
+		return !restedTeam(now, new ArrayList<>()).isEmpty();
 	}
 
 	/**
