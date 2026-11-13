@@ -142,8 +142,7 @@ public class BattleStatusTest
 	@Test
 	public void theRandomDrawsComeInTheOrderPickSpreadEffectThenTheFoesBlow()
 	{
-		Scripted random = new Scripted(0.5, 0.3, 0.5);
-		random.ints.add(1);
+		Scripted random = new Scripted(0.99, 0.5, 0.3, 0.5);
 		Combatant mine = fighter(30, WEAK, TestMoves.causing("sting", Status.POISON, 0.5));
 		Combatant foe = dummy(10);
 		BattleState state = duel(mine, foe, random);

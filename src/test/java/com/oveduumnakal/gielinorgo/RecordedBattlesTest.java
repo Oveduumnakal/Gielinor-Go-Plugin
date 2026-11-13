@@ -31,25 +31,29 @@ public class RecordedBattlesTest
 
 	private static final String[] TEAM_BATTLES =
 	{
-		"LOST mine 0.0 0.0 0.0 theirs 0.0 0.0 185.0 134.0 lost / Gob beat Archer (Lv 16)"
+		"LOST mine 0.0 0.0 0.0 theirs 0.0 0.0 286.0 134.0 lost / Gob beat Archer (Lv 16)"
 		+ " / Gob lost to Wizard (Lv 25) / Green dragon beat Wizard (Lv 25)"
 		+ " / Green dragon lost to Green dragon (Lv 45) / Wizard lost to Green dragon (Lv 45)",
-		"LOST mine 0.0 0.0 0.0 theirs 0.0 0.0 30.0 lost / Gob beat Archer (Lv 16)"
+		"WON mine 0.0 28.80000000000001 126.0 theirs 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
 		+ " / Gob lost to Wizard (Lv 25) / Green dragon beat Wizard (Lv 25)"
-		+ " / Green dragon lost to Green dragon (Lv 45) / Wizard lost to Green dragon (Lv 45)",
+		+ " / Green dragon beat Green dragon (Lv 45)",
 		"WON mine 0.0 28.80000000000001 149.0 theirs 0.0 0.0 0.0 0.0 won"
 		+ " / Gob beat Archer (Lv 16) / Gob lost to Wizard (Lv 25)"
 		+ " / Green dragon beat Wizard (Lv 25) / Green dragon beat Green dragon (Lv 45)"
 		+ " / Green dragon beat Goblin (Lv 32)",
-		"WON mine 0.0 189.60000000000002 172.0 theirs 0.0 0.0 0.0 won"
-		+ " / Gob beat Archer (Lv 16) / Gob lost to Wizard (Lv 25)"
-		+ " / Green dragon beat Wizard (Lv 25) / Green dragon beat Green dragon (Lv 45)",
-		"WON mine 0.0 280.6 195.0 theirs 0.0 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
+		"WON mine 0.0 337.6 172.0 theirs 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
+		+ " / Gob lost to Wizard (Lv 25) / Green dragon beat Wizard (Lv 25)"
+		+ " / Green dragon beat Green dragon (Lv 45)",
+		"WON mine 0.0 297.6 195.0 theirs 0.0 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
 		+ " / Gob beat Wizard (Lv 25) / Gob lost to Green dragon (Lv 45)"
 		+ " / Green dragon beat Green dragon (Lv 45) / Green dragon beat Goblin (Lv 34)",
-		"WON mine 0.0 381.6 218.0 theirs 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
+		"WON mine 0.0 410.6 218.0 theirs 0.0 0.0 0.0 won / Gob beat Archer (Lv 16)"
 		+ " / Gob beat Wizard (Lv 25) / Gob lost to Green dragon (Lv 45)"
-		+ " / Green dragon beat Green dragon (Lv 45)"
+		+ " / Green dragon beat Green dragon (Lv 45)",
+		"WON mine 0.0 304.40000000000003 241.0 theirs 0.0 0.0 0.0 0.0 won"
+		+ " / Gob beat Archer (Lv 16) / Gob beat Wizard (Lv 25)"
+		+ " / Gob lost to Green dragon (Lv 45) / Green dragon beat Green dragon (Lv 45)"
+		+ " / Green dragon beat Goblin (Lv 36)"
 	};
 
 	private static final String[] FRIEND_BATTLES =

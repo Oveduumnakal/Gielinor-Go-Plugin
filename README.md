@@ -120,8 +120,7 @@ Nobody else can see any of it, unless you join a RuneLite party to battle or tra
   creature's card, and clicking it (or **Moves...** in the card's right-click menu) lets you pick a move to forget
   or skip the new one. Hover a card to see its moves with their power and accuracy. An evolved creature keeps the
   moves its new species can still know. A wild creature has the newest four moves its level unlocks, and an
-  creature that picks for itself (an automatic battle, a timed-out turn, a wild creature or a champion) picks one of
-  its moves at random. Friends see the same
+  automatic battle picks a move for your creature by power, accuracy and the style match-up. Friends see the same
   moves, and a friend's creature can only use moves its species could really know.
 
 - **Status effects**

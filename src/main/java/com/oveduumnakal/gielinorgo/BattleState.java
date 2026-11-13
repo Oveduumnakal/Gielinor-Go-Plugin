@@ -22,8 +22,9 @@ import java.util.Random;
  * <p>Every attack makes its random calls in this fixed order, and a call that has nothing to decide is not made, so
  * a creature with one move of accuracy 1 and no status makes exactly the calls battles made before moves existed:
  * (1) the stun roll, one draw, only when the attacker is stunned; a frozen or stunned creature that loses its turn
- * makes no other call; (2) the pick of the move, one {@code nextInt} draw, only when the attacker has more than one
- * move and was not told which to use; the pick is uniform over every move the creature knows; (3) the accuracy
+ * makes no other call; (2) the pick of the move, one draw, only when the attacker has more than one move and was not
+ * told which to use; the pick is weighted by power times accuracy times the combat triangle against the opposing
+ * creature, and every known move keeps a weight above zero; (3) the accuracy
  * roll, one draw, only when the move's accuracy is below 1; (4) the damage spread, one draw, only when the move
  * hits; (5) the effect roll, one draw, only when the move hits, the defender is still up and free of a status, and
  * the move has an effect that could be put on it; (6) the trait roll of a poisonous attacker's melee hit, one draw,
@@ -351,7 +352,7 @@ final class BattleState
 		if (held != null && attacker.status() == null)
 			note(turn, BattleSim.shookOff(attacker, wordingOf(mineAttacks)), mineAttacks, null);
 
-		Move move = pick(attacker, mineAttacks ? moveIndex : -1);
+		Move move = pick(attacker, defender, mineAttacks ? moveIndex : -1);
 		boolean wording = mineAttacks == mode.mineFirstWording;
 		BattleLine line;
 		Status inflicted = null;
@@ -458,9 +459,10 @@ final class BattleState
 
 	/**
 	 * Picks the move an attacker uses. A move the player chose is used as it is; a creature with one move uses it; any
-	 * other picks uniformly at random from every move it knows, with one draw.
+	 * other picks by one weighted draw, so the stronger and the more accurate moves, and those the combat triangle
+	 * favours against the defender, come up more often.
 	 */
-	private Move pick(Combatant attacker, int chosen)
+	private Move pick(Combatant attacker, Combatant defender, int chosen)
 	{
 		List<Move> known = attacker.moves();
 		if (chosen >= 0 && chosen < known.size())
@@ -469,7 +471,24 @@ final class BattleState
 		if (known.size() == 1)
 			return known.get(0);
 
-		return known.get(random.nextInt(known.size()));
+		double[] weights = new double[known.size()];
+		double total = 0;
+		for (int i = 0; i < weights.length; i++)
+		{
+			Move move = known.get(i);
+			weights[i] = move.power() * move.accuracy() * move.style().multiplierAgainst(defender.type());
+			total += weights[i];
+		}
+
+		double roll = random.nextDouble() * total;
+		for (int i = 0; i < weights.length; i++)
+		{
+			roll -= weights[i];
+			if (roll < 0)
+				return known.get(i);
+		}
+
+		return known.get(known.size() - 1);
 	}
 
 	private void switchTo(int place, Turn turn)
