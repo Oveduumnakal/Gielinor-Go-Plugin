@@ -104,6 +104,7 @@ final class GoGame
 
 	private final SpeciesTable species;
 	private final EvolutionTable evolutions;
+	private Conditions conditions = Conditions.NONE;
 	private ExamineTable examine = ExamineTable.empty();
 	private final ChampionTable champions;
 	private final Random random;
@@ -381,6 +382,33 @@ final class GoGame
 			return guildChanged;
 
 		cityId = id;
+		return true;
+	}
+
+	/**
+	 * Tells the game what the world is like, so evolutions with a condition can fire. Call it every tick; nothing
+	 * happens unless something changed. A team creature that has its level and now meets the condition evolves on
+	 * the spot. Creatures in Storage do not evolve.
+	 *
+	 * @param now whether it is night and whether the player is underground
+	 * @return true when the conditions changed, so the panel needs a refresh
+	 */
+	boolean setConditions(Conditions now)
+	{
+		if (now.equals(conditions))
+			return false;
+
+		conditions = now;
+		boolean evolved = false;
+		for (Creature creature : new ArrayList<>(data.team))
+			evolved |= evolveIfReady(creature);
+
+		if (evolved)
+		{
+			dirty = true;
+			cues.accept(Cue.EVOLVE);
+		}
+
 		return true;
 	}
 
@@ -1520,7 +1548,7 @@ final class GoGame
 	private boolean evolveIfReady(Creature creature)
 	{
 		boolean evolved = false;
-		EvolutionTable.Step step = evolutions.next(creature.species);
+		EvolutionTable.Step step = evolutions.next(creature.species, conditions);
 		for (int i = 0; i < MAX_EVOLUTIONS_AT_ONCE && step != null && creature.level() >= step.level(); i++)
 		{
 			Species grown = species.find(step.to());
@@ -1531,7 +1559,7 @@ final class GoGame
 			recordOwned(creature);
 			tell(before + " evolved into " + grown.name() + "!", Tone.GOOD);
 			evolved = true;
-			step = evolutions.next(creature.species);
+			step = evolutions.next(creature.species, conditions);
 		}
 
 		settleMilestones();
@@ -2434,6 +2462,12 @@ final class GoGame
 		return found == null ? creature.species : found.name();
 	}
 
+	private String waitingText(Creature creature)
+	{
+		EvolutionCondition waiting = evolutions.waitingFor(creature.species, creature.level(), conditions);
+		return waiting == null ? null : waiting.waitingText();
+	}
+
 	private List<CreatureView> views(List<Creature> creatures, long now)
 	{
 		List<CreatureView> views = new ArrayList<>(creatures.size());
@@ -2446,7 +2480,7 @@ final class GoGame
 				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname,
 				creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId),
 				found == null ? Collections.emptyList() : MoveLearning.known(creature, found, moves),
-				MoveLearning.pending(creature, moves)));
+				MoveLearning.pending(creature, moves), waitingText(creature)));
 		}
 
 		return views;
@@ -2484,14 +2518,43 @@ final class GoGame
 			return Collections.emptyList();
 
 		List<LogEntry.Stage> line = new ArrayList<>(stages.size());
+		Set<String> inLine = new HashSet<>();
 		for (Species stage : stages)
-		{
-			Integer count = data.caught.get(stage.key());
-			boolean known = data.seen.contains(stage.key()) || count != null && count > 0;
-			line.add(new LogEntry.Stage(stage.name(), known));
-		}
+			inLine.add(stage.key());
+
+		for (Species stage : stages)
+			line.add(stageOf(stage, inLine));
 
 		return line;
+	}
+
+	private boolean knownSpecies(Species stage)
+	{
+		Integer count = data.caught.get(stage.key());
+		return data.seen.contains(stage.key()) || count != null && count > 0;
+	}
+
+	private LogEntry.Stage stageOf(Species stage, Set<String> inLine)
+	{
+		EvolutionTable.Step into = evolutions.previous(stage.key());
+		if (into == null)
+			return new LogEntry.Stage(stage.name(), knownSpecies(stage));
+
+		List<LogEntry.Stage> others = new ArrayList<>();
+		for (EvolutionTable.Step sibling : evolutions.steps(into.from()))
+		{
+			Species other = species.find(sibling.to());
+			if (other != null && !inLine.contains(other.key()))
+				others.add(new LogEntry.Stage(other.name(), knownSpecies(other), conditionOf(sibling),
+					Collections.emptyList()));
+		}
+
+		return new LogEntry.Stage(stage.name(), knownSpecies(stage), conditionOf(into), others);
+	}
+
+	private static String conditionOf(EvolutionTable.Step step)
+	{
+		return step.when() == null ? null : step.when().phrase();
 	}
 
 	private List<LogEntry> log()

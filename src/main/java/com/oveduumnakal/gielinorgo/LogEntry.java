@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,11 +27,46 @@ final class LogEntry
 	{
 		private final String name;
 		private final boolean known;
+		private final String condition;
+		private final List<Stage> alternatives;
 
 		Stage(String name, boolean known)
 		{
+			this(name, known, null, Collections.emptyList());
+		}
+
+		/**
+		 * Describes one stage.
+		 *
+		 * @param name the species name
+		 * @param known whether the player has met it
+		 * @param condition what the step into this stage needs besides the level, such as {@code at night}, or null
+		 * @param alternatives the other species the same step can lead to, each with its own condition
+		 */
+		Stage(String name, boolean known, String condition, List<Stage> alternatives)
+		{
 			this.name = name;
 			this.known = known;
+			this.condition = condition;
+			this.alternatives = Collections.unmodifiableList(new ArrayList<>(alternatives));
+		}
+
+		/** @return what the step into this stage needs besides the level, or null when it needs nothing */
+		String condition()
+		{
+			return condition;
+		}
+
+		/** @return the other results of the same step; empty unless the species branches */
+		List<Stage> alternatives()
+		{
+			return alternatives;
+		}
+
+		/** @return the stage as the detail box writes it, such as {@code Werewolf (at night)} */
+		String text()
+		{
+			return known && condition != null ? name + " (" + condition + ")" : known ? name : "???";
 		}
 
 		/** @return the species name */
@@ -160,7 +196,9 @@ final class LogEntry
 			if (text.length() > 0)
 				text.append(" \u2192 ");
 
-			text.append(stage.known() ? stage.name() : "???");
+			text.append(stage.text());
+			for (Stage other : stage.alternatives())
+				text.append(" / ").append(other.text());
 		}
 
 		return text.toString();

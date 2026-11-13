@@ -1327,6 +1327,11 @@ public class GielinorGoPlugin extends Plugin
 		if (game.moveTo(point.getX(), point.getY(), point.getPlane()))
 			refreshPanel();
 
+		Conditions world = Conditions.of(SpawnCalendar.isNight(spawnClock.localTime()),
+			Terrain.underground(point.getX(), point.getY()));
+		if (game.setConditions(world))
+			refreshPanel();
+
 		bankSpots.forgetFar(point.getX(), point.getY());
 		game.setBankNear(bankSpots.near(point.getX(), point.getY(), point.getPlane()));
 	}

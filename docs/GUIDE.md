@@ -211,6 +211,15 @@ Every feature and every number, in detail. For the short version, see the [READM
   Many creatures grow into a stronger relative when they reach a certain level: an Imp becomes a Lesser demon,
   then a Greater demon, then a Black demon. There are over 150 evolutions to find.
 
+  A few evolutions ask for more than a level. A Zombie, Skeleton, Ghost, Banshee or Vampyre only grows **at night**
+  (20:00 to 06:00 on your computer's clock), and a Giant bat, Rockslug, Bloodveld, Crypt rat and other cave dwellers
+  only grow **underground**. A creature that has the level but not the moment waits, and its card says what for, for
+  example `Evolves at night`. It evolves as soon as the night falls or you walk into a cave, with no XP needed. Only
+  your team evolves; creatures in Storage wait. Some species grow into different creatures depending on the
+  condition: a Rat becomes a Giant rat on the surface but a Crypt rat underground, and a Wolf becomes a Dire Wolf by
+  day but a Werewolf at night. Each Creature Log entry shows these conditions beside the stages you know. Every
+  condition can be met alone, and no creature needs a trade to evolve.
+
 - **Releasing creatures**
 
   Right-click a creature in Storage and choose **Release**, or press **Select** at the top of the Storage tab, tick
