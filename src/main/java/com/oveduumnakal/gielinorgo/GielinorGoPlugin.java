@@ -198,7 +198,7 @@ public class GielinorGoPlugin extends Plugin
 	private int pendingTicks;
 	private FriendBattles friends;
 	private FriendTrades trades;
-	private final MessageRate partyRate = new MessageRate();
+	private final PartyRateGate partyRate = new PartyRateGate();
 	private boolean helloDue;
 	private boolean helloAsksBack;
 	private int lastHelloTick;
@@ -1166,8 +1166,8 @@ public class GielinorGoPlugin extends Plugin
 
 		boolean turnMessage = GielinorGoPartyMessage.TURN.equals(message.kind())
 			|| GielinorGoPartyMessage.LEAVE.equals(message.kind());
-		if (!(turnMessage && friends.inTurnBattleWith(message.getMemberId()))
-			&& !partyRate.allow(message.getMemberId(), System.currentTimeMillis()))
+		if (!partyRate.allow(message, me.getMemberId(), trades.awaitsReply(message, me.getMemberId()),
+			turnMessage && friends.inTurnBattleWith(message.getMemberId()), System.currentTimeMillis()))
 			return;
 
 		String sender = friendName(partyService.getMemberById(message.getMemberId()));
