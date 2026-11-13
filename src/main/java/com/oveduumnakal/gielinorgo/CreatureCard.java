@@ -50,6 +50,7 @@ final class CreatureCard extends JPanel
 	private final JLabel style = PanelUi.caption("");
 	private final JLabel badge = PanelUi.label("", FontManager.getRunescapeSmallFont(), ColorScheme.BRAND_ORANGE);
 	private final JLabel newMove = PanelUi.label("New move", FontManager.getRunescapeSmallFont(), PanelUi.GOLD);
+	private final BondHearts bond = new BondHearts();
 	private final JLabel waiting = PanelUi.label("", FontManager.getRunescapeSmallFont(), XP_COLOR);
 	private final BarComponent hp = new BarComponent(ColorScheme.PROGRESS_COMPLETE_COLOR, HP_BAR_HEIGHT);
 	private final BarComponent xp = new BarComponent(XP_COLOR, XP_BAR_HEIGHT);
@@ -74,6 +75,7 @@ final class CreatureCard extends JPanel
 		text.add(PanelUi.sides(name, level));
 		text.add(Box.createVerticalStrut(1));
 		text.add(PanelUi.sides(style, badge));
+		text.add(bond);
 		text.add(newMove);
 		text.add(waiting);
 		text.add(Box.createVerticalStrut(5));
@@ -86,6 +88,7 @@ final class CreatureCard extends JPanel
 			((JComponent) child).setAlignmentX(Component.LEFT_ALIGNMENT);
 
 		newMove.setVisible(false);
+		bond.setVisible(false);
 		waiting.setVisible(false);
 		newMove.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		newMove.addMouseListener(new MouseAdapter()
@@ -145,6 +148,8 @@ final class CreatureCard extends JPanel
 		style.setText(view.type().label() + (view.speciesWord().isEmpty() ? "" : " \u00b7 " + view.speciesWord())
 			+ " \u00b7 " + view.temperamentLabel());
 		showBadge(view, isLead);
+		bond.set(view.hearts());
+		bond.setVisible(view.hearts() > 0);
 		newMove.setVisible(!view.pending().isEmpty());
 		newMove.setToolTipText(view.pending().isEmpty() ? null : "Wants to learn "
 			+ view.pending().get(0).name() + ". Click to choose.");
@@ -162,7 +167,8 @@ final class CreatureCard extends JPanel
 			+ Math.round(view.hpFraction() * 100) + "%<br>"
 			+ xpHint(view)
 			+ "<br>" + (isLead ? "Your lead: fights battles and trains twice as fast" : "Click to make lead")
-			+ "<br>" + view.type().matchup() + PanelUi.tooltipMoves(view) + "<br>Right-click for more</html>");
+			+ "<br>" + view.type().matchup() + PanelUi.tooltipBond(view)
+			+ PanelUi.tooltipMoves(view) + "<br>Right-click for more</html>");
 		String wanted = PortraitSource.cacheKey(view.name(), view.npcId());
 		if (wanted.equals(portraitOf))
 			return;

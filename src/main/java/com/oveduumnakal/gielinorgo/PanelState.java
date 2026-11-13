@@ -34,6 +34,7 @@ final class PanelState
 	private final BattleView battle;
 	private MilestoneView milestones = MilestoneView.NONE;
 	private EliteView elite = EliteView.NONE;
+	private RivalView rival = RivalView.NONE;
 	private String shownTitle;
 	private List<String> titles = Collections.emptyList();
 	private String resetSummary = "";
@@ -137,6 +138,7 @@ final class PanelState
 			team, storage, log, caughtSpecies, seenSpecies, eggs, champions, today, tasks, items, waiting);
 		copy.resetSummary = resetSummary;
 		copy.starters = starters;
+		copy.rival = rival;
 		return copy.withGoals(milestones, elite).withTitle(shownTitle, titles);
 	}
 
@@ -162,6 +164,24 @@ final class PanelState
 	{
 		this.starters = Collections.unmodifiableList(new ArrayList<>(offer));
 		return this;
+	}
+
+	/**
+	 * Adds the rival card, to a state that is still being built.
+	 *
+	 * @param card what the rival card shows
+	 * @return this state
+	 */
+	PanelState withRival(RivalView card)
+	{
+		this.rival = card;
+		return this;
+	}
+
+	/** @return what the rival card on the Battle tab shows */
+	RivalView rival()
+	{
+		return rival;
 	}
 
 	/** @return the starter creatures on offer to a new player; empty when none is */

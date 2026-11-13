@@ -231,6 +231,8 @@ public class GielinorGoPlugin extends Plugin
 		game.bosses(loadBosses(species));
 		game.setCues(this::playCue);
 		game.elite(loadElite(species));
+		game.rival(loadRival(species));
+		game.rematches(loadRematches(species));
 		game.moves(loadMoves());
 		game.examine(loadExamine());
 		game.today(() -> calendar.today(config.spawnEvents(), spawnClock));
@@ -910,6 +912,25 @@ public class GielinorGoPlugin extends Plugin
 		}
 	}
 
+	private RivalTable loadRival(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(RivalTable.RESOURCE))
+		{
+			if (in == null)
+				return RivalTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return RivalTable.load(gson, reader, species);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the rival", e);
+			return RivalTable.empty();
+		}
+	}
+
 	private ChampionTable loadChampions(SpeciesTable species)
 	{
 		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(ChampionTable.RESOURCE))
@@ -926,6 +947,25 @@ public class GielinorGoPlugin extends Plugin
 		{
 			log.warn("Gielinor Go: could not read the champion list", e);
 			return ChampionTable.empty();
+		}
+	}
+
+	private RematchTable loadRematches(SpeciesTable species)
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(RematchTable.RESOURCE))
+		{
+			if (in == null)
+				return RematchTable.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return RematchTable.load(gson, reader, species);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the champion rematch teams", e);
+			return RematchTable.empty();
 		}
 	}
 
@@ -1441,7 +1481,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		Creature lead = config.showFollower() && !hiddenForPvp() ? game.data().lead() : null;
 		leadTag = lead != null && config.showLeadName()
-			? FollowerTagOverlay.nameFor(lead.nickname, game.speciesNameOf(lead)) : null;
+			? FollowerTagOverlay.nameFor(lead.nickname, game.speciesNameOf(lead), BondRules.hearts(lead.bond)) : null;
 		follower.gameTick(lead == null ? null : lead.species, lead == null ? 0 : lead.npcId,
 			lead != null && lead.gilded);
 	}

@@ -203,6 +203,17 @@ final class PanelUi
 	}
 
 	/**
+	 * Words the bond line of a creature's tooltip.
+	 *
+	 * @param view the creature
+	 * @return a line break and the bond line, or an empty string while it has no hearts
+	 */
+	static String tooltipBond(CreatureView view)
+	{
+		return view.hearts() > 0 ? "<br>" + BondRules.describe(view.hearts()) : "";
+	}
+
+	/**
 	 * Picks the colour of a rating word.
 	 *
 	 * @param rating the rating

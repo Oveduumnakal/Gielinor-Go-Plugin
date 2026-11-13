@@ -33,6 +33,9 @@ final class ChampionsTab extends JPanel
 	private final JLabel eliteHeader = PanelUi.caption("ELITE CHALLENGE");
 	private final JPanel eliteStack = new JPanel(new BorderLayout());
 	private EliteView eliteShown;
+	private final JLabel rivalHeader = PanelUi.caption("RIVAL");
+	private final JPanel rivalStack = new JPanel(new BorderLayout());
+	private RivalView rivalShown;
 
 	ChampionsTab(PanelActions actions, Consumer<FriendView> trader)
 	{
@@ -47,7 +50,12 @@ final class ChampionsTab extends JPanel
 		PanelColumn column = new PanelColumn();
 		eliteHeader.setBorder(new EmptyBorder(10, 8, 6, 8));
 		eliteStack.setOpaque(false);
-		for (JComponent part : new JComponent[] {friends, header, stack, eliteHeader, eliteStack})
+		rivalHeader.setBorder(new EmptyBorder(10, 8, 6, 8));
+		rivalStack.setOpaque(false);
+		rivalHeader.setVisible(false);
+		rivalStack.setVisible(false);
+		for (JComponent part : new JComponent[] {friends, rivalHeader, rivalStack, header, stack, eliteHeader,
+			eliteStack})
 		{
 			part.setAlignmentX(Component.LEFT_ALIGNMENT);
 			column.stack().add(part);
@@ -64,6 +72,28 @@ final class ChampionsTab extends JPanel
 	void updateFriends(FriendsState state)
 	{
 		friends.update(state);
+	}
+
+	/**
+	 * Shows the rival card above the champions, unless it equals the one already shown.
+	 *
+	 * @param view the card; hidden when there is no rival
+	 */
+	void updateRival(RivalView view)
+	{
+		if (view.equals(rivalShown))
+			return;
+
+		rivalShown = view;
+		boolean visible = view.mode() != RivalView.Mode.HIDDEN;
+		rivalHeader.setVisible(visible);
+		rivalStack.setVisible(visible);
+		rivalStack.removeAll();
+		if (visible)
+			rivalStack.add(new RivalCard(view, actions), BorderLayout.CENTER);
+
+		rivalStack.revalidate();
+		rivalStack.repaint();
 	}
 
 	/**
@@ -102,7 +132,15 @@ final class ChampionsTab extends JPanel
 				beaten++;
 		}
 
-		header.setText("CITY CHAMPIONS  " + beaten + " / " + champions.size() + " sigils");
+		int gold = 0;
+		for (ChampionView champion : champions)
+		{
+			if (champion.gold())
+				gold++;
+		}
+
+		header.setText("CITY CHAMPIONS  " + beaten + " / " + champions.size() + " sigils"
+			+ (gold > 0 ? ", " + gold + " gold" : ""));
 		if (champions.equals(shown))
 			return;
 

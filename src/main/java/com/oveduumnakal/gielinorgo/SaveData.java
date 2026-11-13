@@ -73,6 +73,12 @@ final class SaveData
 	/** Ids of the City Champions the player has beaten. */
 	Set<String> sigils = new LinkedHashSet<>();
 
+	/** Ids of the cities whose champion has been beaten again in a rematch, the gold sigils. Null in older saves. */
+	Set<String> goldSigils = new LinkedHashSet<>();
+
+	/** The UTC day each champion last paid its daily rematch reward, by champion id. Null in older saves. */
+	Map<String, Long> rematchDay = new HashMap<>();
+
 	/** Progress on the daily and weekly tasks and the login streak. Null in saves from before tasks existed. */
 	TaskProgress tasks = new TaskProgress();
 
@@ -81,6 +87,9 @@ final class SaveData
 
 	/** How many times the player has cleared the Elite challenge. 0 in saves from before it existed. */
 	int eliteClears;
+
+	/** The rival's starter and how many of the rival's battles are won. Null until the rival is first needed. */
+	RivalProgress rival;
 
 	/**
 	 * The title the panel header shows, {@code GRAND_CHAMPION} or {@code MASTER_COLLECTOR}, or null to show the newest
@@ -121,6 +130,9 @@ final class SaveData
 		eggs = eggs == null ? new ArrayList<>() : new ArrayList<>(eggs);
 		gilded = gilded == null ? new LinkedHashSet<>() : new LinkedHashSet<>(gilded);
 		sigils = sigils == null ? new LinkedHashSet<>() : new LinkedHashSet<>(sigils);
+		goldSigils = goldSigils == null ? new LinkedHashSet<>() : new LinkedHashSet<>(goldSigils);
+		rematchDay = rematchDay == null ? new HashMap<>() : new HashMap<>(rematchDay);
+		rematchDay.values().removeIf(day -> day == null);
 		tasks = tasks == null ? new TaskProgress() : tasks.sanitized();
 		milestones = milestones == null ? new LinkedHashSet<>() : new LinkedHashSet<>(milestones);
 		bossKills = bossKills == null ? new LinkedHashSet<>() : new LinkedHashSet<>(bossKills);
@@ -135,6 +147,13 @@ final class SaveData
 
 		while (team.size() > TEAM_SIZE)
 			storage.add(team.remove(team.size() - 1));
+
+		if (rival != null)
+		{
+			rival.won = Math.max(0, Math.min(RivalRules.BATTLES, rival.won));
+			if (rival.starter == null)
+				rival = null;
+		}
 
 		splitWarriorJars();
 		if (selectedJar == null || selectedJar.equals(OLD_WARRIOR))
@@ -169,6 +188,7 @@ final class SaveData
 	{
 		creature.nickname = Nickname.clean(creature.nickname);
 		creature.npcId = Math.max(0, creature.npcId);
+		creature.bond = Math.max(0, creature.bond);
 		creature.rollHp = StatRolls.clamp(creature.rollHp);
 		creature.rollAttack = StatRolls.clamp(creature.rollAttack);
 		creature.rollDefence = StatRolls.clamp(creature.rollDefence);

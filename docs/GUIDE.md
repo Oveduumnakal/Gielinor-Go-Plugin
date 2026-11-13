@@ -317,6 +317,15 @@ Every feature and every number, in detail. For the short version, see the [READM
   One wild creature in 500 is gilded: gold outline in the world, gold name in your panel. They are only for
   showing off.
 
+- **Bond**
+
+  Each creature has a bond, shown as up to five hearts under its name on its card. Only your lead earns it: 1 point
+  for every 100 tiles you walk with it following, 5 for a battle it wins, and 20 for a City Champion or Elite win
+  with it as your lead. The hearts come at 100, 400, 1,200, 3,000 and 6,000 points. From the first heart a small
+  heart shows beside its name over the follower. Three hearts give it 2% more creature XP, four give 4%, and five
+  give 5% and gold hearts. A bond never changes a battle. It stays through evolution, Storage and renaming, is lost
+  when you release the creature, and starts at zero after a trade.
+
 ### Spawn variety
 
 - **Featured today**
@@ -414,6 +423,43 @@ Every feature and every number, in detail. For the short version, see the [READM
   battle of three creatures against three takes about 45 seconds at most. Creatures are drawn small, like your
   follower. The result is decided before the scene starts, so nothing in it can change the outcome. With the setting
   off, or when there is no room or no follower on screen, the battle is text only.
+
+- **Rematches**
+
+  Once you have cleared the Elite challenge, every City Champion fields a second team of six creatures at levels 80
+  to 99, harder in each later city. The **Rematch** button on the champion's card fights it in the same way as the
+  first battle, in the city, automatic or turn by turn. Your first rematch win in a city turns its sigil **gold** and
+  pays 5 Dragon jars. Win in all eight cities and the Log pays an Epic egg and 3 of every specialty jar. After that
+  each champion pays 1 Dragon jar once per UTC day, the same day as the daily tasks; the card says "Reward ready" or
+  when it comes back. A rematch won on a day that champion has already paid gives half the creature XP and nothing
+  else. Rematches are not open during an Elite run. Before the first Elite clear, a champion is fought with the first
+  team only.
+
+### Your rival
+
+- **Bryn, from the Battle tab**
+
+  A rival trainer named Bryn has a card above the City Champions on the Battle tab. Nothing is drawn in the game
+  world: the card shows what Bryn says, the team for the next battle, and what a win pays. When you pick a starter,
+  Bryn takes the one that beats it: the Wizard against your Imp, the Gnome Archer against your Wizard and the Imp
+  against your Gnome Archer. A save that never picked a starter gets the one that beats the style of your lead, or
+  the Imp when none matches. The choice is saved the first time it is needed and never changes.
+
+- **Five battles**
+
+  Battle 1 opens with 2 sigils, battle 2 with 4, battle 3 with 6, battle 4 with 8, and battle 5 after your first
+  Elite clear. Bryn brings 2 creatures, then 3, 4, 5 and 6, from level 15 up to levels 85 to 99, and the starter
+  evolves along the way. The teams are fixed for each starter and are picked to answer its weak style. You can fight
+  anywhere, with your whole team, and the battle plays like a City Champion battle: automatic, or turn by turn with
+  **Choose battle actions**. It cannot be started during an Elite run. Bryn speaks before and after each battle,
+  and the lines float up with the result.
+
+- **Rewards**
+
+  The first win of each battle pays creature XP, trainer XP, jars of the best tier you have unlocked (3, 4, 5, 6 and
+  8) and an egg (Rare, Rare, Epic, Epic, Legendary), as jars when you have no room for an egg. A loss costs nothing
+  except the health your creatures lost; rest and challenge again. After battle 5 the card stays, marked beaten.
+  Nothing Bryn gives needs another player.
 
 ### Elite challenge
 

@@ -1,4 +1,5 @@
 class Creature {
+  bond: int
   caughtAtMs: long
   gilded: boolean
   hpFraction: double
@@ -21,6 +22,10 @@ class Egg {
   tilesLeft: int
   tilesTotal: int
 }
+class RivalProgress {
+  starter: String
+  won: int
+}
 class SaveData {
   battlesWon: int
   bossKills: Set<String>
@@ -28,9 +33,12 @@ class SaveData {
   eggs: List<Egg>
   eliteClears: int
   gilded: Set<String>
+  goldSigils: Set<String>
   items: Map<String, Integer>
   jars: Map<String, Integer>
   milestones: Set<String>
+  rematchDay: Map<String, Long>
+  rival: RivalProgress
   seen: Set<String>
   selectedJar: String
   sigils: Set<String>

@@ -23,13 +23,14 @@ import net.runelite.client.ui.FontManager;
 final class ChampionCard extends JPanel
 {
 	private static final int STRIPE = 3;
+	private static final Color GOLD_SIGIL_COLOR = new Color(0xFFF08A);
 	private static final Color HERE_COLOR = ColorScheme.PROGRESS_COMPLETE_COLOR;
 
 	ChampionCard(ChampionView view, PanelActions actions)
 	{
 		super(new BorderLayout());
 		setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		Color stripe = view.beaten() ? PanelUi.GOLD : ColorScheme.DARKER_GRAY_COLOR;
+		Color stripe = view.gold() ? GOLD_SIGIL_COLOR : view.beaten() ? PanelUi.GOLD : ColorScheme.DARKER_GRAY_COLOR;
 		setBorder(BorderFactory.createCompoundBorder(
 			BorderFactory.createMatteBorder(0, STRIPE, 0, 0, view.here() && !view.beaten() ? HERE_COLOR : stripe),
 			BorderFactory.createEmptyBorder(6, 6, 7, 8)));
@@ -52,6 +53,14 @@ final class ChampionCard extends JPanel
 		}
 
 		body.add(reward);
+		if (view.rematchOpen())
+		{
+			body.add(Box.createVerticalStrut(3));
+			body.add(PanelUi.wrapped("Rematch: " + view.rematchTeam(), ColorScheme.LIGHT_GRAY_COLOR));
+			body.add(PanelUi.label(view.rematchNote(), FontManager.getRunescapeSmallFont(),
+				ColorScheme.MEDIUM_GRAY_COLOR));
+		}
+
 		if (view.here())
 		{
 			JButton button = PanelUi.button(view.beaten() ? "Rematch" : "Challenge",
@@ -81,6 +90,9 @@ final class ChampionCard extends JPanel
 	 */
 	private static JLabel statusLabel(ChampionView view)
 	{
+		if (view.gold())
+			return PanelUi.label("Gold sigil", FontManager.getRunescapeSmallFont(), GOLD_SIGIL_COLOR);
+
 		if (view.beaten())
 			return PanelUi.label("Sigil", FontManager.getRunescapeSmallFont(), PanelUi.GOLD);
 

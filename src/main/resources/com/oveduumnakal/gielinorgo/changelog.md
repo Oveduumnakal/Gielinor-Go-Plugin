@@ -82,6 +82,11 @@ A Creature Log, daily tasks and daily events give you goals.
   Defence XP. (#85)
 - **Species stats.** Every species has its own health, attack, defence and speed from the real monster, within 25%,
   and evolving never lowers one. (#86)
+- **A rival.** Bryn takes the starter that beats yours and challenges you five times from the Battle tab. (#95)
+- **Bond.** Your lead earns hearts as it walks and wins with you: a heart on its name tag, and up to 5% more XP.
+  (#96)
+- **Champion rematches.** After the Elite clear each City Champion fights again with six creatures at levels 80 to 99,
+  for a gold sigil and a daily reward. (#97)
 - **Choose your turns against friends.** When you both have Choose battle actions on, a friend battle is played
   turn by turn. (#98)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
