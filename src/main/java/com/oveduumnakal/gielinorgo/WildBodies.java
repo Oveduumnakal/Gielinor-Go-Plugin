@@ -59,10 +59,10 @@ final class WildBodies
 	/** The last place of a body that is gone, kept for a few seconds so its last lines still float over it. */
 	private static final class Farewell
 	{
-		private final StageAnchors.Spot spot;
+		private final LastPlace spot;
 		private final long untilMs;
 
-		private Farewell(StageAnchors.Spot spot, long untilMs)
+		private Farewell(LastPlace spot, long untilMs)
 		{
 			this.spot = spot;
 			this.untilMs = untilMs;
@@ -356,16 +356,14 @@ final class WildBodies
 	 * {@link #FAREWELL_MS}, so its last lines still float over it. May be called from the render thread.
 	 *
 	 * @param wildId the wild creature's id
-	 * @return its place, or null when it has none
+	 * @return its place, or null when it has none or lies outside the scene
 	 */
 	StageAnchors.Spot spotOf(int wildId)
 	{
 		WildBody body = bodies.get(wildId);
-		if (body != null && body.lastSpot() != null)
-			return body.lastSpot();
-
 		Farewell gone = farewells.get(wildId);
-		return gone == null ? null : gone.spot;
+		LastPlace place = body != null && body.lastSpot() != null ? body.lastSpot() : gone == null ? null : gone.spot;
+		return place == null ? null : place.in(client.getTopLevelWorldView());
 	}
 
 	/**
@@ -388,7 +386,7 @@ final class WildBodies
 
 	private void farewell(int wildId, WildBody body, long nowMs)
 	{
-		StageAnchors.Spot spot = body.lastSpot();
+		LastPlace spot = body.lastSpot();
 		if (spot != null)
 			farewells.put(wildId, new Farewell(spot, nowMs + FAREWELL_MS));
 	}
