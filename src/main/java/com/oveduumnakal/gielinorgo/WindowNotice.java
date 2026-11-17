@@ -4,9 +4,13 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
@@ -98,14 +102,29 @@ final class WindowNotice extends Overlay
 			}
 
 			WindowStyle style = WindowStyle.of(theme.get(), SCALE);
-			WindowStyle.prepare(graphics);
-			FontMetrics fm = graphics.getFontMetrics(style.font(WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS));
-			int pad = style.metrics().pad;
-			int halfW = (fm.stringWidth(shown.message().text()) + 2 * pad) / 2;
-			int halfH = (fm.getHeight() + pad) / 2;
-			int cx = NoticeSlot.clampCenter(shown.centerX(), halfW, canvasWidth.getAsInt());
-			int cy = NoticeSlot.clampCenter(shown.centerY(), halfH, canvasHeight.getAsInt());
-			style.notice(graphics, shown.message().text(), cx, cy, frame.scale, frame.alpha);
+			RenderingHints savedHints = graphics.getRenderingHints();
+			Stroke savedStroke = graphics.getStroke();
+			Color savedColor = graphics.getColor();
+			Font savedFont = graphics.getFont();
+			try
+			{
+				WindowStyle.prepare(graphics);
+				FontMetrics fm = graphics.getFontMetrics(style.font(WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS));
+				int pad = style.metrics().pad;
+				int halfW = (fm.stringWidth(shown.message().text()) + 2 * pad) / 2;
+				int halfH = (fm.getHeight() + pad) / 2;
+				int cx = NoticeSlot.clampCenter(shown.centerX(), halfW, canvasWidth.getAsInt());
+				int cy = NoticeSlot.clampCenter(shown.centerY(), halfH, canvasHeight.getAsInt());
+				style.notice(graphics, shown.message().text(), cx, cy, frame.scale, frame.alpha);
+			}
+			finally
+			{
+				graphics.setRenderingHints(savedHints);
+				graphics.setStroke(savedStroke);
+				graphics.setColor(savedColor);
+				graphics.setFont(savedFont);
+			}
+
 			return null;
 		}
 		catch (RuntimeException | AssertionError e)

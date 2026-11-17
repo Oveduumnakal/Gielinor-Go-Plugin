@@ -5,12 +5,15 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
@@ -682,6 +685,10 @@ final class WindowShell
 			seenDoneTasks = shown.doneTasks();
 
 		publishHits(shown);
+		RenderingHints savedHints = g.getRenderingHints();
+		Stroke savedStroke = g.getStroke();
+		Color savedColor = g.getColor();
+		Font savedFont = g.getFont();
 		WindowStyle.prepare(g);
 		AffineTransform savedTransform = g.getTransform();
 		Composite savedComposite = g.getComposite();
@@ -689,15 +696,26 @@ final class WindowShell
 		g.scale(frame.scale, frame.scale);
 		g.translate(-width / 2.0, -height / 2.0);
 		g.setComposite(AlphaComposite.SrcOver.derive((float) Math.max(0.0, Math.min(1.0, frame.alpha))));
-		paintFrame(g, shown, mode, nowMs);
-		Rectangle canvas = layout.window;
-		menu.paint(g, style, canvas, mode, nowMs);
-		if (modal != null)
-			modal.paint(g, style, canvas, mode, nowMs);
+		try
+		{
+			paintFrame(g, shown, mode, nowMs);
+			Rectangle canvas = layout.window;
+			menu.paint(g, style, canvas, mode, nowMs);
+			if (modal != null)
+				modal.paint(g, style, canvas, mode, nowMs);
 
-		tooltip.paint(g, style, canvas, nowMs);
-		g.setTransform(savedTransform);
-		g.setComposite(savedComposite);
+			tooltip.paint(g, style, canvas, nowMs);
+		}
+		finally
+		{
+			g.setTransform(savedTransform);
+			g.setComposite(savedComposite);
+			g.setRenderingHints(savedHints);
+			g.setStroke(savedStroke);
+			g.setColor(savedColor);
+			g.setFont(savedFont);
+		}
+
 		animations.prune(nowMs);
 		return true;
 	}
@@ -708,6 +726,7 @@ final class WindowShell
 		WindowStyle st = style;
 		layers.draw(g, 0, 0, "frame", lay.window.width, lay.window.height, lay.scale, st.theme(), 0, layer ->
 		{
+			WindowStyle.prepare(layer);
 			st.window(layer, lay.window);
 			st.header(layer, rect(lay.header));
 		});

@@ -582,6 +582,42 @@ Every feature and every number, in detail. For the short version, see the [READM
   short form; **Submit** opens GitHub's new-issue page in your browser with what you wrote already filled in. You
   review it and post it there. The plugin sends nothing itself, and a bug report adds the plugin version for you.
 
+### Painted window (preview)
+
+- **Painted window (preview)**
+
+  A new in-game window is being built to replace the side panel. It is a preview: turn on **Painted window (preview)**
+  in the settings and a jar button appears at the top left of the game screen; click it to open or close the window.
+  So far it has its frame, six tabs (Party, Bag, Storage, Collection, Tasks and Battle) with placeholder pages, and a
+  footer. The pages come in later updates, and the side panel works as before until they do. Storage is greyed out,
+  and shakes when clicked, unless you could move a creature between your team and Storage (see the side panel notes
+  above).
+
+- **Closing and the jar button**
+
+  Real combat (and the five seconds after it) and any Gielinor Go battle close the window with a short pop-up
+  message, and the jar button turns grey until they end. Click it again after that to reopen. A click on the grey
+  jar shows why it cannot open, and so does opening it before your save has loaded. A pulsing dot on the jar means
+  something waits for you: a creature has a move to decide on, an egg is ready, a task was completed, or you have a
+  creature to choose.
+
+- **Moving and resizing**
+
+  Hold RuneLite's drag key (Alt unless you changed it in RuneLite's own settings) and drag the window or the jar
+  button to move them; drag the window's edge to resize it. It keeps its shape and follows the size of the game
+  window. Without a drag key (KDE desktop mode on a Steam Deck uses Alt+drag for its own window), use **Window size**
+  in the settings, or the **Reset window** and size buttons at the foot of the window. **Window style** (or the style
+  button) switches between Dark glass and RuneLite dark.
+
+- **Keyboard and controller**
+
+  Click the window to give it focus, and the keys go to it instead of the game: Left and Right change tab, Up and
+  Down move the highlight, Enter or Space press it, Esc goes back and then closes, and Backspace goes back without
+  closing. Click in the game world and the arrow keys and Enter go back to the game; typing in chat is never touched.
+  Turn this off with **Window keyboard**, hide the hint line with **Show key hints**, and set **Open window key** to
+  open and close the window from the keyboard (not set by default). A controller works through Steam Input: map the
+  D-pad to the arrow keys, A to Enter, B to Escape and the bumpers to Left and Right.
+
 ## Links
 
 - [Report a bug](https://github.com/Oveduumnakal/Gielinor-Go-Plugin/issues/new?template=bug_report.yml)

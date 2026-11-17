@@ -6,11 +6,14 @@ package com.oveduumnakal.gielinorgo;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Stroke;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
@@ -149,13 +152,34 @@ final class WindowToggle extends Overlay
 
 	private void paintIcon(Graphics2D g, long nowMs)
 	{
-		WindowTheme look = theme.get();
-		MotionMode mode = motion.get();
-		boolean off = locked;
-		WindowStyle.prepare(g);
-		Composite saved = g.getComposite();
-		double dx = ShellMotion.shake(mode, nowMs - shakeMs, SHAKE_PX);
-		g.translate(dx, 0);
+		RenderingHints savedHints = g.getRenderingHints();
+		Stroke savedStroke = g.getStroke();
+		Color savedColor = g.getColor();
+		Composite savedComposite = g.getComposite();
+		AffineTransform savedTransform = g.getTransform();
+		try
+		{
+			WindowTheme look = theme.get();
+			MotionMode mode = motion.get();
+			WindowStyle.prepare(g);
+			g.translate(ShellMotion.shake(mode, nowMs - shakeMs, SHAKE_PX), 0);
+			paintFace(g, look, locked);
+			g.setTransform(savedTransform);
+			if (waiting && !locked)
+				paintDot(g, look, mode, nowMs);
+		}
+		finally
+		{
+			g.setTransform(savedTransform);
+			g.setComposite(savedComposite);
+			g.setRenderingHints(savedHints);
+			g.setStroke(savedStroke);
+			g.setColor(savedColor);
+		}
+	}
+
+	private void paintFace(Graphics2D g, WindowTheme look, boolean off)
+	{
 		if (off)
 			g.setComposite(AlphaComposite.SrcOver.derive(LOCKED_ALPHA));
 
@@ -171,11 +195,6 @@ final class WindowToggle extends Overlay
 			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 			g.drawImage(picture, (SIZE - ICON_PX) / 2, (SIZE - ICON_PX) / 2, ICON_PX, ICON_PX, null);
 		}
-
-		g.setComposite(saved);
-		g.translate(-dx, 0);
-		if (waiting && !off)
-			paintDot(g, look, mode, nowMs);
 	}
 
 	private void paintDot(Graphics2D g, WindowTheme look, MotionMode mode, long nowMs)
