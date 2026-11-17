@@ -1248,6 +1248,71 @@ public class FriendTradesTest
 		assertEquals(StatRolls.AVERAGE, got.rolls());
 	}
 
+	@Test
+	public void aTradedCreatureKeepsTheGenderItWasSentWith()
+	{
+		annImp.gender = Gender.FEMALE;
+		ann.offer(BOB, "Bob", annImp, null);
+		Item sent = last(fromAnn).give();
+		assertEquals(Gender.FEMALE, sent.gender());
+		assertTrue(bob.receive(last(fromAnn), BOB, "Ann"));
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
+		ann.receive(last(fromBob), ANN, "Bob");
+		bob.receive(last(fromAnn), BOB, "Ann");
+
+		List<Creature> team = bobGame.data().team;
+		assertEquals(Gender.FEMALE, team.get(team.size() - 1).gender);
+	}
+
+	@Test
+	public void aFriendSendingNoGenderStillTradesAndTheCreatureGetsOne()
+	{
+		annImp.gender = Gender.FEMALE;
+		ann.offer(BOB, "Bob", annImp, null);
+		Gson gson = new Gson();
+		String wire = gson.toJson(last(fromAnn)).replace(",\"gender\":\"FEMALE\"", "");
+		assertFalse("the old layout has no gender", wire.contains("gender"));
+		GielinorGoPartyMessage old = gson.fromJson(wire, GielinorGoPartyMessage.class);
+		old.setMemberId(ANN);
+		assertEquals(GielinorGoPartyMessage.PROTOCOL, old.version());
+		Item oldItem = old.give();
+		assertNull(oldItem.gender());
+
+		assertTrue(bob.receive(old, BOB, "Ann"));
+		assertEquals("gilded Imp (Lv 20) as a gift", bob.offerFrom(ANN));
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
+		ann.receive(last(fromBob), ANN, "Bob");
+		bob.receive(last(fromAnn), BOB, "Ann");
+
+		List<Creature> team = bobGame.data().team;
+		Creature got = team.get(team.size() - 1);
+		assertEquals("imp", got.species);
+		assertEquals(SpeciesGender.stable("imp", 20), got.gender);
+	}
+
+	@Test
+	public void aTradedCowIsFemaleEvenWhenTheSenderSaysMale()
+	{
+		bobCow.gender = Gender.MALE;
+		bob.offer(ANN, "Ann", bobCow, null);
+		Gson gson = new Gson();
+		String wire = gson.toJson(last(fromBob)).replace("\"gender\":\"FEMALE\"", "\"gender\":\"MALE\"");
+		GielinorGoPartyMessage forged = gson.fromJson(wire, GielinorGoPartyMessage.class);
+		forged.setMemberId(BOB);
+		Item forgedItem = forged.give();
+		assertEquals(Gender.MALE, forgedItem.gender());
+
+		assertTrue(ann.receive(forged, ANN, "Bob"));
+		ann.answer(BOB, "Bob", ann.offerId(BOB), true);
+		bob.receive(last(fromAnn), BOB, "Ann");
+		ann.receive(last(fromBob), ANN, "Bob");
+
+		List<Creature> team = annGame.data().team;
+		Creature got = team.get(team.size() - 1);
+		assertEquals("cow", got.species);
+		assertEquals(Gender.FEMALE, got.gender);
+	}
+
 	private void swap()
 	{
 		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));

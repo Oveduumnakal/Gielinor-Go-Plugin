@@ -41,6 +41,17 @@ final class Champion
 		{
 			return Math.max(1, Math.min(XpRules.MAX_LEVEL, level));
 		}
+
+		/**
+		 * The gender of this creature. It is never saved: a fixed species has its gender, any other gets one from a
+		 * stable hash of its species and level, so the same member is always the same gender.
+		 *
+		 * @return the gender
+		 */
+		Gender gender()
+		{
+			return SpeciesGender.stable(species, level());
+		}
 	}
 
 	private String id;
