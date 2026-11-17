@@ -901,6 +901,7 @@ final class GoGame
 		caught.gilded = entry.gilded();
 		caught.npcId = entry.npcId();
 		caught.setRolls(StatRolls.roll(random));
+		caught.rollGender(random);
 		MoveLearning.start(caught, entry.species(), moves);
 		keep(caught);
 		recordOwned(caught);
@@ -2014,6 +2015,7 @@ final class GoGame
 		Creature creature = new Creature(born.key(), 1, clock.getAsLong());
 		creature.gilded = random.nextInt(gildedOneIn()) == 0;
 		creature.setRolls(StatRolls.roll(random));
+		creature.rollGender(random);
 		MoveLearning.start(creature, born, moves);
 		keep(creature);
 		recordOwned(creature);
@@ -2041,7 +2043,7 @@ final class GoGame
 		{
 			Species grown = species.find(step.to());
 			String before = nameOf(creature);
-			creature.species = grown.key();
+			creature.evolveInto(grown.key());
 			creature.npcId = 0;
 			MoveLearning.evolved(creature, grown, moves);
 			recordOwned(creature);

@@ -79,6 +79,7 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 		private String egg;
 		private int tilesLeft;
 		private String eggSpecies;
+		private String gender;
 
 		/** Used by Gson. */
 		Item()
@@ -141,6 +142,26 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 		}
 
 		/**
+		 * Names a creature with its rolls, temperament, moves and gender.
+		 *
+		 * @param species the species key
+		 * @param level the creature's level
+		 * @param xp the creature's XP, or 0 when only the level is known
+		 * @param gilded whether the creature is gilded
+		 * @param rolls the creature's rolls and temperament
+		 * @param moves the ids of the creature's moves; null or empty leaves them to the receiver
+		 * @param gender the creature's gender
+		 * @return the item
+		 */
+		static Item creature(String species, int level, long xp, boolean gilded, StatRolls rolls, String[] moves,
+			Gender gender)
+		{
+			Item item = creature(species, level, xp, gilded, rolls, moves);
+			item.gender = gender == null ? null : gender.name();
+			return item;
+		}
+
+		/**
 		 * Names an egg.
 		 *
 		 * @param rarity the egg's rarity, as a {@link Rarity#name()}
@@ -180,6 +201,16 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 		String species()
 		{
 			return species;
+		}
+
+		/**
+		 * Reads the creature's gender. The field is optional, so a build from before gender sends none.
+		 *
+		 * @return the gender as sent, or null when the sender sent none or sent a name that is not a gender
+		 */
+		Gender gender()
+		{
+			return Gender.named(gender);
 		}
 
 		/** @return the creature's level, as the sender claims it */

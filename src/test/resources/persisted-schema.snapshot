@@ -1,6 +1,7 @@
 class Creature {
   bond: int
   caughtAtMs: long
+  gender: Gender
   gilded: boolean
   hpFraction: double
   hpStampMs: long
@@ -22,6 +23,7 @@ class Egg {
   tilesLeft: int
   tilesTotal: int
 }
+enum Gender { MALE, FEMALE }
 class RivalProgress {
   starter: String
   won: int
