@@ -103,6 +103,29 @@ final class WindowStyle
 	}
 
 	/**
+	 * Gives the largest sharp font that lets a text fit a width: the wanted size, or the next whole multiple down
+	 * until the text fits, and the native size at the least. A label never spills out of its tab or button.
+	 *
+	 * @param g the graphics, for the font's measures
+	 * @param face which RuneScape font
+	 * @param units the wanted size in layout units
+	 * @param text the text to draw
+	 * @param maxWidth the room in pixels
+	 * @return the font
+	 */
+	Font fitted(Graphics2D g, WindowFonts.Face face, double units, String text, int maxWidth)
+	{
+		for (int step = WindowFonts.step(units, scale); step > 1; step--)
+		{
+			Font candidate = WindowFonts.ofStep(face, step);
+			if (g.getFontMetrics(candidate).stringWidth(text) <= maxWidth)
+				return candidate;
+		}
+
+		return WindowFonts.ofStep(face, 1);
+	}
+
+	/**
 	 * Sets the rendering hints the kit expects: smooth shapes, antialiased text with whole-pixel advances.
 	 *
 	 * @param g the graphics to set up
@@ -312,7 +335,8 @@ final class WindowStyle
 		if (!disabled)
 			shade(g, shape, active ? 0 : hover, 0);
 
-		Font font = font(WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS);
+		Font font = fitted(g, WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS, label,
+			(int) box.getWidth() - 2 * metrics.tabSlant);
 		FontMetrics fm = g.getFontMetrics(font);
 		text(g, label, (int) Math.round(box.getCenterX() - fm.stringWidth(label) / 2.0),
 			baseline(box, fm), font, text);
@@ -347,7 +371,8 @@ final class WindowStyle
 		if (!disabled)
 			shade(g, shape, hover, press);
 
-		Font font = font(WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS);
+		Font font = fitted(g, WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS, label,
+			(int) box.getWidth() - 2 * metrics.chipSlant);
 		FontMetrics fm = g.getFontMetrics(font);
 		text(g, label, (int) Math.round(box.getCenterX() - fm.stringWidth(label) / 2.0), baseline(box, fm), font,
 			text);

@@ -26,7 +26,10 @@ enum NoticeMessage
 	LOADING("Still loading your save."),
 
 	/** A new player has no creature yet and is told where to click. */
-	FIRST_RUN("Click the jar to choose your first creature.");
+	FIRST_RUN("Click the jar to choose your first creature."),
+
+	/** The player clicked the Storage tab away from a bank and a city. */
+	STORAGE_LOCKED("Go to a city or a bank to open Storage.");
 
 	private final String text;
 

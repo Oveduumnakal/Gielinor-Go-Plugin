@@ -108,4 +108,42 @@ public class WindowNoticeTest
 		assertEquals("Still loading your save.", NoticeMessage.LOADING.text());
 		assertEquals("Click the jar to choose your first creature.", NoticeMessage.FIRST_RUN.text());
 	}
+
+	@Test
+	public void theStorageNoticeSaysWhereToGo()
+	{
+		assertEquals("Go to a city or a bank to open Storage.", NoticeMessage.STORAGE_LOCKED.text());
+	}
+
+	@Test
+	public void aSlotKeepsItsMessageAndPlaceAndFollowsTheClock()
+	{
+		NoticeSlot slot = new NoticeSlot(NoticeMessage.CLOSED_COMBAT, 10_000, 300, 200);
+
+		assertEquals(NoticeMessage.CLOSED_COMBAT, slot.message());
+		assertEquals(300, slot.centerX());
+		assertEquals(200, slot.centerY());
+		assertEquals(0.8, slot.frame(MotionMode.FULL, 10_000).scale, 1e-12);
+		assertTrue(slot.frame(MotionMode.FULL, 11_000).visible);
+		assertFalse(slot.frame(MotionMode.FULL, 10_000 + NoticeClock.totalMs(MotionMode.FULL)).visible);
+	}
+
+	@Test
+	public void aSlotLastsTheHoldAloneWhenAnimationsAreOff()
+	{
+		NoticeSlot slot = new NoticeSlot(NoticeMessage.LOADING, 0, 0, 0);
+
+		assertTrue(slot.frame(MotionMode.OFF, 1_999).visible);
+		assertEquals(1.0, slot.frame(MotionMode.OFF, 1_999).alpha, 0.0);
+		assertFalse(slot.frame(MotionMode.OFF, 2_000).visible);
+	}
+
+	@Test
+	public void aNoticeIsKeptInsideTheCanvas()
+	{
+		assertEquals(100, NoticeSlot.clampCenter(0, 100, 765));
+		assertEquals(665, NoticeSlot.clampCenter(900, 100, 765));
+		assertEquals(300, NoticeSlot.clampCenter(300, 100, 765));
+		assertEquals(150, NoticeSlot.clampCenter(40, 200, 300));
+	}
 }

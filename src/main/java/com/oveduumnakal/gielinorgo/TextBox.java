@@ -277,7 +277,21 @@ final class TextBox
 	 */
 	boolean uses(int keyCode, int modifiers)
 	{
-		if (!focused || alt(modifiers) || isModifierKey(keyCode))
+		return focused && takes(keyCode, modifiers);
+	}
+
+	/**
+	 * Tells whether a focused box takes a key, whatever box it is. The key listener decides on the UI thread from
+	 * this and a published flag that a box is focused, without touching the box.
+	 *
+	 * @param keyCode the key, as {@link KeyEvent#getKeyCode}
+	 * @param modifiers the modifiers, as {@link InputEvent#getModifiersEx}
+	 * @return false for Alt combinations and for the modifier keys themselves, and for Ctrl combinations other than
+	 *         select all, copy, cut, paste, the arrows, Home, End, Backspace and Delete; true for everything else
+	 */
+	static boolean takes(int keyCode, int modifiers)
+	{
+		if (alt(modifiers) || isModifierKey(keyCode))
 			return false;
 
 		return !ctrl(modifiers) || keyCode == KeyEvent.VK_A || keyCode == KeyEvent.VK_C || keyCode == KeyEvent.VK_X
@@ -371,11 +385,11 @@ final class TextBox
 	 */
 	boolean onKeyTyped(char c, int modifiers, long nowMs)
 	{
-		if (!focused || alt(modifiers))
+		if (!focused || !takesTyped(c, modifiers))
 			return false;
 
 		if (ctrl(modifiers))
-			return c == CTRL_A || c == CTRL_C || c == CTRL_V || c == CTRL_X;
+			return true;
 
 		if (c >= 32 && c != 127 && c != KeyEvent.CHAR_UNDEFINED)
 		{
@@ -385,6 +399,21 @@ final class TextBox
 		}
 
 		return true;
+	}
+
+	/**
+	 * Tells whether a focused box takes a typed character, whatever box it is, for the key listener on the UI thread.
+	 *
+	 * @param c the character, as {@link KeyEvent#getKeyChar}
+	 * @param modifiers the modifiers, as {@link InputEvent#getModifiersEx}
+	 * @return false with Alt held, and with Ctrl held for anything but the characters of Ctrl+A, C, V and X
+	 */
+	static boolean takesTyped(char c, int modifiers)
+	{
+		if (alt(modifiers))
+			return false;
+
+		return !ctrl(modifiers) || c == CTRL_A || c == CTRL_C || c == CTRL_V || c == CTRL_X;
 	}
 
 	/**

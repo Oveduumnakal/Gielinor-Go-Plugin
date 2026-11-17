@@ -694,6 +694,18 @@ final class GoGame
 		towns = table == null ? TeamTowns.empty() : table;
 	}
 
+	/** @return whether the player is inside a City Champion's area or a team-change town */
+	boolean inTeamArea()
+	{
+		return cityId != null || inTown;
+	}
+
+	/** @return whether a bank is within reach or its interface is open */
+	boolean nearBank()
+	{
+		return bankNear || bankOpen;
+	}
+
 	/** @return whether the team may be changed here; otherwise the player is told where to go */
 	private boolean mayChangeTeam()
 	{

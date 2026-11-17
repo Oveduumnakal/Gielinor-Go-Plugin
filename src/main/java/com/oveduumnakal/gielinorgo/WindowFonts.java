@@ -95,9 +95,21 @@ final class WindowFonts
 	 * @param scale the window scale
 	 * @return the font, at a whole multiple of the native size
 	 */
-	static synchronized Font font(Face face, double units, double scale)
+	static Font font(Face face, double units, double scale)
 	{
-		int px = pixelSize(units, scale);
+		return ofStep(face, step(units, scale));
+	}
+
+	/**
+	 * Gives a font at a whole multiple of the native size. Fonts are cached.
+	 *
+	 * @param face which font
+	 * @param step the multiple, from 1 to {@link #MAX_STEP}; a value outside it is brought inside
+	 * @return the font at {@code step} times the native pixel size
+	 */
+	static synchronized Font ofStep(Face face, int step)
+	{
+		int px = Math.max(1, Math.min(MAX_STEP, step)) * NATIVE_PX;
 		Map<Integer, Font> sizes = CACHE.computeIfAbsent(face, f -> new HashMap<>());
 		return sizes.computeIfAbsent(px, p -> base(face).deriveFont((float) p));
 	}

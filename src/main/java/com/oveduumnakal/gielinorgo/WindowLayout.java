@@ -1,0 +1,130 @@
+/*
+ * Copyright (c) 2026, Oveduumnakal
+ * All rights reserved.
+ */
+package com.oveduumnakal.gielinorgo;
+
+import java.awt.Rectangle;
+
+/**
+ * Where everything of the painted window's shell sits, worked out from the window's size alone: the header with its six
+ * tabs and the Close button, the page area, the hint line and the footer buttons. Every length is a number of layout
+ * units in the 800 x 520 design space times the one window scale, so nothing is positioned in raw pixels and both
+ * themes get the same boxes. The page area takes whatever room the other parts leave, so a window a pixel off the
+ * design shape has no gap. Coordinates are window pixels. Holds no RuneLite types.
+ */
+final class WindowLayout
+{
+	/** The gap around the window's parts, in layout units. */
+	static final double MARGIN = 12;
+
+	/** The height of the header bar, in layout units. */
+	static final double HEADER_UNITS = 64;
+
+	/** The top of the tabs inside the header, in layout units. */
+	static final double TAB_TOP_UNITS = 10;
+
+	/** The width of a tab, in layout units. */
+	static final double TAB_UNITS = 114;
+
+	/** The gap between tabs, in layout units. */
+	static final double TAB_GAP_UNITS = 2;
+
+	/** The width of the Close button, in layout units. */
+	static final double CLOSE_UNITS = 78;
+
+	/** The height of the hint line, in layout units. */
+	static final double HINT_UNITS = 28;
+
+	/** The height of a footer button, in layout units. */
+	static final double BUTTON_UNITS = 40;
+
+	/** The gap between footer buttons, in layout units. */
+	static final double BUTTON_GAP_UNITS = 8;
+
+	/** The width of the Reset window button, in layout units. */
+	static final double RESET_UNITS = 160;
+
+	/** The width of the style button, in layout units. */
+	static final double THEME_UNITS = 170;
+
+	/** The width of the window size button, in layout units. */
+	static final double SIZE_UNITS = 210;
+
+	/** The window scale everything is drawn at. */
+	final double scale;
+
+	/** The whole window. */
+	final Rectangle window;
+
+	/** The header bar. */
+	final Rectangle header;
+
+	/** The tabs, in {@link WindowTab} order. */
+	final Rectangle[] tabs;
+
+	/** The Close button. */
+	final Rectangle close;
+
+	/** The page area. */
+	final Rectangle body;
+
+	/** The hint line under the page. */
+	final Rectangle hints;
+
+	/** The Reset window button. */
+	final Rectangle reset;
+
+	/** The style button. */
+	final Rectangle theme;
+
+	/** The window size button. */
+	final Rectangle size;
+
+	private WindowLayout(int width, int height)
+	{
+		scale = WindowFit.scale(width, height);
+		window = new Rectangle(0, 0, width, height);
+		int m = px(MARGIN);
+		int headerH = px(HEADER_UNITS);
+		header = new Rectangle(0, 0, width, headerH);
+		int tabW = px(TAB_UNITS);
+		int tabH = px(WindowStyle.Metrics.TAB_UNITS);
+		tabs = new Rectangle[WindowTab.values().length];
+		for (int i = 0; i < tabs.length; i++)
+			tabs[i] = new Rectangle(m + i * (tabW + px(TAB_GAP_UNITS)), px(TAB_TOP_UNITS), tabW, tabH);
+
+		close = new Rectangle(width - m - px(CLOSE_UNITS), px(TAB_TOP_UNITS), px(CLOSE_UNITS), tabH);
+		int buttonH = px(BUTTON_UNITS);
+		int hintH = px(HINT_UNITS);
+		int buttonsTop = height - m - buttonH;
+		int hintsTop = buttonsTop - px(BUTTON_GAP_UNITS / 2) - hintH;
+		hints = new Rectangle(m, hintsTop, width - 2 * m, hintH);
+		body = new Rectangle(m, headerH + m / 2, width - 2 * m, Math.max(0, hintsTop - headerH - m));
+		int gap = px(BUTTON_GAP_UNITS);
+		reset = new Rectangle(m, buttonsTop, px(RESET_UNITS), buttonH);
+		theme = new Rectangle(reset.x + reset.width + gap, buttonsTop, px(THEME_UNITS), buttonH);
+		size = new Rectangle(theme.x + theme.width + gap, buttonsTop, px(SIZE_UNITS), buttonH);
+	}
+
+	/**
+	 * Works the layout out for a window size.
+	 *
+	 * @param width the window width in pixels
+	 * @param height the window height in pixels
+	 * @return the layout
+	 */
+	static WindowLayout of(int width, int height)
+	{
+		return new WindowLayout(width, height);
+	}
+
+	/**
+	 * @param units a length in layout units
+	 * @return the length in pixels at this layout's scale, rounded
+	 */
+	int px(double units)
+	{
+		return (int) Math.round(units * scale);
+	}
+}
