@@ -6,6 +6,7 @@ package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -76,6 +77,27 @@ public class BattleDirectorTest
 		}
 	}
 
+	/** A random source that plays fixed rolls for the doubles once armed, so a throw can be made to land or break. */
+	private static final class Scripted extends Random
+	{
+		private boolean armed;
+		private double[] rolls = {0.0};
+		private int at;
+
+		void arm(double... next)
+		{
+			armed = true;
+			rolls = next;
+			at = 0;
+		}
+
+		@Override
+		public double nextDouble()
+		{
+			return armed ? rolls[Math.min(at++, rolls.length - 1)] : super.nextDouble();
+		}
+	}
+
 	private final List<String> shown = new ArrayList<>();
 	private final List<String> thrown = new ArrayList<>();
 	private final List<List<BattleLine>> closings = new ArrayList<>();
@@ -87,11 +109,16 @@ public class BattleDirectorTest
 	@Before
 	public void setUp()
 	{
+		build(new Random(5));
+	}
+
+	private void build(Random random)
+	{
 		SpeciesTable table = new SpeciesTable(Arrays.asList(CHICKEN, GOBLIN, DRAGON));
 		Champion lumbridge = new Champion("lumbridge", "Lumbridge", 3201, 3200, 3260, 3250, Arrays.asList(
 			new Champion.Member("Chicken", 2)), JarType.IRON, 3);
 		game = new GoGame(table, new EvolutionTable(Arrays.asList(), table), new ChampionTable(
-			Arrays.asList(lumbridge), table), new Random(5), () -> now, notice ->
+			Arrays.asList(lumbridge), table), random, () -> now, notice ->
 			{
 			});
 		director = new BattleDirector(game, () -> seconds, new BattleDirector.Listener()
@@ -367,7 +394,69 @@ public class BattleDirectorTest
 		assertEquals("BRONZE CAUGHT", thrown.get(thrown.size() - 1));
 		assertTrue(thrown.stream().allMatch(line -> line.startsWith("BRONZE ")));
 		assertFalse(scene.told.stream().anyMatch(line -> line.startsWith("finish")));
-		assertEquals(thrown.size() - 1, scene.told.size());
+		assertEquals(thrown.size(), scene.told.size());
+		assertEquals("end", scene.told.get(scene.told.size() - 1));
+	}
+
+	private FakeScene sceneMidBattle(Scripted random)
+	{
+		build(random);
+		FakeScene scene = new FakeScene();
+		game.data().team.add(creature("king black dragon", 80));
+		game.data().addJars(JarType.BRONZE, 10);
+		director.begin(game.startBattle(new WildEntry(1, DRAGON, 80, 1)), scene);
+		scene.ready = true;
+		director.gameTick(false);
+		assertTrue(director.choose(BattleChoice.attack()));
+		assertTrue(director.active());
+		scene.ready = true;
+		director.gameTick(false);
+		return scene;
+	}
+
+	@Test
+	public void aCatchMidBattleDropsTheQueuedBeatsAndEndsTheScene()
+	{
+		Scripted random = new Scripted();
+		FakeScene scene = sceneMidBattle(random);
+		random.arm(0.0);
+
+		assertTrue(director.choose(BattleChoice.catching(JarType.BRONZE)));
+
+		assertEquals("BRONZE CAUGHT", thrown.get(thrown.size() - 1));
+		assertFalse(director.active());
+		assertEquals("end", scene.told.get(scene.told.size() - 1));
+		assertEquals(1, Collections.frequency(scene.told, "end"));
+		assertFalse(scene.told.stream().anyMatch(line -> line.startsWith("finish") || line.equals("run")));
+	}
+
+	@Test
+	public void aFoeThatRunsOffMidBattleEndsTheSceneToo()
+	{
+		Scripted random = new Scripted();
+		FakeScene scene = sceneMidBattle(random);
+		random.arm(0.99, 0.0);
+
+		assertTrue(director.choose(BattleChoice.catching(JarType.BRONZE)));
+
+		assertEquals("BRONZE FLED", thrown.get(thrown.size() - 1));
+		assertFalse(director.active());
+		assertEquals("end", scene.told.get(scene.told.size() - 1));
+		assertEquals(1, Collections.frequency(scene.told, "end"));
+	}
+
+	@Test
+	public void aJarThatBreaksFreeKeepsTheSceneGoing()
+	{
+		Scripted random = new Scripted();
+		FakeScene scene = sceneMidBattle(random);
+		random.arm(0.99);
+
+		assertTrue(director.choose(BattleChoice.catching(JarType.BRONZE)));
+
+		assertEquals("BRONZE BROKE_FREE", thrown.get(thrown.size() - 1));
+		assertTrue(director.active());
+		assertFalse(scene.told.contains("end"));
 	}
 
 	@Test

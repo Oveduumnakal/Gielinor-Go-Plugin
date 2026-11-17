@@ -1738,7 +1738,8 @@ public class GielinorGoPlugin extends Plugin
 	 * Acts a throw out on screen, when that setting is on: the player throws whenever a jar was really used and
 	 * then reacts to the result, and the creature's body reacts when the jar lands: a caught one shrinks into the
 	 * jar, one that breaks free attacks and stands again, one that flees runs off fading out. With the setting off a
-	 * caught or fled creature simply disappears.
+	 * caught or fled creature simply disappears. A caught or fled creature also ends the battle the stage acts out
+	 * with it, so no queued attack plays after the catch.
 	 *
 	 * @param outcome what the throw led to
 	 * @param wildId the wild creature's id
@@ -1760,10 +1761,10 @@ public class GielinorGoPlugin extends Plugin
 
 		boolean gone = outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED;
 		if (gone && !played)
-		{
 			bodies.remove(wildId, System.currentTimeMillis());
+
+		if (gone)
 			stage.forget(wildId);
-		}
 	}
 
 	private void battle(int wildId)
@@ -2310,8 +2311,8 @@ public class GielinorGoPlugin extends Plugin
 
 	/**
 	 * Acts out a jar thrown in the middle of a battle. A catch, or a creature that runs off, ends the battle, so it
-	 * goes to the usual catch effects, which also end the scene. A jar that does not hold plays the throw and the
-	 * battle goes on.
+	 * goes to the usual catch effects, and the director ends the scene right after. A jar that does not hold plays
+	 * the throw and the battle goes on.
 	 *
 	 * @param session the battle
 	 * @param jar the jar thrown
