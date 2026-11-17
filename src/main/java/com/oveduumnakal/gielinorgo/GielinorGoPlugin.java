@@ -216,6 +216,7 @@ public class GielinorGoPlugin extends Plugin
 	private NavigationButton navButton;
 	private GoWindow window;
 	private WindowToggle windowToggle;
+	private PortraitCache windowPortraits;
 	private WindowNotice windowNotice;
 	private WindowInput windowInput;
 	private WindowKeys windowKeys;
@@ -2625,6 +2626,9 @@ public class GielinorGoPlugin extends Plugin
 			client::getCanvasWidth, client::getCanvasHeight);
 		window = new GoWindow(config, configManager, overlayManager, System::currentTimeMillis,
 			client::getCanvasWidth, client::getCanvasHeight, this::showNotice);
+		windowPortraits = new PortraitCache(portraits, System::currentTimeMillis);
+		window.shell().pages(new WindowPages(window.shell(), panelActions(), windowPortraits,
+			System::currentTimeMillis, PageText.Sink.NONE));
 		BufferedImage jar = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
 		windowToggle = new WindowToggle(config::windowPreview, config::windowStyle, config::windowAnimations,
 			System::currentTimeMillis, jar);
@@ -2650,6 +2654,7 @@ public class GielinorGoPlugin extends Plugin
 		overlayManager.remove(windowToggle);
 		overlayManager.remove(windowNotice);
 		windowNotice.clear();
+		windowPortraits.clear();
 		chatTyping = false;
 		firstRunNoticed = false;
 	}

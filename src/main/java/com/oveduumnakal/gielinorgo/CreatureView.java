@@ -27,6 +27,10 @@ final class CreatureView
 	private final int hearts;
 	private final String evolvesWhen;
 	private final Species species;
+	private Gender gender;
+	private String examine;
+	private String growsInto;
+	private boolean fainted;
 
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname)
@@ -140,8 +144,89 @@ final class CreatureView
 	 */
 	CreatureView withSpecies(Species shaped)
 	{
-		return new CreatureView(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId,
-			moves, pending, hearts, evolvesWhen, shaped);
+		return copyExtras(new CreatureView(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname,
+			rolls, npcId, moves, pending, hearts, evolvesWhen, shaped));
+	}
+
+	/**
+	 * Attaches the gender, which the painted window shows with its own icon.
+	 *
+	 * @param shown the creature's gender, or null to show none
+	 * @return a copy of this view that knows its gender
+	 */
+	CreatureView withGender(Gender shown)
+	{
+		CreatureView copy = withSpecies(species);
+		copy.gender = shown;
+		return copy;
+	}
+
+	/**
+	 * Attaches the words the Summary page shows besides the numbers.
+	 *
+	 * @param examineText the wiki's examine line of the species, or null when it has none
+	 * @param growsIntoText what the species grows into, such as {@code Grows into Lesser demon (20)}, or null
+	 * @return a copy of this view with the words
+	 */
+	CreatureView withDetails(String examineText, String growsIntoText)
+	{
+		CreatureView copy = withSpecies(species);
+		copy.examine = examineText;
+		copy.growsInto = growsIntoText;
+		return copy;
+	}
+
+	/**
+	 * Marks the creature as fainted. Nothing makes a creature faint yet; the painted window has the state ready for
+	 * when it does, and tests use it with a fake view.
+	 *
+	 * @param down whether the creature is fainted
+	 * @return a copy of this view with the mark
+	 */
+	CreatureView withFainted(boolean down)
+	{
+		CreatureView copy = withSpecies(species);
+		copy.fainted = down;
+		return copy;
+	}
+
+	private CreatureView copyExtras(CreatureView copy)
+	{
+		copy.gender = gender;
+		copy.examine = examine;
+		copy.growsInto = growsInto;
+		copy.fainted = fainted;
+		return copy;
+	}
+
+	/** @return the creature's gender, or null when the view was built without one */
+	Gender gender()
+	{
+		return gender;
+	}
+
+	/** @return the species' examine line, or null when it has none */
+	String examine()
+	{
+		return examine;
+	}
+
+	/** @return what the species grows into, or null when the view was built without it */
+	String growsInto()
+	{
+		return growsInto;
+	}
+
+	/** @return whether the creature is fainted; always false until fainting exists */
+	boolean fainted()
+	{
+		return fainted;
+	}
+
+	/** @return the traits of the species, the combat style's first, or an empty list when the species is unknown */
+	List<Trait> traits()
+	{
+		return species == null ? Collections.emptyList() : new ArrayList<>(species.traits());
 	}
 
 	/** @return up to two words for what the species is good or bad at, such as {@code Tough, Fast}; may be empty */

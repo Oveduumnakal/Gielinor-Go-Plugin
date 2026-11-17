@@ -217,6 +217,61 @@ final class WindowShell
 
 		/** Goes back one page. */
 		void back();
+
+		/**
+		 * Called at the start of every paint, before the page declares its hits, with what the page lays itself out
+		 * by.
+		 *
+		 * @param style the style, which has the window scale
+		 * @param mode the motion mode
+		 * @param nowMs the time in milliseconds
+		 */
+		default void frame(WindowStyle style, MotionMode mode, long nowMs)
+		{
+			return;
+		}
+
+		/**
+		 * Called when the window opens.
+		 *
+		 * @param nowMs the time in milliseconds
+		 */
+		default void opened(long nowMs)
+		{
+			return;
+		}
+
+		/** Called when the window closes, so the pages forget what they were showing. */
+		default void closed()
+		{
+			return;
+		}
+
+		/**
+		 * Paints the page of a tab. When the page paints nothing, the shell paints its placeholder.
+		 *
+		 * @param g the graphics, with (0, 0) at the window's corner
+		 * @param tab the tab shown
+		 * @param ctx what the frame needs
+		 * @return whether the page painted itself
+		 */
+		default boolean paint(Graphics2D g, WindowTab tab, PageContext ctx)
+		{
+			return false;
+		}
+
+		/**
+		 * Offers a key to the page before the shell uses it, when no menu or dialog is open.
+		 *
+		 * @param keyCode the key, as {@link KeyEvent#getKeyCode}
+		 * @param modifiers the modifiers
+		 * @param nowMs the time in milliseconds
+		 * @return whether the page used the key
+		 */
+		default boolean key(int keyCode, int modifiers, long nowMs)
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -330,6 +385,22 @@ final class WindowShell
 
 		focus.highlightKey(tab.hitId());
 		seenDoneTasks = snapshot.doneTasks();
+		pages.opened(nowMs);
+	}
+
+	/**
+	 * Shows a tab, as a click on its header does. A greyed tab cannot be shown.
+	 *
+	 * @param next the tab
+	 * @param nowMs the time in milliseconds
+	 */
+	void showTab(WindowTab next, long nowMs)
+	{
+		if (!open || next.gated() && !snapshot.storageEnabled())
+			return;
+
+		selectTab(next, nowMs);
+		focus.highlightKey(tab.hitId());
 	}
 
 	/**
@@ -361,6 +432,7 @@ final class WindowShell
 		focus.focus(false);
 		focus.hover(null);
 		animations.clear();
+		pages.closed();
 	}
 
 	/**
@@ -459,6 +531,9 @@ final class WindowShell
 			menu.onKeyPressed(keyCode);
 			return;
 		}
+
+		if (pages.key(keyCode, modifiers, nowMs))
+			return;
 
 		switch (keyCode)
 		{
@@ -686,6 +761,7 @@ final class WindowShell
 		if (open)
 			seenDoneTasks = shown.doneTasks();
 
+		pages.frame(style, mode, nowMs);
 		publishHits(shown);
 		RenderingHints savedHints = g.getRenderingHints();
 		Stroke savedStroke = g.getStroke();
@@ -774,8 +850,19 @@ final class WindowShell
 		g.setComposite(AlphaComposite.SrcOver.derive((float) (own * eased)));
 		WindowTab page = tab;
 		WindowStyle st = style;
-		layers.draw(g, body.x, body.y + lift, "page:" + page.name(), body.width, body.height, layout.scale,
-			st.theme(), shown.version(), layer -> paintPlaceholder(layer, st, page, shown, body.width, body.height));
+		AffineTransform savedTransform = g.getTransform();
+		g.translate(0, lift);
+		PageContext ctx = new PageContext(st, mode, nowMs, shown, body, focus.highlight(), focus.focused(),
+			pressedId);
+		if (!pages.paint(g, page, ctx))
+		{
+			g.setTransform(savedTransform);
+			layers.draw(g, body.x, body.y + lift, "page:" + page.name(), body.width, body.height, layout.scale,
+				st.theme(), shown.version(), layer -> paintPlaceholder(layer, st, page, shown, body.width,
+					body.height));
+		}
+
+		g.setTransform(savedTransform);
 		g.setComposite(saved);
 	}
 

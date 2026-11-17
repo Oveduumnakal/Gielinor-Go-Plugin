@@ -62,7 +62,8 @@ public enum WindowTheme
 		.put(ThemeColor.SELECTION, 0xA082FF, 110)
 		.put(ThemeColor.SCRIM, 0x000000, 150)
 		.put(ThemeColor.SCROLL_TRACK, 0x14122A, 160)
-		.put(ThemeColor.SCROLL_THUMB, 0x7864C8)),
+		.put(ThemeColor.SCROLL_THUMB, 0x7864C8)
+		.put(ThemeColor.GOLD, 0xFFD84A)),
 
 	/** RuneLite's own grey and orange, with an amber lead row. */
 	RUNELITE_DARK("RuneLite dark", new Palette()
@@ -109,7 +110,8 @@ public enum WindowTheme
 		.put(ThemeColor.SELECTION, 0xDC8A00, 110)
 		.put(ThemeColor.SCRIM, 0x000000, 150)
 		.put(ThemeColor.SCROLL_TRACK, 0x101010, 160)
-		.put(ThemeColor.SCROLL_THUMB, 0x6E6E6E));
+		.put(ThemeColor.SCROLL_THUMB, 0x6E6E6E)
+		.put(ThemeColor.GOLD, 0xFFCC33));
 
 	private final String label;
 	private final Map<ThemeColor, Color> colors;

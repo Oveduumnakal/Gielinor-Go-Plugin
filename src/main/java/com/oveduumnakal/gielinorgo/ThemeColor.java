@@ -140,5 +140,8 @@ enum ThemeColor
 	SCROLL_TRACK,
 
 	/** The handle of a scroll bar. */
-	SCROLL_THUMB
+	SCROLL_THUMB,
+
+	/** Gold, for a gilded creature's frame and a new move's star. */
+	GOLD
 }
