@@ -319,6 +319,42 @@ final class WindowStyle
 	}
 
 	/**
+	 * Paints a button: a slanted label that shrinks to 97% while pressed. A disabled button has its own colours and
+	 * no hover or press shading.
+	 *
+	 * @param g the graphics
+	 * @param box the button's box
+	 * @param label the button's text
+	 * @param primary whether it is the main choice, which stands out
+	 * @param disabled whether it cannot be pressed
+	 * @param hover how much the pointer is on it, from 0 to 1
+	 * @param press how much it is pressed, from 0 to 1
+	 */
+	void button(Graphics2D g, Rectangle2D box, String label, boolean primary, boolean disabled, double hover,
+		double press)
+	{
+		AffineTransform saved = g.getTransform();
+		double shrink = 1.0 - (1.0 - WindowTimes.PRESS_SCALE) * Math.max(0.0, Math.min(1.0, press));
+		g.translate(box.getCenterX(), box.getCenterY());
+		g.scale(shrink, shrink);
+		g.translate(-box.getCenterX(), -box.getCenterY());
+		Shape shape = Slant.shape(box, metrics.chipSlant);
+		ThemeColor body = disabled ? ThemeColor.TAB_DISABLED : primary ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP;
+		ThemeColor text = disabled ? ThemeColor.TAB_DISABLED_TEXT
+			: primary ? ThemeColor.CHIP_ACCENT_TEXT : ThemeColor.CHIP_TEXT;
+		g.setColor(color(body));
+		g.fill(shape);
+		if (!disabled)
+			shade(g, shape, hover, press);
+
+		Font font = font(WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS);
+		FontMetrics fm = g.getFontMetrics(font);
+		text(g, label, (int) Math.round(box.getCenterX() - fm.stringWidth(label) / 2.0), baseline(box, fm), font,
+			text);
+		g.setTransform(saved);
+	}
+
+	/**
 	 * Gives the width a chip needs, so a row of chips can be laid out before it is painted.
 	 *
 	 * @param g the graphics, for the font's measures
