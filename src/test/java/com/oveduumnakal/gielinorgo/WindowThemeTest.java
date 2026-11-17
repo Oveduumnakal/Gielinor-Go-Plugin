@@ -33,7 +33,8 @@ public class WindowThemeTest
 		{ThemeColor.NOTICE_TEXT, ThemeColor.NOTICE},
 		{ThemeColor.CHIP_TEXT, ThemeColor.CHIP},
 		{ThemeColor.CHIP_ACCENT_TEXT, ThemeColor.CHIP_ACCENT},
-		{ThemeColor.TEXT, ThemeColor.PORTRAIT_BACKDROP}
+		{ThemeColor.TEXT, ThemeColor.PORTRAIT_BACKDROP},
+		{ThemeColor.TEXT, ThemeColor.INPUT}
 	};
 
 	@Test

@@ -57,7 +57,12 @@ public enum WindowTheme
 		.put(ThemeColor.HOVER_SHADE, 0xFFFFFF, 28)
 		.put(ThemeColor.PRESS_SHADE, 0x000000, 60)
 		.put(ThemeColor.SHADOW, 0x000000, 90)
-		.put(ThemeColor.FOCUS_RING, 0xFFD84A)),
+		.put(ThemeColor.FOCUS_RING, 0xFFD84A)
+		.put(ThemeColor.INPUT, 0x14122A)
+		.put(ThemeColor.SELECTION, 0xA082FF, 110)
+		.put(ThemeColor.SCRIM, 0x000000, 150)
+		.put(ThemeColor.SCROLL_TRACK, 0x14122A, 160)
+		.put(ThemeColor.SCROLL_THUMB, 0x7864C8)),
 
 	/** RuneLite's own grey and orange, with an amber lead row. */
 	RUNELITE_DARK("RuneLite dark", new Palette()
@@ -99,7 +104,12 @@ public enum WindowTheme
 		.put(ThemeColor.HOVER_SHADE, 0xFFFFFF, 26)
 		.put(ThemeColor.PRESS_SHADE, 0x000000, 60)
 		.put(ThemeColor.SHADOW, 0x000000, 90)
-		.put(ThemeColor.FOCUS_RING, 0xFFB000));
+		.put(ThemeColor.FOCUS_RING, 0xFFB000)
+		.put(ThemeColor.INPUT, 0x141414)
+		.put(ThemeColor.SELECTION, 0xDC8A00, 110)
+		.put(ThemeColor.SCRIM, 0x000000, 150)
+		.put(ThemeColor.SCROLL_TRACK, 0x101010, 160)
+		.put(ThemeColor.SCROLL_THUMB, 0x6E6E6E));
 
 	private final String label;
 	private final Map<ThemeColor, Color> colors;

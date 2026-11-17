@@ -125,5 +125,20 @@ enum ThemeColor
 	SHADOW,
 
 	/** The ring around what has keyboard focus. */
-	FOCUS_RING
+	FOCUS_RING,
+
+	/** The field of a text box. */
+	INPUT,
+
+	/** The light laid over selected text and the highlighted item of a menu. */
+	SELECTION,
+
+	/** The dim laid over the window behind a modal. */
+	SCRIM,
+
+	/** The groove of a scroll bar. */
+	SCROLL_TRACK,
+
+	/** The handle of a scroll bar. */
+	SCROLL_THUMB
 }
