@@ -106,6 +106,9 @@ A Creature Log, daily tasks and daily events give you goals.
   #147)
 - **Panel and team.** Release and team moves act on the creature you clicked, Storage ticks stay, new creatures go
   to storage during an Elite run, and Battle shows whenever a battle can start. (#125, #129, #130, #139)
+- **Changing your team.** You can now move creatures between your team and Storage in Varlamore, Zeah and Prifddinas
+  towns and other cities, next to any bank (even one that was already in view), and while the bank is open.
+  (#202, #203)
 - **Battle scenes.** A map load no longer forfeits a battle, and status tags sit on the right creature and clear
   when the status ends. (#133, #137, #138)
 - **World.** The follower and the arena foe stay on your side of walls, projectile colours no longer change other

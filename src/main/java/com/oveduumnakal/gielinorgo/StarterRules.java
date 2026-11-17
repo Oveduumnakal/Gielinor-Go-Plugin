@@ -52,6 +52,7 @@ final class StarterRules
 		{
 			Creature creature = new Creature(Species.keyFor(name), LEVEL, nowMs);
 			creature.setRolls(StatRolls.roll(random));
+			creature.rollGender(random);
 			rolled.add(creature);
 		}
 

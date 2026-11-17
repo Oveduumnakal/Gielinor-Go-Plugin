@@ -5,6 +5,7 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * One creature the player owns. Saved to the profile as JSON, so every field here is part of the persisted schema.
@@ -75,6 +76,12 @@ final class Creature
 	 */
 	int bond;
 
+	/**
+	 * The creature's gender, or null in an older save. Read it through {@link #gender()}, which gives a species that is
+	 * always one gender that gender and an older creature a stable guess.
+	 */
+	Gender gender;
+
 	/** Used by Gson. */
 	Creature()
 	{
@@ -108,6 +115,43 @@ final class Creature
 		rollDefence = values[2];
 		rollSpeed = values[3];
 		temperament = rolls.temperament() == Temperament.STEADY ? null : rolls.temperament().name();
+	}
+
+	/**
+	 * The creature's gender. A species that is always one gender, see {@link SpeciesGender}, wins over what is saved.
+	 *
+	 * @return the gender; for an older save with none, a stable hash of the species and {@link #caughtAtMs}
+	 */
+	Gender gender()
+	{
+		Gender fixed = SpeciesGender.fixed(species);
+		if (fixed != null)
+			return fixed;
+
+		return gender != null ? gender : SpeciesGender.stable(species, caughtAtMs);
+	}
+
+	/**
+	 * Gives the creature a gender: the fixed one for its species, or a 50/50 roll.
+	 *
+	 * @param random the source of the roll
+	 */
+	void rollGender(Random random)
+	{
+		gender = SpeciesGender.roll(species, random);
+	}
+
+	/**
+	 * Turns the creature into another species. It keeps its gender, unless the new species is always one gender.
+	 *
+	 * @param key the new species key
+	 */
+	void evolveInto(String key)
+	{
+		Gender kept = gender();
+		species = key;
+		Gender fixed = SpeciesGender.fixed(key);
+		gender = fixed != null ? fixed : kept;
 	}
 
 	/** @return the creature's level, 1 to 99 */

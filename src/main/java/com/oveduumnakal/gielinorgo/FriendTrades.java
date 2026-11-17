@@ -951,7 +951,7 @@ final class FriendTrades implements GoGame.TradeLocks
 
 		return now.egg() == null && Species.keyFor(before.species()).equals(Species.keyFor(now.species()))
 			&& before.xp() == now.xp() && before.gilded() == now.gilded() && before.rolls().equals(now.rolls())
-			&& Arrays.equals(before.moves(), now.moves());
+			&& Arrays.equals(before.moves(), now.moves()) && before.gender() == now.gender();
 	}
 
 	/**
@@ -1010,12 +1010,30 @@ final class FriendTrades implements GoGame.TradeLocks
 		creature.xp = XpRules.capped(item.xp());
 		creature.gilded = item.gilded();
 		creature.setRolls(item.rolls());
+		creature.gender = arrivingGender(item);
 		Species found = species.find(item.species());
 		MoveLearning.start(creature, found, game.moveTable());
 		if (item.moves() != null)
 			creature.moves = new ArrayList<>(Arrays.asList(item.moves()));
 
 		return game.receive(creature);
+	}
+
+	/**
+	 * Decides the gender of a creature that arrives in a trade: the one its species always has, else the one the
+	 * friend sent, else, for a friend on a build from before gender, a stable hash of the species and level.
+	 *
+	 * @param item the creature the friend gives
+	 * @return the gender
+	 */
+	private static Gender arrivingGender(Item item)
+	{
+		Gender fixed = SpeciesGender.fixed(item.species());
+		if (fixed != null)
+			return fixed;
+
+		Gender sent = item.gender();
+		return sent != null ? sent : SpeciesGender.stable(item.species(), item.level());
 	}
 
 	private Item describe(Mine mine)
@@ -1025,7 +1043,7 @@ final class FriendTrades implements GoGame.TradeLocks
 			Creature creature = mine.creature;
 			String[] moves = MoveLearning.sendable(creature, species.find(creature.species), game.moveTable());
 			return Item.creature(creature.species, creature.level(), creature.xp, creature.gilded, creature.rolls(),
-				moves);
+				moves, creature.gender());
 		}
 
 		return Item.egg(mine.egg.rarityTier().name(), mine.egg.tilesLeft, mine.egg.species);

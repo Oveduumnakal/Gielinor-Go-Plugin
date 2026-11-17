@@ -30,13 +30,10 @@ import org.slf4j.LoggerFactory;
 
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
-import net.runelite.api.GameObject;
 import net.runelite.api.GameState;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.NPC;
-import net.runelite.api.NPCComposition;
-import net.runelite.api.ObjectComposition;
 import net.runelite.api.Player;
 import net.runelite.api.Skill;
 import net.runelite.api.WorldType;
@@ -166,7 +163,7 @@ public class GielinorGoPlugin extends Plugin
 	private final Map<Skill, Integer> lastLevel = new EnumMap<>(Skill.class);
 	private final StepCounter stepCounter = new StepCounter();
 	private final BankSpots bankSpots = new BankSpots();
-	private final Map<Integer, Boolean> bankObjects = new HashMap<>();
+	private BankWatch bankWatch;
 	private WildTracker tracker = new WildTracker(random);
 	private final SpawnClock spawnClock = SpawnClock.system();
 	private SpawnCalendar calendar;
@@ -233,6 +230,8 @@ public class GielinorGoPlugin extends Plugin
 		game.milestones(loadMilestones(species));
 		game.bosses(loadBosses(species));
 		game.setCues(this::playCue);
+		game.teamTowns(loadTeamTowns());
+		bankWatch = new BankWatch(client, bankSpots);
 		game.elite(loadElite(species));
 		game.rival(loadRival(species));
 		game.rematches(loadRematches(species));
@@ -430,6 +429,7 @@ public class GielinorGoPlugin extends Plugin
 		tracker.clear();
 		bankSpots.clear();
 		game.setBankNear(false);
+		game.setBankOpen(false);
 		candidates.clear();
 		stepCounter.reset();
 		noticeBoard.clear();
@@ -449,32 +449,12 @@ public class GielinorGoPlugin extends Plugin
 	public void onNpcSpawned(NpcSpawned event)
 	{
 		NPC npc = event.getNpc();
-		noteBanker(npc);
+		bankWatch.noteNpc(npc);
 		if (speciesOf(npc) == null)
 			return;
 
 		candidates.put(npc.getIndex(), npc);
 		offer(npc);
-	}
-
-	/**
-	 * Remembers a banker that came into view, so the team can be changed near it.
-	 *
-	 * @param npc the monster that came into view
-	 */
-	private void noteBanker(NPC npc)
-	{
-		try
-		{
-			NPCComposition composition = npc.getTransformedComposition();
-			WorldPoint point = npc.getWorldLocation();
-			if (composition != null && point != null && offersBank(composition.getActions()))
-				bankSpots.add(npc, point.getX(), point.getY(), point.getPlane());
-		}
-		catch (RuntimeException e)
-		{
-			log.debug("Gielinor Go: could not check a monster for a bank", e);
-		}
 	}
 
 	/**
@@ -486,20 +466,7 @@ public class GielinorGoPlugin extends Plugin
 	@Subscribe
 	public void onGameObjectSpawned(GameObjectSpawned event)
 	{
-		try
-		{
-			GameObject object = event.getGameObject();
-			if (!bankObjects.computeIfAbsent(object.getId(), this::objectOffersBank))
-				return;
-
-			WorldPoint point = object.getWorldLocation();
-			if (point != null)
-				bankSpots.add(object, point.getX(), point.getY(), point.getPlane());
-		}
-		catch (RuntimeException e)
-		{
-			log.debug("Gielinor Go: could not check an object for a bank", e);
-		}
+		bankWatch.noteObject(event.getGameObject());
 	}
 
 	/**
@@ -511,29 +478,6 @@ public class GielinorGoPlugin extends Plugin
 	public void onGameObjectDespawned(GameObjectDespawned event)
 	{
 		bankSpots.remove(event.getGameObject());
-	}
-
-	private boolean objectOffersBank(int id)
-	{
-		ObjectComposition composition = client.getObjectDefinition(id);
-		if (composition != null && composition.getImpostorIds() != null)
-			composition = composition.getImpostor();
-
-		return composition != null && offersBank(composition.getActions());
-	}
-
-	private static boolean offersBank(String[] actions)
-	{
-		if (actions == null)
-			return false;
-
-		for (String action : actions)
-		{
-			if ("Bank".equals(action))
-				return true;
-		}
-
-		return false;
 	}
 
 	/**
@@ -974,6 +918,25 @@ public class GielinorGoPlugin extends Plugin
 		{
 			log.warn("Gielinor Go: could not read the champion list", e);
 			return ChampionTable.empty();
+		}
+	}
+
+	private TeamTowns loadTeamTowns()
+	{
+		try (InputStream in = GielinorGoPlugin.class.getResourceAsStream(TeamTowns.RESOURCE))
+		{
+			if (in == null)
+				return TeamTowns.empty();
+
+			try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
+			{
+				return TeamTowns.load(gson, reader);
+			}
+		}
+		catch (IOException e)
+		{
+			log.warn("Gielinor Go: could not read the team-change towns", e);
+			return TeamTowns.empty();
 		}
 	}
 
@@ -1738,7 +1701,8 @@ public class GielinorGoPlugin extends Plugin
 	 * Acts a throw out on screen, when that setting is on: the player throws whenever a jar was really used and
 	 * then reacts to the result, and the creature's body reacts when the jar lands: a caught one shrinks into the
 	 * jar, one that breaks free attacks and stands again, one that flees runs off fading out. With the setting off a
-	 * caught or fled creature simply disappears.
+	 * caught or fled creature simply disappears. A caught or fled creature also ends the battle the stage acts out
+	 * with it, so no queued attack plays after the catch.
 	 *
 	 * @param outcome what the throw led to
 	 * @param wildId the wild creature's id
@@ -1760,10 +1724,10 @@ public class GielinorGoPlugin extends Plugin
 
 		boolean gone = outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED;
 		if (gone && !played)
-		{
 			bodies.remove(wildId, System.currentTimeMillis());
+
+		if (gone)
 			stage.forget(wildId);
-		}
 	}
 
 	private void battle(int wildId)
@@ -2310,8 +2274,8 @@ public class GielinorGoPlugin extends Plugin
 
 	/**
 	 * Acts out a jar thrown in the middle of a battle. A catch, or a creature that runs off, ends the battle, so it
-	 * goes to the usual catch effects, which also end the scene. A jar that does not hold plays the throw and the
-	 * battle goes on.
+	 * goes to the usual catch effects, and the director ends the scene right after. A jar that does not hold plays
+	 * the throw and the battle goes on.
 	 *
 	 * @param session the battle
 	 * @param jar the jar thrown
@@ -2484,13 +2448,21 @@ public class GielinorGoPlugin extends Plugin
 			@Override
 			public void moveToStorage(TradePick pick)
 			{
-				onGameThread(() -> game.moveToStorage(pick));
+				onGameThread(() ->
+				{
+					lookForBank();
+					game.moveToStorage(pick);
+				});
 			}
 
 			@Override
 			public void moveToTeam(TradePick pick)
 			{
-				onGameThread(() -> game.moveToTeam(pick));
+				onGameThread(() ->
+				{
+					lookForBank();
+					game.moveToTeam(pick);
+				});
 			}
 
 			@Override
@@ -2583,6 +2555,23 @@ public class GielinorGoPlugin extends Plugin
 				onGameThread(() -> GielinorGoPlugin.this.answerTrade(memberId, offerId, accept));
 			}
 		};
+	}
+
+	/**
+	 * Looks around the player for a bank and checks the bank interface, so a swap is judged on what is there now,
+	 * including a bank that was already in view before any spawn event could be seen.
+	 */
+	private void lookForBank()
+	{
+		bankWatch.scanAroundPlayer();
+		Player player = client.getLocalPlayer();
+		if (player != null)
+		{
+			WorldPoint point = player.getWorldLocation();
+			game.setBankNear(bankSpots.near(point.getX(), point.getY(), point.getPlane()));
+		}
+
+		game.setBankOpen(bankWatch.bankOpen());
 	}
 
 	private void onGameThread(Runnable action)
