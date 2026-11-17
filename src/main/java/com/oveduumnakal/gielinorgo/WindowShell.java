@@ -240,13 +240,15 @@ final class WindowShell
 	}
 
 	/**
-	 * Hands over a new snapshot to paint from. Safe from any thread; the game thread builds one when the panel's
-	 * state changes.
+	 * Hands over a new snapshot to paint from. The game thread builds one when the panel's state changes and calls
+	 * this. Tasks that were already done when the save was read, or that a daily reset took back, are not news, so
+	 * they never count as completed since the player last looked.
 	 *
 	 * @param next the snapshot
 	 */
 	void publish(WindowSnapshot next)
 	{
+		seenDoneTasks = snapshot.loaded() ? Math.min(seenDoneTasks, next.doneTasks()) : next.doneTasks();
 		snapshot = next;
 	}
 

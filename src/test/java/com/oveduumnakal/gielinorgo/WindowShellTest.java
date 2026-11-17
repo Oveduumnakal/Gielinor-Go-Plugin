@@ -723,6 +723,23 @@ public class WindowShellTest
 	}
 
 	@Test
+	public void tasksAlreadyDoneWhenTheSaveLoadsAreNotNewsAndADailyResetForgetsThem()
+	{
+		TaskView done = new TaskView(List.of(new TaskView.Row("Catch 3", 3, 3, true, "2 Iron jars", false)), 1, 3, 0L,
+			0L);
+		PanelState finished = new PanelState(1, 0.0, 0, new EnumMap<>(JarType.class), JarType.BRONZE, 0,
+			Collections.emptyList(), Collections.emptyList(), Collections.emptyList(), 0, 0, Collections.emptyList(),
+			Collections.emptyList(), TodayView.NONE, done);
+		shell.publish(WindowSnapshot.of(1, finished, false));
+		assertFalse(shell.waiting());
+
+		shell.publish(WindowSnapshot.of(2, state(1), false));
+		assertFalse(shell.waiting());
+		shell.publish(WindowSnapshot.of(3, finished, false));
+		assertTrue(shell.waiting());
+	}
+
+	@Test
 	public void theHintLineChangesWithFocusAndSettingsWithoutBreakingThePaint()
 	{
 		openPainted(true);
