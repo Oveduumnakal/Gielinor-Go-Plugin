@@ -167,6 +167,9 @@ final class GoGame
 	private EliteRun run;
 	private boolean atGuild;
 	private boolean bankNear;
+	private boolean bankOpen;
+	private boolean inTown;
+	private TeamTowns towns = TeamTowns.empty();
 	private MoveTable moves = MoveTable.empty();
 	private Random starterRandom = new Random();
 	private List<Creature> starters;
@@ -615,6 +618,7 @@ final class GoGame
 		atGuild = guild;
 		Champion here = champions.at(x, y, plane);
 		String id = here == null ? null : here.id();
+		inTown = towns.contains(x, y);
 		if (id == null ? cityId == null : id.equals(cityId))
 			return guildChanged;
 
@@ -669,10 +673,31 @@ final class GoGame
 		bankNear = near;
 	}
 
+	/**
+	 * Tells the game whether the bank interface is open, so the team may be changed while it is.
+	 *
+	 * @param open true while the bank is open
+	 */
+	void setBankOpen(boolean open)
+	{
+		bankOpen = open;
+	}
+
+	/**
+	 * Sets the towns where the team may be changed besides the City Champions' cities. They never let a champion be
+	 * challenged. Without this call only a champion's city, a bank or an open bank allows a change.
+	 *
+	 * @param table the towns
+	 */
+	void teamTowns(TeamTowns table)
+	{
+		towns = table == null ? TeamTowns.empty() : table;
+	}
+
 	/** @return whether the team may be changed here; otherwise the player is told where to go */
 	private boolean mayChangeTeam()
 	{
-		if (TeamSwapRule.allowed(cityId != null, bankNear))
+		if (TeamSwapRule.allowed(cityId != null || inTown, bankNear, bankOpen))
 			return true;
 
 		tell(TeamSwapRule.REFUSAL, Tone.BAD);

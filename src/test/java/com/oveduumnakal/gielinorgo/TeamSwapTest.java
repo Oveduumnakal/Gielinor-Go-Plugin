@@ -12,8 +12,10 @@ import java.util.Random;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /** Checks that the team is only changed inside a city or near a bank, and the spots a bank is found by. */
@@ -40,10 +42,65 @@ public class TeamSwapTest
 	@Test
 	public void theRuleAllowsACityOrABankAndNothingElse()
 	{
-		assertTrue(TeamSwapRule.allowed(true, false));
-		assertTrue(TeamSwapRule.allowed(false, true));
-		assertTrue(TeamSwapRule.allowed(true, true));
-		assertFalse(TeamSwapRule.allowed(false, false));
+		assertTrue(TeamSwapRule.allowed(true, false, false));
+		assertTrue(TeamSwapRule.allowed(false, true, false));
+		assertTrue(TeamSwapRule.allowed(false, false, true));
+		assertTrue(TeamSwapRule.allowed(true, true, true));
+		assertFalse(TeamSwapRule.allowed(false, false, false));
+	}
+
+	@Test
+	public void withTheBankOpenTheTeamCanBeChangedAnywhere()
+	{
+		game.setBankOpen(true);
+		game.moveToStorage(1);
+		assertEquals(1, game.data().storage.size());
+
+		game.setBankOpen(false);
+		game.moveToTeam(0);
+		assertEquals("closing the bank takes the allowance away", 1, game.data().storage.size());
+	}
+
+	@Test
+	public void insideATeamChangeTownTheTeamCanBeChangedButNoChampionIsChallengeable()
+	{
+		game.teamTowns(new TeamTowns(Arrays.asList(new TeamTowns.Town("Fortis", 1630, 3070, 1750, 3170))));
+		game.moveTo(1680, 3120, 0);
+
+		game.moveToStorage(1);
+		assertEquals(1, game.data().storage.size());
+		assertNull("a town is not a champion's city", game.challenge("lumbridge"));
+	}
+
+	@Test
+	public void leavingATeamChangeTownTakesTheAllowanceAway()
+	{
+		game.teamTowns(new TeamTowns(Arrays.asList(new TeamTowns.Town("Fortis", 1630, 3070, 1750, 3170))));
+		game.moveTo(1680, 3120, 0);
+		game.moveTo(1800, 3120, 0);
+
+		game.moveToStorage(1);
+
+		assertEquals(2, game.data().team.size());
+	}
+
+	@Test
+	public void aTownCountsOnUpperFloorsToo()
+	{
+		game.teamTowns(new TeamTowns(Arrays.asList(new TeamTowns.Town("Fortis", 1630, 3070, 1750, 3170))));
+		game.moveTo(1680, 3120, 1);
+
+		game.moveToStorage(1);
+
+		assertEquals(1, game.data().storage.size());
+	}
+
+	@Test
+	public void theScanWindowStaysInsideTheScene()
+	{
+		assertArrayEquals(new int[] {40, 60}, BankSpots.window(50, 10, 104));
+		assertArrayEquals(new int[] {0, 8}, BankSpots.window(3, 5, 104));
+		assertArrayEquals(new int[] {95, 103}, BankSpots.window(100, 5, 104));
 	}
 
 	@Test

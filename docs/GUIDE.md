@@ -555,9 +555,10 @@ Every feature and every number, in detail. For the short version, see the [READM
   Right-click a species you have seen or caught and choose **Open wiki** to open its page on the Old School RuneScape
   Wiki in your browser. A species you have never met shows neither the box nor the menu.
 
-  You can move a creature between your team and Storage only inside a city (any City Champion's area) or within
-  10 tiles of a banker, a bank booth or a bank chest. Anywhere else the panel says "Go to a city or a bank to change
-  your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
+  You can move a creature between your team and Storage only inside a city or town (any City Champion's area, or a
+  town such as Civitas illa Fortis, Hosidius, Prifddinas, Burthorpe or Catherby), within 10 tiles of a banker, a bank
+  booth or a bank chest, or while the bank is open. A town does not let you challenge its champion; only a champion's
+  own city does. Anywhere else the panel says "Go to a city or a bank to change your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
   your team is full, a creature you receive in a trade, a hatched egg and releasing a stored creature.
 
 - **Starting over**

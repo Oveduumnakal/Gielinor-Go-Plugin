@@ -78,6 +78,22 @@ final class BankSpots
 	}
 
 	/**
+	 * Works out which scene indexes lie within a radius of one, kept inside the scene, so a look around the player
+	 * never reads past the edge.
+	 *
+	 * @param center the player's scene index on this axis
+	 * @param radius how many tiles either side to include
+	 * @param size how many tiles the scene has on this axis
+	 * @return the first and last index to look at, which is empty (first above last) when the center is off the scene
+	 */
+	static int[] window(int center, int radius, int size)
+	{
+		int first = Math.max(0, center - radius);
+		int last = Math.min(size - 1, center + radius);
+		return new int[] {first, last};
+	}
+
+	/**
 	 * Forgets spots that are further than {@link #FORGET_TILES} from the player, so a despawn that was never
 	 * reported cannot leave a bank behind for good.
 	 *
