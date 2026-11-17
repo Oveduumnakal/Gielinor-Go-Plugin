@@ -50,7 +50,10 @@ final class BattleDirector
 		/** Ends the scene at once, with a fade, because the player ran. */
 		void runAway();
 
-		/** Ends the scene at once, for a battle that cannot go on. */
+		/**
+		 * Ends the scene at once and drops every turn still queued on it, for a battle that cannot go on: the foe was
+		 * caught or ran off, or the other side left.
+		 */
 		void end();
 	}
 
@@ -68,8 +71,8 @@ final class BattleDirector
 		void turn(BattleSession session, TurnResult turn, List<BattleLine> closing, boolean hasScene);
 
 		/**
-		 * A jar was thrown. Called before the turn is shown. For a catch or a creature that ran off the battle is over
-		 * and the scene must be handed to the catch effects, which end it.
+		 * A jar was thrown. Called before the turn is shown, and before the director ends the scene of a battle a catch
+		 * or a creature that ran off has over, so the catch effects start while the scene still holds the foe.
 		 *
 		 * @param session the battle
 		 * @param jar the jar thrown
@@ -345,7 +348,10 @@ final class BattleDirector
 		}
 
 		if (status == TurnResult.Status.CAUGHT || status == TurnResult.Status.FOE_FLED)
+		{
+			stage.end();
 			return;
+		}
 
 		stage.append(turn);
 		if (status == TurnResult.Status.WON)
