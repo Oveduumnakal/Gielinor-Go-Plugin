@@ -29,6 +29,18 @@ public interface GielinorGoConfig extends Config
 	/** Key of the hidden item that stores whether What's New was cleared. */
 	String WHATS_NEW_DISMISSED = "whatsNewDismissed";
 
+	/** Key of the setting that shows the painted window's jar button. */
+	String WINDOW_PREVIEW = "windowPreview";
+
+	/** Key of the painted window's size preset. */
+	String WINDOW_SIZE = "windowSize";
+
+	/** Key of the painted window's style. */
+	String WINDOW_STYLE = "windowStyle";
+
+	/** Key of the hidden item that stores the painted window's width as a share of the canvas width. */
+	String WINDOW_FRACTION = "windowFraction";
+
 	/**
 	 * How rare wild creatures are.
 	 *
@@ -425,5 +437,143 @@ public interface GielinorGoConfig extends Config
 	default boolean sounds()
 	{
 		return true;
+	}
+
+	/**
+	 * Whether the painted in-game window can be reached. It is a preview: only the shell is built, and the side panel
+	 * is unchanged.
+	 *
+	 * @return true to show the window's jar button on the game screen, off by default
+	 */
+	@ConfigItem(
+		keyName = GielinorGoConfig.WINDOW_PREVIEW,
+		name = "Painted window (preview)",
+		description = "Preview of the new in-game window that will replace the side panel. Shows a jar button on the"
+			+ " game screen that opens it.\nOnly the window's frame and tabs are built so far, and the side panel works"
+			+ " as before.\nIt closes in combat and during a battle.",
+		position = 21
+	)
+	default boolean windowPreview()
+	{
+		return false;
+	}
+
+	/**
+	 * How much the painted window moves.
+	 *
+	 * @return the motion mode, full by default
+	 */
+	@ConfigItem(
+		keyName = "windowAnimations",
+		name = "Window animations",
+		description = "Full: the window eases open, tabs slide and icons pulse.\nReduced: only fades.\nOff: nothing"
+			+ " moves.",
+		position = 22
+	)
+	default MotionMode windowAnimations()
+	{
+		return MotionMode.FULL;
+	}
+
+	/**
+	 * The size of the painted window, as a share of the game screen's width.
+	 *
+	 * @return the size preset, medium by default
+	 */
+	@ConfigItem(
+		keyName = GielinorGoConfig.WINDOW_SIZE,
+		name = "Window size",
+		description = "Sets the painted window to a size and centres it. You can also hold RuneLite's drag key"
+			+ " (Alt unless you changed it) and drag the window's edge, or use the window's Reset window button.",
+		position = 23
+	)
+	default WindowSizePreset windowSize()
+	{
+		return WindowSizePreset.MEDIUM;
+	}
+
+	/**
+	 * The look of the painted window.
+	 *
+	 * @return the style, dark glass by default
+	 */
+	@ConfigItem(
+		keyName = GielinorGoConfig.WINDOW_STYLE,
+		name = "Window style",
+		description = "Dark glass is blue-purple with a light lead row. RuneLite dark is grey and orange. The window's"
+			+ " style button changes this too.",
+		position = 24
+	)
+	default WindowTheme windowStyle()
+	{
+		return WindowTheme.DARK_GLASS;
+	}
+
+	/**
+	 * Whether the painted window takes the arrow keys, Enter, Space, Esc and Backspace while it has focus.
+	 *
+	 * @return true to use keys in the window
+	 */
+	@ConfigItem(
+		keyName = "windowKeyboard",
+		name = "Window keyboard",
+		description = "Lets you use the painted window from the keyboard (or a controller mapped to keys): Left and"
+			+ " Right change tab, Up and Down move the highlight, Enter or Space select, Esc goes back. Keys go to"
+			+ " the window only while it has focus; click the window to give it focus. Chat typing is never"
+			+ " touched.",
+		position = 25
+	)
+	default boolean windowKeyboard()
+	{
+		return true;
+	}
+
+	/**
+	 * The key that opens and closes the painted window.
+	 *
+	 * @return the key, unset by default
+	 */
+	@ConfigItem(
+		keyName = "windowKey",
+		name = "Open window key",
+		description = "Opens and closes the painted window. Unset by default, so no key is taken from the game.",
+		position = 26
+	)
+	default Keybind windowKey()
+	{
+		return Keybind.NOT_SET;
+	}
+
+	/**
+	 * Whether the painted window's footer shows which keys do what.
+	 *
+	 * @return true to show key hints
+	 */
+	@ConfigItem(
+		keyName = "windowKeyHints",
+		name = "Show key hints",
+		description = "Shows a line of key hints at the foot of the painted window.",
+		position = 27
+	)
+	default boolean windowKeyHints()
+	{
+		return true;
+	}
+
+	/**
+	 * The share of the game screen's width the painted window takes. It follows the game window. Set by dragging the
+	 * window's edge and by the size presets; not shown in the settings.
+	 *
+	 * @return the fraction, 70% by default
+	 */
+	@ConfigItem(
+		keyName = GielinorGoConfig.WINDOW_FRACTION,
+		name = "Window width share",
+		description = "Share of the game screen's width the painted window takes.",
+		hidden = true
+	)
+	default double windowFraction()
+	{
+		return WindowFit.DEFAULT_FRACTION;
 	}
 }

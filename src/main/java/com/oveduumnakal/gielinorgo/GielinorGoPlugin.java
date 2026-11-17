@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,16 +49,21 @@ import net.runelite.api.events.GameTick;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.StatChanged;
+import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.gameval.VarbitID;
+import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.callback.RenderCallbackManager;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.config.Keybind;
+import net.runelite.client.config.RuneLiteConfig;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ClientShutdown;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.PartyChanged;
 import net.runelite.client.events.RuneScapeProfileChanged;
 import net.runelite.client.input.KeyManager;
+import net.runelite.client.input.MouseManager;
 import net.runelite.client.party.PartyMember;
 import net.runelite.client.party.PartyService;
 import net.runelite.client.party.WSClient;
@@ -151,6 +157,12 @@ public class GielinorGoPlugin extends Plugin
 	private KeyManager keyManager;
 
 	@Inject
+	private MouseManager mouseManager;
+
+	@Inject
+	private RuneLiteConfig runeLiteConfig;
+
+	@Inject
 	private PartyService partyService;
 
 	@Inject
@@ -202,6 +214,15 @@ public class GielinorGoPlugin extends Plugin
 	private boolean helloAsksBack;
 	private int lastHelloTick;
 	private NavigationButton navButton;
+	private GoWindow window;
+	private WindowToggle windowToggle;
+	private WindowNotice windowNotice;
+	private WindowInput windowInput;
+	private WindowKeys windowKeys;
+	private DragKey dragKey;
+	private volatile boolean chatTyping;
+	private long windowVersion;
+	private boolean firstRunNoticed;
 	private boolean loaded;
 	private boolean unsaved;
 	private String saveProfileKey;
@@ -280,12 +301,14 @@ public class GielinorGoPlugin extends Plugin
 			.panel(panel)
 			.build();
 		clientToolbar.addNavigation(navButton);
+		startWindow();
 		clientThread.invoke(this::startOnClientThread);
 	}
 
 	@Override
 	protected void shutDown()
 	{
+		stopWindow();
 		keyManager.unregisterKeyListener(hotkeys);
 		overlayManager.remove(promptOverlay);
 		choiceOpen = false;
@@ -415,6 +438,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		director.end();
+		closeWindow();
 		choiceOpen = false;
 		promptOverlay.show(Collections.emptyList());
 		pendingLines.clear();
@@ -643,6 +667,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		effects.clientTick();
 		jarFlight.clientTick();
+		watchWindow();
 		if (!loaded)
 			return;
 
@@ -1050,6 +1075,7 @@ public class GielinorGoPlugin extends Plugin
 		GoPanel target = panel;
 		SwingUtilities.invokeLater(() -> target.update(state));
 		SwingUtilities.invokeLater(() -> target.updateFriends(party));
+		publishWindow(state);
 	}
 
 	/** @return the party members who also play, named as the party service names them */
@@ -2572,6 +2598,306 @@ public class GielinorGoPlugin extends Plugin
 		}
 
 		game.setBankOpen(bankWatch.bankOpen());
+	}
+
+	/**
+	 * Applies the painted window's settings that act at once: a new size preset resizes and centres the window, and
+	 * turning the preview off closes it.
+	 *
+	 * @param event the setting change
+	 */
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (window == null || !GielinorGoConfig.GROUP.equals(event.getGroup()))
+			return;
+
+		if (GielinorGoConfig.WINDOW_SIZE.equals(event.getKey()))
+			window.applyPreset(config.windowSize());
+		else if (GielinorGoConfig.WINDOW_PREVIEW.equals(event.getKey()) && !config.windowPreview())
+			clientThread.invoke(this::closeWindow);
+	}
+
+	/** Creates the painted window, its toggle, its notice and their input, and registers them. */
+	private void startWindow()
+	{
+		windowNotice = new WindowNotice(config::windowAnimations, config::windowStyle, System::currentTimeMillis,
+			client::getCanvasWidth, client::getCanvasHeight);
+		window = new GoWindow(config, configManager, overlayManager, System::currentTimeMillis,
+			client::getCanvasWidth, client::getCanvasHeight, this::showNotice);
+		BufferedImage jar = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
+		windowToggle = new WindowToggle(config::windowPreview, config::windowStyle, config::windowAnimations,
+			System::currentTimeMillis, jar);
+		dragKey = new DragKey(runeLiteConfig::dragHotkey);
+		windowInput = new WindowInput(window::view, windowToggle::bounds, dragKey, windowSink());
+		windowKeys = new WindowKeys(window::view, dragKey, config::windowKey, config::windowKeyboard,
+			() -> chatTyping, windowKeySink());
+		overlayManager.add(window);
+		overlayManager.add(windowToggle);
+		overlayManager.add(windowNotice);
+		mouseManager.registerMouseListener(windowInput);
+		mouseManager.registerMouseWheelListener(windowInput);
+		keyManager.registerKeyListener(windowKeys);
+	}
+
+	/** Unregisters the painted window and everything that belongs to it. */
+	private void stopWindow()
+	{
+		keyManager.unregisterKeyListener(windowKeys);
+		mouseManager.unregisterMouseListener(windowInput);
+		mouseManager.unregisterMouseWheelListener(windowInput);
+		overlayManager.remove(window);
+		overlayManager.remove(windowToggle);
+		overlayManager.remove(windowNotice);
+		windowNotice.clear();
+		chatTyping = false;
+		firstRunNoticed = false;
+	}
+
+	/** @return where the mouse events of the window go, each carried over to the game thread */
+	private WindowInput.Sink windowSink()
+	{
+		return new WindowInput.Sink()
+		{
+			@Override
+			public void moved(int x, int y)
+			{
+				clientThread.invoke(() -> window.shell().onMoved(x, y, System.currentTimeMillis()));
+			}
+
+			@Override
+			public void left()
+			{
+				clientThread.invoke(() -> window.shell().onLeft());
+			}
+
+			@Override
+			public void pressed(int x, int y, int button, int modifiers)
+			{
+				clientThread.invoke(() -> window.shell().onPressed(x, y, button, modifiers,
+					System.currentTimeMillis()));
+			}
+
+			@Override
+			public void released(int x, int y, int button, int modifiers)
+			{
+				clientThread.invoke(() -> window.shell().onReleased(x, y, button, System.currentTimeMillis()));
+			}
+
+			@Override
+			public void dragged(int x, int y)
+			{
+				clientThread.invoke(() -> window.shell().onDragged(x));
+			}
+
+			@Override
+			public void wheel(int x, int y, int rotation)
+			{
+				clientThread.invoke(() -> window.shell().onWheel(x, y, rotation));
+			}
+
+			@Override
+			public void clickedOutside()
+			{
+				clientThread.invoke(() -> window.shell().focusLost(System.currentTimeMillis()));
+			}
+
+			@Override
+			public void toggleClicked()
+			{
+				clientThread.invoke(GielinorGoPlugin.this::toggleWindow);
+			}
+		};
+	}
+
+	/** @return where the key events of the window go, each carried over to the game thread */
+	private WindowKeys.Sink windowKeySink()
+	{
+		return new WindowKeys.Sink()
+		{
+			@Override
+			public void pressed(int keyCode, int modifiers)
+			{
+				clientThread.invoke(() -> window.shell().onKey(keyCode, modifiers, System.currentTimeMillis()));
+			}
+
+			@Override
+			public void typed(char c, int modifiers)
+			{
+				clientThread.invoke(() -> window.shell().onTyped(c, modifiers, System.currentTimeMillis()));
+			}
+
+			@Override
+			public void openKey()
+			{
+				clientThread.invoke(GielinorGoPlugin.this::toggleWindow);
+			}
+		};
+	}
+
+	/**
+	 * Opens the painted window, or closes it when it is open. It does not open during combat, a battle or before the
+	 * save is read: the toggle shakes and a notice says why.
+	 */
+	private void toggleWindow()
+	{
+		if (!config.windowPreview())
+			return;
+
+		long now = System.currentTimeMillis();
+		WindowShell shell = window.shell();
+		if (shell.isOpen())
+		{
+			shell.close(now, ShellMotion.Phase.CLOSE);
+			return;
+		}
+
+		NoticeMessage blocked = WindowRules.blockedNotice(combatWatch.inCombat(now), director.active(),
+			loaded && saveLive());
+		if (blocked == null)
+		{
+			shell.open(now);
+			return;
+		}
+
+		windowToggle.shake();
+		noticeUnderToggle(blocked);
+	}
+
+	/**
+	 * Watches what closes the window on every client tick: real combat, a Gielinor Go battle, logout and the login
+	 * screen. It greys the toggle, shows the pulsing dot, notes whether the player is typing in chat and clears the
+	 * game's menu entries under the window.
+	 */
+	private void watchWindow()
+	{
+		if (window == null)
+			return;
+
+		long now = System.currentTimeMillis();
+		boolean fighting = combatWatch.inCombat(now);
+		boolean battle = director != null && director.active();
+		boolean locked = !WindowRules.mayOpen(fighting, battle, loaded && saveLive());
+		windowToggle.locked(locked);
+		WindowShell shell = window.shell();
+		if (shell.isOpen() && (locked || !config.windowPreview()))
+		{
+			NoticeMessage why = WindowRules.closedNotice(fighting, battle);
+			boolean quick = why != null;
+			shell.close(now, quick ? ShellMotion.Phase.COMBAT_CLOSE : ShellMotion.Phase.CLOSE);
+			if (quick)
+			{
+				Rectangle b = window.screenBounds();
+				showNotice(why, b.x + b.width / 2, b.y + b.height / 2);
+			}
+		}
+
+		windowToggle.waiting(config.windowPreview() && shell.waiting());
+		boolean typing = chatboxFocused();
+		if (typing && !chatTyping && shell.isOpen())
+			shell.focusLost(now);
+
+		chatTyping = typing;
+		clearMenuUnderWindow();
+	}
+
+	/** Closes the painted window at once, for logout, world hop and the preview being turned off. */
+	private void closeWindow()
+	{
+		if (window != null)
+			window.shell().close(System.currentTimeMillis(), ShellMotion.Phase.CLOSE);
+	}
+
+	/**
+	 * Tells whether the chat box is taking keys, so the window's keys stand aside. It is the check the Key Remapping
+	 * plugin makes.
+	 *
+	 * @return true while the chat box has a key listener
+	 */
+	private boolean chatboxFocused()
+	{
+		try
+		{
+			Widget chatbox = client.getWidget(InterfaceID.Chatbox.UNIVERSE);
+			return chatbox != null && chatbox.getOnKeyListener() != null;
+		}
+		catch (RuntimeException e)
+		{
+			log.debug("Gielinor Go: could not tell whether the player is typing in chat", e);
+			return false;
+		}
+	}
+
+	/**
+	 * While the mouse is over the open window or the toggle, and RuneLite's drag key is not held, clears the game's
+	 * menu entries so the game shows no "Walk here" and offers nothing under the window.
+	 */
+	private void clearMenuUnderWindow()
+	{
+		try
+		{
+			net.runelite.api.Point mouse = client.getMouseCanvasPosition();
+			if (mouse == null || client.isMenuOpen() || dragKey.held())
+				return;
+
+			Rectangle toggle = windowToggle.bounds();
+			boolean over = window.view().covers(mouse.getX(), mouse.getY())
+				|| toggle != null && toggle.contains(mouse.getX(), mouse.getY());
+			if (over)
+				client.getMenu().setMenuEntries(new MenuEntry[0]);
+		}
+		catch (RuntimeException e)
+		{
+			log.debug("Gielinor Go: could not clear the menu under the window", e);
+		}
+	}
+
+	/**
+	 * Shows a pop-up notice, and writes it to the chat box too when that setting is on.
+	 *
+	 * @param message what to say
+	 * @param centerX the centre x on the canvas
+	 * @param centerY the centre y on the canvas
+	 */
+	private void showNotice(NoticeMessage message, int centerX, int centerY)
+	{
+		windowNotice.show(message, centerX, centerY);
+		if (config.chatMessages())
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", message.text(), null);
+	}
+
+	private void noticeUnderToggle(NoticeMessage message)
+	{
+		Rectangle b = windowToggle.bounds();
+		if (b == null)
+			b = new Rectangle(0, 0, WindowToggle.SIZE, WindowToggle.SIZE);
+
+		showNotice(message, b.x + b.width / 2, b.y + b.height + WindowToggle.SIZE / 2);
+	}
+
+	/**
+	 * Hands the painted window a fresh snapshot, built here on the game thread, and tells a new player where to click.
+	 *
+	 * @param state what the side panel shows
+	 */
+	private void publishWindow(PanelState state)
+	{
+		if (window == null)
+			return;
+
+		windowVersion++;
+		boolean storage = WindowRules.storageEnabled(game.inTeamArea(), game.nearBank());
+		WindowSnapshot snapshot = WindowSnapshot.of(windowVersion, state, storage);
+		window.shell().publish(snapshot);
+		if (!snapshot.firstRun())
+		{
+			firstRunNoticed = false;
+		}
+		else if (!firstRunNoticed && config.windowPreview() && !window.shell().isOpen())
+		{
+			firstRunNoticed = true;
+			noticeUnderToggle(NoticeMessage.FIRST_RUN);
+		}
 	}
 
 	private void onGameThread(Runnable action)

@@ -89,6 +89,9 @@ A Creature Log, daily tasks and daily events give you goals.
   for a gold sigil and a daily reward. (#97)
 - **Choose your turns against friends.** When you both have Choose battle actions on, a friend battle is played
   turn by turn. (#98)
+- **Painted window (preview).** A new in-game window drawn on the game screen, with six tabs and two looks, can be
+  turned on with Painted window (preview) in the settings. Only its frame, tabs and footer are built so far, and
+  the side panel is unchanged. (#223)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
