@@ -104,6 +104,9 @@ A Creature Log, daily tasks and daily events give you goals.
   twice as many tiles. Eggs you already carry keep their old target. (#206)
 - **Rarer finds.** Stronger monsters turn wild less often: Uncommon at 0.6 times the chance, Rare 0.35, Epic 0.15 and
   Legendary 0.05. The Wild creature rarity setting stays the rate for Common ones. (#213)
+- **Rarer skilling finds.** Creatures that come while you train a skill now follow the same tier factors, so
+  Rare ones come about a third less often at level 99 and the Epic River troll, Rock Golem and Tree spirit about one
+  encounter in 133. (#220)
 - **Seen and caught marks.** A mark beside each wild creature's name shows whether its species is new to you,
   seen or already caught. (#209)
 - **Wild creature tooltip.** Hover a wild creature to see its name, level, style and whether you have seen or caught

@@ -290,7 +290,7 @@ final class BalanceSpawn
 
 	private static String skillingTable()
 	{
-		StringBuilder out = new StringBuilder("### 1e. Wild creatures from skilling (no rarity weighting)\n\n");
+		StringBuilder out = new StringBuilder("### 1e. Wild creatures from skilling\n\n");
 		out.append("`SkillingRules.XP_PER_ENCOUNTER` ").append(SkillingRules.XP_PER_ENCOUNTER)
 			.append(", `REFERENCE_ONE_IN` ").append(SkillingRules.REFERENCE_ONE_IN)
 			.append(", `COOLDOWN_MS` ").append(SkillingRules.COOLDOWN_MS)
@@ -320,7 +320,8 @@ final class BalanceSpawn
 	{
 		StringBuilder out = new StringBuilder("### 1f. Which tier a skilling encounter is\n\n");
 		out.append("Sampled ").append(BalanceTable.cell(SAMPLES)).append(" picks of the real `SkillingTable.pick` per ")
-			.append("skill and skill level. Skilling ignores `Rarity.wildFactor`, so the mix is the table's own.\n\n");
+			.append("skill and skill level. Skilling weights each pick and each exclusive species by ")
+			.append("`Rarity.wildFactor` (#220).\n\n");
 		String[] skills = {"FISHING", "WOODCUTTING", "MINING", "FARMING", "HUNTER"};
 		int[] levels = {1, 40, 99};
 		String[] head = new String[Rarity.values().length + 2];
