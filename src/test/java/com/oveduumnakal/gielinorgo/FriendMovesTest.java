@@ -77,6 +77,15 @@ public class FriendMovesTest
 		return list.get(list.size() - 1);
 	}
 
+	private void reviveAll()
+	{
+		for (Creature creature : annData.team)
+			creature.revive(1.0, now);
+
+		for (Creature creature : bobData.team)
+			creature.revive(1.0, now);
+	}
+
 	private void meet()
 	{
 		ann.hello(annData, false);
@@ -139,6 +148,7 @@ public class FriendMovesTest
 		int named = 0;
 		for (int seed = 1; seed <= 20; seed++)
 		{
+			reviveAll();
 			fromAnn.clear();
 			fromBob.clear();
 			ann = new FriendBattles(table, new Random(seed), () -> now, message -> fromAnn.add(sentBy(message, ANN)),

@@ -1261,8 +1261,9 @@ final class GoGame
 	/**
 	 * Starts the player's side of a battle against a friend, played turn by turn. The teams are the ones both players
 	 * sent, at full health, so nothing is read from the save but the creatures behind the fighters and how many of
-	 * each item the player owns, which is copied into a budget for this battle. Nothing is paid when it ends, no
-	 * health is written back, and no item is ever taken from the save.
+	 * each item the player owns, which is copied into a budget for this battle. Creatures that had fainted were not
+	 * sent, see {@link FriendBattles#fit}. Nothing is paid when it ends and no health is written back, but a creature
+	 * that reached 0 health in it faints, as in any other battle; no item is ever taken from the save.
 	 *
 	 * @param battle the battle shared with the friend
 	 * @return the battle
@@ -1271,9 +1272,9 @@ final class GoGame
 	{
 		BattleState state = battle.state();
 		List<Creature> fighters = new ArrayList<>();
-		for (Creature creature : data.team)
+		for (Creature creature : FriendBattles.fit(data, species))
 		{
-			if (species.find(creature.species) != null && fighters.size() < state.team().size())
+			if (fighters.size() < state.team().size())
 				fighters.add(creature);
 		}
 
@@ -1330,7 +1331,34 @@ final class GoGame
 		if (item != null)
 			session.useFriendItem(item);
 
+		if (played.result().status().over())
+			faintFromFriend(session);
+
 		return played.result();
+	}
+
+	/**
+	 * Makes the creatures that reached 0 health in a battle against a friend faint. The health of the survivors is
+	 * not written back, and nothing else in the save changes. A creature a Revive draught brought back in the same
+	 * battle stands, since its fighter does. It does nothing twice for the same creature.
+	 *
+	 * @param session the battle against a friend
+	 */
+	private void faintFromFriend(BattleSession session)
+	{
+		long now = clock.getAsLong();
+		List<Creature> fighters = session.fighters();
+		for (int i = 0; i < fighters.size() && i < session.state().team().size(); i++)
+		{
+			Creature creature = fighters.get(i);
+			Combatant fought = session.fighter(i);
+			if (!fought.fainted() || creature.fainted || !Species.keyFor(creature.species).equals(fought.speciesKey()))
+				continue;
+
+			creature.faint(now);
+			dirty = true;
+			tell(nameOf(creature) + " fainted. Revive it at a bank", Tone.BAD);
+		}
 	}
 
 	/**
@@ -1356,6 +1384,9 @@ final class GoGame
 		FriendTurnBattle battle = session.friendTurn();
 		battle.timeout(clock.getAsLong());
 		FriendTurnBattle.End end = battle.ended();
+		if (end != null)
+			faintFromFriend(session);
+
 		if (end == null || end == FriendTurnBattle.End.MINE)
 			return null;
 
@@ -1501,6 +1532,7 @@ final class GoGame
 		if (session.friendTurn() != null)
 		{
 			session.friendTurn().leave();
+			faintFromFriend(session);
 			tell("You left the battle", Tone.INFO);
 			return null;
 		}

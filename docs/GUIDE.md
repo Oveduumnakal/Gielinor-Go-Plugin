@@ -545,7 +545,9 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Join a RuneLite party with a friend, using RuneLite's Party plugin, and everyone in it who plays Gielinor Go
   shows up on your Battle tab. Challenge one and your two teams fight it out at once, with the result floating
-  over both your heads. Friend battles are for fun: both teams fight at full health and nothing is won or lost.
+  over both your heads. Friend battles are for fun: both teams fight at full health and nothing is won or lost. A creature that has
+  fainted is not sent into a friend battle, and one that reaches 0 health in it faints and needs reviving like any
+  other; the health of the creatures that win is not changed.
   When you and the friend both have **Choose battle actions** on, the battle is played turn by turn instead: each of
   you picks Attack, Switch or Item, and the turn is played when both choices are in. You have 20 seconds each turn;
   if the time runs out your creature picks for itself, and if your friend has not answered 10 seconds after that, the

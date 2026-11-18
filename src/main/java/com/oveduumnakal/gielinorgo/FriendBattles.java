@@ -75,9 +75,11 @@ final class FriendBattles
 		private final String[][] moves;
 		private final boolean steered;
 		private final long sentMs;
+		private final List<Creature> creatures;
 
-		private Pending(long friendId, GielinorGoPartyMessage sent, long sentMs)
+		private Pending(long friendId, GielinorGoPartyMessage sent, long sentMs, List<Creature> creatures)
 		{
+			this.creatures = creatures;
 			this.friendId = friendId;
 			this.battle = sent.battle();
 			this.seed = sent.seed();
@@ -263,6 +265,13 @@ final class FriendBattles
 			return;
 		}
 
+		List<Creature> team = fit(data, species);
+		if (team.isEmpty())
+		{
+			tell(GoGame.FAINTED_TEAM_TEXT, Tone.BAD);
+			return;
+		}
+
 		long now = clock.getAsLong();
 		if (waiting(now))
 		{
@@ -271,8 +280,8 @@ final class FriendBattles
 		}
 
 		GielinorGoPartyMessage sent = message(GielinorGoPartyMessage.CHALLENGE, friendId, random.nextLong(),
-			random.nextLong(), data).steering(steering);
-		pending = new Pending(friendId, sent, now);
+			random.nextLong(), data, team).steering(steering);
+		pending = new Pending(friendId, sent, now, team);
 		outbox.accept(sent);
 		tell("Challenged " + friendName + "!", Tone.INFO);
 	}
@@ -406,7 +415,9 @@ final class FriendBattles
 		}
 
 		boolean leadFirst = leadIsFirst(mine, data);
-		return fight(mine, theirs, seed, true, senderName).withLeadFirst(leadFirst);
+		TeamBattleResult fought = fight(mine, theirs, seed, true, senderName).withLeadFirst(leadFirst);
+		faintAfter(answered.creatures, mine);
+		return fought;
 	}
 
 	/**
@@ -585,8 +596,9 @@ final class FriendBattles
 			return null;
 
 		long now = clock.getAsLong();
+		List<Creature> team = fit(data, species);
 		GielinorGoPartyMessage answer = message(GielinorGoPartyMessage.ACCEPT, message.getMemberId(),
-			message.battle(), random.nextLong(), data).steering(steering);
+			message.battle(), random.nextLong(), data, team).steering(steering);
 		List<Combatant> mine = fighters(answer);
 		if (!accepting || busy() || mine == null || mine.isEmpty() || now - lastBattleMs < REST_MS)
 		{
@@ -607,7 +619,9 @@ final class FriendBattles
 		}
 
 		boolean leadFirst = leadIsFirst(mine, data);
-		return fight(theirs, mine, seed, false, senderName).withLeadFirst(leadFirst);
+		TeamBattleResult fought = fight(theirs, mine, seed, false, senderName).withLeadFirst(leadFirst);
+		faintAfter(team, mine);
+		return fought;
 	}
 
 	/**
@@ -615,11 +629,25 @@ final class FriendBattles
 	 *
 	 * @param mine the player's fighters, in order
 	 * @param data the player's save
-	 * @return true when the first fighter is of the lead's species
+	 * @return true when the first fighter is of the species of the creature that follows the player: the lead, or the
+	 *     first creature that has not fainted when the lead has
 	 */
 	private static boolean leadIsFirst(List<Combatant> mine, SaveData data)
 	{
 		Creature lead = data.lead();
+		if (lead != null && lead.fainted)
+		{
+			lead = null;
+			for (Creature creature : data.team)
+			{
+				if (!creature.fainted)
+				{
+					lead = creature;
+					break;
+				}
+			}
+		}
+
 		return lead != null && !mine.isEmpty() && mine.get(0).speciesKey().equals(Species.keyFor(lead.species));
 	}
 
@@ -880,6 +908,50 @@ final class FriendBattles
 	}
 
 	/**
+	 * Lists the creatures that go into a battle with a friend: the team in order, without a creature of a species this
+	 * version does not know and without one that has fainted. Fighter number {@code i} of the battle is the
+	 * creature at place {@code i} of this list, on this side of the mapping and in
+	 * {@link GoGame#startFriendBattle}.
+	 *
+	 * @param data the player's save
+	 * @param table the species this version knows
+	 * @return the creatures, in team order
+	 */
+	static List<Creature> fit(SaveData data, SpeciesTable table)
+	{
+		List<Creature> list = new ArrayList<>();
+		for (Creature creature : data.team)
+		{
+			if (!creature.fainted && table.find(creature.species) != null)
+				list.add(creature);
+		}
+
+		return list;
+	}
+
+	/**
+	 * Makes the creatures of a fight played to the end faint when their fighter did. Nothing else is written: the
+	 * health of the creatures that survived stays as it was, since friend battles are for fun.
+	 *
+	 * @param creatures the creatures that were sent, in the order of the fighters
+	 * @param mine the fighters after the fight, in the same order
+	 */
+	private void faintAfter(List<Creature> creatures, List<Combatant> mine)
+	{
+		long now = clock.getAsLong();
+		for (int i = 0; i < creatures.size() && i < mine.size(); i++)
+		{
+			Creature creature = creatures.get(i);
+			if (!mine.get(i).fainted() || creature.fainted)
+				continue;
+
+			creature.faint(now);
+			tell((creature.nickname != null ? creature.nickname : species.find(creature.species).name())
+				+ " fainted. Revive it at a bank", Tone.BAD);
+		}
+	}
+
+	/**
 	 * Makes a message that carries this player's team. Creatures of a species this version does not know are
 	 * left out, so the other side never turns the whole team away.
 	 *
@@ -899,6 +971,23 @@ final class FriendBattles
 				known.add(creature);
 		}
 
+		return message(kind, to, battle, seed, data, known);
+	}
+
+	/**
+	 * Makes a message that carries the given creatures of this player's team.
+	 *
+	 * @param kind what the message is for
+	 * @param to the party member it is for, or 0 for everyone
+	 * @param battle the battle's number, or 0
+	 * @param seed this player's half of the seed, or 0
+	 * @param data the player's save, for the trainer level and the eggs
+	 * @param known the creatures to list, in order
+	 * @return the message
+	 */
+	private GielinorGoPartyMessage message(String kind, long to, long battle, long seed, SaveData data,
+		List<Creature> known)
+	{
 		String[] keys = new String[known.size()];
 		int[] levels = new int[known.size()];
 		int[][] rolls = new int[known.size()][];
