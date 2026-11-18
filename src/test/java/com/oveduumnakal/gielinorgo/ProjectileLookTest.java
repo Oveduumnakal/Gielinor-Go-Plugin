@@ -10,6 +10,7 @@ import net.runelite.api.gameval.SpotanimID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -81,6 +82,25 @@ public class ProjectileLookTest
 	}
 
 	@Test
+	public void bindShowsItsOwnProjectileNotTheFireBolt()
+	{
+		ProjectileLook bind = ProjectileLook.of(CombatType.MAGIC, false, false, "bind");
+
+		assertEquals(ProjectileLook.BIND, bind);
+		assertNotEquals(ProjectileLook.SPELL, bind);
+	}
+
+	@Test
+	public void theOtherSpellsThatHadNoLookGetOneThatFitsOrTheBolt()
+	{
+		assertEquals(ProjectileLook.CURSE, ProjectileLook.of(CombatType.MAGIC, false, false, "hex"));
+		assertEquals(ProjectileLook.FIRE_WAVE, ProjectileLook.of(CombatType.MAGIC, false, false, "flame_lash"));
+		assertEquals(ProjectileLook.IBAN_BLAST, ProjectileLook.of(CombatType.MAGIC, false, false, "hellfire"));
+		for (String move : new String[]{"magic_bolt", "arcane_blast", "arcane_surge", "grave_chill"})
+			assertEquals(move, ProjectileLook.SPELL, ProjectileLook.of(CombatType.MAGIC, false, false, move));
+	}
+
+	@Test
 	public void aSpellWithNoMatchKeepsTheGenericBolt()
 	{
 		assertEquals(ProjectileLook.SPELL, ProjectileLook.of(CombatType.MAGIC, false, false, "magic_bolt"));
@@ -109,6 +129,18 @@ public class ProjectileLookTest
 		assertEquals(SpotanimID.EARTHWAVE_TRAVEL, ProjectileLook.EARTH_WAVE.spotAnimId());
 		assertEquals(3115, ProjectileLook.EARTH_WAVE.modelId());
 		assertEquals(692, ProjectileLook.EARTH_WAVE.animationId());
+		assertEquals(SpotanimID.ENTANGLE_TRAVEL, ProjectileLook.BIND.spotAnimId());
+		assertEquals(3127, ProjectileLook.BIND.modelId());
+		assertEquals(703, ProjectileLook.BIND.animationId());
+		assertEquals(SpotanimID.CURSE_TRAVEL, ProjectileLook.CURSE.spotAnimId());
+		assertEquals(3100, ProjectileLook.CURSE.modelId());
+		assertEquals(675, ProjectileLook.CURSE.animationId());
+		assertEquals(SpotanimID.FIREWAVE_TRAVEL, ProjectileLook.FIRE_WAVE.spotAnimId());
+		assertEquals(3115, ProjectileLook.FIRE_WAVE.modelId());
+		assertEquals(692, ProjectileLook.FIRE_WAVE.animationId());
+		assertEquals(SpotanimID.IBANBLAST_TRAVEL, ProjectileLook.IBAN_BLAST.spotAnimId());
+		assertEquals(3077, ProjectileLook.IBAN_BLAST.modelId());
+		assertEquals(656, ProjectileLook.IBAN_BLAST.animationId());
 	}
 
 	@Test
