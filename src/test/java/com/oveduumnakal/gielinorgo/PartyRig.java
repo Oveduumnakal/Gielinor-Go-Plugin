@@ -192,6 +192,15 @@ final class PartyRig
 		if (arg instanceof TradePick)
 			return ((TradePick) arg).from() + "#" + ((TradePick) arg).index();
 
+		if (arg instanceof List)
+		{
+			List<String> parts = new ArrayList<>();
+			for (Object each : (List<?>) arg)
+				parts.add(describe(each));
+
+			return parts.toString();
+		}
+
 		return String.valueOf(arg);
 	}
 
