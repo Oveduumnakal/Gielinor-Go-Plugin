@@ -67,4 +67,12 @@ public class AttackLengthTest
 		assertEquals(BEAT, AttackLength.flinchTicks(20));
 		assertEquals(4, AttackLength.flinchTicks(120));
 	}
+
+	@Test
+	public void aMeleeBeatNeverEndsBeforeTheAttackerIsBackOnItsSpot()
+	{
+		int clientTicks = AttackLength.beatTicks(true, 0, 0, false) * TurnMotion.CLIENT_TICKS_PER_GAME_TICK;
+
+		assertTrue(clientTicks >= TurnMotion.RETURN_END);
+	}
 }

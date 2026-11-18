@@ -55,6 +55,9 @@ final class AttackLength
 	{
 		int start = melee ? TurnMotion.STRIKE_TICK : TurnMotion.SHOT_TICK;
 		int end = start + attackTicks;
+		if (melee)
+			end = Math.max(end, TurnMotion.RETURN_END);
+
 		if (reacts)
 			end = Math.max(end, TurnMotion.IMPACT_TICK + reactTicks);
 

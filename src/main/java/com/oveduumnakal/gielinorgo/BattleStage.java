@@ -86,6 +86,12 @@ final class BattleStage implements StageAnchors
 		}
 
 		@Override
+		public boolean turning()
+		{
+			return foe != null && foe.body() != null && foe.body().turning();
+		}
+
+		@Override
 		public double x()
 		{
 			return foe == null ? 0 : foe.x();
@@ -273,7 +279,8 @@ final class BattleStage implements StageAnchors
 			return;
 		}
 
-		BattleTimeline.Step step = timeline.tick(follower.errandArrived());
+		BattleTimeline.Step step = timeline.tick(follower.errandArrived(), acting.settled());
+		extraTicks += timeline.takeHeldTicks();
 		if (timeline.fightStarted() && !follower.errandArrived())
 			follower.arriveNow();
 
