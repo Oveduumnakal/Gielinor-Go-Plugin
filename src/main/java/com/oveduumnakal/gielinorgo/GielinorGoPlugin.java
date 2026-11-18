@@ -1459,16 +1459,17 @@ public class GielinorGoPlugin extends Plugin
 	 * Works out which species a monster is, for turning it wild.
 	 *
 	 * @param npc the monster
-	 * @return the species, or null when the monster cannot be fought, is not in the species list or is a quest-only
-	 *     species (those never turn wild)
+	 * @return the species, or null when the monster is not in the species list, has no combat level (unless it is a
+	 *     listed Hunter creature) or is a quest-only species (those never turn wild)
 	 */
 	private Species speciesOf(NPC npc)
 	{
-		if (npc == null || npc.getName() == null || npc.getCombatLevel() < 1 || game == null)
+		if (npc == null || npc.getName() == null || game == null)
 			return null;
 
 		Species found = game.speciesFor(Text.removeTags(npc.getName()));
-		return found == null || found.questOnly() || skilling.exclusive(found) ? null : found;
+		return WildEligibility.eligible(found, npc.getId(), npc.getCombatLevel()) && !skilling.exclusive(found)
+			? found : null;
 	}
 
 	/** @return whether wild creatures may appear where the player is right now */
@@ -1513,7 +1514,8 @@ public class GielinorGoPlugin extends Plugin
 		WorldPoint point = npc.getWorldLocation();
 		boolean underground = point != null && Terrain.underground(point.getX(), point.getY());
 		boolean events = config.spawnEvents();
-		WildEntry entry = tracker.offer(npc.getIndex(), npc.getId(), species, npc.getCombatLevel(), underground,
+		WildEntry entry = tracker.offer(npc.getIndex(), npc.getId(), species,
+			WildEligibility.combatLevel(species, npc.getCombatLevel()), underground,
 			now, calendar.chance(species, config.wildChance(), events, spawnClock),
 			game.gildedOneIn(calendar.gildedOneIn(species, events, spawnClock)), events);
 		if (entry == null)

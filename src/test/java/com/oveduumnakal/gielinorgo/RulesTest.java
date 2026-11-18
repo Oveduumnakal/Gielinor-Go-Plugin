@@ -37,6 +37,13 @@ public class RulesTest
 	}
 
 	@Test
+	public void aHunterCreatureIsCaughtByItsHunterLevel()
+	{
+		assertEquals(0.513, CatchRules.chance(JarType.BRONZE, 57, false), EPSILON);
+		assertEquals(0.465, CatchRules.chance(JarType.BRONZE, 69, false), EPSILON);
+	}
+
+	@Test
 	public void catchChanceMatchesThePlanTable()
 	{
 		assertEquals(0.95, CatchRules.chance(JarType.BRONZE, 2, false), EPSILON);
