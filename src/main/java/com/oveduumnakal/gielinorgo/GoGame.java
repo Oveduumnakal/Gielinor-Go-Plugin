@@ -36,7 +36,7 @@ final class GoGame
 	static final String TITLE_MASTER_COLLECTOR = "MASTER_COLLECTOR";
 
 	/** Tiles the player walks to find one Bronze jar. */
-	static final int TILES_PER_JAR = 150;
+	static final int TILES_PER_JAR = 300;
 
 	/** Bronze jars given for each OSRS level-up. */
 	static final int JARS_PER_LEVEL_UP = 3;
@@ -155,6 +155,7 @@ final class GoGame
 
 	private final TaskCalendar taskCalendar = new TaskCalendar();
 	private TaskBoard board;
+	private final List<String> pinNews = new ArrayList<>();
 	private Milestones milestoneTable = Milestones.NONE;
 	private boolean milestonesDue;
 	private boolean walking;
@@ -244,6 +245,7 @@ final class GoGame
 	void load(SaveData loaded)
 	{
 		data = loaded.sanitized();
+		pinNews.clear();
 		settleMoves();
 		log = null;
 		starters = null;
@@ -798,14 +800,29 @@ final class GoGame
 	 * Records that the player met a species in the wild.
 	 *
 	 * @param entry the wild creature that appeared
+	 * @return true when the species was new to the player, false when it was seen before
 	 */
-	void markSeen(WildEntry entry)
+	boolean markSeen(WildEntry entry)
 	{
 		if (!data.seen.add(entry.species().key()))
-			return;
+			return false;
 
 		log = null;
 		dirty = true;
+		return true;
+	}
+
+	/**
+	 * Works out what the Creature Log knows of a wild creature's species now. It reads the saved counts directly,
+	 * never the Log's entry list.
+	 *
+	 * @param entry the wild creature, whose {@link WildEntry#firstMeeting()} was set when it appeared
+	 * @return caught with the count, else new for a first meeting, else seen
+	 */
+	WildRecord recordOf(WildEntry entry)
+	{
+		Integer count = data.caught.get(entry.species().key());
+		return WildRecord.of(count == null ? 0 : count, entry.firstMeeting());
 	}
 
 	/**
@@ -827,6 +844,25 @@ final class GoGame
 		}
 
 		return null;
+	}
+
+	/**
+	 * Lists every jar the player has, for the wild creature menu. Read on the client thread, like
+	 * {@link #jarToThrow()}.
+	 *
+	 * @return each jar with a count above 0 and its count, in enum order
+	 */
+	Map<JarType, Integer> ownedJars()
+	{
+		Map<JarType, Integer> owned = new EnumMap<>(JarType.class);
+		for (JarType type : JarType.values())
+		{
+			int count = data.jarCount(type);
+			if (count > 0)
+				owned.put(type, count);
+		}
+
+		return owned;
 	}
 
 	/**
@@ -1938,6 +1974,199 @@ final class GoGame
 		return true;
 	}
 
+	/**
+	 * Pins a task to the on-screen tracker. A pin that is refused says why as floating text.
+	 *
+	 * @param slot the task's place: 0 to 2 for the day's tasks, 3 for the week's
+	 * @return true when the task is pinned now; false when the slot is not a task, the task is finished, or the
+	 *         tracker is full
+	 */
+	boolean pinTask(int slot)
+	{
+		if (slot < 0 || slot > TaskCalendar.DAILY_COUNT)
+			return false;
+
+		startTasks();
+		if (taskPinned(slot))
+			return true;
+
+		boolean finished = slot == TaskCalendar.DAILY_COUNT ? data.tasks.weeklyPaid : data.tasks.dailyPaid[slot];
+		String reason = PinRules.canPin(pinCount(), false, finished);
+		if (reason != null)
+		{
+			tell(reason, Tone.BAD);
+			return false;
+		}
+
+		setTaskPinned(slot, true);
+		return true;
+	}
+
+	/**
+	 * Takes a task off the on-screen tracker.
+	 *
+	 * @param slot the task's place: 0 to 2 for the day's tasks, 3 for the week's; any other place does nothing
+	 */
+	void unpinTask(int slot)
+	{
+		if (slot < 0 || slot > TaskCalendar.DAILY_COUNT)
+			return;
+
+		startTasks();
+		if (taskPinned(slot))
+			setTaskPinned(slot, false);
+	}
+
+	/**
+	 * Pins a carried egg to the on-screen tracker. A pin that is refused says why as floating text.
+	 *
+	 * @param egg the egg
+	 * @return true when the egg is pinned now; false when it is not carried or the tracker is full
+	 */
+	boolean pinEgg(Egg egg)
+	{
+		if (!data.eggs.contains(egg))
+			return false;
+
+		if (egg.pinned)
+			return true;
+
+		String reason = PinRules.canPin(pinCount(), false, false);
+		if (reason != null)
+		{
+			tell(reason, Tone.BAD);
+			return false;
+		}
+
+		egg.pinned = true;
+		dirty = true;
+		return true;
+	}
+
+	/**
+	 * Takes a carried egg off the on-screen tracker.
+	 *
+	 * @param egg the egg
+	 */
+	void unpinEgg(Egg egg)
+	{
+		if (egg.pinned)
+		{
+			egg.pinned = false;
+			dirty = true;
+		}
+	}
+
+	/**
+	 * Pins or unpins the egg a window picked, if it is still where the window listed it.
+	 *
+	 * @param pick the egg as the window showed it
+	 * @param pinned true to pin it, false to unpin it
+	 */
+	void pinEgg(TradePick pick, boolean pinned)
+	{
+		if (!pick.matches(snapshot()) || pick.index() >= data.eggs.size())
+		{
+			tell("That egg moved. Try again.", Tone.BAD);
+			return;
+		}
+
+		Egg egg = data.eggs.get(pick.index());
+		if (pinned)
+			pinEgg(egg);
+		else
+			unpinEgg(egg);
+	}
+
+	/** Takes everything off the on-screen tracker. */
+	void unpinAll()
+	{
+		startTasks();
+		for (int slot = 0; slot <= TaskCalendar.DAILY_COUNT; slot++)
+			unpinTask(slot);
+
+		for (Egg egg : data.eggs)
+			unpinEgg(egg);
+	}
+
+	/** @return how many tasks and eggs are pinned to the on-screen tracker */
+	int pinCount()
+	{
+		startTasks();
+		int count = 0;
+		for (int slot = 0; slot <= TaskCalendar.DAILY_COUNT; slot++)
+		{
+			if (taskPinned(slot))
+				count++;
+		}
+
+		for (Egg egg : data.eggs)
+		{
+			if (egg.pinned)
+				count++;
+		}
+
+		return count;
+	}
+
+	/**
+	 * Hands over the names of the pinned eggs that hatched since the last call, so the tracker can say so.
+	 *
+	 * @return the egg names, such as {@code Rare egg}; empty when none hatched
+	 */
+	List<String> takePinNews()
+	{
+		List<String> news = new ArrayList<>(pinNews);
+		pinNews.clear();
+		return news;
+	}
+
+	private boolean taskPinned(int slot)
+	{
+		return slot == TaskCalendar.DAILY_COUNT ? data.tasks.pinnedWeekly : data.tasks.pinnedDaily[slot];
+	}
+
+	private void setTaskPinned(int slot, boolean pinned)
+	{
+		if (slot == TaskCalendar.DAILY_COUNT)
+			data.tasks.pinnedWeekly = pinned;
+		else
+			data.tasks.pinnedDaily[slot] = pinned;
+
+		dirty = true;
+	}
+
+	/**
+	 * Builds what the on-screen tracker shows from the panel's own rows and eggs.
+	 *
+	 * @param tasks the Tasks view, whose rows are the day's three tasks and then the week's
+	 * @param eggs the egg views, in the order the player carries them
+	 * @return the pinned tasks and then the pinned eggs
+	 */
+	private static TrackerView trackerView(TaskView tasks, List<EggView> eggs)
+	{
+		List<TrackerView.Line> lines = new ArrayList<>();
+		List<TaskView.Row> rows = tasks.rows();
+		for (int slot = 0; slot < rows.size(); slot++)
+		{
+			TaskView.Row row = rows.get(slot);
+			if (row.pinned())
+				lines.add(new TrackerView.Line(TrackerView.Kind.TASK, TrackerView.taskId(slot), row.label(),
+					row.count(), row.fraction(), null, row.done()));
+		}
+
+		for (int place = 0; place < eggs.size(); place++)
+		{
+			EggView egg = eggs.get(place);
+			if (egg.pinned())
+				lines.add(new TrackerView.Line(TrackerView.Kind.EGG, TrackerView.eggId(place), egg.label(),
+					egg.tilesLeft() <= 0 ? "Ready" : egg.tilesLeft() + " steps", egg.progress(), egg.rarity(),
+					false));
+		}
+
+		return new TrackerView(lines);
+	}
+
 	/** @return the name of the species a boss egg holds, or null for an ordinary egg */
 	private String eggName(Egg egg)
 	{
@@ -1955,7 +2184,8 @@ final class GoGame
 
 		List<EggView> eggs = new ArrayList<>();
 		for (Egg egg : data.eggs)
-			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal, eggName(egg)));
+			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal, eggName(egg))
+				.withPinned(egg.pinned));
 
 		freezeTeam(now);
 		TaskView tasks = startTasks().view(now, bestUnlockedJar());
@@ -1966,7 +2196,8 @@ final class GoGame
 			.withResetSummary(resetSummary())
 			.withRival(rivalView())
 			.withStarters(starterOffer())
-			.withTitle(shownTitle(), titles());
+			.withTitle(shownTitle(), titles())
+			.withTracker(trackerView(tasks, eggs));
 	}
 
 	/** @return how many caught species count toward the Log: known ones that are not quest-only */
@@ -2058,6 +2289,9 @@ final class GoGame
 	{
 		if (!hasRoomForCreature())
 			return false;
+
+		if (egg.pinned)
+			pinNews.add(new EggView(egg.rarityTier(), 0, 0, eggName(egg)).label());
 
 		Species born = egg.species == null ? null : species.find(egg.species);
 		if (born == null)

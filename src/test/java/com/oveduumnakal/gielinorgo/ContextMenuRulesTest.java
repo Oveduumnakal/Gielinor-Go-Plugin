@@ -21,8 +21,8 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Checks what a creature's menu offers and when each item is dim: Summary first, Make lead dim for the lead and during
- * an Elite run, Pin to tracker dim until the tracker exists, Move to storage dim unless the team may change here,
- * Use item by the item rules, and Revive only for a fainted creature.
+ * an Elite run, Move to storage dim unless the team may change here, Use item by the item rules, and Revive only for
+ * a fainted creature.
  */
 public class ContextMenuRulesTest
 {
@@ -111,8 +111,8 @@ public class ContextMenuRulesTest
 	{
 		List<ContextMenu.Item> menu = ContextMenuRules.party(facts(2, 1.0, false, true, null), commands);
 
-		assertEquals(Arrays.asList("Summary", "Make lead", "Pin to tracker", "Move to storage", "Rename", "Moves",
-			"Use item"), labels(menu));
+		assertEquals(Arrays.asList("Summary", "Make lead", "Move to storage", "Rename", "Moves", "Use item"),
+			labels(menu));
 		assertTrue(menu.get(0).enabled());
 	}
 
@@ -121,8 +121,7 @@ public class ContextMenuRulesTest
 	{
 		List<ContextMenu.Item> menu = ContextMenuRules.summary(facts(2, 1.0, false, true, null), commands);
 
-		assertEquals(Arrays.asList("Make lead", "Pin to tracker", "Move to storage", "Rename", "Moves", "Use item"),
-			labels(menu));
+		assertEquals(Arrays.asList("Make lead", "Move to storage", "Rename", "Moves", "Use item"), labels(menu));
 	}
 
 	@Test
@@ -145,16 +144,6 @@ public class ContextMenuRulesTest
 		assertFalse(item(menu, "Move to storage").enabled());
 		assertEquals(ContextMenuRules.ELITE_REASON, item(menu, "Move to storage").reason());
 		assertTrue(item(menu, "Rename").enabled());
-	}
-
-	@Test
-	public void pinToTrackerStaysDimUntilTheTrackerExists()
-	{
-		ContextMenu.Item pin = item(ContextMenuRules.party(facts(3, 1.0, false, true, null), commands),
-			"Pin to tracker");
-
-		assertFalse(pin.enabled());
-		assertEquals("Coming with the tracker", pin.reason());
 	}
 
 	@Test
@@ -248,6 +237,5 @@ public class ContextMenuRulesTest
 		}
 
 		assertEquals(Arrays.asList("summary", "makeLead", "moveToStorage", "rename", "moves", "useItem"), calls);
-		assertFalse(item(menu, "Pin to tracker").enabled());
 	}
 }

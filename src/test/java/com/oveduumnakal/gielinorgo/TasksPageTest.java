@@ -15,6 +15,7 @@ import java.util.List;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /** The Tasks page: tasks, streak and the scrolling milestone list. */
@@ -136,5 +137,91 @@ public class TasksPageTest
 	private static ScrollList scroll(PartyRig rig)
 	{
 		return rig.pages.tasksPage().list();
+	}
+
+	private static PanelState pinned(PanelState base, int... slots)
+	{
+		List<TaskView.Row> rows = new ArrayList<>(base.tasks().rows());
+		for (int slot : slots)
+			rows.set(slot, rows.get(slot).withPinned(true));
+
+		TaskView tasks = new TaskView(rows, 3, 4, 3_600_000L, 86_400_000L);
+		return new PanelState(7, 0.2, 4, new EnumMap<>(JarType.class), JarType.BRONZE, 0, Collections.emptyList(),
+			Collections.emptyList(), Collections.emptyList(), 0, 0, Collections.emptyList(), Collections.emptyList(),
+			TodayView.NONE, tasks, new EnumMap<>(ItemType.class)).withGoals(base.milestones(), EliteView.NONE);
+	}
+
+	private static TrackerView lines(int count)
+	{
+		List<TrackerView.Line> list = new ArrayList<>();
+		for (int i = 0; i < count; i++)
+			list.add(new TrackerView.Line(TrackerView.Kind.EGG, "egg:" + i, "Rare egg", "5 steps", 0.5, Rarity.RARE,
+				false));
+
+		return new TrackerView(list);
+	}
+
+	@Test
+	public void everyTaskRowHasAFocusablePinButton()
+	{
+		PartyRig rig = page(state(5), 765, 497);
+
+		for (int i = 0; i < 4; i++)
+		{
+			Hit hit = rig.hit("tasks:pin:" + i);
+			assertEquals(Hit.Kind.BUTTON, hit.kind());
+			assertTrue(hit.order() >= WindowShell.PAGE_ORDER);
+			assertTrue(hit.bounds().intersection(rig.hit("tasks:row:" + i).bounds()).isEmpty());
+		}
+
+		assertEquals("Pin to the tracker", rig.hit("tasks:pin:0").tip());
+		assertTrue(rig.hit("tasks:pin:0").enabled());
+		assertEquals("Pin to the tracker", rig.hit("tasks:pin:3").tip());
+	}
+
+	@Test
+	public void aDoneTaskHasItsPinDisabledWithTheReason()
+	{
+		PartyRig rig = page(state(5), 765, 497);
+
+		Hit hit = rig.hit("tasks:pin:1");
+
+		assertFalse(hit.enabled());
+		assertEquals("Already done", hit.tip());
+		rig.click("tasks:pin:1");
+		assertTrue(rig.calls.isEmpty());
+	}
+
+	@Test
+	public void pressingPinAsksTheGameToPinThatTask()
+	{
+		PartyRig rig = page(state(5), 765, 497);
+
+		rig.click("tasks:pin:2");
+
+		assertEquals(Collections.singletonList("pinTask 2 true"), rig.calls);
+	}
+
+	@Test
+	public void aPinnedTaskOffersUnpinEvenWhenTheTrackerIsFull()
+	{
+		PartyRig rig = page(pinned(state(5), 0).withTracker(lines(5)), 765, 497);
+
+		assertEquals("Unpin from the tracker", rig.hit("tasks:pin:0").tip());
+		assertTrue(rig.hit("tasks:pin:0").enabled());
+		rig.click("tasks:pin:0");
+
+		assertEquals(Collections.singletonList("pinTask 0 false"), rig.calls);
+	}
+
+	@Test
+	public void aFullTrackerDisablesTheOtherPinsWithTheReason()
+	{
+		PartyRig rig = page(state(5).withTracker(lines(5)), 765, 497);
+
+		assertFalse(rig.hit("tasks:pin:2").enabled());
+		assertEquals("Tracker is full (5)", rig.hit("tasks:pin:2").tip());
+		rig.click("tasks:pin:2");
+		assertTrue(rig.calls.isEmpty());
 	}
 }

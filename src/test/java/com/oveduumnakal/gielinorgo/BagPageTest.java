@@ -97,7 +97,7 @@ public class BagPageTest
 		assertTrue(tip(rig, BagPainter.jarId(4)).contains("catch chance on"));
 		assertTrue(tip(rig, "bag:item:0").contains("Restores 25% health"));
 		assertTrue(tip(rig, "bag:egg:1").contains("steps to go"));
-		assertTrue(tip(rig, "bag:steps").contains("110 more tiles"));
+		assertTrue(tip(rig, "bag:steps").contains((GoGame.TILES_PER_JAR - 40) + " more tiles"));
 	}
 
 	@Test
@@ -158,5 +158,79 @@ public class BagPageTest
 	{
 		Hit one = a.id().equals("bag:steps") || a.id().equals("bag:level") ? a : b;
 		return one.id().equals("bag:steps") || one.id().equals("bag:level") || one.id().equals(BagPainter.ID_TITLE);
+	}
+
+	private static PartyRig bagWith(PanelState state)
+	{
+		PartyRig rig = new PartyRig();
+		rig.width = 1344;
+		rig.height = 874;
+		rig.publish(state, true);
+		rig.open();
+		rig.shell.showTab(WindowTab.BAG, rig.now);
+		rig.paint();
+		return rig;
+	}
+
+	private static PanelState pinnedEgg(PanelState base, int place, int trackerLines)
+	{
+		List<EggView> eggs = new ArrayList<>(base.eggs());
+		eggs.set(place, eggs.get(place).withPinned(true));
+		List<TrackerView.Line> list = new ArrayList<>();
+		for (int i = 0; i < trackerLines; i++)
+			list.add(new TrackerView.Line(TrackerView.Kind.EGG, "egg:" + i, "Rare egg", "5 steps", 0.5, Rarity.RARE,
+				false));
+
+		return new PanelState(7, 0.4, 5, new EnumMap<>(JarType.class), JarType.SLASH, 40, Collections.emptyList(),
+			Collections.emptyList(), Collections.emptyList(), 0, 0, eggs, Collections.emptyList(), TodayView.NONE,
+			null, new EnumMap<>(ItemType.class)).withTracker(new TrackerView(list));
+	}
+
+	@Test
+	public void everyEggRowHasAFocusablePinButton()
+	{
+		PartyRig rig = bagWith(state(3, false));
+
+		for (int i = 0; i < 3; i++)
+		{
+			Hit hit = rig.hit("bag:pin:" + i);
+			assertEquals(Hit.Kind.BUTTON, hit.kind());
+			assertTrue(hit.order() >= WindowShell.PAGE_ORDER);
+			assertTrue(hit.enabled());
+			assertEquals("Pin to the tracker", hit.tip());
+		}
+	}
+
+	@Test
+	public void pressingAnEggsPinAsksTheGameToPinIt()
+	{
+		PartyRig rig = bagWith(state(3, false));
+
+		rig.click("bag:pin:1");
+
+		assertEquals(Collections.singletonList("pinEgg EGG#1 true"), rig.calls);
+	}
+
+	@Test
+	public void aPinnedEggOffersUnpin()
+	{
+		PartyRig rig = bagWith(pinnedEgg(state(3, false), 2, 5));
+
+		assertEquals("Unpin from the tracker", rig.hit("bag:pin:2").tip());
+		assertTrue(rig.hit("bag:pin:2").enabled());
+		rig.click("bag:pin:2");
+
+		assertEquals(Collections.singletonList("pinEgg EGG#2 false"), rig.calls);
+	}
+
+	@Test
+	public void aFullTrackerDisablesTheOtherEggPins()
+	{
+		PartyRig rig = bagWith(pinnedEgg(state(3, false), 2, 5));
+
+		assertFalse(rig.hit("bag:pin:0").enabled());
+		assertEquals("Tracker is full (5)", rig.hit("bag:pin:0").tip());
+		rig.click("bag:pin:0");
+		assertTrue(rig.calls.isEmpty());
 	}
 }

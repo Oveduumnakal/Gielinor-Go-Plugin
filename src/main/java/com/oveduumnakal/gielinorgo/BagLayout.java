@@ -9,7 +9,8 @@ import java.awt.Rectangle;
 /**
  * Where everything on the Bag page sits, worked out from the page area and the window scale alone: the trainer box
  * across the top, the jars on the left, and the items and the eggs on the right. All lengths are layout units times
- * the window scale, so both themes share the same boxes. Holds no RuneLite types.
+ * the window scale, so both themes share the same boxes. The egg rows have two lines each, and squeeze to one line plus
+ * a bar when that is the only way to show every egg a player carries. Holds no RuneLite types.
  */
 final class BagLayout
 {
@@ -26,6 +27,7 @@ final class BagLayout
 	private static final double JAR_CELL_UNITS = 46;
 	private static final double ITEM_CELL_UNITS = 46;
 	private static final double EGG_ROW_UNITS = 40;
+	private static final double EGG_COMPACT_UNITS = 25;
 
 	/** The trainer box: title, level bar, wins and the next-jar strip. */
 	final Rectangle trainer;
@@ -75,6 +77,9 @@ final class BagLayout
 	/** The line under the last egg row that says how many more eggs there are, or an empty box. */
 	final Rectangle eggsMore;
 
+	/** The height of the line of words at the top of an egg row, which the pin button sits in. */
+	final int eggLine;
+
 	private BagLayout(Rectangle body, WindowStyle.Metrics m, double scale, int jarCount, int eggCount)
 	{
 		int gap = px(GAP_UNITS, scale);
@@ -112,6 +117,18 @@ final class BagLayout
 		int rowH = px(EGG_ROW_UNITS, scale);
 		int room = Math.max(0, eggs.y + eggs.height - (eggsHeading.y + heading + pad / 2) - pad);
 		int capacity = room / Math.max(1, rowH);
+		int compactH = px(EGG_COMPACT_UNITS, scale);
+		int compactLine = compactH - gap / 2 - Math.max(3, m.bar / 2) - 1;
+		int textNeed = WindowFonts.pixelSize(WindowFonts.SMALL_UNITS, scale) * 3 / 4 + 1;
+		boolean compact = eggCount > capacity && eggCount <= room / Math.max(1, compactH)
+			&& compactLine >= textNeed;
+		if (compact)
+		{
+			rowH = compactH;
+			capacity = room / Math.max(1, rowH);
+		}
+
+		eggLine = compact ? compactLine : (rowH - gap / 2) / 2;
 		int rows = eggCount <= capacity ? eggCount : Math.max(0, capacity - 1);
 		eggRows = new Rectangle[rows];
 		for (int i = 0; i < rows; i++)

@@ -18,6 +18,7 @@ class Creature {
   xp: long
 }
 class Egg {
+  pinned: boolean
   rarity: String
   species: String
   tilesLeft: int
@@ -57,6 +58,8 @@ class TaskProgress {
   dailyPaid: boolean[]
   day: long
   lastCatchDay: long
+  pinnedDaily: boolean[]
+  pinnedWeekly: boolean
   streak: int
   week: long
   weekly: int

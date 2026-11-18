@@ -227,14 +227,14 @@ final class WindowPages implements WindowShell.PageActions
 		if (current == WindowTab.BAG && panel != null && style != null)
 		{
 			state.back();
-			return bag.hits(bagLayout(body, panel), panel);
+			return bag.hits(bagLayout(body, panel), style, panel);
 		}
 
 		if (current == WindowTab.TASKS && panel != null && style != null)
 		{
 			state.back();
 			tasks.layout(body, style, panel);
-			return tasks.hits(panel);
+			return tasks.hits(style, panel);
 		}
 
 		if (current == WindowTab.COLLECTION && panel != null && style != null)
@@ -542,7 +542,7 @@ final class WindowPages implements WindowShell.PageActions
 			return;
 		}
 
-		if (pressBag(id, panel))
+		if (pressBag(id, panel) || pressPin(id, panel))
 			return;
 
 		if (tab == WindowTab.STORAGE)
@@ -598,6 +598,26 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		int jars = BagText.jarsShown(panel).size();
 		return BagLayout.of(body, st.metrics(), st.scale(), jars, panel.eggs().size());
+	}
+
+	private boolean pressPin(String id, PanelState panel)
+	{
+		if (id.startsWith(TasksPage.PIN_PREFIX))
+		{
+			int slot = Integer.parseInt(id.substring(TasksPage.PIN_PREFIX.length()));
+			List<TaskView.Row> rows = panel.tasks() == null ? Collections.emptyList() : panel.tasks().rows();
+			if (slot >= 0 && slot < rows.size())
+				actions.pinTask(slot, !rows.get(slot).pinned());
+
+			return true;
+		}
+
+		int place = BagPainter.pinPlace(id);
+		List<EggView> eggs = panel.eggs();
+		if (place >= 0 && place < eggs.size())
+			actions.pinEgg(TradePick.of(place, eggs.get(place)), !eggs.get(place).pinned());
+
+		return place >= 0;
 	}
 
 	private boolean pressBag(String id, PanelState panel)

@@ -89,6 +89,7 @@ final class TaskBoard
 			progress.day = day;
 			Arrays.fill(progress.daily, 0);
 			Arrays.fill(progress.dailyPaid, false);
+			Arrays.fill(progress.pinnedDaily, false);
 			changed = true;
 		}
 
@@ -97,6 +98,7 @@ final class TaskBoard
 			progress.week = week;
 			progress.weekly = 0;
 			progress.weeklyPaid = false;
+			progress.pinnedWeekly = false;
 			changed = true;
 		}
 
@@ -207,9 +209,10 @@ final class TaskBoard
 		rollover(now);
 		List<TaskView.Row> rows = new ArrayList<>();
 		for (int i = 0; i < daily.size(); i++)
-			rows.add(row(daily.get(i), progress.daily[i], progress.dailyPaid[i], best));
+			rows.add(row(daily.get(i), progress.daily[i], progress.dailyPaid[i], best)
+				.withPinned(progress.pinnedDaily[i]));
 
-		rows.add(row(weekly, progress.weekly, progress.weeklyPaid, best));
+		rows.add(row(weekly, progress.weekly, progress.weeklyPaid, best).withPinned(progress.pinnedWeekly));
 		int alive = progress.streak;
 		return new TaskView(rows, alive, STREAK_EGG_EVERY - alive % STREAK_EGG_EVERY, calendar.millisToReset(now),
 			calendar.millisToWeeklyReset(now));

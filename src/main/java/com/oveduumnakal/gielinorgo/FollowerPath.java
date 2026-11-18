@@ -5,8 +5,11 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Where the follower stands and how it moves. It is told where the player is drawn, a little at a time, and walks
@@ -109,6 +112,25 @@ final class FollowerPath
 	private double errandY;
 	private double lookX;
 	private double lookY;
+	private final FollowerStroll stroll;
+	private boolean strolling;
+	private boolean rejoinDue;
+
+	/** Makes a path whose idle strolls are picked at random. */
+	FollowerPath()
+	{
+		this(new Random());
+	}
+
+	/**
+	 * Makes a path with a given source of chance, so a test can repeat a stroll.
+	 *
+	 * @param random picks how long the follower rests and where it strolls to
+	 */
+	FollowerPath(Random random)
+	{
+		stroll = new FollowerStroll(random);
+	}
 
 	/**
 	 * Records where the player is drawn, and keeps the points the player passed through. It is meant to be called
@@ -141,6 +163,16 @@ final class FollowerPath
 
 		if (jump > ARRIVED)
 		{
+			if (stroll.phase() == FollowerStroll.Phase.OFF)
+			{
+				stroll.forgetRest();
+			}
+			else
+			{
+				stroll.stop();
+				rejoinDue = true;
+			}
+
 			trail.add(new double[]{drawnX, drawnY});
 			drawnX = x;
 			drawnY = y;
@@ -153,7 +185,8 @@ final class FollowerPath
 			return;
 		}
 
-		walking = behind > ARRIVED;
+		if (stroll.phase() == FollowerStroll.Phase.OFF)
+			walking = behind > ARRIVED;
 	}
 
 	/**
@@ -168,6 +201,19 @@ final class FollowerPath
 		if (errand)
 		{
 			advanceErrand();
+			return;
+		}
+
+		if (stroll.phase() == FollowerStroll.Phase.WALKING)
+		{
+			advanceStroll();
+			return;
+		}
+
+		if (stroll.phase() == FollowerStroll.Phase.STANDING)
+		{
+			walking = false;
+			facing = turnToward(facing, wantFacing);
 			return;
 		}
 
@@ -211,6 +257,8 @@ final class FollowerPath
 		placed = false;
 		walking = false;
 		errand = false;
+		rejoinDue = false;
+		stroll.stop();
 		trail.clear();
 		waypoints.clear();
 	}
@@ -232,6 +280,8 @@ final class FollowerPath
 			return false;
 
 		errand = true;
+		rejoinDue = false;
+		stroll.stop();
 		errandX = toX;
 		errandY = toY;
 		lookX = faceX;
@@ -257,6 +307,8 @@ final class FollowerPath
 			return false;
 
 		errand = true;
+		rejoinDue = false;
+		stroll.stop();
 		trail.clear();
 		waypoints.clear();
 		for (int[] tile : route)
@@ -313,19 +365,7 @@ final class FollowerPath
 		errand = false;
 		waypoints.clear();
 		trail.clear();
-		int[] best = {playerX, playerY};
-		double bestDistance = Double.MAX_VALUE;
-		for (int[] step : NEIGHBOURS)
-		{
-			int tileX = playerX + step[0];
-			int tileY = playerY + step[1];
-			double distance = Math.max(Math.abs(tileX - x), Math.abs(tileY - y));
-			if (distance < bestDistance && ground.reachable(playerX, playerY, tileX, tileY))
-			{
-				best = new int[]{tileX, tileY};
-				bestDistance = distance;
-			}
-		}
+		int[] best = nearestNeighbour(ground);
 
 		List<int[]> way = router == null ? null : router.route((int) Math.round(x), (int) Math.round(y), best[0],
 			best[1]);
@@ -346,6 +386,110 @@ final class FollowerPath
 		}
 
 		walking = true;
+	}
+
+	/**
+	 * Turns the idle stroll on or off. Off is how the path starts. Turning it off while the follower is out on a
+	 * stroll, or standing where one ended, brings it home: {@link #rejoinDue()} becomes true.
+	 *
+	 * @param on whether the follower may stroll when the player stands still
+	 */
+	void setStrolling(boolean on)
+	{
+		strolling = on;
+		if (!on && stroll.phase() != FollowerStroll.Phase.OFF)
+		{
+			stroll.stop();
+			rejoinDue = placed && !errand;
+		}
+	}
+
+	/**
+	 * Counts one client tick of rest and tells whether a stroll should start now. It never allocates, so it may be
+	 * asked every client tick. The rest only counts while the follower stands still with nowhere left to walk: caught
+	 * up with a stopped player, or standing where its last stroll ended.
+	 *
+	 * @return true when {@link #startStroll(TilePath)} should be called
+	 */
+	boolean strollDue()
+	{
+		if (!strolling || !placed || errand || rejoinDue)
+			return false;
+
+		FollowerStroll.Phase phase = stroll.phase();
+		boolean settled = phase == FollowerStroll.Phase.STANDING
+			|| phase == FollowerStroll.Phase.OFF && !walking && trail.isEmpty();
+		return stroll.restOver(settled);
+	}
+
+	/**
+	 * Picks a tile within {@link FollowerStroll#RADIUS} tiles of the player, never the player's own, and starts
+	 * walking to it. With nowhere to go nothing starts and a new rest is rolled.
+	 *
+	 * @param tiles knows which steps are open
+	 * @return true when the follower is walking to a new tile
+	 */
+	boolean startStroll(TilePath tiles)
+	{
+		return stroll.begin(tiles, (int) Math.round(x), (int) Math.round(y), playerX, playerY);
+	}
+
+	/** @return whether the follower is out on a stroll, or standing where one ended */
+	boolean wandering()
+	{
+		return stroll.phase() != FollowerStroll.Phase.OFF;
+	}
+
+	/**
+	 * @return whether the follower was left away from the player's trail by a stroll that has ended, so
+	 *     {@link #rejoin(Ground, Router)} should be called before the next move
+	 */
+	boolean rejoinDue()
+	{
+		return rejoinDue;
+	}
+
+	/**
+	 * Brings a follower that was away on a stroll back to the player's trail: it walks a route that does not cross a
+	 * wall to the tile the player stood on when it set off (or to the player, when it never moved), and from there
+	 * trails as usual, one tile behind. With no route it is put down next to the player at once.
+	 *
+	 * @param ground which tiles are free, for the fallback
+	 * @param router finds the route; null walks straight
+	 */
+	void rejoin(Ground ground, Router router)
+	{
+		rejoinDue = false;
+		if (!placed || errand)
+			return;
+
+		double[] first = trail.peek();
+		int[] to = first == null ? nearestNeighbour(ground) : new int[]{(int) Math.round(first[0]),
+			(int) Math.round(first[1])};
+		int[] from = {(int) Math.round(x), (int) Math.round(y)};
+		boolean onPlayer = from[0] == playerX && from[1] == playerY;
+		if (onPlayer)
+			from = nearestNeighbour(ground);
+
+		List<int[]> way = router == null ? Collections.singletonList(to) : router.route(from[0], from[1], to[0], to[1]);
+		if (way == null)
+		{
+			place(drawnX, drawnY, plane, ground);
+			return;
+		}
+
+		List<int[]> walk = new ArrayList<>();
+		if (onPlayer)
+			walk.add(from);
+
+		walk.addAll(way);
+		if (walk.isEmpty() && first == null)
+			walk.add(to);
+
+		for (int i = walk.size() - 1; i >= 0; i--)
+			trail.addFirst(new double[]{walk.get(i)[0], walk.get(i)[1]});
+
+		walking = behind() > ARRIVED;
 	}
 
 	/** @return whether the follower is on an errand */
@@ -394,6 +538,45 @@ final class FollowerPath
 	boolean walking()
 	{
 		return walking;
+	}
+
+	/** Moves the follower along its stroll for one client tick, then turns it. On the last tile it faces the player. */
+	private void advanceStroll()
+	{
+		Deque<double[]> way = stroll.route();
+		double budget = (double) FollowerStroll.SPEED / CLIENT_TICKS;
+		while (budget > 0 && !way.isEmpty())
+		{
+			double[] goal = way.peek();
+			double dx = goal[0] - x;
+			double dy = goal[1] - y;
+			double distance = Math.max(Math.abs(dx), Math.abs(dy));
+			if (distance > ARRIVED)
+				wantFacing = angle(dx, dy);
+
+			if (distance <= budget)
+			{
+				x = goal[0];
+				y = goal[1];
+				budget -= distance;
+				way.poll();
+			}
+			else
+			{
+				x += dx / distance * budget;
+				y += dy / distance * budget;
+				budget = 0;
+			}
+		}
+
+		walking = !way.isEmpty();
+		if (!walking)
+		{
+			stroll.arrived();
+			wantFacing = angle(playerX - x, playerY - y);
+		}
+
+		facing = turnToward(facing, wantFacing);
 	}
 
 	/** Moves the follower toward its errand spot for one client tick, then turns it. */
@@ -462,6 +645,31 @@ final class FollowerPath
 	}
 
 	/**
+	 * Finds the free tile next to the player that is nearest to the follower, for the follower to walk to.
+	 *
+	 * @param ground which tiles are free
+	 * @return the tile as {x, y}; the player's own tile when every neighbour is blocked
+	 */
+	private int[] nearestNeighbour(Ground ground)
+	{
+		int[] best = {playerX, playerY};
+		double bestDistance = Double.MAX_VALUE;
+		for (int[] step : NEIGHBOURS)
+		{
+			int tileX = playerX + step[0];
+			int tileY = playerY + step[1];
+			double distance = Math.max(Math.abs(tileX - x), Math.abs(tileY - y));
+			if (distance < bestDistance && ground.reachable(playerX, playerY, tileX, tileY))
+			{
+				best = new int[]{tileX, tileY};
+				bestDistance = distance;
+			}
+		}
+
+		return best;
+	}
+
+	/**
 	 * Puts the follower down on a free tile next to the player, facing them, or on the player's own tile when every
 	 * tile around them is blocked.
 	 *
@@ -478,6 +686,8 @@ final class FollowerPath
 		placed = true;
 		walking = false;
 		errand = false;
+		rejoinDue = false;
+		stroll.stop();
 		playerX = px;
 		playerY = py;
 		drawnX = drawn;

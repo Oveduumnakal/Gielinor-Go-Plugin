@@ -30,6 +30,9 @@ final class TasksPage
 	/** The id of the streak line's hit. */
 	static final String ID_STREAK = "tasks:streak";
 
+	/** The start of a task pin button's id, followed by the task's place in the rows. */
+	static final String PIN_PREFIX = "tasks:pin:";
+
 	private final PageText.Sink sink;
 	private final ScrollList list = new ScrollList();
 	private Rectangle left = new Rectangle();
@@ -107,17 +110,31 @@ final class TasksPage
 	}
 
 	/**
-	 * Lists the page's hits: every row and the streak line, all for their tooltips.
+	 * Lists the page's hits: a pin button for every task, then every row and the streak line for their tooltips.
 	 *
+	 * @param style the style the page was laid out in
 	 * @param panel what the page shows
 	 * @return the hits
 	 */
-	List<Hit> hits(PanelState panel)
+	List<Hit> hits(WindowStyle style, PanelState panel)
 	{
 		List<Hit> hits = new ArrayList<>();
 		List<TaskView.Row> rows = panel.tasks() == null ? new ArrayList<>() : panel.tasks().rows();
+		int order = WindowShell.PAGE_ORDER;
+		int used = panel.tracker().count();
 		for (int i = 0; i < rows.size() && i < taskRows.length; i++)
-			hits.add(new Hit(TASK_PREFIX + i, Hit.Kind.AREA, taskRows[i], -1, true, "Reward: " + rows.get(i).reward()));
+		{
+			TaskView.Row row = rows.get(i);
+			String refusal = PinButton.refusal(row.pinned(), row.done(), used);
+			Rectangle pin = PinButton.bounds(style, taskRows[i], taskRows[i].height / 2);
+			hits.add(PinButton.hit(PIN_PREFIX + i, pin, order++, row.pinned(), refusal));
+		}
+
+		for (int i = 0; i < rows.size() && i < taskRows.length; i++)
+		{
+			Rectangle rest = PinButton.rest(style, taskRows[i], taskRows[i].height / 2);
+			hits.add(new Hit(TASK_PREFIX + i, Hit.Kind.AREA, rest, -1, true, "Reward: " + rows.get(i).reward()));
+		}
 
 		if (panel.tasks() != null && !rows.isEmpty())
 			hits.add(new Hit(ID_STREAK, Hit.Kind.AREA, streak, -1, true, streakTip()));
@@ -180,8 +197,9 @@ final class TasksPage
 			text.draw(g, "Weekly · resets in " + TaskView.duration(tasks.millisToWeeklyReset()), headings[1],
 				small, ThemeColor.SUBTEXT, PageText.Align.LEFT);
 
+		int used = panel.tracker().count();
 		for (int i = 0; i < rows.size() && i < taskRows.length; i++)
-			task(g, st, text, taskRows[i], rows.get(i), small);
+			task(g, ctx, text, i, rows.get(i), small, used);
 
 		if (!rows.isEmpty())
 			text.draw(g, "Day " + tasks.streak() + " · egg in " + tasks.eggIn()
@@ -190,9 +208,11 @@ final class TasksPage
 		milestones(g, st, text, panel.milestones(), regular, small);
 	}
 
-	private void task(Graphics2D g, WindowStyle st, PageText text, Rectangle box, TaskView.Row row, Font small)
+	private void task(Graphics2D g, PageContext ctx, PageText text, int index, TaskView.Row row, Font small, int used)
 	{
-		int half = box.height / 2;
+		WindowStyle st = ctx.style;
+		int half = taskRows[index].height / 2;
+		Rectangle box = PinButton.rest(st, taskRows[index], half);
 		ThemeColor ink = row.done() ? ThemeColor.HP_FILL : ThemeColor.TEXT;
 		String count = row.done() ? "Done" : row.count();
 		int countW = Math.min(box.width / 3, g.getFontMetrics(small).stringWidth(count) + st.metrics().pad);
@@ -202,6 +222,8 @@ final class TasksPage
 			row.done() ? ThemeColor.HP_FILL : ThemeColor.SUBTEXT, PageText.Align.RIGHT);
 		st.bar(g, new Rectangle2D.Double(box.x, box.y + half + 1, box.width, Math.max(3, st.metrics().bar / 2)),
 			row.fraction(), row.done() ? ThemeColor.HP_FILL : ThemeColor.XP_FILL, ThemeColor.HP_TRACK);
+		PinButton.paint(g, ctx, PinButton.bounds(st, taskRows[index], half), PIN_PREFIX + index, row.pinned(),
+			PinButton.refusal(row.pinned(), row.done(), used) == null);
 	}
 
 	private void milestones(Graphics2D g, WindowStyle st, PageText text, MilestoneView view, Font regular, Font small)

@@ -19,27 +19,37 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.OverlayUtil;
 import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
+import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 
-/** Draws an outline and a level tag on every wild creature's body. */
+/**
+ * Draws an outline and a level tag on every wild creature's body, with a small mark beside the name that says whether
+ * its species is new, seen or caught.
+ */
 final class WildOverlay extends Overlay
 {
 	private static final Logger log = LoggerFactory.getLogger(WildOverlay.class);
 	private static final int OUTLINE_WIDTH = 2;
 	private static final int OUTLINE_FEATHER = 4;
 	private static final int TAG_HEIGHT_OFFSET = 40;
-	private static final Color GILDED_COLOR = new Color(0xFFD23F);
+	private static final int MARK_SIZE = 12;
+	private static final int MARK_GAP = 3;
 
 	private final Client client;
 	private final WildBodies bodies;
 	private final GielinorGoConfig config;
 	private final ModelOutlineRenderer outlineRenderer;
+	private final WildHover hover;
+	private final TooltipManager tooltipManager;
 
-	WildOverlay(Client client, WildBodies bodies, GielinorGoConfig config, ModelOutlineRenderer outlineRenderer)
+	WildOverlay(Client client, WildBodies bodies, GielinorGoConfig config, ModelOutlineRenderer outlineRenderer,
+		WildHover hover, TooltipManager tooltipManager)
 	{
 		this.client = client;
 		this.bodies = bodies;
 		this.config = config;
 		this.outlineRenderer = outlineRenderer;
+		this.hover = hover;
+		this.tooltipManager = tooltipManager;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -47,6 +57,7 @@ final class WildOverlay extends Overlay
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
+		showTip();
 		for (WildBody body : bodies.all())
 		{
 			try
@@ -62,6 +73,20 @@ final class WildOverlay extends Overlay
 		return null;
 	}
 
+	private void showTip()
+	{
+		try
+		{
+			String tip = hover.shown(System.currentTimeMillis());
+			if (tip != null)
+				tooltipManager.add(new net.runelite.client.ui.overlay.tooltip.Tooltip(tip));
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not show the wild creature's tooltip", e);
+		}
+	}
+
 	private void draw(Graphics2D graphics, WildBody body)
 	{
 		StageAnchors.Spot spot = body.spot();
@@ -69,13 +94,30 @@ final class WildOverlay extends Overlay
 			return;
 
 		WildEntry entry = body.entry();
-		Color outline = entry.gilded() ? GILDED_COLOR : config.outlineColor();
+		Color outline = entry.gilded() ? WildTip.GILDED_COLOR : config.outlineColor();
 		outlineRenderer.drawOutline(body.body(), OUTLINE_WIDTH, outline, OUTLINE_FEATHER);
 		String tag = entry.prefix() + entry.species().name() + " Lv " + entry.level();
 		Point location = Perspective.getCanvasTextLocation(client, graphics, spot.point(), tag,
 			spot.height() + TAG_HEIGHT_OFFSET);
 		Rarity rarity = entry.species().rarity();
-		if (location != null)
-			OverlayUtil.renderTextLocation(graphics, location, tag, entry.gilded() ? GILDED_COLOR : rarity.color());
+		if (location == null)
+			return;
+
+		WildRecord record = entry.record();
+		int shift = record == null ? 0 : (MARK_SIZE + MARK_GAP) / 2;
+		Point text = new Point(location.getX() + shift, location.getY());
+		OverlayUtil.renderTextLocation(graphics, text, tag, entry.gilded() ? WildTip.GILDED_COLOR : rarity.color());
+		if (record != null)
+			drawMark(graphics, record, location.getX() - shift, location.getY() - MARK_SIZE + 1);
+	}
+
+	private static void drawMark(Graphics2D graphics, WildRecord record, int x, int y)
+	{
+		Color saved = graphics.getColor();
+		graphics.setColor(Color.BLACK);
+		Icons.mark(graphics, record.kind(), x + 1, y + 1, MARK_SIZE);
+		graphics.setColor(new Color(record.rgb()));
+		Icons.mark(graphics, record.kind(), x, y, MARK_SIZE);
+		graphics.setColor(saved);
 	}
 }

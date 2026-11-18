@@ -7,21 +7,36 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Monsters near you sometimes turn wild**
 
   When a monster turns wild, a smaller copy of it (75% size) appears on a free tile within two tiles of it, on
-  your side of any wall or fence, with a soft outline and a level tag. The real monster carries on as if nothing
-  happened and is never touched. The wild copy is its own creature: it wanders a step or two (never more than 3
-  tiles from where it appeared), stays about 3 minutes (the clock stops while you fight or catch it) and fades out
-  over 2 seconds when its time is up, when you walk more than 25 tiles away or change floors. If there is no free
+  your side of any wall or fence, with a soft outline and a level tag. A small mark beside the name shows what
+  your Creature Log knows: a star for a species you have never met, an eye for one you have seen but not caught,
+  a jar for one you have already caught. The right-click menu says the same in words (New, Seen, Caught).
+  The real monster carries on as if nothing happened and is never touched. The wild copy is its own creature: it
+  wanders a step or two (never more than 3 tiles from where it appeared), stays about 3 minutes (the clock stops
+  while you fight or catch it) and fades out over 2 seconds when its time is up, when you walk more than 25 tiles away or change floors. If there is no free
   tile you can walk to, no wild creature appears. Click it to **Battle** it (a plain left click does that), or
-  right-click it for **Battle** and **Catch**. Once your lead has beaten it and it lies knocked out, a plain left
+  right-click it for **Battle** and **Catch**; with two or more jars, Catch opens a list: the jars worth throwing first (best odds, the cheaper one on a tie), a line, then every other jar you own, each with its odds and how many you have. Hover over it to see its name, level, style, rarity and whether you have met or caught its species (switch this off with **Wild creature tooltip**; it hides while a menu is open and during a battle). Once your lead has beaten it and it lies knocked out, a plain left
   click throws your selected jar instead. When no creature can fight (your team is empty, or, with **Choose battle actions** on, your lead is too tired;
   with it off, the whole team is), Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
   behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
-  finds. At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
+  finds (the **Wild creature rarity** setting is the chance for Common monsters; Uncommon ones turn wild 0.6 times as
+  often, Rare 0.35, Epic 0.15 and Legendary 0.05). Hunter creatures such as pyre foxes, kebbits, salamanders, moths,
+  antelope and implings have no combat level in the game; they turn wild like any other monster and their level is
+  their Hunter level. At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
   the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
   seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
   While you are in combat with a real monster (and for 5 seconds after), wild creatures are hidden: not drawn, not
   clickable, and none new appear; they return where they were, unless their time ran out meanwhile.
+
+- **The painted wild creature menu**
+
+  The **Wild creature menu** setting chooses what a right click on a wild creature opens. **Game** (the default) is
+  the game's own menu with Battle and Catch added. **Painted** is a menu in the window's style: the creature's name
+  and level, then Battle and Catch. With two or more jars, Catch opens a list beside the menu (hover it, click it,
+  or press Right): the jars worth throwing first, a thin line, then every other jar, each with its odds and how
+  many you have. Up, Down, Left, Right, Enter and Esc work too. Hold **Shift** while you right-click to get the
+  game's own menu for that tile instead (Walk here, Examine). A left click works the same in both modes, and the
+  game's own menu is used if the painted one ever fails.
 
 - **While skilling**
 
@@ -54,7 +69,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Earn jars by playing**
 
-  You start with 10 Bronze jars. Walking earns more ("Found a Bronze jar"), every level-up in the real game gives three, and battle wins
+  You start with 10 Bronze jars. Walking earns more ("Found a Bronze jar" every 300 tiles), every level-up in the real game gives three, and battle wins
   can drop better ones as your trainer level grows.
 
 - **Find specialty jars while skilling**
@@ -145,6 +160,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   follower, the Party row and the battle scenes. Creatures that hatch, evolve or come from a trade, and creatures
   caught before this was added, look like the species' usual monster. Only you can see it, it cannot be clicked, and
   you can switch it off in the settings.
+  When you stand still it wanders around within 3 tiles of you, and walks back to your trail when you set off; the
+  setting "Lead wanders when you stop" turns that off.
 
 - **Every creature is one of a kind**
 
@@ -313,7 +330,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Eggs hatch as you walk**
 
   Battle wins sometimes drop an egg. Carry up to three, and each hatches into a new creature once you have
-  walked far enough. Rarer eggs take longer and hatch rarer creatures.
+  walked far enough. Rarer eggs take longer and hatch rarer creatures: a Common egg needs 1,000 tiles, an Uncommon
+  1,600, a Rare 2,400, an Epic 3,200 and a Legendary 4,000. An egg you already carry keeps its old target.
 
 - **Gilded creatures**
 
@@ -334,7 +352,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Featured today**
 
   Each day one species of every rarity is featured, the same for every player on the same plugin version, and a
-  featured species turns wild three times as often. The Today section in the Collection tab names them and
+  featured species turns wild three times as often (this multiplies with the tier's own factor). Fishing,
+  Woodcutting, Mining, Farming and Hunter encounters are not weighted by tier. The Today section in the Collection tab names them and
   shows when they change (midnight UTC). A star marks them in the Log, and the Log's filter has a **Featured**
   choice.
 
@@ -363,7 +382,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   task every Monday. They are the same for every player. Daily tasks are things like catching a few creatures,
   catching ones of one combat style, catching one underground, winning battles, walking, gaining XP in any skill or
   hatching an egg. The weekly task is bigger: beat a City Champion, catch 25 creatures, win 15 battles or walk
-  5,000 tiles. They show on the Tasks tab (and the top three in the Party tab), with a bar for each and the time left to the reset.
+  10,000 tiles (the daily walking task is 1,200 tiles). They show on the Tasks tab (and the top three in the Party tab), with a bar for each and the time left to the reset.
 
 - **Rewards are paid for you**
 
@@ -572,7 +591,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   press Enter to put it there and Esc to cancel. **By species** puts a heading over each species with how many you
   have and the best level. **Select** works in every view, and in By species a click on a heading ticks the group.
   **Collection** is the Creature Log of every species you can meet in the game
-  (1,096): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
+  (1,139): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
   Click a species you have seen or caught for its examine text, evolution line (stages you have not met show as
   `???`), how many you have caught and whether you own a gilded one, and right-click it for **Open wiki**. **Tasks**
   has your daily and weekly tasks, the login streak and the milestone list. **Battle** lists the City Champions, the
@@ -622,6 +641,17 @@ Every feature and every number, in detail. For the short version, see the [READM
   with both creatures' health, the time left and the buttons **Attack**, **Switch**, **Catch**, **Item** and **Run**.
   Click a button; Attack, Switch and Item open a list when there is something to pick, and a right-click or **Back**
   goes back one step. No hotkeys are needed. Hold RuneLite's drag key to move the box.
+
+- **Pinned tracker**
+
+  Press the pin button on a task row (Tasks tab) or an egg row (Bag tab) to pin it to a small box on the game screen,
+  top left under the jar button. It shows each pinned thing with its progress and a bar: `340 / 1.2k` for a task and
+  `780 steps` for an egg, whose name is in its rarity colour. Up to 5 things fit; press the pin again to unpin, or
+  right-click the box for **Clear pins**. A finished task cannot be pinned. When a pinned task finishes or a pinned egg
+  hatches, its line says **Done!** or **Hatched!** for about 4 seconds and then leaves. Pins are saved with your
+  progress; the day's task pins end when the day does and the weekly pin when the week does, while egg pins stay. The
+  box hides during a Gielinor Go battle but not during real combat. It has no buttons of its own, so clicks on it go
+  through to the game; hold RuneLite's drag key and drag to move it. The **Pinned tracker** setting turns it off.
 
 - **Starting over**
 
