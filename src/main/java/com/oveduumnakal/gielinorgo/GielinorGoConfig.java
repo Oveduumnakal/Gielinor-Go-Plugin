@@ -560,6 +560,24 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Whether the pinned tracker box shows on the game screen.
+	 *
+	 * @return true to show the tracker
+	 */
+	@ConfigItem(
+		keyName = "showTracker",
+		name = "Pinned tracker",
+		description = "Shows the tasks and eggs you pinned in a small box on the game screen.\n"
+			+ "Pin them with the pin button on the Tasks and Bag tabs.\n"
+			+ "Hold RuneLite's drag key to move it.",
+		position = 33
+	)
+	default boolean showTracker()
+	{
+		return true;
+	}
+
+	/**
 	 * The share of the game screen's width the painted window takes. It follows the game window. Set by dragging the
 	 * window's edge and by the size presets; not shown in the settings.
 	 *

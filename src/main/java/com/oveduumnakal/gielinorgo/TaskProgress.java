@@ -29,6 +29,12 @@ final class TaskProgress
 	/** Whether the week's task has paid its reward. */
 	boolean weeklyPaid;
 
+	/** Whether each of the day's tasks is pinned to the on-screen tracker. Cleared when the day rolls over. */
+	boolean[] pinnedDaily = new boolean[TaskCalendar.DAILY_COUNT];
+
+	/** Whether the week's task is pinned to the on-screen tracker. Cleared when the week rolls over. */
+	boolean pinnedWeekly;
+
 	/**
 	 * Days played: days with at least one catch. It only goes up. The name stays {@code streak} so saves written
 	 * before it stopped resetting still load.
@@ -47,6 +53,7 @@ final class TaskProgress
 	{
 		daily = fit(daily);
 		dailyPaid = dailyPaid == null ? new boolean[TaskCalendar.DAILY_COUNT] : fit(dailyPaid);
+		pinnedDaily = pinnedDaily == null ? new boolean[TaskCalendar.DAILY_COUNT] : fit(pinnedDaily);
 		weekly = Math.max(0, weekly);
 		streak = Math.max(0, streak);
 		return this;

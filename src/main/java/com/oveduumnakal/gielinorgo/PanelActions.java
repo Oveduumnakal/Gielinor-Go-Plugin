@@ -159,6 +159,24 @@ interface PanelActions
 	 */
 	void openWiki(String species);
 
+	/**
+	 * Pins a task to the on-screen tracker, or unpins it. A pin is refused, with the reason shown as floating text,
+	 * when the tracker is full or the task is finished.
+	 *
+	 * @param slot the task's place: 0 to 2 for the day's tasks, 3 for the week's
+	 * @param pinned true to pin it, false to unpin it
+	 */
+	void pinTask(int slot, boolean pinned);
+
+	/**
+	 * Pins a carried egg to the on-screen tracker, or unpins it. The pick is checked again on the game thread, and a
+	 * pick that no longer matches changes nothing. A pin is refused when the tracker is full.
+	 *
+	 * @param pick the egg, as the window showed it
+	 * @param pinned true to pin it, false to unpin it
+	 */
+	void pinEgg(TradePick pick, boolean pinned);
+
 	/** Records that the player opened the change log, so the What's New badge goes away. */
 	void whatsNewSeen();
 }

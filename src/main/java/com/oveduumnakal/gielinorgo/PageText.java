@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -77,6 +78,22 @@ final class PageText
 	 * @return the text that was drawn, after any ellipsis
 	 */
 	String draw(Graphics2D g, String text, Rectangle box, Font font, ThemeColor colour, Align align)
+	{
+		return draw(g, text, box, font, style.color(colour), align);
+	}
+
+	/**
+	 * Draws a line of text in a box, in a plain colour that is not part of the theme, such as a rarity's.
+	 *
+	 * @param g the graphics
+	 * @param text the text
+	 * @param box the box; the text is cut to its width
+	 * @param font the font
+	 * @param colour the colour
+	 * @param align where in the box the text sits
+	 * @return the text that was drawn, after any ellipsis
+	 */
+	String draw(Graphics2D g, String text, Rectangle box, Font font, Color colour, Align align)
 	{
 		FontMetrics fm = g.getFontMetrics(font);
 		String shown = WindowStyle.ellipsize(text, fm, box.width);

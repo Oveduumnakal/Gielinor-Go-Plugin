@@ -616,6 +616,17 @@ Every feature and every number, in detail. For the short version, see the [READM
   Click a button; Attack, Switch and Item open a list when there is something to pick, and a right-click or **Back**
   goes back one step. No hotkeys are needed. Hold RuneLite's drag key to move the box.
 
+- **Pinned tracker**
+
+  Press the pin button on a task row (Tasks tab) or an egg row (Bag tab) to pin it to a small box on the game screen,
+  top left under the jar button. It shows each pinned thing with its progress and a bar: `340 / 1.2k` for a task and
+  `780 steps` for an egg, whose name is in its rarity colour. Up to 5 things fit; press the pin again to unpin, or
+  right-click the box for **Clear pins**. A finished task cannot be pinned. When a pinned task finishes or a pinned egg
+  hatches, its line says **Done!** or **Hatched!** for about 4 seconds and then leaves. Pins are saved with your
+  progress; the day's task pins end when the day does and the weekly pin when the week does, while egg pins stay. The
+  box hides during a Gielinor Go battle but not during real combat. It has no buttons of its own, so clicks on it go
+  through to the game; hold RuneLite's drag key and drag to move it. The **Pinned tracker** setting turns it off.
+
 - **Starting over**
 
   **Reset progress...** is a button in the banner of the Party page. It asks once, listing what you would lose

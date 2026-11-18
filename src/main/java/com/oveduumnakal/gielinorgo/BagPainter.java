@@ -31,6 +31,10 @@ final class BagPainter
 
 	private static final String ITEM_PREFIX = "bag:item:";
 	private static final String EGG_PREFIX = "bag:egg:";
+
+	/** The start of an egg's pin button's id, followed by the egg's place in the list. */
+	static final String PIN_PREFIX = "bag:pin:";
+
 	private static final double ICON_SHARE = 0.72;
 	private static final double DIM = 0.4;
 
@@ -57,6 +61,25 @@ final class BagPainter
 
 	/**
 	 * @param id a hit's id
+	 * @return the place in the list of eggs that a pin button's id names, or -1 when it is not an egg pin's
+	 */
+	static int pinPlace(String id)
+	{
+		if (id == null || !id.startsWith(PIN_PREFIX))
+			return -1;
+
+		try
+		{
+			return Integer.parseInt(id.substring(PIN_PREFIX.length()));
+		}
+		catch (NumberFormatException e)
+		{
+			return -1;
+		}
+	}
+
+	/**
+	 * @param id a hit's id
 	 * @return the place in the list of jars shown that the id names, or -1 when it is not a jar's
 	 */
 	static int jarPlace(String id)
@@ -78,10 +101,11 @@ final class BagPainter
 	 * Lists the page's hits in focus order.
 	 *
 	 * @param layout where everything sits
+	 * @param style the style the page was laid out in
 	 * @param state what the page shows
-	 * @return the hits: the title, every jar, then the areas that only carry tooltips
+	 * @return the hits: the title, every jar, every egg's pin button, then the areas that only carry tooltips
 	 */
-	List<Hit> hits(BagLayout layout, PanelState state)
+	List<Hit> hits(BagLayout layout, WindowStyle style, PanelState state)
 	{
 		List<Hit> hits = new ArrayList<>();
 		int order = WindowShell.PAGE_ORDER;
@@ -93,13 +117,23 @@ final class BagPainter
 			hits.add(new Hit(jarId(i), Hit.Kind.BUTTON, layout.jarCells[i], order++, true,
 				BagText.jarTip(shown.get(i))));
 
+		int used = state.tracker().count();
+		for (int i = 0; i < layout.eggRows.length; i++)
+		{
+			EggView egg = state.eggs().get(i);
+			Rectangle pin = PinButton.bounds(style, layout.eggRows[i], layout.eggLine);
+			hits.add(PinButton.hit(PIN_PREFIX + i, pin, order++, egg.pinned(),
+				PinButton.refusal(egg.pinned(), false, used)));
+		}
+
 		ItemType[] types = ItemType.values();
 		for (int i = 0; i < types.length; i++)
 			hits.add(new Hit(ITEM_PREFIX + i, Hit.Kind.AREA, layout.itemCells[i], -1, true,
 				BagText.itemTip(types[i], count(state.items(), types[i]))));
 
 		for (int i = 0; i < layout.eggRows.length; i++)
-			hits.add(new Hit(EGG_PREFIX + i, Hit.Kind.AREA, layout.eggRows[i], -1, true,
+			hits.add(new Hit(EGG_PREFIX + i, Hit.Kind.AREA,
+				PinButton.rest(style, layout.eggRows[i], layout.eggLine), -1, true,
 				BagText.eggTip(state.eggs().get(i))));
 
 		hits.add(new Hit("bag:steps", Hit.Kind.AREA, layout.stepsLine, -1, true,
@@ -216,11 +250,12 @@ final class BagPainter
 			return;
 		}
 
+		int used = state.tracker().count();
 		for (int i = 0; i < layout.eggRows.length; i++)
 		{
 			EggView egg = eggs.get(i);
-			Rectangle row = layout.eggRows[i];
-			int half = row.height / 2;
+			Rectangle row = PinButton.rest(st, layout.eggRows[i], layout.eggLine);
+			int half = layout.eggLine;
 			text.draw(g, egg.label(), new Rectangle(row.x, row.y, row.width, half), small, ThemeColor.TEXT,
 				PageText.Align.LEFT);
 			String steps = egg.tilesLeft() <= 0 ? "Ready" : egg.tilesLeft() + " steps";
@@ -228,6 +263,8 @@ final class BagPainter
 				PageText.Align.RIGHT);
 			Rectangle bar = new Rectangle(row.x, row.y + half + 1, row.width, Math.max(3, st.metrics().bar / 2));
 			st.xpBar(g, rect(bar), egg.progress());
+			PinButton.paint(g, ctx, PinButton.bounds(st, layout.eggRows[i], layout.eggLine), PIN_PREFIX + i,
+				egg.pinned(), PinButton.refusal(egg.pinned(), false, used) == null);
 		}
 
 		if (layout.eggsMore.width > 0)

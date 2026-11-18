@@ -13,6 +13,7 @@ final class EggView
 	private final int tilesLeft;
 	private final int tilesTotal;
 	private final String bossName;
+	private final boolean pinned;
 
 	EggView(Rarity rarity, int tilesLeft, int tilesTotal)
 	{
@@ -21,10 +22,33 @@ final class EggView
 
 	EggView(Rarity rarity, int tilesLeft, int tilesTotal, String bossName)
 	{
+		this(rarity, tilesLeft, tilesTotal, bossName, false);
+	}
+
+	private EggView(Rarity rarity, int tilesLeft, int tilesTotal, String bossName, boolean pinned)
+	{
 		this.rarity = rarity;
 		this.tilesLeft = tilesLeft;
 		this.tilesTotal = tilesTotal;
 		this.bossName = bossName;
+		this.pinned = pinned;
+	}
+
+	/**
+	 * Copies the view with its pin.
+	 *
+	 * @param isPinned whether the egg is pinned to the tracker
+	 * @return the new view
+	 */
+	EggView withPinned(boolean isPinned)
+	{
+		return new EggView(rarity, tilesLeft, tilesTotal, bossName, isPinned);
+	}
+
+	/** @return whether the egg is pinned to the on-screen tracker */
+	boolean pinned()
+	{
+		return pinned;
 	}
 
 	/** @return the species name of a boss egg, or null for an ordinary egg */
@@ -77,12 +101,12 @@ final class EggView
 
 		EggView that = (EggView) other;
 		return rarity == that.rarity && tilesLeft == that.tilesLeft && tilesTotal == that.tilesTotal
-			&& Objects.equals(bossName, that.bossName);
+			&& Objects.equals(bossName, that.bossName) && pinned == that.pinned;
 	}
 
 	@Override
 	public int hashCode()
 	{
-		return Objects.hash(rarity, tilesLeft, tilesTotal, bossName);
+		return Objects.hash(rarity, tilesLeft, tilesTotal, bossName, pinned);
 	}
 }

@@ -105,6 +105,8 @@ A Creature Log, daily tasks and daily events give you goals.
   seen or already caught. (#209)
 - **Wild creature tooltip.** Hover a wild creature to see its name, level, style and whether you have seen or caught
   its species. (#205)
+- **Pinned tracker.** Pin daily and weekly tasks and carried eggs to a small box on the game screen with live
+  progress. (#216)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
