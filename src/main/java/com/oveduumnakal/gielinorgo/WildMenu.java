@@ -96,6 +96,24 @@ final class WildMenu
 	}
 
 	/**
+	 * Builds the target text of a wild creature's menu entries: the coloured name and the level, with the record
+	 * words (New, Seen or Caught) after the level when the record is known.
+	 *
+	 * @param prefix the words in front of the name, such as "Gilded ", or an empty string
+	 * @param name the species name
+	 * @param nameRgb the colour of the name as 0xRRGGBB
+	 * @param level the creature level
+	 * @param record what the Creature Log knows of the species, or null when it is not known yet
+	 * @return the text, such as {@code Gilded <col=4aa3ff>Chicken</col> (Lv 3 - New)}
+	 */
+	static String target(String prefix, String name, int nameRgb, int level, WildRecord record)
+	{
+		String colour = String.format("%06x", nameRgb & 0xFFFFFF);
+		String suffix = record == null ? "" : " - " + record.label();
+		return prefix + "<col=" + colour + ">" + name + "</col> (Lv " + level + suffix + ")";
+	}
+
+	/**
 	 * Tells whether a menu entry's words are one of this plugin's wild creature entries.
 	 *
 	 * @param option the entry's words
