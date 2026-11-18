@@ -975,7 +975,7 @@ Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
 Wizard lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 0 0 false goblin archer false
   Gob -12 (61/73) | BAD true FOE_HIT false RANGED false
-  Gob -10 (29/73) | BAD true FOE_HIT false RANGED false
+  -10 (64/96) | GOOD false LEAD_HIT false STAB false
   Gob -9 (0/73) | BAD true FOE_HIT false RANGED false
   out Gob lost to Archer (Lv 20) | BAD true OTHER false null false
 duel 1 0 true green dragon archer false
@@ -983,7 +983,7 @@ duel 1 0 true green dragon archer false
   out Green dragon beat Archer (Lv 20) | GOOD true OTHER false null false
 duel 1 1 true green dragon wizard false
   Green dragon uses Dragonfire: -108 (7/115) | GOOD false LEAD_HIT true MAGIC false
-  Green dragon's Dragonfire missed | INFO false LEAD_HIT true MAGIC false
+  Green dragon -3 (230/258) | BAD true FOE_HIT false MAGIC false
   Green dragon uses Dragonfire: -114 (0/115) | GOOD false LEAD_HIT true MAGIC false
   out Green dragon beat Wizard (Lv 25) | GOOD true OTHER false null false
 duel 1 2 false green dragon green dragon false
@@ -993,7 +993,7 @@ duel 1 2 false green dragon green dragon false
   out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 2 2 false spitting wyvern green dragon false
   Green dragon uses Bite: -52 (128/257) | BAD true FOE_HIT false STAB false
-  Green dragon uses Bite: -49 (79/257) | BAD true FOE_HIT false STAB false
+  Spitting Wyvern uses Bite: -21 (271/321) | GOOD false LEAD_HIT false STAB false
   Green dragon uses Dragonfire: -117 (0/257) | BAD true FOE_HIT true MAGIC false
   out Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 3 2 false wizard green dragon false
@@ -1022,7 +1022,7 @@ duel 1 1 true green dragon wizard false
   out Green dragon beat Wizard (Lv 26) | GOOD true OTHER false null false
 duel 1 2 false green dragon green dragon false
   Green dragon uses Dragonfire: -120 (130/277) | BAD true FOE_HIT true MAGIC false
-  Green dragon uses Dragonfire: -127 (3/277) | BAD true FOE_HIT true MAGIC false
+  Green dragon uses Bite: -49 (272/321) | GOOD false LEAD_HIT false STAB false
   Green dragon uses Dragonfire: -111 (0/277) | BAD true FOE_HIT true MAGIC false
   out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 2 2 false spitting wyvern green dragon false
@@ -1045,12 +1045,12 @@ Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
 Wizard lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 0 0 true goblin archer false
   -24 (72/96) | GOOD false LEAD_HIT false STAB false
-  -25 (26/96) | GOOD false LEAD_HIT false STAB false
+  Gob -10 (84/104) | BAD true FOE_HIT false RANGED false
   -24 (0/96) | GOOD false LEAD_HIT false STAB false
   out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 duel 0 1 false goblin wizard false
   Gob -32 (37/104) | BAD true FOE_HIT false MAGIC false
-  Gob -29 (8/104) | BAD true FOE_HIT false MAGIC false
+  -4 (119/123) | GOOD false LEAD_HIT false STAB false
   Gob -22 (0/104) | BAD true FOE_HIT false MAGIC false
   out Gob lost to Wizard (Lv 27) | BAD true OTHER false null false
 duel 1 1 true green dragon wizard false
@@ -1058,7 +1058,7 @@ duel 1 1 true green dragon wizard false
   out Green dragon beat Wizard (Lv 27) | GOOD true OTHER false null false
 duel 1 2 false green dragon green dragon false
   Green dragon uses Dragonfire: -102 (165/296) | BAD true FOE_HIT true MAGIC false
-  Green dragon uses Bite: -55 (110/296) | BAD true FOE_HIT false STAB false
+  Green dragon uses Dragonfire: -119 (202/321) | GOOD false LEAD_HIT true MAGIC false
   Green dragon uses Dragonfire: -140 (0/296) | BAD true FOE_HIT true MAGIC false
   out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 2 2 false spitting wyvern green dragon false
@@ -1068,7 +1068,7 @@ duel 2 2 false spitting wyvern green dragon false
   out Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 3 2 false wizard green dragon false
   Green dragon uses Bite: -41 (101/142) | BAD true FOE_HIT false STAB false
-  Green dragon uses Bite: -39 (62/142) | BAD true FOE_HIT false STAB false
+  -3 (124/321) | GOOD false LEAD_HIT false MAGIC false
   Green dragon uses Dragonfire: -123 (0/142) | BAD true FOE_HIT true MAGIC false
   out Wizard lost to Green dragon (Lv 45) | BAD true OTHER false null false
 == team 3
@@ -1100,7 +1100,7 @@ duel 1 2 false green dragon green dragon false
   out Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 2 2 false spitting wyvern green dragon false
   Green dragon uses Dragonfire: -142 (55/281) | BAD true FOE_HIT true MAGIC false
-  Green dragon uses Bite: -50 (5/281) | BAD true FOE_HIT false STAB false
+  Spitting Wyvern uses Icy breath: -103 (107/321) | GOOD false LEAD_HIT true MAGIC true
   Green dragon uses Bite: -58 (0/281) | BAD true FOE_HIT false STAB false
   out Spitting Wyvern lost to Green dragon (Lv 45) | BAD true OTHER false null false
 duel 3 2 true wizard green dragon false
@@ -1120,7 +1120,7 @@ Green dragon beat Wizard (Lv 29) | GOOD true OTHER false null false
 Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
 duel 0 0 true goblin archer false
   -34 (62/96) | GOOD false LEAD_HIT false STAB false
-  -37 (25/96) | GOOD false LEAD_HIT false STAB false
+  Gob -6 (128/134) | BAD true FOE_HIT false RANGED false
   -26 (0/96) | GOOD false LEAD_HIT false STAB false
   out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 duel 0 1 false goblin wizard false
@@ -1135,7 +1135,7 @@ duel 1 1 true green dragon wizard false
   out Green dragon beat Wizard (Lv 29) | GOOD true OTHER false null false
 duel 1 2 true green dragon green dragon false
   Green dragon uses Dragonfire: -171 (150/321) | GOOD false LEAD_HIT true MAGIC false
-  Green dragon uses Bite: -59 (91/321) | GOOD false LEAD_HIT false STAB false
+  Green dragon uses Dragonfire: -97 (200/333) | BAD true FOE_HIT true MAGIC false
   Green dragon uses Dragonfire: -139 (0/321) | GOOD false LEAD_HIT true MAGIC false
   out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
 == team 5
@@ -1147,7 +1147,7 @@ Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
 Green dragon beat King Black Dragon (Lv 33) | GOOD true OTHER false null false
 duel 0 0 true goblin archer false
   -38 (58/96) | GOOD false LEAD_HIT false STAB false
-  -35 (23/96) | GOOD false LEAD_HIT false STAB false
+  Gob -1 (148/149) | BAD true FOE_HIT false RANGED false
   -35 (0/96) | GOOD false LEAD_HIT false STAB false
   out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 duel 0 1 false goblin wizard false
@@ -1160,12 +1160,12 @@ duel 1 1 true green dragon wizard false
   out Green dragon beat Wizard (Lv 30) | GOOD true OTHER false null false
 duel 1 2 true green dragon green dragon false
   Green dragon uses Dragonfire: -140 (181/321) | GOOD false LEAD_HIT true MAGIC false
-  Green dragon uses Dragonfire: -153 (28/321) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon uses Bite: -41 (276/352) | BAD true FOE_HIT false STAB false
   Green dragon uses Dragonfire: -137 (0/321) | GOOD false LEAD_HIT true MAGIC false
   out Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
 duel 1 3 true green dragon king black dragon false
   Green dragon uses Bite: -54 (306/360) | GOOD false LEAD_HIT false STAB false
-  Green dragon uses Dragonfire: -182 (124/360) | GOOD false LEAD_HIT true MAGIC false
+  Green dragon -34 (209/352) | BAD true FOE_HIT false STAB false
   Green dragon uses Dragonfire: -174 (0/360) | GOOD false LEAD_HIT true MAGIC false
   out Green dragon beat King Black Dragon (Lv 33) | GOOD true OTHER false null false
 == team 6
@@ -1177,7 +1177,7 @@ Green dragon lost to Green dragon (Lv 45) | BAD true OTHER false null false
 Spitting Wyvern beat Green dragon (Lv 45) | GOOD true OTHER false null false
 duel 0 0 true goblin archer false
   -44 (52/96) | GOOD false LEAD_HIT false STAB false
-  -45 (7/96) | GOOD false LEAD_HIT false STAB false
+  Gob -1 (164/165) | BAD true FOE_HIT false RANGED false
   -38 (0/96) | GOOD false LEAD_HIT false STAB false
   out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 duel 0 1 true goblin wizard false
@@ -1206,7 +1206,7 @@ Green dragon beat Green dragon (Lv 45) | GOOD true OTHER false null false
 Green dragon beat King Black Dragon (Lv 35) | GOOD true OTHER false null false
 duel 0 0 true goblin archer false
   -49 (47/96) | GOOD false LEAD_HIT false STAB false
-  -43 (4/96) | GOOD false LEAD_HIT false STAB false
+  Gob -1 (179/180) | BAD true FOE_HIT false RANGED false
   -49 (0/96) | GOOD false LEAD_HIT false STAB false
   out Gob beat Archer (Lv 20) | GOOD true OTHER false null false
 duel 0 1 true goblin wizard false
@@ -1242,7 +1242,7 @@ duel 0 1 false tank mage goblin false
   out Mage lost to Goblin (Lv 12) | BAD true OTHER false null false
 duel 1 1 false goblin goblin false
   Goblin -11 (55/66) | BAD true FOE_HIT false STAB false
-  Goblin -10 (27/66) | BAD true FOE_HIT false STAB false
+  -11 (39/66) | GOOD false LEAD_HIT false STAB false
   Goblin -8 (0/66) | BAD true FOE_HIT false STAB false
   out Goblin lost to Goblin (Lv 12) | BAD true OTHER false null false
 == team with a turn limit 1
@@ -1278,7 +1278,7 @@ duel 0 1 false tank mage goblin false
   out Mage lost to Goblin (Lv 12) | BAD true OTHER false null false
 duel 1 1 false goblin goblin false
   Goblin -7 (59/66) | BAD true FOE_HIT false STAB false
-  Goblin -6 (30/66) | BAD true FOE_HIT false STAB false
+  -9 (34/66) | GOOD false LEAD_HIT false STAB false
   Goblin -10 (0/66) | BAD true FOE_HIT false STAB false
   out Goblin lost to Goblin (Lv 12) | BAD true OTHER false null false
 == team of equals 0
@@ -1318,7 +1318,7 @@ duel 0 1 false goblin archer false
   out Goblin lost to Archer (Lv 20) | BAD true OTHER false null false
 duel 1 1 true goblin archer false
   -19 (39/96) | GOOD false LEAD_HIT false STAB false
-  -22 (17/96) | GOOD false LEAD_HIT false STAB false
+  Goblin -5 (91/96) | BAD true FOE_HIT false RANGED false
   -21 (0/96) | GOOD false LEAD_HIT false STAB false
   out Goblin beat Archer (Lv 20) | GOOD true OTHER false null false
 == team of equals 2

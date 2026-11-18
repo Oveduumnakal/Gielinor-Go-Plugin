@@ -283,14 +283,15 @@ final class TeamScript
 	 *
 	 * @param hits every hit of the duel, in order
 	 * @return all of them when there are {@link #TEAM_HIT_BEATS} or fewer, else the first, the one in the middle and
-	 *     the last
+	 *     the last; when those three are all attacks by one creature and the other attacked too, the middle one is
+	 *     the nearest attack by the other creature
 	 */
 	static List<BattleLine> cut(List<BattleLine> hits)
 	{
 		if (hits.size() <= TEAM_HIT_BEATS)
 			return new ArrayList<>(hits);
 
-		int[] at = {0, hits.size() / 2, hits.size() - 1};
+		int[] at = {0, middleOf(hits), hits.size() - 1};
 		List<BattleLine> kept = new ArrayList<>();
 		BattleLine lastTagged = null;
 		int next = 0;
@@ -311,6 +312,68 @@ final class TeamScript
 		}
 
 		return kept;
+	}
+
+	/**
+	 * Counts the longest run of blows by one creature with no skipped turn or status line between them. A long run in
+	 * a battle where both creatures attacked is what a one-sided shown battle looks like.
+	 *
+	 * @param lines the lines, in order
+	 * @return the length of the longest run, 0 when there is no blow
+	 */
+	static int sameSideStreak(List<BattleLine> lines)
+	{
+		int best = 0;
+		int run = 0;
+		BattleLine.Kind side = null;
+		for (BattleLine line : lines)
+		{
+			BattleLine.Kind kind = line.kind();
+			if (kind == BattleLine.Kind.SKIPPED || kind == BattleLine.Kind.STATUS)
+			{
+				run = 0;
+				side = null;
+			}
+			else if (kind == BattleLine.Kind.LEAD_HIT || kind == BattleLine.Kind.FOE_HIT)
+			{
+				run = kind == side ? run + 1 : 1;
+				side = kind;
+				best = Math.max(best, run);
+			}
+		}
+
+		return best;
+	}
+
+	private static int middleOf(List<BattleLine> hits)
+	{
+		int last = hits.size() - 1;
+		int middle = hits.size() / 2;
+		BattleLine.Kind seen = null;
+		for (int pick : new int[]{0, middle, last})
+		{
+			BattleLine.Kind kind = hits.get(pick).kind();
+			if (kind != BattleLine.Kind.LEAD_HIT && kind != BattleLine.Kind.FOE_HIT)
+				continue;
+
+			if (seen != null && seen != kind)
+				return middle;
+
+			seen = kind;
+		}
+
+		if (seen == null)
+			return middle;
+
+		BattleLine.Kind missing = seen == BattleLine.Kind.LEAD_HIT ? BattleLine.Kind.FOE_HIT : BattleLine.Kind.LEAD_HIT;
+		for (int away = 1; away < hits.size(); away++)
+		{
+			for (int at : new int[]{middle - away, middle + away})
+				if (at > 0 && at < last && hits.get(at).kind() == missing)
+					return at;
+		}
+
+		return middle;
 	}
 
 	/**

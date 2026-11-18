@@ -31,6 +31,8 @@ import static org.junit.Assert.assertTrue;
  * purpose; the 40 others are exactly as first recorded. For issue 85 (Melee split into Stab, Slash and Crush)
  * the whole file was re-recorded with {@code MELEE} and {@code Melee} turned into {@code STAB} and
  * {@code Stab} and nothing else: every roll, hit and verdict is as before.
+ * For issue 200 the 11 team cases whose cut showed only one creature's blows were re-recorded on purpose: 19 shown
+ * hit lines changed (the middle blow is now the nearest one by the other creature); results and rolls are as before.
  */
 public class BattleGoldensTest
 {
