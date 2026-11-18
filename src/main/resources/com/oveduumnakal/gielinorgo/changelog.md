@@ -97,6 +97,10 @@ A Creature Log, daily tasks and daily events give you goals.
   change log and a Feedback menu. (#226)
 - **The side panel is gone.** The sidebar jar button and the jar on the game screen open the painted window, and
   there is no hidden old-panel setting any more. (#227)
+- **Longer walks.** A Bronze jar now takes 300 tiles, eggs take 1,000 to 4,000 tiles and the walking tasks ask for
+  twice as many tiles. Eggs you already carry keep their old target. (#206)
+- **Rarer finds.** Stronger monsters turn wild less often: Uncommon at 0.6 times the chance, Rare 0.35, Epic 0.15 and
+  Legendary 0.05. The Wild creature rarity setting stays the rate for Common ones. (#213)
 - **Seen and caught marks.** A mark beside each wild creature's name shows whether its species is new to you,
   seen or already caught. (#209)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

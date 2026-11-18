@@ -1528,7 +1528,7 @@ public class GielinorGoPlugin extends Plugin
 		boolean underground = point != null && Terrain.underground(point.getX(), point.getY());
 		boolean events = config.spawnEvents();
 		WildEntry entry = tracker.offer(npc.getIndex(), npc.getId(), species, npc.getCombatLevel(), underground,
-			now, calendar.chance(species, config.wildChance(), events, spawnClock),
+			now, calendar.monsterChance(species, config.wildChance(), events, spawnClock),
 			game.gildedOneIn(calendar.gildedOneIn(species, events, spawnClock)), events);
 		if (entry == null)
 			return;
