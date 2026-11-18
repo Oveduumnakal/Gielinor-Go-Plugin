@@ -21,6 +21,9 @@ final class SummaryLayout
 	/** The labels of the action buttons along the foot, in order; the first is Back. */
 	static final String[] BUTTONS = {"Back", "Rename", "Moves", "Make lead", "Storage", "Use item"};
 
+	/** The labels of the action buttons along the foot of a stored creature's Summary, in order; the first is Back. */
+	static final String[] STORED_BUTTONS = {"Back", "Rename", "Moves", "To team", "Release", "Use item"};
+
 	/** The left column: portrait and identity. It is the creature's menu hit. */
 	final Rectangle left;
 
@@ -48,8 +51,10 @@ final class SummaryLayout
 	/** The bond hearts and the evolution hint, one line. */
 	final Rectangle bond;
 
-	/** The action buttons, in the order of {@link #BUTTONS}. */
+	/** The action buttons, in the order of {@link #labels()}. */
 	final Rectangle[] buttons;
+
+	private final String[] labels;
 
 	/** The gap between boxes, in pixels. */
 	final int gap;
@@ -57,8 +62,9 @@ final class SummaryLayout
 	/** The padding inside a box, in pixels. */
 	final int pad;
 
-	private SummaryLayout(Rectangle body, WindowStyle.Metrics m, int lineH, int smallH)
+	private SummaryLayout(Rectangle body, WindowStyle.Metrics m, int lineH, int smallH, String[] labels)
 	{
+		this.labels = labels.clone();
 		gap = Math.max(2, m.pad / 3);
 		pad = Math.max(3, m.pad / 3);
 		int buttonH = Math.max(m.chipHeight, lineH + pad);
@@ -91,8 +97,8 @@ final class SummaryLayout
 		moves = new Rectangle(right.x, y, right.width, movesH);
 		y += movesH + gap;
 		bond = new Rectangle(right.x, y, right.width, bondH);
-		buttons = new Rectangle[BUTTONS.length];
-		int n = BUTTONS.length;
+		buttons = new Rectangle[labels.length];
+		int n = labels.length;
 		int each = Math.max(1, (body.width - (n - 1) * gap) / n);
 		for (int i = 0; i < n; i++)
 			buttons[i] = new Rectangle(body.x + i * (each + gap), body.y + body.height - buttonH, each, buttonH);
@@ -109,7 +115,28 @@ final class SummaryLayout
 	 */
 	static SummaryLayout of(Rectangle body, WindowStyle.Metrics metrics, int lineH, int smallH)
 	{
-		return new SummaryLayout(body, metrics, lineH, smallH);
+		return of(body, metrics, lineH, smallH, BUTTONS);
+	}
+
+	/**
+	 * Works the layout out for a given set of buttons.
+	 *
+	 * @param body the page area in window pixels
+	 * @param metrics the sizes at the window scale
+	 * @param lineH the height of one line of body text, in pixels
+	 * @param smallH the height of one line of small text, in pixels
+	 * @param labels the labels of the action buttons, such as {@link #BUTTONS} or {@link #STORED_BUTTONS}
+	 * @return the layout
+	 */
+	static SummaryLayout of(Rectangle body, WindowStyle.Metrics metrics, int lineH, int smallH, String[] labels)
+	{
+		return new SummaryLayout(body, metrics, lineH, smallH, labels);
+	}
+
+	/** @return the labels of the action buttons, in order, as a copy */
+	String[] labels()
+	{
+		return labels.clone();
 	}
 
 	/**

@@ -53,6 +53,9 @@ final class ContextMenuRules
 	/** Why Use item is dim when nothing would help. */
 	static final String NO_ITEM_REASON = "Nothing to use";
 
+	/** Why Move to team is dim when the team has no room. */
+	static final String TEAM_FULL_REASON = "Team is full";
+
 	/** What the rules look at. Immutable. */
 	static final class Facts
 	{
@@ -60,6 +63,7 @@ final class ContextMenuRules
 		private final boolean eliteBusy;
 		private final boolean storageEnabled;
 		private final Map<ItemType, Integer> items;
+		private final int teamSize;
 
 		/**
 		 * Gathers the facts.
@@ -71,6 +75,21 @@ final class ContextMenuRules
 		 */
 		Facts(RowModel row, boolean eliteBusy, boolean storageEnabled, Map<ItemType, Integer> items)
 		{
+			this(row, eliteBusy, storageEnabled, items, 0);
+		}
+
+		/**
+		 * Gathers the facts for a stored creature, which also needs to know whether the team has room.
+		 *
+		 * @param row the creature's row
+		 * @param eliteBusy whether an Elite run is open
+		 * @param storageEnabled whether the team may be changed here, which is {@link TeamSwapRule}
+		 * @param items how many of each healing item the player owns
+		 * @param teamSize how many creatures are on the team now
+		 */
+		Facts(RowModel row, boolean eliteBusy, boolean storageEnabled, Map<ItemType, Integer> items, int teamSize)
+		{
+			this.teamSize = teamSize;
 			this.row = row;
 			this.eliteBusy = eliteBusy;
 			this.storageEnabled = storageEnabled;
@@ -109,6 +128,28 @@ final class ContextMenuRules
 		void revive();
 	}
 
+	/** What the items of a stored creature's menu do; the window runs each on the game thread. */
+	interface StoredCommands
+	{
+		/** Opens the Summary page of the creature. */
+		void summary();
+
+		/** Moves the creature to the team. */
+		void moveToTeam();
+
+		/** Opens the Rename box. */
+		void rename();
+
+		/** Opens the creature's moves. */
+		void moves();
+
+		/** Offers the healing items the creature can use. */
+		void useItem();
+
+		/** Starts a release, which asks first. */
+		void release();
+	}
+
 	private ContextMenuRules()
 	{
 	}
@@ -138,6 +179,54 @@ final class ContextMenuRules
 	static List<ContextMenu.Item> summary(Facts facts, Commands commands)
 	{
 		return actions(facts, commands);
+	}
+
+	/**
+	 * Builds the menu of a stored creature: Summary first, then Move to team, Rename, Moves, Use item and Release.
+	 *
+	 * @param facts what the rules look at, with the team size
+	 * @param commands what the items do
+	 * @return the items, Summary first
+	 */
+	static List<ContextMenu.Item> stored(Facts facts, StoredCommands commands)
+	{
+		List<ContextMenu.Item> list = new ArrayList<>();
+		list.add(ContextMenu.Item.of(SUMMARY, commands::summary));
+		list.addAll(storedActions(facts, commands));
+		return list;
+	}
+
+	/**
+	 * Builds the menu of a stored creature's Summary page: the same items without Summary, since the page is open.
+	 *
+	 * @param facts what the rules look at, with the team size
+	 * @param commands what the items do
+	 * @return the items
+	 */
+	static List<ContextMenu.Item> storedSummary(Facts facts, StoredCommands commands)
+	{
+		return storedActions(facts, commands);
+	}
+
+	private static List<ContextMenu.Item> storedActions(Facts facts, StoredCommands commands)
+	{
+		List<ContextMenu.Item> list = new ArrayList<>();
+		if (facts.teamSize >= SaveData.TEAM_SIZE)
+			list.add(ContextMenu.Item.disabled(StoragePageFlow.MOVE_TO_TEAM, TEAM_FULL_REASON));
+		else
+			list.add(ContextMenu.Item.of(StoragePageFlow.MOVE_TO_TEAM, commands::moveToTeam));
+
+		list.add(ContextMenu.Item.of(StoragePageFlow.RENAME, commands::rename));
+		list.add(ContextMenu.Item.of(MOVES, commands::moves));
+		list.add(usableItems(facts) ? ContextMenu.Item.of(StoragePageFlow.USE_ITEM, commands::useItem)
+			: ContextMenu.Item.disabled(StoragePageFlow.USE_ITEM, NO_ITEM_REASON));
+		list.add(ContextMenu.Item.of(StoragePageFlow.RELEASE, commands::release));
+		return list;
+	}
+
+	private static boolean usableItems(Facts facts)
+	{
+		return !usable(facts).isEmpty();
 	}
 
 	private static List<ContextMenu.Item> actions(Facts facts, Commands commands)

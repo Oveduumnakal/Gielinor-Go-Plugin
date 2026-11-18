@@ -3763,6 +3763,12 @@ final class GoGame
 		return waiting == null ? null : waiting.waitingText();
 	}
 
+	private static CreatureView withStats(CreatureView view, Species found, Creature creature)
+	{
+		Combatant fighter = new Combatant(found, creature.level(), 1.0, creature.rolls());
+		return view.withStats(fighter.maxHp(), fighter.attack(), fighter.defence(), fighter.speed());
+	}
+
 	private List<CreatureView> views(List<Creature> creatures, long now)
 	{
 		List<CreatureView> views = new ArrayList<>(creatures.size());
@@ -3771,15 +3777,16 @@ final class GoGame
 			Species found = species.find(creature.species);
 			Rarity rarity = found == null ? Rarity.COMMON : found.rarity();
 			CombatType type = found == null ? CombatType.CRUSH : found.style();
-			views.add(new CreatureView(speciesNameOf(creature), creature.level(), XpRules.progress(creature.xp),
-				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname,
-				creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId),
+			CreatureView view = new CreatureView(speciesNameOf(creature), creature.level(),
+				XpRules.progress(creature.xp), creature.hpFractionAt(now), rarity, type, creature.gilded,
+				creature.nickname, creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId),
 				found == null ? Collections.emptyList() : MoveLearning.known(creature, found, moves),
 				MoveLearning.pending(creature, moves), BondRules.hearts(creature.bond), waitingText(creature))
 				.withSpecies(found)
 				.withGender(creature.gender())
 				.withCaught(creature.caughtAtMs)
-				.withDetails(examine.textFor(creature.species), found == null ? null : growsInto(found.key())));
+				.withDetails(examine.textFor(creature.species), found == null ? null : growsInto(found.key()));
+			views.add(found == null ? view : withStats(view, found, creature));
 		}
 
 		return views;

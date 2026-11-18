@@ -32,6 +32,7 @@ final class CreatureView
 	private String growsInto;
 	private boolean fainted;
 	private long caughtAtMs;
+	private int[] stats;
 
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname)
@@ -204,9 +205,26 @@ final class CreatureView
 		return copy;
 	}
 
+	/**
+	 * Attaches the creature's real stat numbers, which the Summary shows beside each bar.
+	 *
+	 * @param health its health when fully rested
+	 * @param attack its attack
+	 * @param defence its defence
+	 * @param speed its speed
+	 * @return a copy of this view that knows its stat numbers
+	 */
+	CreatureView withStats(int health, int attack, int defence, int speed)
+	{
+		CreatureView copy = withSpecies(species);
+		copy.stats = new int[] {health, attack, defence, speed};
+		return copy;
+	}
+
 	private CreatureView copyExtras(CreatureView copy)
 	{
 		copy.caughtAtMs = caughtAtMs;
+		copy.stats = stats;
 		copy.gender = gender;
 		copy.examine = examine;
 		copy.growsInto = growsInto;
@@ -218,6 +236,15 @@ final class CreatureView
 	long caughtAtMs()
 	{
 		return caughtAtMs;
+	}
+
+	/**
+	 * @return a copy of the stat numbers in the order health, attack, defence, speed, or null when the view was built
+	 *         without them
+	 */
+	int[] stats()
+	{
+		return stats == null ? null : stats.clone();
 	}
 
 	/** @return the creature's gender, or null when the view was built without one */

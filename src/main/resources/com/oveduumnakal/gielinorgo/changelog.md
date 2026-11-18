@@ -120,6 +120,8 @@ A Creature Log, daily tasks and daily events give you goals.
   by species. (#211)
 - **XP while you are away.** XP you gain on mobile, in another client or with the plugin off trains your team the next
   time you log in, with jars for the skills and for level-ups. (#219)
+- **Details for stored creatures.** Storage creatures have the same Summary as your team, with the real stat numbers
+  and the day you caught them. (#215)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

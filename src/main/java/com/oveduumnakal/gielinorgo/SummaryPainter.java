@@ -26,6 +26,9 @@ final class SummaryPainter
 	/** The tooltip of the portrait and name area. */
 	static final String HEADER_TIP = "Right-click or press Enter for the creature's menu";
 
+	/** The id of the tooltip over the Stats box, which says each stat's roll and net change. */
+	static final String ID_STATS = "summary:stats";
+
 	private final PortraitCache pictures;
 	private final PageText.Sink sink;
 
@@ -48,7 +51,7 @@ final class SummaryPainter
 	 * @param ctx the frame's facts
 	 * @param layout where everything is
 	 * @param content what the page says
-	 * @param enabled for each button in the order of {@link SummaryLayout#BUTTONS}, whether it can be pressed
+	 * @param enabled for each button in the order of {@link SummaryLayout#labels()}, whether it can be pressed
 	 * @param openedMs when the page opened, in milliseconds
 	 * @param origin the portrait box of the row the page grew out of, or null to grow from the middle
 	 */
@@ -119,7 +122,10 @@ final class SummaryPainter
 		Rectangle levelBox = new Rectangle(gx, top, Math.max(0, id.x + id.width - gx), icon);
 		text.draw(g, content.level(), levelBox, small, ThemeColor.TEXT, PageText.Align.LEFT);
 		top += icon + st.metrics().pad / 3;
-		chips(g, ctx, layout, content, top);
+		int below = chips(g, ctx, layout, content, top);
+		if (!content.caught().isEmpty() && below + sm.getHeight() <= id.y + id.height)
+			text.draw(g, content.caught(), new Rectangle(id.x, below, id.width, sm.getHeight()), small,
+				ThemeColor.SUBTEXT, PageText.Align.LEFT);
 	}
 
 	private static Rectangle shrunk(Rectangle target)
@@ -129,7 +135,13 @@ final class SummaryPainter
 		return new Rectangle(target.x + (target.width - w) / 2, target.y + (target.height - h) / 2, w, h);
 	}
 
-	private void chips(Graphics2D g, PageContext ctx, SummaryLayout layout, SummaryContent content, int top)
+	/**
+	 * Draws the chips.
+	 *
+	 * @return the y just under the last row of chips, or {@link Integer#MAX_VALUE} when a chip did not fit, so
+	 *         nothing is drawn under them
+	 */
+	private int chips(Graphics2D g, PageContext ctx, SummaryLayout layout, SummaryContent content, int top)
 	{
 		WindowStyle st = ctx.style;
 		Rectangle id = layout.identity;
@@ -148,7 +160,7 @@ final class SummaryPainter
 			}
 
 			if (y + h > id.y + id.height || w > id.width)
-				return;
+				return Integer.MAX_VALUE;
 
 			st.chip(g, x, y, chip.label(), chip.style());
 			x += w + gap + slant;
@@ -162,8 +174,11 @@ final class SummaryPainter
 			y += h + gap;
 		}
 
-		if (y + h <= id.y + id.height && w <= id.width)
-			st.chip(g, x, y, rating, false);
+		if (y + h > id.y + id.height || w > id.width)
+			return Integer.MAX_VALUE;
+
+		st.chip(g, x, y, rating, false);
+		return y + h + gap;
 	}
 
 	private void stats(Graphics2D g, PageContext ctx, SummaryLayout layout, SummaryContent content, long since)
@@ -181,7 +196,8 @@ final class SummaryPainter
 			SummaryContent.StatLine line = stats.get(i);
 			Rectangle cell = layout.cell(box, i);
 			int gap = Math.max(2, layout.pad);
-			String value = line.rollText() + (line.netText().isEmpty() ? "" : " " + line.netText());
+			String value = line.valueText().isEmpty()
+				? line.rollText() + (line.netText().isEmpty() ? "" : " " + line.netText()) : line.valueText();
 			int valueW = sm.stringWidth("+5 +99%");
 			int labelW = sm.stringWidth("Defence");
 			Rectangle label = new Rectangle(cell.x + gap, cell.y, labelW, cell.height);
@@ -336,12 +352,13 @@ final class SummaryPainter
 	private void buttons(Graphics2D g, PageContext ctx, SummaryLayout layout, boolean[] enabled)
 	{
 		WindowStyle st = ctx.style;
-		for (int i = 0; i < SummaryLayout.BUTTONS.length; i++)
+		String[] labels = layout.labels();
+		for (int i = 0; i < labels.length; i++)
 		{
 			String id = WindowPages.summaryButtonId(i);
 			Rectangle b = layout.buttons[i];
 			Rectangle2D shape = new Rectangle2D.Double(b.x, b.y, b.width, b.height);
-			st.button(g, shape, SummaryLayout.BUTTONS[i], i == 0, !enabled[i], ctx.hoverOf(id), ctx.pressOf(id));
+			st.button(g, shape, labels[i], i == 0, !enabled[i], ctx.hoverOf(id), ctx.pressOf(id));
 			if (ctx.focused && id.equals(ctx.highlight))
 				st.focusRing(g, Slant.shape(shape, st.metrics().chipSlant));
 		}

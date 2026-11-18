@@ -14,10 +14,11 @@ import java.util.Map;
 import java.util.TreeSet;
 
 /**
- * What a press on the Storage page does: move a creature to the team, tick it, rename it, use an item on it, release
- * it after a painted confirmation, or change the sort and filters through their menus and chips. A release only
- * reaches {@link PanelActions} from the Yes button of a confirmation whose default button is No; a gilded, strong,
- * exceptional or nicknamed creature asks a second time. Before a confirmed release is sent each creature is checked
+ * What a press on the Storage page does: move a creature to the team, open its Summary, tick it, rename it, use an
+ * item on it, release it after a painted confirmation, or change the sort and filters through their menus and
+ * chips. A release, from the list or from a creature's Summary, only reaches {@link PanelActions} from the Yes button
+ * of a confirmation whose default button is No; a gilded, strong, exceptional or nicknamed creature asks a second
+ * time. Before a confirmed release is sent each creature is checked
  * against the storage list as it is now, so a list that changed while the box was open releases nothing it should
  * not. Holds no RuneLite types.
  */
@@ -85,6 +86,16 @@ final class StoragePageFlow
 
 		/** @return how many of each healing item the player owns */
 		Map<ItemType, Integer> items();
+
+		/** @return how many creatures are on the team now, which Move to team needs room in */
+		int teamSize();
+
+		/**
+		 * Opens the Summary page of a stored creature.
+		 *
+		 * @param place the creature's place in storage
+		 */
+		void summary(int place);
 	}
 
 	private final StoragePage page;
@@ -273,14 +284,9 @@ final class StoragePageFlow
 			return;
 		}
 
-		anchorX = x;
-		anchorY = y;
+		anchor(x, y);
 		CreatureView view = storage.get(place);
-		List<ContextMenu.Item> items = new ArrayList<>();
-		items.add(ContextMenu.Item.of(MOVE_TO_TEAM, () -> actions.moveToTeam(pick(place, view))));
-		items.add(ContextMenu.Item.of(RENAME, () -> rename(place, view)));
-		items.add(useItem(place, view));
-		items.add(ContextMenu.Item.of(RELEASE, () -> releaseOne(place, view)));
+		List<ContextMenu.Item> items = new ArrayList<>(ContextMenuRules.stored(facts(view), commands(place, view)));
 		if (page.arrangeAllowed())
 		{
 			items.add(ContextMenu.Item.of(MOVE_WITHIN, () -> page.carry(place)));
@@ -290,21 +296,121 @@ final class StoragePageFlow
 		host.menu(items, x, y, keyboard);
 	}
 
-	private ContextMenu.Item useItem(int place, CreatureView view)
+	/**
+	 * The menu of a stored creature's Summary page was asked for: the creature's menu without Summary in it.
+	 *
+	 * @param place the creature's place in storage
+	 * @param x where to open it
+	 * @param y where to open it
+	 * @param keyboard whether a key asked
+	 */
+	void summaryMenu(int place, int x, int y, boolean keyboard)
 	{
-		List<ContextMenu.Item> uses = useItems(place, view);
-		if (uses.isEmpty())
-			return ContextMenu.Item.disabled(USE_ITEM, ContextMenuRules.NO_ITEM_REASON);
+		List<CreatureView> storage = host.storage();
+		if (place < 0 || place >= storage.size())
+			return;
 
-		return ContextMenu.Item.of(USE_ITEM, () -> host.menu(useItems(place, view), anchorX, anchorY, true));
+		anchor(x, y);
+		host.menu(summaryItems(place, storage.get(place)), x, y, keyboard);
+	}
+
+	/**
+	 * Lists the items of a stored creature's Summary page, for its menu and for the state of its buttons.
+	 *
+	 * @param place the creature's place in storage
+	 * @param view the creature
+	 * @return the items without Summary
+	 */
+	List<ContextMenu.Item> summaryItems(int place, CreatureView view)
+	{
+		return ContextMenuRules.storedSummary(facts(view), commands(place, view));
+	}
+
+	/**
+	 * Remembers where the next menu or box a button opens should appear.
+	 *
+	 * @param x the pointer's x in window pixels
+	 * @param y the pointer's y in window pixels
+	 */
+	void anchor(int x, int y)
+	{
+		anchorX = x;
+		anchorY = y;
+	}
+
+	/**
+	 * Starts a release of one stored creature, which asks first, with No as the default.
+	 *
+	 * @param place the creature's place in storage
+	 * @param view the creature as the player sees it
+	 */
+	void release(int place, CreatureView view)
+	{
+		releaseOne(place, view);
+	}
+
+	private ContextMenuRules.Facts facts(CreatureView view)
+	{
+		Map<ItemType, Integer> owned = host.items() == null ? new EnumMap<>(ItemType.class) : host.items();
+		return new ContextMenuRules.Facts(RowModel.of(view, -1), false, true, owned, host.teamSize());
+	}
+
+	/**
+	 * Gives what each item and each Summary button of one stored creature does.
+	 *
+	 * @param place the creature's place in storage
+	 * @param view the creature as the player sees it
+	 * @return the commands
+	 */
+	ContextMenuRules.StoredCommands commands(int place, CreatureView view)
+	{
+		return new ContextMenuRules.StoredCommands()
+		{
+			@Override
+			public void summary()
+			{
+				host.summary(place);
+			}
+
+			@Override
+			public void moveToTeam()
+			{
+				actions.moveToTeam(pick(place, view));
+			}
+
+			@Override
+			public void rename()
+			{
+				StoragePageFlow.this.rename(place, view);
+			}
+
+			@Override
+			public void moves()
+			{
+				TradePick pick = pick(place, view);
+				Modal ask = MovePicker.modal(view, forget -> actions.resolveMove(pick, forget), () ->
+					host.menu(MovePicker.forgetItems(view, index -> actions.resolveMove(pick, index)), anchorX,
+						anchorY, true));
+				host.modal(ask, null);
+			}
+
+			@Override
+			public void useItem()
+			{
+				host.menu(useItems(place, view), anchorX, anchorY, true);
+			}
+
+			@Override
+			public void release()
+			{
+				releaseOne(place, view);
+			}
+		};
 	}
 
 	private List<ContextMenu.Item> useItems(int place, CreatureView view)
 	{
-		Map<ItemType, Integer> owned = host.items() == null ? new EnumMap<>(ItemType.class) : host.items();
-		RowModel row = RowModel.of(view, -1);
-		ContextMenuRules.Facts facts = new ContextMenuRules.Facts(row, false, true, owned);
-		return ContextMenuRules.useItems(facts, type -> actions.useItem(pick(place, view), type));
+		return ContextMenuRules.useItems(facts(view), type -> actions.useItem(pick(place, view), type));
 	}
 
 	private void rename(int place, CreatureView view)

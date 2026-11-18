@@ -184,9 +184,10 @@ public class StorageViewsTest
 
 		rig.click(StoragePage.rowId(1), MouseEvent.BUTTON3);
 		rig.key(KeyEvent.VK_DOWN);
+		rig.key(KeyEvent.VK_DOWN);
 		rig.key(KeyEvent.VK_ENTER);
 
-		assertEquals("Move to team is the first item", Collections.singletonList("moveToTeam STORAGE#1"),
+		assertEquals("Move to team is second, after Summary", Collections.singletonList("moveToTeam STORAGE#1"),
 			rig.calls);
 	}
 

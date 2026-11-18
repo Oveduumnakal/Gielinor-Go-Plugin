@@ -10,6 +10,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -66,6 +67,7 @@ final class WindowPages implements WindowShell.PageActions
 	private final PortraitCache pictures;
 	private final LongSupplier clock;
 	private final PageState state = new PageState();
+	private final PageState storedState = new PageState();
 	private final PartyMotion motion;
 	private final PartyPainter party;
 	private final SummaryPainter summary;
@@ -83,6 +85,7 @@ final class WindowPages implements WindowShell.PageActions
 	private int anchorX;
 	private int anchorY;
 	private CreatureView shown;
+	private CreatureView storedShown;
 
 	/**
 	 * Creates the pages.
@@ -163,6 +166,12 @@ final class WindowPages implements WindowShell.PageActions
 		return state;
 	}
 
+	/** @return which page of the Storage tab is shown; its index is a place in the shown list */
+	PageState storedPageState()
+	{
+		return storedState;
+	}
+
 	/** @return the Tasks page, whose milestone list the tests drive */
 	TasksPage tasksPage()
 	{
@@ -212,6 +221,9 @@ final class WindowPages implements WindowShell.PageActions
 		motion.reset();
 		storage.reset();
 		state.back();
+		storedState.back();
+		shown = null;
+		storedShown = null;
 		enter = false;
 		tab = WindowTab.PARTY;
 	}
@@ -223,6 +235,12 @@ final class WindowPages implements WindowShell.PageActions
 			enter = true;
 
 		tab = current;
+		if (current != WindowTab.STORAGE)
+		{
+			storedState.back();
+			storedShown = null;
+		}
+
 		PanelState panel = loaded();
 		if (current == WindowTab.BAG && panel != null && style != null)
 		{
@@ -248,7 +266,14 @@ final class WindowPages implements WindowShell.PageActions
 		{
 			state.back();
 			storage.layout(body, style, panel.storage());
-			return storage.hits(WindowShell.PAGE_ORDER);
+			storedShown = follow(storedState, storedShown, shownViews());
+			Subject held = storedState.page() == PageState.Page.SUMMARY ? subject(panel, Holding.STORAGE) : null;
+			if (held == null)
+				return storage.hits(WindowShell.PAGE_ORDER);
+
+			List<Hit> hits = new ArrayList<>();
+			summaryHits(hits, body, held);
+			return hits;
 		}
 
 		if (current == WindowTab.BATTLE && panel != null && style != null)
@@ -266,7 +291,7 @@ final class WindowPages implements WindowShell.PageActions
 
 		long now = clock.getAsLong();
 		List<CreatureView> team = panel.team();
-		follow(team);
+		shown = follow(state, shown, team);
 		PartyLayout layout = PartyLayout.of(body, style.metrics(), style.scale(), showBanner(panel));
 		if (enter)
 		{
@@ -277,7 +302,7 @@ final class WindowPages implements WindowShell.PageActions
 		motion.sync(team, layout, mode, now);
 		List<Hit> hits = new ArrayList<>();
 		if (state.page() == PageState.Page.SUMMARY)
-			summaryHits(hits, body, panel);
+			summaryHits(hits, body, subject(panel, Holding.TEAM));
 		else
 			partyHits(hits, layout, panel, now);
 
@@ -339,17 +364,23 @@ final class WindowPages implements WindowShell.PageActions
 		}
 	}
 
-	private void summaryHits(List<Hit> hits, Rectangle body, PanelState panel)
+	private void summaryHits(List<Hit> hits, Rectangle body, Subject held)
 	{
-		SummaryLayout layout = summaryLayout(body);
+		SummaryLayout layout = summaryLayout(body, held.holding);
 		int order = WindowShell.PAGE_ORDER;
-		RowModel row = RowModel.of(panel.team().get(state.index()), state.index());
-		hits.add(new Hit(ID_SUMMARY_MENU, Hit.Kind.ROW, layout.left, order++, true, SummaryPainter.HEADER_TIP));
+		RowModel row = held.row;
+		SummaryContent content = SummaryContent.of(row, ZoneId.systemDefault());
+		String header = content.caught().isEmpty() ? SummaryPainter.HEADER_TIP
+			: SummaryPainter.HEADER_TIP + "\n" + content.caught();
+		hits.add(new Hit(ID_SUMMARY_MENU, Hit.Kind.ROW, layout.left, order++, true, header));
 		hits.add(new Hit(ID_MOVES, Hit.Kind.BUTTON, layout.moves, order++, true, movesTip(row.view())));
-		boolean[] enabled = buttonStates(row);
-		String[] tips = buttonTips(row);
-		for (int i = 0; i < SummaryLayout.BUTTONS.length; i++)
+		boolean[] enabled = buttonStates(held);
+		String[] tips = buttonTips(held);
+		for (int i = 0; i < layout.labels().length; i++)
 			hits.add(new Hit(summaryButtonId(i), Hit.Kind.BUTTON, layout.buttons[i], order++, enabled[i], tips[i]));
+
+		if (!content.statsTip().isEmpty())
+			hits.add(new Hit(SummaryPainter.ID_STATS, Hit.Kind.AREA, layout.stats, -1, true, content.statsTip()));
 	}
 
 	private static String movesTip(CreatureView view)
@@ -423,6 +454,13 @@ final class WindowPages implements WindowShell.PageActions
 		if (current == WindowTab.STORAGE && panel != null)
 		{
 			storage.layout(ctx.body, ctx.style, panel.storage());
+			Subject held = storedState.page() == PageState.Page.SUMMARY ? subject(panel, Holding.STORAGE) : null;
+			if (held != null)
+			{
+				paintSummary(g, ctx, held, null);
+				return true;
+			}
+
 			storage.paint(g, ctx, panel.storage());
 			return true;
 		}
@@ -437,9 +475,10 @@ final class WindowPages implements WindowShell.PageActions
 		if (current != WindowTab.PARTY || panel == null)
 			return false;
 
-		if (state.page() == PageState.Page.SUMMARY && state.index() < panel.team().size())
+		Subject held = state.page() == PageState.Page.SUMMARY ? subject(panel, Holding.TEAM) : null;
+		if (held != null)
 		{
-			paintSummary(g, ctx, panel);
+			paintSummary(g, ctx, held, summaryOrigin(ctx, panel));
 			return true;
 		}
 
@@ -449,25 +488,63 @@ final class WindowPages implements WindowShell.PageActions
 		return true;
 	}
 
-	private void paintSummary(Graphics2D g, PageContext ctx, PanelState panel)
+	private Rectangle summaryOrigin(PageContext ctx, PanelState panel)
 	{
-		SummaryLayout layout = summaryLayout(ctx.body);
-		RowModel row = RowModel.of(panel.team().get(state.index()), state.index());
-		Rectangle origin = null;
-		if (state.cameFrom() >= 0)
-		{
-			PartyLayout rows = PartyLayout.of(ctx.body, ctx.style.metrics(), ctx.style.scale(), showBanner(panel));
-			origin = rows.parts(rows.rows[state.cameFrom()]).portrait;
-		}
+		if (state.cameFrom() < 0)
+			return null;
 
-		summary.paint(g, ctx, layout, SummaryContent.of(row), buttonStates(row), state.openedMs(), origin);
+		PartyLayout rows = PartyLayout.of(ctx.body, ctx.style.metrics(), ctx.style.scale(), showBanner(panel));
+		return rows.parts(rows.rows[state.cameFrom()]).portrait;
 	}
 
-	private SummaryLayout summaryLayout(Rectangle body)
+	private void paintSummary(Graphics2D g, PageContext ctx, Subject held, Rectangle origin)
+	{
+		SummaryLayout layout = summaryLayout(ctx.body, held.holding);
+		long opened = held.holding == Holding.TEAM ? state.openedMs() : storedState.openedMs();
+		summary.paint(g, ctx, layout, SummaryContent.of(held.row, ZoneId.systemDefault()), buttonStates(held), opened,
+			origin);
+	}
+
+	private SummaryLayout summaryLayout(Rectangle body, Holding holding)
 	{
 		int line = fontHeight(style.font(WindowFonts.Face.REGULAR, WindowFonts.BODY_UNITS));
 		int small = fontHeight(style.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS));
-		return SummaryLayout.of(body, style.metrics(), line, small);
+		String[] labels = holding == Holding.TEAM ? SummaryLayout.BUTTONS : SummaryLayout.STORED_BUTTONS;
+		return SummaryLayout.of(body, style.metrics(), line, small, labels);
+	}
+
+	/**
+	 * Finds the creature a Summary is on.
+	 *
+	 * @param panel the panel as the window shows it
+	 * @param holding which Summary: the team's or Storage's
+	 * @return the creature with its place, or null when the Summary's place no longer holds one
+	 */
+	private Subject subject(PanelState panel, Holding holding)
+	{
+		if (holding == Holding.TEAM)
+		{
+			int at = state.index();
+			List<CreatureView> team = panel.team();
+			return at < 0 || at >= team.size() ? null : new Subject(holding, at, RowModel.of(team.get(at), at));
+		}
+
+		List<StorageView.Entry> list = storage.displayEntries();
+		int at = storedState.index();
+		if (at < 0 || at >= list.size())
+			return null;
+
+		StorageView.Entry entry = list.get(at);
+		return new Subject(holding, entry.place(), RowModel.of(entry.view(), -1));
+	}
+
+	private List<CreatureView> shownViews()
+	{
+		List<CreatureView> views = new ArrayList<>();
+		for (StorageView.Entry entry : storage.displayEntries())
+			views.add(entry.view());
+
+		return views;
 	}
 
 	private boolean showBanner(PanelState panel)
@@ -482,43 +559,39 @@ final class WindowPages implements WindowShell.PageActions
 	}
 
 	/**
-	 * Keeps the Summary on the creature it was opened on when the team changed: Make lead moves it to the top, and a
-	 * creature that left the team (moved to storage) sends the page back to the list.
+	 * Keeps a Summary on the creature it was opened on when the list changed: Make lead moves a creature to the top,
+	 * a swap or a sort changes its place, and a creature that left (moved to storage or to the team, released) sends
+	 * the page back to the list.
+	 *
+	 * @param st the page state of the Summary
+	 * @param held the creature the Summary was on, or null
+	 * @param list the creatures the Summary steps over, in order
+	 * @return the creature the Summary is on now, or null when it is closed
 	 */
-	private void follow(List<CreatureView> team)
+	private static CreatureView follow(PageState st, CreatureView held, List<CreatureView> list)
 	{
-		if (state.page() != PageState.Page.SUMMARY)
-		{
-			shown = null;
-			return;
-		}
+		if (st.page() != PageState.Page.SUMMARY)
+			return null;
 
-		state.clamp(team.size());
-		if (state.page() != PageState.Page.SUMMARY)
-		{
-			shown = null;
-			return;
-		}
+		st.clamp(list.size());
+		if (st.page() != PageState.Page.SUMMARY)
+			return null;
 
-		CreatureView now = team.get(state.index());
-		if (shown == null || shown.sameCreature(now))
-		{
-			shown = now;
-			return;
-		}
+		CreatureView now = list.get(st.index());
+		if (held == null || held.sameCreature(now))
+			return now;
 
-		for (int i = 0; i < team.size(); i++)
+		for (int i = 0; i < list.size(); i++)
 		{
-			if (shown.sameCreature(team.get(i)))
+			if (held.sameCreature(list.get(i)))
 			{
-				state.step(i - state.index(), team.size(), state.openedMs());
-				shown = team.get(i);
-				return;
+				st.step(i - st.index(), list.size(), st.openedMs());
+				return list.get(i);
 			}
 		}
 
-		state.back();
-		shown = null;
+		st.back();
+		return null;
 	}
 
 	@Override
@@ -547,7 +620,11 @@ final class WindowPages implements WindowShell.PageActions
 
 		if (tab == WindowTab.STORAGE)
 		{
-			storageFlow.press(id);
+			if (storedState.page() == PageState.Page.SUMMARY)
+				pressStoredSummary(hit, panel);
+			else
+				storageFlow.press(id);
+
 			return;
 		}
 
@@ -674,6 +751,57 @@ final class WindowPages implements WindowShell.PageActions
 		}
 	}
 
+	private void pressStoredSummary(Hit hit, PanelState panel)
+	{
+		Subject held = subject(panel, Holding.STORAGE);
+		if (held == null)
+			return;
+
+		Rectangle b = hit.bounds();
+		int x = b.x + b.width / 2;
+		int y = b.y + b.height / 2;
+		storageFlow.anchor(x, y);
+		String id = hit.id();
+		if (ID_SUMMARY_MENU.equals(id))
+			menu(hit, x, y, false);
+		else if (ID_MOVES.equals(id))
+			pressStoredButton(2, held);
+		else if (id.startsWith(SUMMARY_BUTTON_PREFIX))
+			pressStoredButton(Integer.parseInt(id.substring(SUMMARY_BUTTON_PREFIX.length())), held);
+	}
+
+	private void pressStoredButton(int button, Subject held)
+	{
+		CreatureView view = held.row.view();
+		ContextMenuRules.StoredCommands commands = storageFlow.commands(held.place, view);
+		List<ContextMenu.Item> items = storageFlow.summaryItems(held.place, view);
+		switch (button)
+		{
+			case 0:
+				back();
+				break;
+			case 1:
+				commands.rename();
+				break;
+			case 2:
+				commands.moves();
+				break;
+			case 3:
+				if (enabledOf(items, StoragePageFlow.MOVE_TO_TEAM))
+					commands.moveToTeam();
+
+				break;
+			case 4:
+				commands.release();
+				break;
+			default:
+				if (enabledOf(items, StoragePageFlow.USE_ITEM))
+					commands.useItem();
+
+				break;
+		}
+	}
+
 	private void confirmReset(PanelState panel, long now)
 	{
 		String message = "Reset all progress? You will lose everything in this account's save:\n"
@@ -703,7 +831,12 @@ final class WindowPages implements WindowShell.PageActions
 
 		if (tab == WindowTab.STORAGE)
 		{
-			storageFlow.menu(hit.id(), x, y, keyboard);
+			Subject held = ID_SUMMARY_MENU.equals(hit.id()) ? subject(panel, Holding.STORAGE) : null;
+			if (held != null)
+				storageFlow.summaryMenu(held.place, x, y, keyboard);
+			else if (!ID_SUMMARY_MENU.equals(hit.id()))
+				storageFlow.menu(hit.id(), x, y, keyboard);
+
 			return;
 		}
 
@@ -738,7 +871,7 @@ final class WindowPages implements WindowShell.PageActions
 			tasks.wheel(x, y, rotation);
 		else if (tab == WindowTab.COLLECTION)
 			collection.wheel(x, y, rotation);
-		else if (tab == WindowTab.STORAGE)
+		else if (listShown())
 			storage.wheel(x, y, rotation);
 
 		if (tab == WindowTab.BATTLE)
@@ -750,7 +883,7 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		return tab == WindowTab.TASKS && tasks.pressed(x, y)
 			|| tab == WindowTab.COLLECTION && collection.pressed(x, y)
-			|| tab == WindowTab.STORAGE && storage.pressed(x, y)
+			|| listShown() && storage.pressed(x, y)
 			|| tab == WindowTab.BATTLE && battle.pressed(x, y);
 	}
 
@@ -761,7 +894,7 @@ final class WindowPages implements WindowShell.PageActions
 			tasks.dragged(x, y);
 		else if (tab == WindowTab.COLLECTION)
 			collection.dragged(x, y);
-		else if (tab == WindowTab.STORAGE)
+		else if (listShown())
 			storage.dragged(x, y);
 
 		if (tab == WindowTab.BATTLE)
@@ -773,15 +906,20 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		return tab == WindowTab.TASKS && tasks.released()
 			|| tab == WindowTab.COLLECTION && collection.released()
-			|| tab == WindowTab.STORAGE && storageFlow.released(x, y)
+			|| listShown() && storageFlow.released(x, y)
 			|| tab == WindowTab.BATTLE && battle.released();
+	}
+
+	private boolean listShown()
+	{
+		return tab == WindowTab.STORAGE && storedState.page() != PageState.Page.SUMMARY;
 	}
 
 	@Override
 	public int depth()
 	{
 		if (tab == WindowTab.STORAGE)
-			return storage.carrying() >= 0 ? 1 : 0;
+			return storage.carrying() >= 0 ? 1 : storedState.depth();
 
 		return tab == WindowTab.PARTY ? state.depth() : 0;
 	}
@@ -789,9 +927,14 @@ final class WindowPages implements WindowShell.PageActions
 	@Override
 	public void back()
 	{
-		if (tab == WindowTab.STORAGE && storage.carrying() >= 0)
+		if (tab == WindowTab.STORAGE)
 		{
-			storage.stopCarrying();
+			if (storage.carrying() >= 0)
+				storage.stopCarrying();
+			else
+				storedState.back();
+
+			storedShown = null;
 			return;
 		}
 
@@ -806,6 +949,9 @@ final class WindowPages implements WindowShell.PageActions
 		if (panel != null && tab == WindowTab.COLLECTION)
 			return collectionKey(keyCode);
 
+		if (panel != null && tab == WindowTab.STORAGE && storedState.page() == PageState.Page.SUMMARY)
+			return summaryKey(keyCode, nowMs, true, shownViews());
+
 		if (panel != null && tab == WindowTab.STORAGE)
 			return storageKey(keyCode);
 
@@ -815,16 +961,23 @@ final class WindowPages implements WindowShell.PageActions
 		if (panel == null || tab != WindowTab.PARTY || state.page() != PageState.Page.SUMMARY)
 			return false;
 
-		int size = panel.team().size();
+		return summaryKey(keyCode, nowMs, false, panel.team());
+	}
+
+	private boolean summaryKey(int keyCode, long nowMs, boolean stored, List<CreatureView> list)
+	{
+		PageState st = stored ? storedState : state;
 		switch (keyCode)
 		{
 			case KeyEvent.VK_UP:
-				state.step(-1, size, nowMs);
-				shown = state.index() < size ? panel.team().get(state.index()) : null;
-				return true;
 			case KeyEvent.VK_DOWN:
-				state.step(1, size, nowMs);
-				shown = state.index() < size ? panel.team().get(state.index()) : null;
+				st.step(keyCode == KeyEvent.VK_UP ? -1 : 1, list.size(), nowMs);
+				CreatureView at = st.index() < list.size() ? list.get(st.index()) : null;
+				if (stored)
+					storedShown = at;
+				else
+					shown = at;
+
 				return true;
 			case KeyEvent.VK_ENTER:
 			case KeyEvent.VK_SPACE:
@@ -892,30 +1045,52 @@ final class WindowPages implements WindowShell.PageActions
 			shell.snapshot().storageEnabled(), panel.items());
 	}
 
-	private boolean[] buttonStates(RowModel row)
+	private boolean[] buttonStates(Subject held)
 	{
 		PanelState panel = loaded();
-		boolean[] enabled = new boolean[SummaryLayout.BUTTONS.length];
+		boolean[] enabled = new boolean[held.holding == Holding.TEAM ? SummaryLayout.BUTTONS.length
+			: SummaryLayout.STORED_BUTTONS.length];
 		Arrays.fill(enabled, true);
 		if (panel == null)
 			return enabled;
 
-		List<ContextMenu.Item> items = menuItems(panel, row);
+		if (held.holding == Holding.STORAGE)
+		{
+			List<ContextMenu.Item> items = storageFlow.summaryItems(held.place, held.row.view());
+			enabled[3] = enabledOf(items, StoragePageFlow.MOVE_TO_TEAM);
+			enabled[5] = enabledOf(items, StoragePageFlow.USE_ITEM);
+			return enabled;
+		}
+
+		List<ContextMenu.Item> items = menuItems(panel, held.row);
 		enabled[3] = enabledOf(items, ContextMenuRules.MAKE_LEAD);
 		enabled[4] = enabledOf(items, ContextMenuRules.STORAGE);
 		enabled[5] = enabledOf(items, ContextMenuRules.USE_ITEM);
 		return enabled;
 	}
 
-	private String[] buttonTips(RowModel row)
+	private String[] buttonTips(Subject held)
 	{
 		PanelState panel = loaded();
+		if (held.holding == Holding.STORAGE)
+		{
+			String[] tips = {"Back to the list (Esc)", "Give it a nickname", "See its moves", "Move it to your team",
+				"Release it for good. You are asked first.", "Use a healing item on it"};
+			if (panel == null)
+				return tips;
+
+			List<ContextMenu.Item> items = storageFlow.summaryItems(held.place, held.row.view());
+			tips[3] = reasonOr(items, StoragePageFlow.MOVE_TO_TEAM, tips[3]);
+			tips[5] = reasonOr(items, StoragePageFlow.USE_ITEM, tips[5]);
+			return tips;
+		}
+
 		String[] tips = {"Back to the party (Esc)", "Give it a nickname", "See its moves", "Make it your lead",
 			"Move it to storage", "Use a healing item on it"};
 		if (panel == null)
 			return tips;
 
-		List<ContextMenu.Item> items = menuItems(panel, row);
+		List<ContextMenu.Item> items = menuItems(panel, held.row);
 		tips[3] = reasonOr(items, ContextMenuRules.MAKE_LEAD, tips[3]);
 		tips[4] = reasonOr(items, ContextMenuRules.STORAGE, tips[4]);
 		tips[5] = reasonOr(items, ContextMenuRules.USE_ITEM, tips[5]);
@@ -1000,9 +1175,42 @@ final class WindowPages implements WindowShell.PageActions
 		}
 	}
 
+	/** The creature a Summary is on: whose it is, its place there, and its row. Immutable. */
+	private static final class Subject
+	{
+		private final Holding holding;
+		private final int place;
+		private final RowModel row;
+
+		Subject(Holding holding, int place, RowModel row)
+		{
+			this.holding = holding;
+			this.place = place;
+			this.row = row;
+		}
+	}
+
 	/** What the Storage page asks of the window around it. */
 	private final class StorageHost implements StoragePageFlow.Host
 	{
+		@Override
+		public int teamSize()
+		{
+			PanelState panel = loaded();
+			return panel == null ? 0 : panel.team().size();
+		}
+
+		@Override
+		public void summary(int place)
+		{
+			List<StorageView.Entry> list = storage.displayEntries();
+			for (int i = 0; i < list.size(); i++)
+			{
+				if (list.get(i).place() == place && storedState.open(i, list.size(), clock.getAsLong()))
+					storedShown = list.get(i).view();
+			}
+		}
+
 		@Override
 		public void menu(List<ContextMenu.Item> items, int x, int y, boolean keyboard)
 		{
