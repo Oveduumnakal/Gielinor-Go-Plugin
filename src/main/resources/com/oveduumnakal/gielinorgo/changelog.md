@@ -99,6 +99,8 @@ A Creature Log, daily tasks and daily events give you goals.
   there is no hidden old-panel setting any more. (#227)
 - **Seen and caught marks.** A mark beside each wild creature's name shows whether its species is new to you,
   seen or already caught. (#209)
+- **Wild creature tooltip.** Hover a wild creature to see its name, level, style and whether you have seen or caught
+  its species. (#205)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
