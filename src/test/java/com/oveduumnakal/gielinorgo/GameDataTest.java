@@ -347,6 +347,26 @@ public class GameDataTest
 	}
 
 	@Test
+	public void hexIsNoWeakerThanTheMagicBoltItIsLearnedAfter() throws IOException
+	{
+		double hex = 0;
+		double bolt = 0;
+		for (JsonElement element : movesFile().getAsJsonArray("moves"))
+		{
+			JsonObject move = element.getAsJsonObject();
+			String id = move.get("id").getAsString();
+			if (id.equals("hex"))
+				hex = move.get("power").getAsDouble();
+
+			if (id.equals("magic_bolt"))
+				bolt = move.get("power").getAsDouble();
+		}
+
+		assertEquals(1.0, hex, 0.0);
+		assertTrue("hex " + hex + " against magic bolt " + bolt, hex >= bolt);
+	}
+
+	@Test
 	public void everyEffectInTheMoveTableNamesARealStatusAndAChanceBetweenZeroAndOne() throws IOException
 	{
 		int effects = 0;
