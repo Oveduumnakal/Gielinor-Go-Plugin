@@ -92,6 +92,8 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Painted window (preview).** A new in-game window drawn on the game screen, with six tabs and two looks, can be
   turned on with Painted window (preview) in the settings. Only its frame, tabs and footer are built so far, and
   the side panel is unchanged. (#223)
+- **Battle buttons on the game screen.** While a battle waits for your choice, the box on the game screen has
+  buttons for Attack, Switch, Catch, Item and Run, so you can steer a battle without hotkeys. (#225)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

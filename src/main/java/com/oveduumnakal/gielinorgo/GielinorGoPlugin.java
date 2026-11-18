@@ -200,7 +200,8 @@ public class GielinorGoPlugin extends Plugin
 	private BattleStage stage;
 	private ArenaStage arena;
 	private BattleDirector director;
-	private BattlePromptOverlay promptOverlay;
+	private BattleControls battleControls;
+	private WindowInput controlsInput;
 	private BattleHotkeys hotkeys;
 	private volatile boolean choiceOpen;
 	private int steerWild = Notice.PLAYER;
@@ -287,8 +288,6 @@ public class GielinorGoPlugin extends Plugin
 		arena = new ArenaStage(client, follower, animations, game::speciesFor);
 		director = new BattleDirector(game, config::turnSeconds, battleListener());
 		trades.battleOn(director::active);
-		promptOverlay = new BattlePromptOverlay();
-		overlayManager.add(promptOverlay);
 		hotkeys = new BattleHotkeys(config::attackKey, config::switchKey, config::catchKey, config::runKey,
 			config::itemKey, () -> choiceOpen, this::hotkeyPressed);
 		keyManager.registerKeyListener(hotkeys);
@@ -303,15 +302,16 @@ public class GielinorGoPlugin extends Plugin
 			.build();
 		clientToolbar.addNavigation(navButton);
 		startWindow();
+		startControls();
 		clientThread.invoke(this::startOnClientThread);
 	}
 
 	@Override
 	protected void shutDown()
 	{
+		stopControls();
 		stopWindow();
 		keyManager.unregisterKeyListener(hotkeys);
-		overlayManager.remove(promptOverlay);
 		choiceOpen = false;
 		clientThread.invoke(director::end);
 		GoGame endingGame = loaded ? game : null;
@@ -441,7 +441,7 @@ public class GielinorGoPlugin extends Plugin
 		director.end();
 		closeWindow();
 		choiceOpen = false;
-		promptOverlay.show(Collections.emptyList());
+		battleControls.model().show(null, BattleControlsModel.Keys.NONE);
 		pendingLines.clear();
 		saveNow();
 		trades.clear();
@@ -2224,7 +2224,7 @@ public class GielinorGoPlugin extends Plugin
 			if (choiceOpen)
 			{
 				choiceOpen = false;
-				promptOverlay.show(Collections.emptyList());
+				battleControls.model().show(null, BattleControlsModel.Keys.NONE);
 				refreshPanel();
 			}
 
@@ -2236,21 +2236,15 @@ public class GielinorGoPlugin extends Plugin
 		flushHeld();
 		boolean open = director.promptOpen();
 		choiceOpen = open;
-		promptOverlay.show(open ? promptLines() : Collections.emptyList());
+		battleControls.model().show(open ? director.view() : null, controlKeys());
 		if (open || !director.active())
 			refreshPanel();
 	}
 
-	private List<String> promptLines()
+	private BattleControlsModel.Keys controlKeys()
 	{
-		BattleView view = director.view();
-		if (view == null)
-			return Collections.emptyList();
-
-		String hotkeyText = BattlePrompt.hotkeys(keyText(config.attackKey()), keyText(config.switchKey()),
-			keyText(config.catchKey()), keyText(config.itemKey()), keyText(config.runKey()), view.canCatch(),
-			view.forcedSwitch());
-		return BattlePrompt.lines(view, hotkeyText);
+		return new BattleControlsModel.Keys(keyText(config.attackKey()), keyText(config.switchKey()),
+			keyText(config.catchKey()), keyText(config.itemKey()), keyText(config.runKey()));
 	}
 
 	private static String keyText(Keybind key)
@@ -2659,6 +2653,85 @@ public class GielinorGoPlugin extends Plugin
 		firstRunNoticed = false;
 	}
 
+	/** Creates the painted battle controls and their mouse input, and registers them. */
+	private void startControls()
+	{
+		BattleControlsModel model = new BattleControlsModel(this::chooseBattle);
+		battleControls = new BattleControls(model, config::windowStyle, config::windowFraction,
+			client::getCanvasWidth, client::getCanvasHeight);
+		controlsInput = new WindowInput(battleControls::view, () -> null, dragKey, controlsSink(model));
+		overlayManager.add(battleControls);
+		mouseManager.registerMouseListener(controlsInput);
+		mouseManager.registerMouseWheelListener(controlsInput);
+	}
+
+	/** Unregisters the painted battle controls. */
+	private void stopControls()
+	{
+		mouseManager.unregisterMouseListener(controlsInput);
+		mouseManager.unregisterMouseWheelListener(controlsInput);
+		overlayManager.remove(battleControls);
+		battleControls.model().show(null, BattleControlsModel.Keys.NONE);
+	}
+
+	/**
+	 * @param model the controls' model
+	 * @return where the mouse events of the battle controls go, each carried over to the game thread
+	 */
+	private WindowInput.Sink controlsSink(BattleControlsModel model)
+	{
+		return new WindowInput.Sink()
+		{
+			@Override
+			public void moved(int x, int y)
+			{
+				clientThread.invoke(() -> model.onMoved(x, y));
+			}
+
+			@Override
+			public void left()
+			{
+				clientThread.invoke(model::onLeft);
+			}
+
+			@Override
+			public void pressed(int x, int y, int button, int modifiers)
+			{
+				clientThread.invoke(() -> model.onPressed(x, y, button));
+			}
+
+			@Override
+			public void released(int x, int y, int button, int modifiers)
+			{
+				clientThread.invoke(() -> model.onReleased(x, y, button));
+			}
+
+			@Override
+			public void dragged(int x, int y)
+			{
+				return;
+			}
+
+			@Override
+			public void wheel(int x, int y, int rotation)
+			{
+				return;
+			}
+
+			@Override
+			public void clickedOutside()
+			{
+				return;
+			}
+
+			@Override
+			public void toggleClicked()
+			{
+				return;
+			}
+		};
+	}
+
 	/** @return where the mouse events of the window go, each carried over to the game thread */
 	private WindowInput.Sink windowSink()
 	{
@@ -2847,6 +2920,7 @@ public class GielinorGoPlugin extends Plugin
 
 			Rectangle toggle = windowToggle.bounds();
 			boolean over = window.view().covers(mouse.getX(), mouse.getY())
+				|| battleControls.view().covers(mouse.getX(), mouse.getY())
 				|| toggle != null && toggle.contains(mouse.getX(), mouse.getY());
 			if (over)
 				client.getMenu().setMenuEntries(new MenuEntry[0]);
