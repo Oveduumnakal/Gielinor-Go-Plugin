@@ -2966,7 +2966,7 @@ public class GielinorGoPlugin extends Plugin
 
 		windowVersion++;
 		boolean storage = WindowRules.storageEnabled(game.inTeamArea(), game.nearBank());
-		WindowSnapshot snapshot = WindowSnapshot.of(windowVersion, state, storage);
+		WindowSnapshot snapshot = WindowSnapshot.of(windowVersion, state, storage).withFriends(friendsState());
 		window.shell().publish(snapshot);
 		if (!snapshot.firstRun())
 		{

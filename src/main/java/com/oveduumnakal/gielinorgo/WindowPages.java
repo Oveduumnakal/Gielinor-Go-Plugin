@@ -71,6 +71,7 @@ final class WindowPages implements WindowShell.PageActions
 	private final SummaryPainter summary;
 	private final BagPainter bag;
 	private final TasksPage tasks;
+	private final BattlePage battle;
 	private WindowStyle style;
 	private MotionMode mode = MotionMode.FULL;
 	private WindowTab tab = WindowTab.PARTY;
@@ -101,6 +102,7 @@ final class WindowPages implements WindowShell.PageActions
 		this.summary = new SummaryPainter(pictures, sink);
 		this.bag = new BagPainter(sink);
 		this.tasks = new TasksPage(sink);
+		this.battle = new BattlePage(shell, actions, clock, sink);
 	}
 
 	/**
@@ -161,6 +163,12 @@ final class WindowPages implements WindowShell.PageActions
 		return tasks;
 	}
 
+	/** @return the Battle page, whose scrolling column the tests drive */
+	BattlePage battlePage()
+	{
+		return battle;
+	}
+
 	/** @return the Party page's motion, for tests */
 	PartyMotion motion()
 	{
@@ -208,6 +216,13 @@ final class WindowPages implements WindowShell.PageActions
 			state.back();
 			tasks.layout(body, style, panel);
 			return tasks.hits(panel);
+		}
+
+		if (current == WindowTab.BATTLE && panel != null && style != null)
+		{
+			state.back();
+			battle.layout(body, style, shell.snapshot());
+			return battle.hits();
 		}
 
 		if (current != WindowTab.PARTY || panel == null || style == null)
@@ -365,6 +380,13 @@ final class WindowPages implements WindowShell.PageActions
 			return true;
 		}
 
+		if (current == WindowTab.BATTLE && panel != null)
+		{
+			battle.layout(ctx.body, ctx.style, ctx.snapshot);
+			battle.paint(g, ctx);
+			return true;
+		}
+
 		if (current != WindowTab.PARTY || panel == null)
 			return false;
 
@@ -461,6 +483,12 @@ final class WindowPages implements WindowShell.PageActions
 			return;
 
 		String id = hit.id();
+		if (tab == WindowTab.BATTLE)
+		{
+			battle.press(hit, panel, shell.snapshot().friends());
+			return;
+		}
+
 		if (pressBag(id, panel))
 			return;
 
@@ -606,12 +634,15 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		if (tab == WindowTab.TASKS)
 			tasks.wheel(x, y, rotation);
+
+		if (tab == WindowTab.BATTLE)
+			battle.wheel(x, y, rotation);
 	}
 
 	@Override
 	public boolean pointerPressed(int x, int y)
 	{
-		return tab == WindowTab.TASKS && tasks.pressed(x, y);
+		return tab == WindowTab.TASKS && tasks.pressed(x, y) || tab == WindowTab.BATTLE && battle.pressed(x, y);
 	}
 
 	@Override
@@ -619,12 +650,15 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		if (tab == WindowTab.TASKS)
 			tasks.dragged(x, y);
+
+		if (tab == WindowTab.BATTLE)
+			battle.dragged(x, y);
 	}
 
 	@Override
 	public boolean pointerReleased(int x, int y)
 	{
-		return tab == WindowTab.TASKS && tasks.released();
+		return tab == WindowTab.TASKS && tasks.released() || tab == WindowTab.BATTLE && battle.released();
 	}
 
 	@Override
@@ -644,6 +678,9 @@ final class WindowPages implements WindowShell.PageActions
 	public boolean key(int keyCode, int modifiers, long nowMs)
 	{
 		PanelState panel = loaded();
+		if (panel != null && tab == WindowTab.BATTLE)
+			return battle.key(keyCode);
+
 		if (panel == null || tab != WindowTab.PARTY || state.page() != PageState.Page.SUMMARY)
 			return false;
 

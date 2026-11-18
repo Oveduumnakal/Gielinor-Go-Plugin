@@ -23,6 +23,7 @@ final class WindowSnapshot
 	private final boolean readyEgg;
 	private final boolean firstRun;
 	private final int doneTasks;
+	private FriendsState friends = FriendsState.none();
 
 	private WindowSnapshot(long version, PanelState state, boolean loaded, boolean storageEnabled,
 		boolean pendingMove, boolean readyEgg, boolean firstRun, int doneTasks)
@@ -62,6 +63,24 @@ final class WindowSnapshot
 
 		return new WindowSnapshot(version, state, true, storageEnabled, pending, ready, !state.starters().isEmpty(),
 			done);
+	}
+
+	/**
+	 * Adds the friends in the party. Call it once while the snapshot is being built, before it is published.
+	 *
+	 * @param party the friends the Battle page lists
+	 * @return this snapshot
+	 */
+	WindowSnapshot withFriends(FriendsState party)
+	{
+		friends = party;
+		return this;
+	}
+
+	/** @return the friends in the party, none outside a party */
+	FriendsState friends()
+	{
+		return friends;
 	}
 
 	/** @return the version; a still layer painted for another version is painted again */
