@@ -64,6 +64,8 @@ final class CreatureBody extends RuneLiteObject
 	private final Model[] tipped = new Model[OpacityFade.SOLID + 1];
 	private final int widthScale;
 	private final int heightScale;
+	private final double restLowest;
+	private final int restLift;
 	private final AnimationController controller;
 	private boolean lying;
 	private double size = 1.0;
@@ -97,6 +99,8 @@ final class CreatureBody extends RuneLiteObject
 		this.posables[OpacityFade.SOLID] = posable;
 		this.widthScale = widthScale;
 		this.heightScale = heightScale;
+		this.restLowest = BodyLift.restLowest(source.getVerticesY(), source.getVerticesCount());
+		this.restLift = BodyLift.lift(restLowest, heightScale);
 		this.controller = new AnimationController(client, (Animation) null);
 		this.controller.setOnFinished(this::finished);
 	}
@@ -115,9 +119,11 @@ final class CreatureBody extends RuneLiteObject
 		int heightScale)
 	{
 		ModelData data = parts.data();
+		int lift = BodyLift.liftFor(data.getVerticesY(), data.getVerticesCount(), heightScale);
 		Model still = data.shallowCopy()
 			.cloneVertices()
 			.scale(widthScale, heightScale, widthScale)
+			.translate(0, -lift, 0)
 			.light();
 		Model posable = data.light();
 		if (still == null || posable == null)
@@ -125,6 +131,9 @@ final class CreatureBody extends RuneLiteObject
 
 		CreatureBody body = new CreatureBody(client, animations, parts.npcId(), data, still, posable, widthScale,
 			heightScale);
+		if (lift > 0)
+			log.debug("Gielinor Go: lifted NPC {} by {} units", parts.npcId(), lift);
+
 		body.setModel(posable);
 		body.setAnimationController(body.controller);
 		return body;
@@ -197,7 +206,8 @@ final class CreatureBody extends RuneLiteObject
 		if (body == null)
 			return null;
 
-		body.drawnHeight = (int) Math.round(FollowerService.heightOf(data) * heightScale / NpcModels.NORMAL_SCALE);
+		body.drawnHeight = (int) Math.round(FollowerService.heightOf(data) * heightScale / NpcModels.NORMAL_SCALE)
+			+ body.restLift;
 		body.setBase(animations.idle(parts.npcId()));
 		return body;
 	}
@@ -265,6 +275,12 @@ final class CreatureBody extends RuneLiteObject
 	double drawScale()
 	{
 		return (double) widthScale / NpcModels.NORMAL_SCALE;
+	}
+
+	/** @return how far the body is lifted so it stands on the ground, in scene units, 0 when it already does */
+	int liftUnits()
+	{
+		return restLift;
 	}
 
 	/** @return how tall the body is drawn, in scene units, when it was made by {@link #petSized}; else 0 */
@@ -609,6 +625,10 @@ final class CreatureBody extends RuneLiteObject
 		if (wide != NpcModels.NORMAL_SCALE || tall != NpcModels.NORMAL_SCALE)
 			posed.scale(wide, tall, wide);
 
+		int lift = BodyLift.lift(restLowest, tall);
+		if (lift > 0)
+			posed.translate(0, -lift, 0);
+
 		return posed;
 	}
 
@@ -720,6 +740,7 @@ final class CreatureBody extends RuneLiteObject
 			return faded(wanted).shallowCopy()
 				.cloneVertices()
 				.scale(widthScale, heightScale, widthScale)
+				.translate(0, -restLift, 0)
 				.light();
 		}
 		catch (RuntimeException | AssertionError e)

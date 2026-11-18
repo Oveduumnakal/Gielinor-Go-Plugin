@@ -120,4 +120,5 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Battle scenes.** A map load no longer forfeits a battle, and status tags sit on the right creature and clear
   when the status ends. (#133, #137, #138)
 - **World.** The follower and the arena foe stay on your side of walls, projectile colours no longer change other
-  models, floating text stays on its tile, and a model loads once. (#134, #135, #140, #150, #151)
+  models, floating text stays on its tile, a model loads once, and water creatures such as the dolphin stand on top
+  of the ground. (#134, #135, #140, #150, #151, #218)

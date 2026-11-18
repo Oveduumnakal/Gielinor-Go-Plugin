@@ -130,6 +130,7 @@ final class WildBody
 			if (made == null)
 				return false;
 
+			drawnHeight += made.liftUnits();
 			made.useAnimations(idleAnimation, walkAnimation);
 			made.setBase(made.standAnimation());
 			made.setOpacity(0.0);
