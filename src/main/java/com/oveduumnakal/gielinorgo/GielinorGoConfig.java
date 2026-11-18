@@ -115,7 +115,7 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "catchEffects",
 		name = "Catch effects",
-		description = "Your character makes a throwing motion when you throw a jar, then cheers for a catch,"
+		description = "Your character makes a throwing motion when you throw a jar,\nthen cheers for a catch,"
 			+ " stamps when the creature breaks free or cries when it runs away.\nThe creature reacts too: a catch"
 			+ " shrinks it into the jar, one that breaks free attacks you and one that"
 			+ " flees runs off.\nOnly you can see this, and no real monster is changed.",
@@ -239,7 +239,7 @@ public interface GielinorGoConfig extends Config
 		keyName = "chooseBattleActions",
 		name = "Choose battle actions",
 		description = "A battle with a wild creature or a City Champion waits for you each turn: Attack, Switch,"
-			+ " Catch or Run.\nChoose with the buttons on the game screen, or with the hotkeys below. With no choice"
+			+ " Catch or Run.\nChoose with the buttons on the game screen, or with the hotkeys below.\nWith no choice"
 			+ " in time, your creature attacks by itself.\nOff means a battle is one click and plays itself, with your"
 			+ " lead alone.\nA friend battle is played turn by turn only when both players have this on.",
 		position = 11
@@ -326,7 +326,7 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "runKey",
 		name = "Run hotkey",
-		description = "Runs away while a battle waits for your choice. Nothing is won and the creature cannot be"
+		description = "Runs away while a battle waits for your choice.\nNothing is won and the creature cannot be"
 			+ " battled again. Unset by default.",
 		position = 16
 	)
@@ -343,7 +343,7 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "itemKey",
 		name = "Item hotkey",
-		description = "Uses the first healing item that would help while a battle waits for your choice: Small"
+		description = "Uses the first healing item that would help while a battle waits for your choice: \nSmall"
 			+ " salve, Large salve, Revive draught, then Antidote.\nIt costs your turn. To pick the item and the"
 			+ " creature, use the Item button in the battle controls box. Unset by default.",
 		position = 17
@@ -362,7 +362,7 @@ public interface GielinorGoConfig extends Config
 		keyName = "leftClickWild",
 		name = "Left-click wild creatures",
 		description = "Always: a left click on a wild creature battles or catches it.\nNot while in combat: while you"
-			+ " fight a real monster the left click goes to the game, and Battle and Catch stay in the right-click"
+			+ " fight a real monster the left click goes to the game,\nand Battle and Catch stay in the right-click"
 			+ " menu.\nNever: Battle and Catch are in the right-click menu only.",
 		position = 18
 	)
@@ -412,7 +412,7 @@ public interface GielinorGoConfig extends Config
 		keyName = "skillingEncounters",
 		name = "Skilling encounters",
 		description = "Fishing, Woodcutting, Mining, Farming and Hunter XP drops sometimes bring a wild creature"
-			+ " beside you. The Wild creature rarity setting scales how often.",
+			+ " beside you.\nThe Wild creature rarity setting scales how often.",
 		position = 19
 	)
 	default boolean skillingEncounters()
@@ -463,8 +463,8 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = GielinorGoConfig.WINDOW_SIZE,
 		name = "Window size",
-		description = "Sets the painted window to a size and centres it. You can also hold RuneLite's drag key"
-			+ " (Alt unless you changed it) and drag the window's edge, or use the window's Reset window button.",
+		description = "Sets the painted window to a size and centres it.\nYou can also hold RuneLite's drag key"
+			+ " (Alt unless you changed it)\nand drag the window's edge, or use the window's Reset window button.",
 		position = 23
 	)
 	default WindowSizePreset windowSize()
@@ -480,8 +480,8 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = GielinorGoConfig.WINDOW_STYLE,
 		name = "Window style",
-		description = "Dark glass is blue-purple with a light lead row. RuneLite dark is grey and orange. The window's"
-			+ " style button changes this too.",
+		description = "Dark glass is blue-purple with a light lead row.\nRuneLite dark is grey and orange."
+			+ " The window's style button changes this too.",
 		position = 24
 	)
 	default WindowTheme windowStyle()
@@ -497,10 +497,10 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "windowKeyboard",
 		name = "Window keyboard",
-		description = "Lets you use the painted window from the keyboard (or a controller mapped to keys): Left and"
-			+ " Right change tab, Up and Down move the highlight, Enter or Space select, Esc goes back. Keys go to"
-			+ " the window only while it has focus; click the window to give it focus. Chat typing is never"
-			+ " touched.",
+		description = "Lets you use the painted window from the keyboard\n(or a controller mapped to keys)."
+			+ "\nLeft and Right change tab, Up and Down move the highlight, Enter or Space select, Esc goes back."
+			+ "\nKeys go to the window only while it has focus; click the window to give it focus."
+			+ "\nChat typing is never touched.",
 		position = 25
 	)
 	default boolean windowKeyboard()

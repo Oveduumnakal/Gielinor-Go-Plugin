@@ -383,6 +383,42 @@ public class StoragePageTest
 		assertEquals(problems.toString(), "", problems.toString());
 	}
 
+	@Test
+	public void selectingDoesNotChangeTheRowHeightOrPosition()
+	{
+		for (int[] canvas : CANVASES)
+		{
+			PartyRig rig = page(stored(4), canvas[0], canvas[1]);
+			Rectangle[] before = rows(rig);
+
+			rig.click(StoragePage.ID_SELECT);
+
+			assertRowsEqual(canvas[0] + "x" + canvas[1] + " selecting", before, rows(rig));
+
+			rig.click(StoragePage.ID_SELECT);
+
+			assertRowsEqual(canvas[0] + "x" + canvas[1] + " done", before, rows(rig));
+		}
+	}
+
+	private static Rectangle[] rows(PartyRig rig)
+	{
+		Rectangle[] rows = new Rectangle[2];
+		for (int i = 0; i < rows.length; i++)
+			rows[i] = new Rectangle(rig.hit(StoragePage.rowId(i)).bounds());
+
+		return rows;
+	}
+
+	private static void assertRowsEqual(String label, Rectangle[] expected, Rectangle[] actual)
+	{
+		for (int i = 0; i < expected.length; i++)
+		{
+			assertEquals(label + " row " + i + " height", expected[i].height, actual[i].height);
+			assertEquals(label + " row " + i + " y", expected[i].y, actual[i].y);
+		}
+	}
+
 	private static List<CreatureView> withLongNames(int count)
 	{
 		List<CreatureView> list = stored(count);
