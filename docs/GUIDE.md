@@ -19,7 +19,9 @@ Every feature and every number, in detail. For the short version, see the [READM
   with it off, the whole team is), Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
   behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
   finds (the **Wild creature rarity** setting is the chance for Common monsters; Uncommon ones turn wild 0.6 times as
-  often, Rare 0.35, Epic 0.15 and Legendary 0.05). At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
+  often, Rare 0.35, Epic 0.15 and Legendary 0.05). Hunter creatures such as pyre foxes, kebbits, salamanders, moths,
+  antelope and implings have no combat level in the game; they turn wild like any other monster and their level is
+  their Hunter level. At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
   the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
   seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
@@ -158,6 +160,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   follower, the Party row and the battle scenes. Creatures that hatch, evolve or come from a trade, and creatures
   caught before this was added, look like the species' usual monster. Only you can see it, it cannot be clicked, and
   you can switch it off in the settings.
+  When you stand still it wanders around within 3 tiles of you, and walks back to your trail when you set off; the
+  setting "Lead wanders when you stop" turns that off.
 
 - **Every creature is one of a kind**
 
@@ -314,7 +318,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Releasing creatures**
 
   Right-click a creature in Storage and choose **Release**, or press **Select** at the top of the Storage page, tick
-  as many creatures as you like and press **Release selected**. One confirm lists the names and the total XP. Your
+  as many creatures as you like and press **Release selected**. Filter first, then **Tick all shown**, to release a
+  whole set at once. One confirm lists the names and the total XP. Your
   lead creature gains creature XP for each one: 20 plus 4 for every level of the released creature, times 1 for a
   Common, 1.5 for an Uncommon, 2 for a Rare, 3 for an Epic and 4 for a Legendary. A Level 10 Common pays 60 XP. The
   XP counts like any other, so it can level the lead, teach it moves and evolve it. A release never pays jars or
@@ -574,8 +579,12 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Bag, Storage, Collection, Tasks and Battle**
 
   **Bag** holds your jars, healing items (hover for what each does) and the eggs you carry. **Storage** holds the
-  creatures you are not carrying. **Collection** is the Creature Log of every species you can meet in the game
-  (1,096): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
+  creatures you are not carrying. On Storage, **Sort** orders the list by level, species, rarity, date caught or
+  nickname, and **Filter** shows only some creatures: pick a level, style, rarity, rating, gender, gilded or
+  nicknamed, then click its chip to flip between showing and hiding it. Your choice is kept until you restart
+  RuneLite. **Select** with **Tick all shown** ticks only what you can see, and hidden creatures are never released.
+  **Collection** is the Creature Log of every species you can meet in the game
+  (1,139): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
   Click a species you have seen or caught for its examine text, evolution line (stages you have not met show as
   `???`), how many you have caught and whether you own a gilded one, and right-click it for **Open wiki**. **Tasks**
   has your daily and weekly tasks, the login streak and the milestone list. **Battle** lists the City Champions, the

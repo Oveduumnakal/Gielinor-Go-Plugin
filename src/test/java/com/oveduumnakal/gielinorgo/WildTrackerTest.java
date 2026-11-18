@@ -437,4 +437,20 @@ public class WildTrackerTest
 		assertNull(tracker.offerLoose(GOBLIN, false, WildTracker.GILDED_ONE_IN, false));
 		assertNull(tracker.offerLoose(beast().asQuestOnly(), false, WildTracker.GILDED_ONE_IN, false));
 	}
+
+	@Test
+	public void aHunterCreatureOfferedByItsHunterLevelIsWildAtThatLevel()
+	{
+		Species fox = new Gson().fromJson(
+			"{\"name\":\"Pyre fox\",\"level\":57,\"style\":\"SLASH\",\"ids\":[13138],\"hunter\":true}",
+			Species.class);
+		WildTracker tracker = new WildTracker(new Random(7));
+
+		WildEntry entry = tracker.offer(9, 13138, fox, WildEligibility.combatLevel(fox, 0), false, 0, ALWAYS,
+			WildTracker.GILDED_ONE_IN, false);
+
+		assertNotNull(entry);
+		assertEquals(57, entry.combatLevel());
+		assertTrue("wild level " + entry.level(), Math.abs(entry.level() - 23) <= 2);
+	}
 }

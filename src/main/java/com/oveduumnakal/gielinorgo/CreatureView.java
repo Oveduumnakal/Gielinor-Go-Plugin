@@ -31,6 +31,7 @@ final class CreatureView
 	private String examine;
 	private String growsInto;
 	private boolean fainted;
+	private long caughtAtMs;
 
 	CreatureView(String name, int level, double xpProgress, double hpFraction, Rarity rarity, CombatType type,
 		boolean gilded, String nickname)
@@ -190,13 +191,33 @@ final class CreatureView
 		return copy;
 	}
 
+	/**
+	 * Attaches the time the creature was caught, which the Storage sort by date caught reads.
+	 *
+	 * @param ms the catch time in epoch milliseconds, or 0 when unknown
+	 * @return a copy of this view that knows when it was caught
+	 */
+	CreatureView withCaught(long ms)
+	{
+		CreatureView copy = withSpecies(species);
+		copy.caughtAtMs = ms;
+		return copy;
+	}
+
 	private CreatureView copyExtras(CreatureView copy)
 	{
+		copy.caughtAtMs = caughtAtMs;
 		copy.gender = gender;
 		copy.examine = examine;
 		copy.growsInto = growsInto;
 		copy.fainted = fainted;
 		return copy;
+	}
+
+	/** @return when the creature was caught in epoch milliseconds, or 0 when the view was built without it */
+	long caughtAtMs()
+	{
+		return caughtAtMs;
 	}
 
 	/** @return the creature's gender, or null when the view was built without one */
@@ -378,6 +399,7 @@ final class CreatureView
 			&& moves.equals(that.moves)
 			&& pending.equals(that.pending)
 			&& Objects.equals(evolvesWhen, that.evolvesWhen)
+			&& caughtAtMs == that.caughtAtMs
 			&& rolls.equals(that.rolls);
 	}
 
@@ -401,6 +423,7 @@ final class CreatureView
 			&& moves.equals(that.moves)
 			&& pending.equals(that.pending)
 			&& Objects.equals(evolvesWhen, that.evolvesWhen)
+			&& caughtAtMs == that.caughtAtMs
 			&& rolls.equals(that.rolls);
 	}
 

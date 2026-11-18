@@ -578,6 +578,23 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Whether the lead creature wanders near the player when the player stands still.
+	 *
+	 * @return true to let the lead wander
+	 */
+	@ConfigItem(
+		keyName = "followerWander",
+		name = "Lead wanders when you stop",
+		description = "When you stand still, your lead creature wanders around within 3 tiles of you\n"
+			+ "instead of waiting one tile behind you. Only you can see it.",
+		position = 31
+	)
+	default boolean followerWander()
+	{
+		return true;
+	}
+
+	/**
 	 * The share of the game screen's width the painted window takes. It follows the game window. Set by dragging the
 	 * window's edge and by the size presets; not shown in the settings.
 	 *
