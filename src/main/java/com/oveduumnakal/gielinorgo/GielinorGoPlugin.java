@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.Menu;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.NPC;
@@ -208,6 +209,12 @@ public class GielinorGoPlugin extends Plugin
 	private TrackerOverlay trackerOverlay;
 	private TrackerModel trackerModel;
 	private TrackerView lastTracker = TrackerView.NONE;
+	private WildCatchMenu wildCatchMenu;
+	private WildMenuOverlay wildMenuOverlay;
+	private WildMenuInput wildMenuInput;
+	private WildMenuKeys wildMenuKeys;
+	private volatile WildMenuInput.Spot wildSpot;
+	private volatile boolean paintedMenuFailed;
 	private BattleHotkeys hotkeys;
 	private volatile boolean choiceOpen;
 	private int steerWild = Notice.PLAYER;
@@ -310,6 +317,7 @@ public class GielinorGoPlugin extends Plugin
 		startWindow();
 		startControls();
 		startTracker();
+		startWildMenu();
 		clientThread.invoke(this::startOnClientThread);
 	}
 
@@ -317,6 +325,7 @@ public class GielinorGoPlugin extends Plugin
 	protected void shutDown()
 	{
 		stopTracker();
+		stopWildMenu();
 		stopControls();
 		stopWindow();
 		keyManager.unregisterKeyListener(hotkeys);
@@ -448,6 +457,7 @@ public class GielinorGoPlugin extends Plugin
 
 		director.end();
 		closeWindow();
+		closePaintedMenu();
 		choiceOpen = false;
 		battleControls.model().show(null, BattleControlsModel.Keys.NONE);
 		clearTracker();
@@ -768,12 +778,21 @@ public class GielinorGoPlugin extends Plugin
 	 * the player most likely wants on top, so a plain click does that and the right-click menu offers the rest. The
 	 * entries are client-side only and nothing is sent to the game. They are added only while the mouse is over the
 	 * game view (the menu then has a "Walk here"), never over an interface, and never while the menu is open. A click
-	 * on the body therefore never walks the player to the tile behind it.
+	 * on the body therefore never walks the player to the tile behind it. With the painted menu on it also publishes
+	 * the creature under the pointer, so a right click on it opens the painted menu instead, and while that menu is
+	 * open it keeps the game's own entries cleared.
 	 */
 	private void wildMenu()
 	{
+		WildMenuInput.Spot spot = null;
 		try
 		{
+			if (wildCatchMenu.isOpen())
+			{
+				keepPaintedMenu();
+				return;
+			}
+
 			if (bodies.isEmpty() || client.isMenuOpen() || client.getMouseCanvasPosition() == null)
 			{
 				wildHover.clear();
@@ -789,10 +808,14 @@ public class GielinorGoPlugin extends Plugin
 				overScene |= entry.getType() == MenuAction.WALK;
 			}
 
-			WildBody hit = overScene || hasOurs ? bodies.under(client.getMouseCanvasPosition()) : null;
+			net.runelite.api.Point mouse = client.getMouseCanvasPosition();
+			WildBody hit = overScene || hasOurs ? bodies.under(mouse) : null;
 			WildEntry tracked = hit == null ? null : tracker.get(hit.entry().wildId());
 			if (tracked != null && !hasOurs)
 				addWildOptions(tracked);
+
+			if (tracked != null && paintedMenuOn())
+				spot = new WildMenuInput.Spot(tracked.wildId(), mouse.getX(), mouse.getY());
 
 			if (tracked != null && WildHover.wanted(config.wildTooltip(), false, true, director.active()))
 				wildHover.update(tracked.wildId(), WildTip.text(tracked), System.currentTimeMillis());
@@ -802,7 +825,12 @@ public class GielinorGoPlugin extends Plugin
 		catch (RuntimeException | AssertionError e)
 		{
 			wildHover.clear();
+			spot = null;
 			log.debug("Gielinor Go: could not add the wild creature's menu entries", e);
+		}
+		finally
+		{
+			wildSpot = spot;
 		}
 	}
 
@@ -1522,16 +1550,17 @@ public class GielinorGoPlugin extends Plugin
 	 * Works out which species a monster is, for turning it wild.
 	 *
 	 * @param npc the monster
-	 * @return the species, or null when the monster cannot be fought, is not in the species list or is a quest-only
-	 *     species (those never turn wild)
+	 * @return the species, or null when the monster is not in the species list, has no combat level (unless it is a
+	 *     listed Hunter creature) or is a quest-only species (those never turn wild)
 	 */
 	private Species speciesOf(NPC npc)
 	{
-		if (npc == null || npc.getName() == null || npc.getCombatLevel() < 1 || game == null)
+		if (npc == null || npc.getName() == null || game == null)
 			return null;
 
 		Species found = game.speciesFor(Text.removeTags(npc.getName()));
-		return found == null || found.questOnly() || skilling.exclusive(found) ? null : found;
+		return WildEligibility.eligible(found, npc.getId(), npc.getCombatLevel()) && !skilling.exclusive(found)
+			? found : null;
 	}
 
 	/** @return whether wild creatures may appear where the player is right now */
@@ -1561,6 +1590,7 @@ public class GielinorGoPlugin extends Plugin
 		Creature lead = config.showFollower() && !hiddenForPvp() ? game.data().lead() : null;
 		leadTag = lead != null && config.showLeadName()
 			? FollowerTagOverlay.nameFor(lead.nickname, game.speciesNameOf(lead), BondRules.hearts(lead.bond)) : null;
+		follower.setWander(config.followerWander());
 		follower.gameTick(lead == null ? null : lead.species, lead == null ? 0 : lead.npcId,
 			lead != null && lead.gilded);
 	}
@@ -1576,7 +1606,8 @@ public class GielinorGoPlugin extends Plugin
 		WorldPoint point = npc.getWorldLocation();
 		boolean underground = point != null && Terrain.underground(point.getX(), point.getY());
 		boolean events = config.spawnEvents();
-		WildEntry entry = tracker.offer(npc.getIndex(), npc.getId(), species, npc.getCombatLevel(), underground,
+		WildEntry entry = tracker.offer(npc.getIndex(), npc.getId(), species,
+			WildEligibility.combatLevel(species, npc.getCombatLevel()), underground,
 			now, calendar.monsterChance(species, config.wildChance(), events, spawnClock),
 			game.gildedOneIn(calendar.gildedOneIn(species, events, spawnClock)), events);
 		if (entry == null)
@@ -1688,21 +1719,195 @@ public class GielinorGoPlugin extends Plugin
 		String target = WildMenu.target(entry.prefix(), species.name(), rarity.color().getRGB(), entry.level(),
 			entry.record());
 		int wildId = entry.wildId();
+		List<WildMenu.Top> tops = wildTops(entry, jarChoices(entry));
+		boolean leftClick = WildMenu.leftClickAllowed(config.leftClickWild(),
+			combatWatch.inCombat(System.currentTimeMillis()));
+		for (int i = tops.size() - 1; i >= 0; i--)
+		{
+			WildMenu.Top top = tops.get(i);
+			if (top.kind() == WildMenu.TopKind.CATCH_PLAIN)
+				addCatchOption(entry, target, top.jar(), leftClick);
+			else if (top.kind() == WildMenu.TopKind.CATCH_SUBMENU)
+				addCatchSubmenu(wildId, target, top.rows(), leftClick);
+			else
+				addBattleOption(wildId, target, leftClick);
+		}
+	}
+
+	/**
+	 * Lays out the entries of a wild creature's menu, the left-click one first, for the game's menu and the painted
+	 * one alike.
+	 *
+	 * @param entry the wild creature
+	 * @param choices every owned jar with its odds, from {@link #jarChoices}
+	 * @return the entries, top first
+	 */
+	private List<WildMenu.Top> wildTops(WildEntry entry, List<JarSuggest.JarChoice> choices)
+	{
+		int wildId = entry.wildId();
 		WildBody body = bodies.get(wildId);
 		boolean canBattle = game.canBattle(System.currentTimeMillis(), config.chooseBattleActions());
 		boolean withBattle = !entry.battled() && !director.active() && body != null && !body.life().leaving()
 			&& canBattle;
-		List<WildMenu.Item> items = WildMenu.topFirst(game.jarToThrow(), game.matchingSpecialtyJars(entry),
-			withBattle, WildMenu.leftClickCatches(knockedOut(wildId), canBattle));
-		boolean leftClick = WildMenu.leftClickAllowed(config.leftClickWild(),
-			combatWatch.inCombat(System.currentTimeMillis()));
-		for (int i = items.size() - 1; i >= 0; i--)
+		return WildMenu.layout(game.jarToThrow(), choices, withBattle,
+			WildMenu.leftClickCatches(knockedOut(wildId), canBattle), WildMenu.SUBMENU);
+	}
+
+	/**
+	 * Lists every jar the player owns with its odds against one wild creature right now.
+	 *
+	 * @param entry the wild creature
+	 * @return one choice per owned jar, in enum order
+	 */
+	private List<JarSuggest.JarChoice> jarChoices(WildEntry entry)
+	{
+		boolean knockedOut = knockedOut(entry.wildId());
+		double healthLeft = inBattleWith(entry) ? foeHealthLeft() : CatchOdds.NOT_IN_BATTLE;
+		List<JarSuggest.JarChoice> choices = new ArrayList<>();
+		for (Map.Entry<JarType, Integer> owned : game.ownedJars().entrySet())
 		{
-			WildMenu.Item item = items.get(i);
-			if (item.isCatch())
-				addCatchOption(entry, target, item.jar(), leftClick);
-			else
-				addBattleOption(wildId, target, leftClick);
+			JarType jar = owned.getKey();
+			boolean matching = jar.specialty() && entry.traits().contains(jar.trait());
+			choices.add(new JarSuggest.JarChoice(jar, owned.getValue(),
+				CatchOdds.of(jar, entry, knockedOut, healthLeft), matching));
+		}
+
+		return choices;
+	}
+
+	/**
+	 * Adds the Catch entry that opens the list of jars: the suggested ones, a grey line, then the rest. The entry
+	 * itself does nothing when clicked; a row throws its jar.
+	 *
+	 * @param wildId the wild creature's id
+	 * @param target the coloured creature name and level
+	 * @param rows the rows of the list, top first
+	 * @param leftClick whether the entry may take the left click; false sinks it below the game's own entries
+	 */
+	private void addCatchSubmenu(int wildId, String target, List<WildMenu.Row> rows, boolean leftClick)
+	{
+		MenuEntry parent = client.getMenu()
+			.createMenuEntry(-1)
+			.setOption(WildMenu.CATCH)
+			.setTarget(target)
+			.setType(MenuAction.RUNELITE)
+			.setDeprioritized(!leftClick);
+		Menu sub = parent.createSubMenu();
+		for (int i = rows.size() - 1; i >= 0; i--)
+		{
+			WildMenu.Row row = rows.get(i);
+			if (row.kind() == WildMenu.RowKind.SEPARATOR)
+			{
+				sub.createMenuEntry(-1)
+					.setOption("<col=808080>" + WildMenu.SEPARATOR + "</col>")
+					.setType(MenuAction.RUNELITE);
+				continue;
+			}
+
+			JarSuggest.JarChoice choice = row.choice();
+			JarType jar = choice.jar();
+			sub.createMenuEntry(-1)
+				.setOption(WildMenu.jarOption(choice))
+				.setTarget(WildMenu.jarTarget(choice))
+				.setType(MenuAction.RUNELITE)
+				.onClick(clicked -> throwJar(wildId, jar));
+		}
+	}
+
+	/** @return whether a right click on a wild creature may open the painted menu: chosen, and it has not failed */
+	private boolean paintedMenuOn()
+	{
+		return config.wildMenu() == WildMenuStyle.PAINTED && !paintedMenuFailed;
+	}
+
+	/**
+	 * Opens the painted menu for a wild creature, on the game thread. The right click that asked for it was taken
+	 * from the game, so if the menu cannot open the plugin falls back to the game's own menu for good.
+	 *
+	 * @param wildId the wild creature's id
+	 * @param x the pointer's canvas x
+	 * @param y the pointer's canvas y
+	 */
+	private void openPaintedMenu(int wildId, int x, int y)
+	{
+		try
+		{
+			WildEntry entry = tracker.get(wildId);
+			if (entry == null || !paintedMenuOn())
+			{
+				closePaintedMenu();
+				return;
+			}
+
+			List<JarSuggest.JarChoice> choices = jarChoices(entry);
+			List<WildMenu.Top> tops = wildTops(entry, choices);
+			WindowStyle style = wildMenuOverlay.style();
+			String title = WildMenu.title(entry.prefix(), entry.species().name(), entry.level(), entry.record());
+			wildCatchMenu.open(wildId, title, tops, choices, () -> battle(wildId), jar -> throwJar(wildId, jar), x, y,
+				wildMenuOverlay.canvas(), style, WildMenuOverlay.metrics(style), System.currentTimeMillis());
+			wildHover.clear();
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			failPaintedMenu(e);
+		}
+	}
+
+	/**
+	 * Runs while the painted menu is open, on each client tick: closes it when the setting changed or the creature
+	 * is gone, and keeps the game's own entries empty so no "Walk here" shows through it.
+	 */
+	private void keepPaintedMenu()
+	{
+		wildHover.clear();
+		int wildId = wildCatchMenu.wildId();
+		WildBody body = bodies.get(wildId);
+		if (!paintedMenuOn() || tracker.get(wildId) == null || body == null || body.life().leaving())
+		{
+			closePaintedMenu();
+			return;
+		}
+
+		client.getMenu().setMenuEntries(new MenuEntry[0]);
+	}
+
+	/** Closes the painted menu and forgets the creature the pointer was over. */
+	private void closePaintedMenu()
+	{
+		wildSpot = null;
+		if (wildCatchMenu != null)
+			wildCatchMenu.close();
+
+		if (wildMenuInput != null)
+			wildMenuInput.reset();
+	}
+
+	/**
+	 * Gives the painted menu up for this session after something threw, so a right click opens the game's menu.
+	 *
+	 * @param e what went wrong
+	 */
+	private void failPaintedMenu(Throwable e)
+	{
+		log.debug("Gielinor Go: the painted wild creature menu failed, using the game's menu", e);
+		paintedMenuFailed = true;
+		closePaintedMenu();
+	}
+
+	/**
+	 * Runs one piece of the painted menu's work on the game thread, giving the menu up if it throws.
+	 *
+	 * @param work what to do
+	 */
+	private void guardPaintedMenu(Runnable work)
+	{
+		try
+		{
+			work.run();
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			failPaintedMenu(e);
 		}
 	}
 
@@ -1731,9 +1936,8 @@ public class GielinorGoPlugin extends Plugin
 		String odds = " - no jars";
 		if (jar != null)
 		{
-			double chance = inBattleWith(entry)
-				? CatchRules.inBattle(jar, entry.combatLevel(), entry.traits(), foeHealthLeft())
-				: CatchRules.chance(jar, entry.combatLevel(), entry.weakened(), entry.traits(), knockedOut(wildId));
+			double chance = CatchOdds.of(jar, entry, knockedOut(wildId),
+				inBattleWith(entry) ? foeHealthLeft() : CatchOdds.NOT_IN_BATTLE);
 			odds = " - " + jar.label() + " jar " + percent(chance);
 		}
 
@@ -2758,6 +2962,63 @@ public class GielinorGoPlugin extends Plugin
 	{
 		overlayManager.remove(trackerOverlay);
 		trackerOverlay.publish(Collections.emptyList());
+	}
+
+	/** Creates the painted wild creature menu, its overlay and its mouse and key input, and registers them. */
+	private void startWildMenu()
+	{
+		wildCatchMenu = new WildCatchMenu();
+		wildMenuOverlay = new WildMenuOverlay(wildCatchMenu, config::windowStyle, config::windowAnimations,
+			config::windowFraction, client::getCanvasWidth, client::getCanvasHeight, System::currentTimeMillis,
+			this::paintedMenuBroke);
+		wildMenuInput = new WildMenuInput(() -> wildSpot, wildCatchMenu::isOpen, dragKey, System::currentTimeMillis,
+			wildMenuSink());
+		wildMenuKeys = new WildMenuKeys(wildCatchMenu::uses, dragKey, () -> chatTyping,
+			key -> clientThread.invoke(() -> guardPaintedMenu(() -> wildCatchMenu.onKeyPressed(key))));
+		overlayManager.add(wildMenuOverlay);
+		mouseManager.registerMouseListener(wildMenuInput);
+		keyManager.registerKeyListener(wildMenuKeys);
+	}
+
+	/** Unregisters the painted wild creature menu. */
+	private void stopWildMenu()
+	{
+		keyManager.unregisterKeyListener(wildMenuKeys);
+		mouseManager.unregisterMouseListener(wildMenuInput);
+		overlayManager.remove(wildMenuOverlay);
+		closePaintedMenu();
+	}
+
+	/** Called by the menu's overlay when painting threw: the game's own menu is used from now on. */
+	private void paintedMenuBroke()
+	{
+		paintedMenuFailed = true;
+		closePaintedMenu();
+	}
+
+	/** @return where the mouse events of the painted wild creature menu go, each carried over to the game thread */
+	private WildMenuInput.Sink wildMenuSink()
+	{
+		return new WildMenuInput.Sink()
+		{
+			@Override
+			public void open(int wildId, int x, int y)
+			{
+				clientThread.invoke(() -> openPaintedMenu(wildId, x, y));
+			}
+
+			@Override
+			public void moved(int x, int y)
+			{
+				clientThread.invoke(() -> guardPaintedMenu(() -> wildCatchMenu.onMoved(x, y)));
+			}
+
+			@Override
+			public void pressed(int x, int y, int button)
+			{
+				clientThread.invoke(() -> guardPaintedMenu(() -> wildCatchMenu.onPressed(x, y, button)));
+			}
+		};
 	}
 
 	/** Unregisters the painted battle controls. */

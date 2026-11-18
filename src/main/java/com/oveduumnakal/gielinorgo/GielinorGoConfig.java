@@ -578,6 +578,41 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Which menu a right click on a wild creature opens.
+	 *
+	 * @return the game's own menu by default
+	 */
+	@ConfigItem(
+		keyName = "wildMenu",
+		name = "Wild creature menu",
+		description = "Game: right-click a wild creature for the game's own menu.\nPainted: a menu in the window's"
+			+ " style with Battle and a Catch list of your jars.\nHold Shift while right-clicking to get the game's"
+			+ " menu (Walk here, Examine) either way.",
+		position = 30
+	)
+	default WildMenuStyle wildMenu()
+	{
+		return WildMenuStyle.GAME;
+	}
+
+	/**
+	 * Whether the lead creature wanders near the player when the player stands still.
+	 *
+	 * @return true to let the lead wander
+	 */
+	@ConfigItem(
+		keyName = "followerWander",
+		name = "Lead wanders when you stop",
+		description = "When you stand still, your lead creature wanders around within 3 tiles of you\n"
+			+ "instead of waiting one tile behind you. Only you can see it.",
+		position = 31
+	)
+	default boolean followerWander()
+	{
+		return true;
+	}
+
+	/**
 	 * The share of the game screen's width the painted window takes. It follows the game window. Set by dragging the
 	 * window's edge and by the size presets; not shown in the settings.
 	 *

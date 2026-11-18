@@ -847,6 +847,25 @@ final class GoGame
 	}
 
 	/**
+	 * Lists every jar the player has, for the wild creature menu. Read on the client thread, like
+	 * {@link #jarToThrow()}.
+	 *
+	 * @return each jar with a count above 0 and its count, in enum order
+	 */
+	Map<JarType, Integer> ownedJars()
+	{
+		Map<JarType, Integer> owned = new EnumMap<>(JarType.class);
+		for (JarType type : JarType.values())
+		{
+			int count = data.jarCount(type);
+			if (count > 0)
+				owned.put(type, count);
+		}
+
+		return owned;
+	}
+
+	/**
 	 * Lists the specialty jars worth offering for one creature: owned, good at one of its traits, and not already
 	 * the jar {@link #jarToThrow()} picks.
 	 *
@@ -3599,6 +3618,7 @@ final class GoGame
 				MoveLearning.pending(creature, moves), BondRules.hearts(creature.bond), waitingText(creature))
 				.withSpecies(found)
 				.withGender(creature.gender())
+				.withCaught(creature.caughtAtMs)
 				.withDetails(examine.textFor(creature.species), found == null ? null : growsInto(found.key())));
 		}
 
