@@ -103,6 +103,8 @@ A Creature Log, daily tasks and daily events give you goals.
   Legendary 0.05. The Wild creature rarity setting stays the rate for Common ones. (#213)
 - **Seen and caught marks.** A mark beside each wild creature's name shows whether its species is new to you,
   seen or already caught. (#209)
+- **Wild creature tooltip.** Hover a wild creature to see its name, level, style and whether you have seen or caught
+  its species. (#205)
 - **Hunter creatures.** Pyre foxes, kebbits, salamanders, moths, antelope, implings and other Hunter creatures with
   no combat level now turn wild and can be battled and caught; their level is their Hunter level. (#207)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
