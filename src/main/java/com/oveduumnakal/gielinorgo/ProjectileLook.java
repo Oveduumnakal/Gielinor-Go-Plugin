@@ -48,6 +48,29 @@ enum ProjectileLook
 		new short[]{7104, 6080, 960}, new short[]{8092, 22464, 22430}),
 
 	/**
+	 * Bind, the entangling bolt. Spot animation {@code SpotanimID.ENTANGLE_TRAVEL}: model 3127, animation 703, no
+	 * recolours.
+	 */
+	BIND(SpotanimID.ENTANGLE_TRAVEL, 3127, 703, 128, 1.0, 40, 40, new short[0], new short[0]),
+
+	/**
+	 * Hex, a curse. Spot animation {@code SpotanimID.CURSE_TRAVEL}: model 3100, animation 675, no recolours.
+	 */
+	CURSE(SpotanimID.CURSE_TRAVEL, 3100, 675, 128, 1.0, 75, 75, new short[0], new short[0]),
+
+	/**
+	 * Flame Lash, the fire wave. Spot animation {@code SpotanimID.FIREWAVE_TRAVEL}: model 3115, animation 692, no
+	 * recolours (the earth wave is the same model with three recolours).
+	 */
+	FIRE_WAVE(SpotanimID.FIREWAVE_TRAVEL, 3115, 692, 128, 1.0, 60, 60, new short[0], new short[0]),
+
+	/**
+	 * Hellfire, the dark blast. Spot animation {@code SpotanimID.IBANBLAST_TRAVEL}: model 3077, animation 656, no
+	 * recolours.
+	 */
+	IBAN_BLAST(SpotanimID.IBANBLAST_TRAVEL, 3077, 656, 128, 1.0, 60, 60, new short[0], new short[0]),
+
+	/**
 	 * Dragon fire, for a dragon's breath. Spot animation {@code SpotanimID.FIREBREATH_TRAVEL}: model 3154, animation
 	 * 373, no recolours. The model is two tiles wide, so it is drawn at two fifths.
 	 */
@@ -149,6 +172,18 @@ enum ProjectileLook
 
 			case "earth_surge":
 				return EARTH_WAVE;
+
+			case "bind":
+				return BIND;
+
+			case "hex":
+				return CURSE;
+
+			case "flame_lash":
+				return FIRE_WAVE;
+
+			case "hellfire":
+				return IBAN_BLAST;
 
 			default:
 				return SPELL;
