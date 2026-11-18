@@ -155,6 +155,21 @@ final class StoragePageFlow
 			return true;
 		}
 
+		if (StoragePage.ID_VIEW.equals(id))
+		{
+			page.setMode(page.mode().next());
+			return true;
+		}
+
+		int heading = StoragePage.group(id);
+		if (heading >= 0)
+		{
+			if (page.selecting())
+				page.toggleGroup(heading);
+
+			return true;
+		}
+
 		if (StoragePage.ID_TICK_ALL.equals(id))
 		{
 			page.tickAllShown();
