@@ -9,6 +9,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -180,6 +181,113 @@ public class PartyRenderSmokeTest
 							assertFalse(where, rig.drawn.isEmpty());
 							problems.append(problems(rig, where));
 						}
+
+		assertEquals(problems.toString(), "", problems.toString());
+	}
+
+	private static PanelState storedState(int size)
+	{
+		List<CreatureView> storage = new ArrayList<>();
+		for (int i = 0; i < size; i++)
+			storage.add(variety(i).withStats(1234 + i, 99 + i, 88, 777).withCaught(1_794_000_000_000L + i));
+
+		Map<ItemType, Integer> items = new EnumMap<>(ItemType.class);
+		items.put(ItemType.SMALL_SALVE, 3);
+		return new PanelState(7, 0.2, 4, new EnumMap<>(JarType.class), JarType.BRONZE, 0, PartyRig.team(2), storage,
+			Collections.emptyList(), 0, 0, Collections.emptyList(), Collections.emptyList(), TodayView.NONE,
+			TaskView.NONE, items);
+	}
+
+	@Test
+	public void theStoredSummaryFitsItsTextAtEveryCanvasSizeInBothThemesForEveryKindOfCreature()
+	{
+		StringBuilder problems = new StringBuilder();
+		for (WindowTheme theme : WindowTheme.values())
+			for (MotionMode mode : new MotionMode[] {MotionMode.OFF, MotionMode.FULL})
+				for (int[] canvas : CANVASES)
+					for (double fraction : FRACTIONS)
+						for (int creature = 0; creature < 6; creature++)
+						{
+							PartyRig rig = rig(theme, mode, canvas, fraction);
+							rig.publish(storedState(6), true);
+							rig.open();
+							rig.shell.showTab(WindowTab.STORAGE, rig.now);
+							rig.paint();
+							if (!rig.ids().contains(StoragePage.rowId(creature)))
+								continue;
+
+							rig.click(StoragePage.rowId(creature), MouseEvent.BUTTON3);
+							rig.key(KeyEvent.VK_DOWN);
+							rig.key(KeyEvent.VK_ENTER);
+							rig.now += 2_000;
+							rig.drawn.clear();
+							rig.paint();
+							String where = theme + " " + mode + " " + rig.width + "x" + rig.height + " stored "
+								+ creature;
+							assertEquals(where, PageState.Page.SUMMARY, rig.pages.storedPageState().page());
+							assertFalse(where, rig.drawn.isEmpty());
+							List<String> texts = new ArrayList<>();
+							for (PartyRig.Drawn d : rig.drawn)
+								texts.add(d.text);
+
+							if (!texts.contains(String.valueOf(1234 + creature)))
+								problems.append(where).append(" missing the health number in ").append(texts)
+									.append('\n');
+
+							problems.append(problems(rig, where));
+						}
+
+		assertEquals(problems.toString(), "", problems.toString());
+	}
+
+	@Test
+	public void theCaughtLineIsDrawnWhereTheIdentityBoxHasRoomForIt()
+	{
+		int seen = 0;
+		for (int creature = 0; creature < 4; creature++)
+		{
+			PartyRig rig = rig(WindowTheme.DARK_GLASS, MotionMode.OFF, CANVASES[CANVASES.length - 1], 1.0);
+			rig.publish(storedState(6), true);
+			rig.open();
+			rig.shell.showTab(WindowTab.STORAGE, rig.now);
+			rig.paint();
+			rig.click(StoragePage.rowId(creature), MouseEvent.BUTTON3);
+			rig.key(KeyEvent.VK_DOWN);
+			rig.key(KeyEvent.VK_ENTER);
+			rig.drawn.clear();
+			rig.paint();
+			for (PartyRig.Drawn d : rig.drawn)
+			{
+				if (d.text.startsWith("Caught "))
+					seen++;
+			}
+		}
+
+		assertTrue("the caught line never fit at the largest canvas", seen > 0);
+	}
+
+	@Test
+	public void everyStoredButtonLabelFitsItsBox()
+	{
+		StringBuilder problems = new StringBuilder();
+		for (int[] canvas : CANVASES)
+			for (double fraction : FRACTIONS)
+			{
+				Dimension size = WindowFit.sizeFor(fraction, canvas[0], canvas[1]);
+				WindowLayout window = WindowLayout.of(size.width, size.height);
+				WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, window.scale);
+				int line = WidgetKit.metrics(style, WindowFonts.Face.REGULAR).getHeight();
+				int small = WidgetKit.metrics(style, WindowFonts.Face.SMALL).getHeight();
+				SummaryLayout layout = SummaryLayout.of(window.body, style.metrics(), line, small,
+					SummaryLayout.STORED_BUTTONS);
+				int chip = 2 * style.metrics().chipSlant;
+				for (int i = 0; i < SummaryLayout.STORED_BUTTONS.length; i++)
+				{
+					if (!labelFits(style, SummaryLayout.STORED_BUTTONS[i], layout.buttons[i].width - chip))
+						problems.append(window.scale).append(" button ")
+							.append(SummaryLayout.STORED_BUTTONS[i]).append('\n');
+				}
+			}
 
 		assertEquals(problems.toString(), "", problems.toString());
 	}

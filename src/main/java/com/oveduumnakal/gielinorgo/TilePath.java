@@ -66,6 +66,32 @@ final class TilePath
 	}
 
 	/**
+	 * Makes a finder over the same map in which one tile cannot be stepped onto, so no route passes over it. Used to
+	 * keep a follower from walking through the player.
+	 *
+	 * @param blockedX the tile's x
+	 * @param blockedY the tile's y
+	 * @return the finder
+	 */
+	TilePath avoiding(int blockedX, int blockedY)
+	{
+		return new TilePath(new Ground()
+		{
+			@Override
+			public boolean canStep(int fromX, int fromY, int toX, int toY)
+			{
+				return !(toX == blockedX && toY == blockedY) && ground.canStep(fromX, fromY, toX, toY);
+			}
+
+			@Override
+			public boolean standable(int x, int y)
+			{
+				return !(x == blockedX && y == blockedY) && ground.standable(x, y);
+			}
+		});
+	}
+
+	/**
 	 * Finds the shortest route between two tiles.
 	 *
 	 * @param fromX the start tile, x

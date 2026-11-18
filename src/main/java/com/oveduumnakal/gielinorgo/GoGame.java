@@ -965,6 +965,25 @@ final class GoGame
 	}
 
 	/**
+	 * Lists every jar the player has, for the wild creature menu. Read on the client thread, like
+	 * {@link #jarToThrow()}.
+	 *
+	 * @return each jar with a count above 0 and its count, in enum order
+	 */
+	Map<JarType, Integer> ownedJars()
+	{
+		Map<JarType, Integer> owned = new EnumMap<>(JarType.class);
+		for (JarType type : JarType.values())
+		{
+			int count = data.jarCount(type);
+			if (count > 0)
+				owned.put(type, count);
+		}
+
+		return owned;
+	}
+
+	/**
 	 * Lists the specialty jars worth offering for one creature: owned, good at one of its traits, and not already
 	 * the jar {@link #jarToThrow()} picks.
 	 *
@@ -1894,6 +1913,32 @@ final class GoGame
 	{
 		if (stillThere(pick))
 			moveToTeam(pick.index());
+	}
+
+	/**
+	 * Rearranges storage for the Box view: swaps the stored creature a panel picked with another stored creature, or
+	 * moves it to the end. Only the saved order changes. A creature promised in a trade may be moved, because the
+	 * promise is kept by the creature, not by its place.
+	 *
+	 * @param from the stored creature that was dragged, as the panel showed it
+	 * @param onto the stored creature it was dropped on, or null for an empty cell, which puts it last
+	 */
+	void arrangeStorage(TradePick from, TradePick onto)
+	{
+		if (from.from() != Holding.STORAGE || onto != null && onto.from() != Holding.STORAGE)
+			return;
+
+		if (!stillThere(from) || onto != null && !stillThere(onto))
+			return;
+
+		List<Creature> next = StorageArrange.apply(data.storage, from.index(),
+			onto == null ? data.storage.size() : onto.index());
+		if (next.equals(data.storage))
+			return;
+
+		data.storage.clear();
+		data.storage.addAll(next);
+		dirty = true;
 	}
 
 	/**
@@ -3957,6 +4002,12 @@ final class GoGame
 		return waiting == null ? null : waiting.waitingText();
 	}
 
+	private static CreatureView withStats(CreatureView view, Species found, Creature creature)
+	{
+		Combatant fighter = new Combatant(found, creature.level(), 1.0, creature.rolls());
+		return view.withStats(fighter.maxHp(), fighter.attack(), fighter.defence(), fighter.speed());
+	}
+
 	private List<CreatureView> views(List<Creature> creatures, long now)
 	{
 		List<CreatureView> views = new ArrayList<>(creatures.size());
@@ -3965,15 +4016,17 @@ final class GoGame
 			Species found = species.find(creature.species);
 			Rarity rarity = found == null ? Rarity.COMMON : found.rarity();
 			CombatType type = found == null ? CombatType.CRUSH : found.style();
-			views.add(new CreatureView(speciesNameOf(creature), creature.level(), XpRules.progress(creature.xp),
-				creature.hpFractionAt(now), rarity, type, creature.gilded, creature.nickname,
-				creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId),
+			CreatureView view = new CreatureView(speciesNameOf(creature), creature.level(),
+				XpRules.progress(creature.xp), creature.hpFractionAt(now), rarity, type, creature.gilded,
+				creature.nickname, creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId),
 				found == null ? Collections.emptyList() : MoveLearning.known(creature, found, moves),
 				MoveLearning.pending(creature, moves), BondRules.hearts(creature.bond), waitingText(creature))
 				.withSpecies(found)
 				.withGender(creature.gender())
+				.withCaught(creature.caughtAtMs)
 				.withFainted(creature.fainted)
-				.withDetails(examine.textFor(creature.species), found == null ? null : growsInto(found.key())));
+				.withDetails(examine.textFor(creature.species), found == null ? null : growsInto(found.key()));
+			views.add(found == null ? view : withStats(view, found, creature));
 		}
 
 		return views;

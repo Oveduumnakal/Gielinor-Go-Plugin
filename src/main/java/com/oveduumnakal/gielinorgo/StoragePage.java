@@ -7,19 +7,26 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.BasicStroke;
 import java.awt.Composite;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
 /**
- * The Storage page: a scrolling list with a row for every stored creature, a Select button that turns the rows into
- * tick boxes, and a Release selected button for the ticked ones. A click on a row moves the creature to the team; a
- * right click or Enter opens its menu. The page only lays out, paints and declares hits; what a click does lives in
- * {@link StoragePageFlow}. The row list is a {@link ScrollList}, so a later Box view or a sort and filter bar can sit
- * beside it without touching the rows. Holds no RuneLite types.
+ * The Storage page: the stored creatures that pass the filters, in the chosen order, shown in the view the View
+ * button picks: a list with a row for every creature, a Box grid of portraits, or a list grouped under species
+ * headings. A Select button turns the rows or cells into tick boxes, with a Tick all shown button and a Release
+ * selected button for the ticked ones. A click on a creature moves it to the team; a right click or Enter opens its
+ * menu. The Sort, Filter and View buttons and the filter chips come from {@link StorageControls}; the arranged list
+ * comes from {@link StorageView}; the grid from {@link StorageGrid}; the groups from {@link StorageGroups}. A row
+ * keeps its real place in storage whatever its position on screen, so ids, ticks and picks never change. The page
+ * only lays out, paints and declares hits; what a click does lives in
+ * {@link StoragePageFlow}. Holds no RuneLite types.
  */
 final class StoragePage
 {
@@ -29,11 +36,41 @@ final class StoragePage
 	/** The id of the Release selected button. */
 	static final String ID_RELEASE = "storage:release";
 
-	/** The start of the id of a stored creature's row; its place in storage follows. */
+	/** The id of the Sort button. */
+	static final String ID_SORT = "storage:sort";
+
+	/** The id of the Filter button. */
+	static final String ID_FILTER = "storage:filter";
+
+	/** The id of the View button, which switches between List, Box and By species. */
+	static final String ID_VIEW = "storage:view";
+
+	/** The id of the Tick all shown button. */
+	static final String ID_TICK_ALL = "storage:tickall";
+
+	/** The id of the Clear chip, which removes every filter. */
+	static final String ID_CLEAR = "storage:clear";
+
+	/** The start of the id of a filter chip's label; its place in the query follows. */
+	static final String CHIP_PREFIX = "storage:chip:";
+
+	/** The start of the id of a filter chip's cross; its place in the query follows. */
+	static final String CHIPX_PREFIX = "storage:chipx:";
+
+	/** The start of the id of a stored creature's row or cell; its place in storage follows. */
 	static final String ROW_PREFIX = "storage:row:";
+
+	/** The start of the id of a species heading; its place in the grouped list follows. */
+	static final String GROUP_PREFIX = "storage:group:";
+
+	/** The start of the id of an empty Box cell; its place in the grid follows. */
+	static final String SLOT_PREFIX = "storage:slot:";
 
 	/** The text shown while nothing is stored. */
 	static final String EMPTY_TEXT = "Storage is empty. Creatures go here when your team is full.";
+
+	/** The text shown while filters hide every stored creature. */
+	static final String NO_MATCH_TEXT = "No stored creature matches. Clear the filters to see them all.";
 
 	/** The hint over the list while rows are clicked to move. */
 	static final String HINT = "Click a creature to move it to your team. Right-click for more.";
@@ -41,10 +78,21 @@ final class StoragePage
 	/** The hint over the list while rows are ticked. */
 	static final String SELECT_HINT = "Tick the creatures to release, then press Release selected.";
 
-	private static final double ROW_UNITS = 72;
-	private static final double SELECT_UNITS = 90;
-	private static final double RELEASE_UNITS = 190;
-	private static final double HINT_UNITS = 28;
+	/** What the Box says when a drag is refused because a sort or filter is on. */
+	static final String REFUSE_SORT = "Clear the sort and filter to rearrange";
+
+	/** What the Box says when a drag is refused because Select mode is on. */
+	static final String REFUSE_SELECT = "Press Done to rearrange";
+
+	/** What the Box says while the keys carry a creature; the name goes in. */
+	static final String CARRY_HINT = "Carrying %s: arrows pick a place, Enter puts it there, Esc cancels.";
+
+	private static final double ROW_UNITS = StorageGroups.ROW_UNITS;
+	private static final double AUTO_SCROLL_EDGE_UNITS = 16;
+	private static final double AUTO_SCROLL_UNITS = 4;
+	private static final String FILTER_TIP = "Show only some creatures. Click a filter chip to show or hide it.";
+	private static final String VIEW_TIP = "Change how creatures are shown: List, Box or By species.";
+	private static final String SORT_TIP = "Sort the list. Box order keeps the order the creatures were stored in.";
 	private static final int NOT_ON_TEAM = -1;
 
 	private final PageText.Sink sink;
@@ -52,11 +100,26 @@ final class StoragePage
 	private final ScrollList list = new ScrollList();
 	private final TreeSet<Integer> ticked = new TreeSet<>();
 	private boolean selecting;
+	private StorageMode mode = StorageMode.LIST;
+	private StorageMode laidOut = StorageMode.LIST;
+	private StorageGroups groups = StorageGroups.of(new ArrayList<>());
+	private List<StorageView.Entry> grouped;
+	private StorageGrid grid;
+	private Rectangle card = new Rectangle();
+	private int cells;
+	private StorageDrag drag = new StorageDrag(4);
+	private int dragThreshold = 4;
+	private String refused;
+	private int carrying = NOT_ON_TEAM;
+	private int[] move;
 	private List<CreatureView> shown;
-	private Rectangle heading = new Rectangle();
-	private Rectangle select = new Rectangle();
-	private Rectangle release = new Rectangle();
-	private Rectangle hint = new Rectangle();
+	private StorageQuery query = StorageQuery.NONE;
+	private List<StorageView.Entry> entries = new ArrayList<>();
+	private List<CreatureView> source;
+	private StorageQuery arranged;
+	private StorageControls.Layout controls;
+	private Font chipFont;
+	private FontMetrics chipMetrics;
 	private Rectangle panel = new Rectangle();
 
 	/**
@@ -83,6 +146,75 @@ final class StoragePage
 		return selecting;
 	}
 
+	/** @return the sort and filters; they outlive the window closing, so they last until RuneLite restarts */
+	StorageQuery query()
+	{
+		return query;
+	}
+
+	/** @return the view the page shows the creatures in */
+	StorageMode mode()
+	{
+		return mode;
+	}
+
+	/**
+	 * Switches the view. The list goes back to the top; the ticks and the query stay.
+	 *
+	 * @param next the view to show
+	 */
+	void setMode(StorageMode next)
+	{
+		mode = next;
+		list.setOffset(0);
+		carrying = NOT_ON_TEAM;
+		refused = null;
+		drag.cancel();
+	}
+
+	/** @return the places in storage of the creatures shown, in display order */
+	int[] shownPlaces()
+	{
+		return StorageView.places(entries);
+	}
+
+	/**
+	 * @return the creatures shown, in the order the current view shows them and Up and Down visit them: the arranged
+	 *         list, or in the By species view each species group in turn
+	 */
+	List<StorageView.Entry> displayEntries()
+	{
+		if (mode != StorageMode.SPECIES)
+			return Collections.unmodifiableList(entries);
+
+		List<StorageView.Entry> shownList = new ArrayList<>();
+		for (StorageGroups.Item item : groups.items())
+		{
+			if (!item.heading())
+				shownList.add(item.entry());
+		}
+
+		return shownList;
+	}
+
+	/** @return the View button's box */
+	Rectangle viewBounds()
+	{
+		return controls == null ? new Rectangle() : controls.view();
+	}
+
+	/** @return the Sort button's box, for opening its menu below it */
+	Rectangle sortBounds()
+	{
+		return controls == null ? new Rectangle() : controls.sort();
+	}
+
+	/** @return the Filter button's box, for opening its menu below it */
+	Rectangle filterBounds()
+	{
+		return controls == null ? new Rectangle() : controls.filter();
+	}
+
 	/** @return the ticked places in storage, lowest first */
 	TreeSet<Integer> ticked()
 	{
@@ -98,6 +230,8 @@ final class StoragePage
 	{
 		selecting = on;
 		ticked.clear();
+		carrying = NOT_ON_TEAM;
+		refused = null;
 	}
 
 	/**
@@ -111,12 +245,126 @@ final class StoragePage
 			ticked.add(place);
 	}
 
-	/** Forgets Select mode and the ticks, as when the window closes. */
+	/**
+	 * Ticks every creature that is shown now, which a filter may have cut down.
+	 */
+	void tickAllShown()
+	{
+		for (StorageView.Entry entry : entries)
+			ticked.add(entry.place());
+	}
+
+	/**
+	 * Sets the sort and filters, scrolls back to the top and drops the ticks of creatures that are no longer shown.
+	 *
+	 * @param next the new query
+	 * @param storage the stored creatures now
+	 */
+	void setQuery(StorageQuery next, List<CreatureView> storage)
+	{
+		query = next;
+		list.setOffset(0);
+		carrying = NOT_ON_TEAM;
+		refused = null;
+		arrange(storage);
+	}
+
+	/** Forgets Select mode and the ticks, as when the window closes. The sort and filters stay. */
 	void reset()
 	{
 		selecting = false;
 		ticked.clear();
 		shown = null;
+		source = null;
+		carrying = NOT_ON_TEAM;
+		refused = null;
+		move = null;
+		drag.cancel();
+	}
+
+	/**
+	 * @return whether dragging a cell rearranges storage: only in the Box, outside Select mode, with the creatures in
+	 *         box order and no filter, so a cell's slot is the creature's real place
+	 */
+	boolean arrangeAllowed()
+	{
+		return mode == StorageMode.BOX && !selecting && query.sort() == StorageQuery.Sort.BOX_ORDER
+			&& !query.active();
+	}
+
+	/** @return the words for why a drag does not rearrange now, or for what a drag does when it does */
+	String dragHint()
+	{
+		if (arrangeAllowed())
+			return "Drag to rearrange.";
+
+		return selecting ? REFUSE_SELECT + "." : REFUSE_SORT + ".";
+	}
+
+	/** @return the place of the creature being carried by the keys, or -1 */
+	int carrying()
+	{
+		return carrying;
+	}
+
+	/**
+	 * Starts carrying a creature, so the arrow keys pick its new place and Enter puts it there.
+	 *
+	 * @param place the creature's place in storage
+	 */
+	void carry(int place)
+	{
+		carrying = place;
+	}
+
+	/** Stops carrying; the creature stays where it is. */
+	void stopCarrying()
+	{
+		carrying = NOT_ON_TEAM;
+	}
+
+	/**
+	 * @return the move the last drop asked for as {@code {from, onto}} places, where onto is -1 for an empty cell
+	 *         (put last), or null when there is none; asking clears it
+	 */
+	int[] takeMove()
+	{
+		int[] taken = move;
+		move = null;
+		return taken;
+	}
+
+	/**
+	 * @param id a hit's id
+	 * @return the place in the query a filter chip's label id names, or -1
+	 */
+	static int chip(String id)
+	{
+		return indexAfter(id, CHIP_PREFIX);
+	}
+
+	/**
+	 * @param id a hit's id
+	 * @return the place in the query a filter chip's cross id names, or -1
+	 */
+	static int chipRemove(String id)
+	{
+		return indexAfter(id, CHIPX_PREFIX);
+	}
+
+	private static int indexAfter(String id, String prefix)
+	{
+		if (id == null || !id.startsWith(prefix))
+			return NOT_ON_TEAM;
+
+		try
+		{
+			return Integer.parseInt(id.substring(prefix.length()));
+		}
+		catch (NumberFormatException e)
+		{
+			return NOT_ON_TEAM;
+		}
 	}
 
 	/**
@@ -125,17 +373,34 @@ final class StoragePage
 	 */
 	static int place(String id)
 	{
-		if (id == null || !id.startsWith(ROW_PREFIX))
-			return NOT_ON_TEAM;
+		return indexAfter(id, ROW_PREFIX);
+	}
 
-		try
-		{
-			return Integer.parseInt(id.substring(ROW_PREFIX.length()));
-		}
-		catch (NumberFormatException e)
-		{
-			return NOT_ON_TEAM;
-		}
+	/**
+	 * @param id a hit's id
+	 * @return the place in the grouped list a species heading's id names, or -1
+	 */
+	static int group(String id)
+	{
+		return indexAfter(id, GROUP_PREFIX);
+	}
+
+	/**
+	 * Ticks every creature of a species, or unticks them when they are all ticked already.
+	 *
+	 * @param index the heading's place in the grouped list
+	 */
+	void toggleGroup(int index)
+	{
+		List<StorageGroups.Item> items = groups.items();
+		if (index < 0 || index >= items.size() || !items.get(index).heading())
+			return;
+
+		List<Integer> places = items.get(index).places();
+		if (ticked.containsAll(places))
+			ticked.removeAll(places);
+		else
+			ticked.addAll(places);
 	}
 
 	/**
@@ -163,55 +428,246 @@ final class StoragePage
 			shown = storage;
 		}
 
+		if (source != storage || arranged != query)
+			arrange(storage);
+
 		WindowStyle.Metrics m = style.metrics();
-		int pad = m.pad;
-		int chip = m.chipHeight;
 		panel = new Rectangle(body);
-		int selectW = style.px(SELECT_UNITS);
-		int releaseW = selecting ? style.px(RELEASE_UNITS) : 0;
-		int y = body.y + pad;
-		int right = body.x + body.width - pad;
-		select = new Rectangle(right - selectW, y, selectW, chip);
-		release = selecting ? new Rectangle(select.x - pad / 2 - releaseW, y, releaseW, chip) : new Rectangle();
-		int used = selectW + (selecting ? pad / 2 + releaseW : 0) + pad / 2;
-		heading = new Rectangle(body.x + pad, y, Math.max(0, body.width - 2 * pad - used), chip);
-		int line = style.px(HINT_UNITS);
-		hint = new Rectangle(body.x + pad, y + chip + pad / 2, body.width - 2 * pad, line);
-		int top = hint.y + line + pad / 2;
-		Rectangle viewport = new Rectangle(body.x + pad / 2, top, body.width - pad,
-			Math.max(0, body.y + body.height - top - pad / 2));
-		list.layout(viewport, style.px(ROW_UNITS), storage.size(), style);
+		controls = StorageControls.layout(body, style, chipMetrics(style), selecting, true, query);
+		int top = controls.listTop();
+		Rectangle viewport = new Rectangle(body.x + m.pad / 2, top, body.width - m.pad,
+			Math.max(0, body.y + body.height - top - m.pad / 2));
+		if (mode != laidOut)
+		{
+			laidOut = mode;
+			list.setOffset(0);
+		}
+
+		card = new Rectangle();
+		int threshold = StorageDrag.threshold(style);
+		if (threshold != dragThreshold && !drag.pressed())
+		{
+			drag = new StorageDrag(threshold);
+			dragThreshold = threshold;
+		}
+
+		if (mode == StorageMode.BOX)
+			layoutBox(viewport, style);
+		else if (mode == StorageMode.SPECIES)
+			layoutGroups(viewport, style);
+		else
+			layoutList(viewport, style);
+	}
+
+	private void layoutList(Rectangle viewport, WindowStyle style)
+	{
+		list.setRowDragScrolls(true);
+		list.layout(viewport, style.px(ROW_UNITS), entries.size(), style);
+	}
+
+	private void layoutGroups(Rectangle viewport, WindowStyle style)
+	{
+		if (grouped != entries)
+		{
+			groups = StorageGroups.of(entries);
+			grouped = entries;
+		}
+
+		list.setRowDragScrolls(true);
+		list.layoutRows(viewport, groups.heights(style), style);
+	}
+
+	private void layoutBox(Rectangle viewport, WindowStyle style)
+	{
+		grid = new StorageGrid(style);
+		cells = StorageGrid.cells(entries.size());
+		int width = Math.min(viewport.width, grid.areaWidth());
+		Rectangle area = new Rectangle(viewport.x, viewport.y, width, viewport.height);
+		card = grid.detail(viewport, style.metrics().pad);
+		list.setRowDragScrolls(false);
+		list.layout(area, grid.stride(), StorageGrid.rows(cells), style);
+		if (drag.dragging() && arrangeAllowed())
+		{
+			int near = style.px(AUTO_SCROLL_EDGE_UNITS);
+			if (drag.pointerY() < viewport.y + near)
+				list.scrollBy(-style.px(AUTO_SCROLL_UNITS));
+			else if (drag.pointerY() > viewport.y + viewport.height - near)
+				list.scrollBy(style.px(AUTO_SCROLL_UNITS));
+		}
+	}
+
+	private FontMetrics chipMetrics(WindowStyle style)
+	{
+		Font font = style.font(WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS);
+		if (chipMetrics == null || !font.equals(chipFont))
+		{
+			chipMetrics = WindowPages.metrics(font);
+			chipFont = font;
+		}
+
+		return chipMetrics;
+	}
+
+	private void arrange(List<CreatureView> storage)
+	{
+		entries = StorageView.arrange(storage, query);
+		source = storage;
+		arranged = query;
+		List<Integer> places = new ArrayList<>();
+		for (int place : StorageView.places(entries))
+			places.add(place);
+
+		ticked.retainAll(places);
 	}
 
 	/**
-	 * Lists the page's hits: the buttons, then every row in view.
+	 * Lists the page's hits: the buttons and chips, then every row in view.
 	 *
-	 * @param storage the stored creatures
 	 * @param firstOrder the focus order of the first hit
 	 * @return the hits
 	 */
-	List<Hit> hits(List<CreatureView> storage, int firstOrder)
+	List<Hit> hits(int firstOrder)
 	{
 		int order = firstOrder;
 		List<Hit> hits = new ArrayList<>();
 		String selectTip = selecting ? "Stop selecting and go back to moving creatures"
 			: "Tick several creatures to release them together";
-		hits.add(new Hit(ID_SELECT, Hit.Kind.BUTTON, select, order++, true, selectTip));
+		hits.add(new Hit(ID_SELECT, Hit.Kind.BUTTON, controls.select(), order++, true, selectTip));
+		hits.add(new Hit(ID_FILTER, Hit.Kind.BUTTON, controls.filter(), order++, true, FILTER_TIP));
+		hits.add(new Hit(ID_SORT, Hit.Kind.BUTTON, controls.sort(), order++, true, sortTip()));
+		hits.add(new Hit(ID_VIEW, Hit.Kind.BUTTON, controls.view(), order++, true, viewTip()));
 		if (selecting)
 		{
+			String tickTip = entries.isEmpty() ? "No creature is shown to tick"
+				: "Tick every creature you can see. Creatures a filter hides stay unticked.";
+			hits.add(new Hit(ID_TICK_ALL, Hit.Kind.BUTTON, controls.tickAll(), order++, !entries.isEmpty(), tickTip));
 			String releaseTip = ticked.isEmpty() ? "Tick the creatures to release first"
 				: "Release the ticked creatures. You are asked first.";
-			hits.add(new Hit(ID_RELEASE, Hit.Kind.BUTTON, release, order++, !ticked.isEmpty(), releaseTip));
+			hits.add(new Hit(ID_RELEASE, Hit.Kind.BUTTON, controls.release(), order++, !ticked.isEmpty(),
+				releaseTip));
 		}
 
-		for (int i = list.firstVisible(); i <= list.lastVisible() && i < storage.size(); i++)
+		for (StorageControls.Chip chip : controls.chips())
+		{
+			List<StorageQuery.Criterion> criteria = query.criteria();
+			boolean hidden = criteria.get(chip.index()).hidden();
+			String tip = hidden ? "Hiding creatures that match. Click to show only them."
+				: "Showing only creatures that match. Click to hide them instead.";
+			hits.add(new Hit(CHIP_PREFIX + chip.index(), Hit.Kind.BUTTON, chip.label(), order++, true, tip));
+			hits.add(new Hit(CHIPX_PREFIX + chip.index(), Hit.Kind.BUTTON, chip.remove(), order++, true,
+				"Remove this filter"));
+		}
+
+		if (!controls.clear().isEmpty())
+			hits.add(new Hit(ID_CLEAR, Hit.Kind.BUTTON, controls.clear(), order++, true, "Remove every filter"));
+
+		if (mode == StorageMode.BOX)
+			return boxHits(hits, order);
+
+		if (mode == StorageMode.SPECIES)
+			return groupHits(hits, order);
+
+		for (int i = list.firstVisible(); i <= list.lastVisible() && i < entries.size(); i++)
 		{
 			Rectangle box = list.rowBounds(i);
+			StorageView.Entry entry = entries.get(i);
 			if (box != null)
-				hits.add(new Hit(rowId(i), Hit.Kind.ROW, box, order++, true, tooltip(storage.get(i))));
+				hits.add(new Hit(rowId(entry.place()), Hit.Kind.ROW, box, order++, true, tooltip(entry.view())));
 		}
 
 		return hits;
+	}
+
+	private List<Hit> groupHits(List<Hit> hits, int firstOrder)
+	{
+		int order = firstOrder;
+		List<StorageGroups.Item> items = groups.items();
+		for (int i = list.firstVisible(); i <= list.lastVisible() && i < items.size(); i++)
+		{
+			Rectangle box = list.rowBounds(i);
+			if (box == null)
+				continue;
+
+			StorageGroups.Item item = items.get(i);
+			if (!item.heading())
+			{
+				StorageView.Entry entry = item.entry();
+				hits.add(new Hit(rowId(entry.place()), Hit.Kind.ROW, box, order++, true, tooltip(entry.view())));
+			}
+			else if (selecting)
+			{
+				hits.add(new Hit(GROUP_PREFIX + i, Hit.Kind.BUTTON, box, order++, true, headingTip(item, true)));
+			}
+			else
+			{
+				hits.add(new Hit(GROUP_PREFIX + i, Hit.Kind.AREA, box, -1, true, headingTip(item, false)));
+			}
+		}
+
+		return hits;
+	}
+
+	private List<Hit> boxHits(List<Hit> hits, int firstOrder)
+	{
+		int order = firstOrder;
+		Rectangle seen = list.viewport();
+		seen.width = list.contentWidth();
+		int last = Math.min(StorageGrid.rows(cells) - 1, list.lastVisible());
+		for (int row = list.firstVisible(); row <= last; row++)
+		{
+			for (int column = 0; column < StorageGrid.COLUMNS; column++)
+			{
+				int slot = row * StorageGrid.COLUMNS + column;
+				if (slot >= cells)
+					break;
+
+				Rectangle box = cellBox(slot).intersection(seen);
+				if (box.isEmpty())
+					continue;
+
+				if (slot < entries.size())
+				{
+					StorageView.Entry entry = entries.get(slot);
+					hits.add(new Hit(rowId(entry.place()), Hit.Kind.ROW, box, order++, true,
+						tooltip(entry.view())));
+				}
+				else
+				{
+					hits.add(new Hit(SLOT_PREFIX + slot, Hit.Kind.AREA, box, -1, true, ""));
+				}
+			}
+		}
+
+		return hits;
+	}
+
+	/**
+	 * @param slot a cell's place in the Box grid
+	 * @return where the cell is on screen now, which may reach past the list's edges
+	 */
+	private Rectangle cellBox(int slot)
+	{
+		Rectangle in = grid.cell(slot);
+		Rectangle view = list.viewport();
+		return new Rectangle(view.x + in.x, view.y - list.offset() + in.y, in.width, in.height);
+	}
+
+	private String viewTip()
+	{
+		return VIEW_TIP + "\nNow: " + mode.label() + ".";
+	}
+
+	private static String headingTip(StorageGroups.Item item, boolean selecting)
+	{
+		String line = item.species() + ": " + item.count() + " stored, best Lv " + item.bestLevel();
+		return selecting ? line + "\nClick to tick or untick all of them" : line;
+	}
+
+	private String sortTip()
+	{
+		StorageQuery.Sort sort = query.sort();
+		String words = sort.directionWords(query.descending());
+		return SORT_TIP + (words.isEmpty() ? "" : "\nNow: " + sort.label() + ", " + words + ".");
 	}
 
 	/**
@@ -243,7 +699,7 @@ final class StoragePage
 		text.append("\nReleasing pays ")
 			.append(ReleaseRules.xp(view))
 			.append(" XP to your lead");
-		return text.append("\nRight-click to rename or release").toString();
+		return text.append("\nRight-click for Summary, rename or release").toString();
 	}
 
 	/**
@@ -260,15 +716,27 @@ final class StoragePage
 		Font regular = st.font(WindowFonts.Face.REGULAR, WindowFonts.BODY_UNITS);
 		Font small = st.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
 		st.panel(g, rect(panel));
-		text.draw(g, "Stored  " + storage.size() + " / " + SaveData.STORAGE_SIZE, heading, regular,
-			ThemeColor.TEXT, PageText.Align.LEFT);
-		st.button(g, rect(select), selecting ? "Done" : "Select", false, false, ctx.hoverOf(ID_SELECT),
+		int total = storage.size();
+		String title = query.active() ? "Showing " + entries.size() + " of " + total
+			: "Stored  " + total + " / " + SaveData.STORAGE_SIZE;
+		text.draw(g, title, controls.heading(), regular, ThemeColor.TEXT, PageText.Align.LEFT);
+		st.button(g, rect(controls.select()), selecting ? "Done" : "Select", false, false, ctx.hoverOf(ID_SELECT),
 			ctx.pressOf(ID_SELECT));
+		st.button(g, rect(controls.filter()), query.active() ? "Filter (" + query.criteria().size() + ")" : "Filter",
+			query.active(), false, ctx.hoverOf(ID_FILTER), ctx.pressOf(ID_FILTER));
+		st.button(g, rect(controls.sort()), "Sort: " + query.sort().label(), false, false, ctx.hoverOf(ID_SORT),
+			ctx.pressOf(ID_SORT));
+		st.button(g, rect(controls.view()), mode.label(), false, false, ctx.hoverOf(ID_VIEW), ctx.pressOf(ID_VIEW));
 		if (selecting)
 		{
-			st.button(g, rect(release), "Release selected (" + ticked.size() + ")", true, ticked.isEmpty(),
-				ctx.hoverOf(ID_RELEASE), ctx.pressOf(ID_RELEASE));
+			st.button(g, rect(controls.tickAll()), "Tick all shown", false, entries.isEmpty(),
+				ctx.hoverOf(ID_TICK_ALL), ctx.pressOf(ID_TICK_ALL));
+			st.button(g, rect(controls.release()), "Release selected (" + ticked.size() + ")", true,
+				ticked.isEmpty(), ctx.hoverOf(ID_RELEASE), ctx.pressOf(ID_RELEASE));
 		}
+
+		if (query.active())
+			paintChips(g, ctx, text, small);
 
 		if (storage.isEmpty())
 		{
@@ -276,8 +744,150 @@ final class StoragePage
 			return;
 		}
 
-		text.draw(g, selecting ? SELECT_HINT : HINT, hint, small, ThemeColor.SUBTEXT, PageText.Align.LEFT);
-		list.paint(g, st, (gr, index, box) -> row(gr, ctx, text, storage.get(index), index, box, small));
+		if (!query.active())
+			text.draw(g, stripText(storage), controls.strip(), small, ThemeColor.SUBTEXT, PageText.Align.LEFT);
+
+		if (entries.isEmpty())
+		{
+			text.drawWrapped(g, NO_MATCH_TEXT, list.viewport(), small, ThemeColor.SUBTEXT);
+			return;
+		}
+
+		if (mode == StorageMode.BOX)
+			paintBox(g, ctx, text);
+		else if (mode == StorageMode.SPECIES)
+			list.paint(g, st, (gr, index, box) -> groupRow(gr, ctx, text, index, box, small));
+		else
+			list.paint(g, st, (gr, index, box) -> row(gr, ctx, text, entries.get(index).view(),
+				entries.get(index).place(), box, small));
+	}
+
+	private void groupRow(Graphics2D g, PageContext ctx, PageText text, int index, Rectangle box, Font small)
+	{
+		StorageGroups.Item item = groups.items().get(index);
+		if (!item.heading())
+		{
+			StorageView.Entry entry = item.entry();
+			row(g, ctx, text, entry.view(), entry.place(), box, small);
+			return;
+		}
+
+		WindowStyle st = ctx.style;
+		WindowStyle.Metrics m = st.metrics();
+		String id = GROUP_PREFIX + index;
+		int gap = Math.max(2, m.pad / 3);
+		Rectangle inner = new Rectangle(box.x + m.pad / 2, box.y + gap / 2, box.width - m.pad, box.height - gap);
+		Rectangle2D shape = rect(inner);
+		g.setColor(st.color(ThemeColor.PANEL_BOX));
+		g.fill(shape);
+		if (selecting)
+			st.shade(g, shape, ctx.hoverOf(id), ctx.pressOf(id));
+
+		g.setColor(PortraitFrame.rarity(item.rarity()));
+		g.fillRect(inner.x, inner.y, Math.max(2, st.px(PortraitFrame.STRIPE_UNITS)), inner.height);
+		g.setColor(st.color(ThemeColor.PANEL_BORDER));
+		g.setStroke(new BasicStroke(Math.max(1f, m.border)));
+		g.draw(shape);
+		int x = inner.x + st.px(PortraitFrame.STRIPE_UNITS) + m.pad;
+		if (selecting)
+		{
+			int side = Math.max(8, inner.height / 2);
+			boolean all = ticked.containsAll(item.places());
+			tickBox(g, st, new Rectangle(x, inner.y + (inner.height - side) / 2, side, side), all);
+			x += side + m.pad;
+		}
+
+		String count = "x" + item.count() + " · best Lv " + item.bestLevel();
+		int right = inner.x + inner.width - m.pad;
+		int countW = Math.min((right - x) / 2, g.getFontMetrics(small).stringWidth(count) + m.pad);
+		Rectangle nameBox = new Rectangle(x, inner.y, Math.max(0, right - x - countW - m.pad / 2), inner.height);
+		Rectangle countBox = new Rectangle(right - countW, inner.y, countW, inner.height);
+		if (list.viewport().contains(nameBox))
+			text.drawName(g, item.species(), nameBox, ThemeColor.TEXT);
+
+		if (list.viewport().contains(countBox))
+			text.draw(g, count, countBox, small, ThemeColor.SUBTEXT, PageText.Align.RIGHT);
+	}
+
+	private void paintBox(Graphics2D g, PageContext ctx, PageText text)
+	{
+		WindowStyle st = ctx.style;
+		Rectangle clip = list.viewport();
+		clip.width = list.contentWidth();
+		boolean dragging = drag.dragging() && arrangeAllowed();
+		int over = dragging ? cellAt(drag.pointerX(), drag.pointerY()) : NOT_ON_TEAM;
+		list.paint(g, st, (gr, row, box) ->
+		{
+			for (int column = 0; column < StorageGrid.COLUMNS; column++)
+			{
+				int slot = row * StorageGrid.COLUMNS + column;
+				if (slot >= cells)
+					break;
+
+				Rectangle at = cellBox(slot);
+				if (slot >= entries.size())
+				{
+					StorageBoxPainter.empty(gr, st, at, dragging && slot == over);
+					continue;
+				}
+
+				StorageView.Entry entry = entries.get(slot);
+				String id = rowId(entry.place());
+				boolean lifted = dragging && slot == drag.from() || entry.place() == carrying;
+				StorageBoxPainter.Look look = new StorageBoxPainter.Look(selecting, ticked.contains(entry.place()),
+					lifted, dragging && slot == over && slot != drag.from(), ctx.hoverOf(id), ctx.pressOf(id));
+				StorageBoxPainter.cell(gr, ctx, pictures, text, entry.view(), at, clip, look);
+			}
+		});
+		if (!card.isEmpty())
+			StorageBoxPainter.card(g, ctx, text, card, highlighted(ctx), dragHint());
+
+		if (dragging && drag.from() < entries.size())
+			StorageBoxPainter.ghost(g, ctx, pictures, entries.get(drag.from()).view(), grid.cellSize(),
+				drag.pointerX(), drag.pointerY());
+	}
+
+	private CreatureView highlighted(PageContext ctx)
+	{
+		int place = place(ctx.highlight);
+		int at = displayIndex(place);
+		return at < 0 ? null : entries.get(at).view();
+	}
+
+	private String stripText(List<CreatureView> storage)
+	{
+		if (carrying >= 0 && carrying < storage.size())
+		{
+			CreatureView view = storage.get(carrying);
+			return String.format(CARRY_HINT, view.nickname() == null ? view.name() : view.nickname());
+		}
+
+		if (refused != null)
+			return refused;
+
+		return selecting ? SELECT_HINT : HINT;
+	}
+
+	private void paintChips(Graphics2D g, PageContext ctx, PageText text, Font small)
+	{
+		WindowStyle st = ctx.style;
+		for (StorageControls.Chip chip : controls.chips())
+		{
+			StorageQuery.Criterion each = query.criteria().get(chip.index());
+			String labelId = CHIP_PREFIX + chip.index();
+			String crossId = CHIPX_PREFIX + chip.index();
+			st.button(g, rect(chip.label()), each.label(), !each.hidden(), false, ctx.hoverOf(labelId),
+				ctx.pressOf(labelId));
+			st.button(g, rect(chip.remove()), "x", false, false, ctx.hoverOf(crossId), ctx.pressOf(crossId));
+		}
+
+		if (controls.moreCount() > 0 && !controls.more().isEmpty())
+			text.draw(g, StorageControls.moreText(controls.moreCount()), controls.more(), small,
+				ThemeColor.SUBTEXT, PageText.Align.LEFT);
+
+		if (!controls.clear().isEmpty())
+			st.button(g, rect(controls.clear()), "Clear", false, false, ctx.hoverOf(ID_CLEAR),
+				ctx.pressOf(ID_CLEAR));
 	}
 
 	private void row(Graphics2D g, PageContext ctx, PageText text, CreatureView view, int place, Rectangle box,
@@ -336,7 +946,15 @@ final class StoragePage
 		return word.isEmpty() ? "" : " · " + word;
 	}
 
-	private static void tickBox(Graphics2D g, WindowStyle st, Rectangle box, boolean on)
+	/**
+	 * Draws a tick box.
+	 *
+	 * @param g the graphics
+	 * @param st the style
+	 * @param box the box
+	 * @param on whether it is ticked
+	 */
+	static void tickBox(Graphics2D g, WindowStyle st, Rectangle box, boolean on)
 	{
 		g.setColor(st.color(ThemeColor.HP_TRACK));
 		g.fill(box);
@@ -352,6 +970,145 @@ final class StoragePage
 			box.y + box.height * 4 / 5);
 		g.drawLine(box.x + box.width * 2 / 5, box.y + box.height * 4 / 5, box.x + box.width * 4 / 5,
 			box.y + box.height / 5);
+	}
+
+	/**
+	 * A navigation key was pressed while a stored creature's row or cell is highlighted: finds the one to highlight
+	 * next and scrolls it into view. In the lists, Up on the first creature and Down on the last are left to the
+	 * window, which moves on to the buttons or wraps. In the Box, Up and Down move a grid row and Left and Right one
+	 * cell; Left in the first column and Right in the last column are left to the window, which changes tab.
+	 *
+	 * @param keyCode the key
+	 * @param highlightedId the id of the highlighted hit, or null
+	 * @return the place in storage of the creature to highlight, or -1 when the page does not use the key
+	 */
+	int keyTarget(int keyCode, String highlightedId)
+	{
+		int[] order = displayOrder();
+		int at = indexOf(order, place(highlightedId));
+		if (at < 0)
+			return NOT_ON_TEAM;
+
+		int to = mode == StorageMode.BOX ? boxTarget(keyCode, at, order.length) : listTarget(keyCode, at,
+			order.length);
+		if (to < 0)
+			return NOT_ON_TEAM;
+
+		list.ensureVisible(rowOf(order[to], to));
+		return order[to];
+	}
+
+	private int listTarget(int keyCode, int at, int size)
+	{
+		int last = size - 1;
+		int page = Math.max(1, list.viewport().height / Math.max(1, list.rowHeight()) - 1);
+		int to;
+		switch (keyCode)
+		{
+			case KeyEvent.VK_UP:
+				to = at - 1;
+				break;
+			case KeyEvent.VK_DOWN:
+				to = at + 1;
+				break;
+			case KeyEvent.VK_PAGE_UP:
+				to = at - page;
+				break;
+			case KeyEvent.VK_PAGE_DOWN:
+				to = at + page;
+				break;
+			case KeyEvent.VK_HOME:
+				to = 0;
+				break;
+			case KeyEvent.VK_END:
+				to = last;
+				break;
+			default:
+				return NOT_ON_TEAM;
+		}
+
+		boolean step = keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_DOWN;
+		if (step && (to < 0 || to > last))
+			return NOT_ON_TEAM;
+
+		return Math.max(0, Math.min(last, to));
+	}
+
+	private int boxTarget(int keyCode, int at, int size)
+	{
+		int last = size - 1;
+		int columns = StorageGrid.COLUMNS;
+		int page = Math.max(1, list.viewport().height / Math.max(1, list.rowHeight()) - 1) * columns;
+		switch (keyCode)
+		{
+			case KeyEvent.VK_LEFT:
+				return at % columns == 0 ? NOT_ON_TEAM : at - 1;
+			case KeyEvent.VK_RIGHT:
+				if (at % columns == columns - 1)
+					return NOT_ON_TEAM;
+
+				return Math.min(last, at + 1);
+			case KeyEvent.VK_UP:
+				return at - columns < 0 ? NOT_ON_TEAM : at - columns;
+			case KeyEvent.VK_DOWN:
+				if (at + columns <= last)
+					return at + columns;
+
+				return at / columns < last / columns ? last : NOT_ON_TEAM;
+			case KeyEvent.VK_PAGE_UP:
+				return Math.max(0, at - page);
+			case KeyEvent.VK_PAGE_DOWN:
+				return Math.min(last, at + page);
+			case KeyEvent.VK_HOME:
+				return 0;
+			case KeyEvent.VK_END:
+				return last;
+			default:
+				return NOT_ON_TEAM;
+		}
+	}
+
+	/** @return the places of the creatures in the order Up and Down visit them in the current view */
+	private int[] displayOrder()
+	{
+		return StorageView.places(displayEntries());
+	}
+
+	private int rowOf(int place, int displayAt)
+	{
+		if (mode == StorageMode.BOX)
+			return displayAt / StorageGrid.COLUMNS;
+
+		if (mode == StorageMode.LIST)
+			return displayAt;
+
+		List<StorageGroups.Item> items = groups.items();
+		for (int i = 0; i < items.size(); i++)
+		{
+			if (!items.get(i).heading() && items.get(i).entry().place() == place)
+				return i;
+		}
+
+		return displayAt;
+	}
+
+	private static int indexOf(int[] order, int place)
+	{
+		if (place < 0)
+			return NOT_ON_TEAM;
+
+		for (int i = 0; i < order.length; i++)
+		{
+			if (order[i] == place)
+				return i;
+		}
+
+		return NOT_ON_TEAM;
+	}
+
+	private int displayIndex(int place)
+	{
+		return indexOf(StorageView.places(entries), place);
 	}
 
 	/**
@@ -373,8 +1130,15 @@ final class StoragePage
 	 */
 	boolean pressed(int x, int y)
 	{
+		refused = null;
 		boolean onBar = list.scrollable() && list.trackBounds().contains(x, y);
 		boolean took = list.onPress(x, y);
+		if (mode == StorageMode.BOX)
+		{
+			int slot = onBar ? NOT_ON_TEAM : cellAt(x, y);
+			drag.press(slot >= 0 && slot < entries.size() ? slot : NOT_ON_TEAM, x, y);
+		}
+
 		return onBar && took;
 	}
 
@@ -385,12 +1149,50 @@ final class StoragePage
 	void dragged(int x, int y)
 	{
 		list.onDrag(x, y);
+		if (mode == StorageMode.BOX)
+			drag.moved(x, y);
 	}
 
-	/** @return whether the press became a scroll, so the release is not a click */
-	boolean released()
+	/**
+	 * The button came up. A drop of one creature on another cell of the Box is left for {@link #takeMove}.
+	 *
+	 * @param x the pointer's x in window pixels
+	 * @param y the pointer's y in window pixels
+	 * @return whether the press became a scroll or a drag, so the release is not a click
+	 */
+	boolean released(int x, int y)
 	{
-		return list.onRelease();
+		boolean scrolled = list.onRelease();
+		if (mode != StorageMode.BOX)
+			return scrolled;
+
+		StorageDrag.Result result = drag.release(cellAt(x, y));
+		if (scrolled)
+			return true;
+
+		if (result.kind() != StorageDrag.Kind.DROP && result.kind() != StorageDrag.Kind.CANCEL)
+			return false;
+
+		if (!arrangeAllowed())
+			refused = selecting ? REFUSE_SELECT : REFUSE_SORT;
+		else if (result.kind() == StorageDrag.Kind.DROP)
+			move = new int[] {result.from(), result.to() < entries.size() ? result.to() : NOT_ON_TEAM};
+
+		return true;
+	}
+
+	/**
+	 * @param x a point's x in window pixels
+	 * @param y a point's y in window pixels
+	 * @return the Box cell under the point, empty cells included, or -1
+	 */
+	private int cellAt(int x, int y)
+	{
+		Rectangle view = list.viewport();
+		if (mode != StorageMode.BOX || grid == null || !view.contains(x, y))
+			return NOT_ON_TEAM;
+
+		return grid.slotAt(x - view.x, y - view.y, list.offset(), cells);
 	}
 
 	private static Rectangle2D rect(Rectangle r)

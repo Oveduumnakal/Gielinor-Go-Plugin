@@ -249,4 +249,118 @@ public class ContextMenuRulesTest
 
 		assertEquals(Arrays.asList("summary", "makeLead", "moveToStorage", "rename", "moves", "useItem"), calls);
 	}
+
+	private final ContextMenuRules.StoredCommands stored = new ContextMenuRules.StoredCommands()
+	{
+		@Override
+		public void summary()
+		{
+			calls.add("s-summary");
+		}
+
+		@Override
+		public void moveToTeam()
+		{
+			calls.add("s-moveToTeam");
+		}
+
+		@Override
+		public void revive()
+		{
+			calls.add("s-revive");
+		}
+
+		@Override
+		public void rename()
+		{
+			calls.add("s-rename");
+		}
+
+		@Override
+		public void moves()
+		{
+			calls.add("s-moves");
+		}
+
+		@Override
+		public void useItem()
+		{
+			calls.add("s-useItem");
+		}
+
+		@Override
+		public void release()
+		{
+			calls.add("s-release");
+		}
+	};
+
+	private static ContextMenuRules.Facts storedFacts(double hp, int teamSize, Map<ItemType, Integer> items)
+	{
+		return new ContextMenuRules.Facts(RowModel.of(PartyRig.creature("Goblin", 9, hp, null), -1), false, true,
+			items, teamSize);
+	}
+
+	@Test
+	public void aStoredCreatureMenuIsSummaryMoveToTeamRenameMovesUseItemRelease()
+	{
+		List<ContextMenu.Item> menu = ContextMenuRules.stored(storedFacts(1.0, 2, null), stored);
+
+		assertEquals(Arrays.asList("Summary", "Move to team", "Rename...", "Moves", "Use item", "Release..."),
+			labels(menu));
+		assertTrue(menu.get(0).enabled());
+	}
+
+	@Test
+	public void theStoredSummaryPageMenuHasNoSummary()
+	{
+		List<ContextMenu.Item> menu = ContextMenuRules.storedSummary(storedFacts(1.0, 2, null), stored);
+
+		assertEquals(Arrays.asList("Move to team", "Rename...", "Moves", "Use item", "Release..."), labels(menu));
+	}
+
+	@Test
+	public void moveToTeamIsDimWithTeamIsFullAtSixAndOnlyThen()
+	{
+		ContextMenu.Item full = item(ContextMenuRules.stored(storedFacts(1.0, 6, null), stored), "Move to team");
+		ContextMenu.Item room = item(ContextMenuRules.stored(storedFacts(1.0, 5, null), stored), "Move to team");
+
+		assertFalse(full.enabled());
+		assertEquals(ContextMenuRules.TEAM_FULL_REASON, full.reason());
+		assertEquals("Team is full", ContextMenuRules.TEAM_FULL_REASON);
+		assertTrue(room.enabled());
+	}
+
+	@Test
+	public void aStoredUseItemIsDimWithNothingToUseAndLiveWithAHelpfulItem()
+	{
+		ContextMenu.Item none = item(ContextMenuRules.stored(storedFacts(0.5, 2, null), stored), "Use item");
+		ContextMenu.Item some = item(ContextMenuRules.stored(storedFacts(0.5, 2, items(ItemType.SMALL_SALVE, 1)),
+			stored), "Use item");
+
+		assertFalse(none.enabled());
+		assertEquals(ContextMenuRules.NO_ITEM_REASON, none.reason());
+		assertTrue(some.enabled());
+	}
+
+	@Test
+	public void everyStoredItemRunsItsOwnCommand()
+	{
+		List<ContextMenu.Item> menu = ContextMenuRules.stored(storedFacts(0.5, 2, items(ItemType.SMALL_SALVE, 1)),
+			stored);
+		WindowStyle style = WidgetKit.style(1.0);
+		FontMetrics fm = WidgetKit.metrics(style, WindowFonts.Face.REGULAR);
+		for (int i = 0; i < menu.size(); i++)
+		{
+			ContextMenu context = new ContextMenu();
+			context.open(menu, 10, 10, new Rectangle(0, 0, 800, 600), style, fm, true, 0L);
+			for (int step = 0; step < menu.size() && context.highlight() != i; step++)
+				context.move(1);
+
+			assertTrue(menu.get(i).label(), context.activate());
+		}
+
+		assertEquals(Arrays.asList("s-summary", "s-moveToTeam", "s-rename", "s-moves", "s-useItem", "s-release"),
+			calls);
+	}
 }
