@@ -34,6 +34,14 @@ interface PanelActions
 	void moveToTeam(TradePick pick);
 
 	/**
+	 * Rearranges storage for the Box view: swaps a stored creature with another, or moves it to the end.
+	 *
+	 * @param from the stored creature that was dragged, as the panel showed it
+	 * @param onto the stored creature it was dropped on, or null for an empty cell, which puts it last
+	 */
+	void arrangeStorage(TradePick from, TradePick onto);
+
+	/**
 	 * Releases a stored creature for good.
 	 *
 	 * @param pick the stored creature as the panel showed it

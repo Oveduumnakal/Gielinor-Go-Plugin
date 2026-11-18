@@ -330,4 +330,137 @@ public class ScrollListTest
 		Rectangle track = list.trackBounds();
 		assertTrue(WidgetKit.painted(image, track.x, track.y, track.width, track.height) > 0);
 	}
+
+	private static ScrollList mixed()
+	{
+		ScrollList list = new ScrollList();
+		list.layout(VIEW, 20, 1, STYLE);
+		list.layoutRows(VIEW, new int[] {10, 30, 10, 30, 10, 30, 10, 30}, STYLE);
+		return list;
+	}
+
+	@Test
+	public void rowsOfDifferentHeightsAddUpAndFindThemselves()
+	{
+		ScrollList list = mixed();
+
+		assertEquals(8, list.count());
+		assertEquals(160, list.contentHeight());
+		assertEquals(30, list.rowHeight());
+		assertEquals(VIEW.y, list.rowBounds(0).y);
+		assertEquals(10, list.rowBounds(0).height);
+		assertEquals(VIEW.y + 10, list.rowBounds(1).y);
+		assertEquals(30, list.rowBounds(1).height);
+		assertEquals(0, list.rowAt(VIEW.x + 5, VIEW.y + 9));
+		assertEquals(1, list.rowAt(VIEW.x + 5, VIEW.y + 10));
+		assertEquals(1, list.rowAt(VIEW.x + 5, VIEW.y + 39));
+		assertEquals(2, list.rowAt(VIEW.x + 5, VIEW.y + 40));
+	}
+
+	@Test
+	public void firstAndLastVisibleFollowTheHeightsWhileScrolled()
+	{
+		ScrollList list = mixed();
+
+		assertEquals(0, list.firstVisible());
+		assertEquals(5, list.lastVisible());
+		list.setOffset(45);
+		assertEquals(2, list.firstVisible());
+		assertEquals(7, list.lastVisible());
+		list.setOffset(list.maxOffset());
+		assertEquals(60, list.offset());
+		assertEquals(3, list.firstVisible());
+		assertEquals(7, list.lastVisible());
+		for (int i = 0; i < list.count(); i++)
+		{
+			boolean in = list.rowBounds(i) != null;
+			assertEquals("row " + i, in, i >= list.firstVisible() && i <= list.lastVisible());
+		}
+	}
+
+	@Test
+	public void ensureVisibleUsesTheRowsOwnHeight()
+	{
+		ScrollList list = mixed();
+
+		list.ensureVisible(7);
+		assertEquals(60, list.offset());
+		list.ensureVisible(0);
+		assertEquals(0, list.offset());
+		list.ensureVisible(5);
+		assertEquals(20, list.offset());
+		assertEquals(30, list.rowBounds(5).height);
+	}
+
+	@Test
+	public void theOffsetClampsToTheMixedContent()
+	{
+		ScrollList list = mixed();
+
+		list.setOffset(9999);
+
+		assertEquals(60, list.offset());
+		assertEquals(60, list.maxOffset());
+		list.setOffset(-5);
+		assertEquals(0, list.offset());
+	}
+
+	@Test
+	public void mixedRowsPaintWithTheirOwnBoxes()
+	{
+		ScrollList list = mixed();
+		list.setOffset(5);
+		BufferedImage image = WidgetKit.canvas(260, 200);
+		Graphics2D g = WidgetKit.graphics(image);
+		List<Rectangle> boxes = new ArrayList<>();
+		list.paint(g, STYLE, (graphics, index, box) -> boxes.add(box));
+		g.dispose();
+
+		assertEquals(6, boxes.size());
+		assertEquals(VIEW.y - 5, boxes.get(0).y);
+		assertEquals(10, boxes.get(0).height);
+		assertEquals(30, boxes.get(1).height);
+		assertEquals(VIEW.y - 5 + 10, boxes.get(1).y);
+	}
+
+	@Test
+	public void aLaterEqualLayoutGoesBackToEqualRows()
+	{
+		ScrollList list = mixed();
+
+		list.layout(VIEW, 20, 8, STYLE);
+
+		assertEquals(160, list.contentHeight());
+		assertEquals(20, list.rowBounds(1).height);
+		assertEquals(VIEW.y + 20, list.rowBounds(1).y);
+	}
+
+	@Test
+	public void anEmptyMixedListIsHarmless()
+	{
+		ScrollList list = new ScrollList();
+		list.layoutRows(VIEW, new int[0], STYLE);
+
+		assertEquals(-1, list.lastVisible());
+		assertEquals(-1, list.rowAt(VIEW.x + 2, VIEW.y + 2));
+		assertEquals(0, list.contentHeight());
+	}
+
+	@Test
+	public void aPressOnARowDoesNotDragScrollWhenTurnedOff()
+	{
+		ScrollList list = list(50);
+		list.setRowDragScrolls(false);
+
+		assertTrue(list.onPress(50, 60));
+		assertFalse(list.onDrag(50, 10));
+		assertFalse(list.onRelease());
+		assertEquals(0, list.offset());
+		Rectangle track = list.trackBounds();
+		assertTrue(list.onPress(track.x + 1, track.y + 1));
+		list.onRelease();
+		list.setRowDragScrolls(true);
+		list.onPress(50, 60);
+		assertTrue(list.onDrag(50, 20));
+	}
 }

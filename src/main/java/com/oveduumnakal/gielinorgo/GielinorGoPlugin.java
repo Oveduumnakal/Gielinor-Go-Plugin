@@ -2487,6 +2487,12 @@ public class GielinorGoPlugin extends Plugin
 			}
 
 			@Override
+			public void arrangeStorage(TradePick from, TradePick onto)
+			{
+				onGameThread(() -> game.arrangeStorage(from, onto));
+			}
+
+			@Override
 			public void release(TradePick pick)
 			{
 				onGameThread(() -> game.release(pick));

@@ -1623,6 +1623,32 @@ final class GoGame
 	}
 
 	/**
+	 * Rearranges storage for the Box view: swaps the stored creature a panel picked with another stored creature, or
+	 * moves it to the end. Only the saved order changes. A creature promised in a trade may be moved, because the
+	 * promise is kept by the creature, not by its place.
+	 *
+	 * @param from the stored creature that was dragged, as the panel showed it
+	 * @param onto the stored creature it was dropped on, or null for an empty cell, which puts it last
+	 */
+	void arrangeStorage(TradePick from, TradePick onto)
+	{
+		if (from.from() != Holding.STORAGE || onto != null && onto.from() != Holding.STORAGE)
+			return;
+
+		if (!stillThere(from) || onto != null && !stillThere(onto))
+			return;
+
+		List<Creature> next = StorageArrange.apply(data.storage, from.index(),
+			onto == null ? data.storage.size() : onto.index());
+		if (next.equals(data.storage))
+			return;
+
+		data.storage.clear();
+		data.storage.addAll(next);
+		dirty = true;
+	}
+
+	/**
 	 * Releases the stored creature a panel picked, if it is still where the panel listed it.
 	 *
 	 * @param pick the stored creature as the panel showed it
