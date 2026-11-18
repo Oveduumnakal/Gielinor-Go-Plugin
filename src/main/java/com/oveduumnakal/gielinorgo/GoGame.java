@@ -3382,7 +3382,9 @@ final class GoGame
 				creature.rolls(), found == null ? 0 : found.npcIdFor(creature.npcId),
 				found == null ? Collections.emptyList() : MoveLearning.known(creature, found, moves),
 				MoveLearning.pending(creature, moves), BondRules.hearts(creature.bond), waitingText(creature))
-				.withSpecies(found));
+				.withSpecies(found)
+				.withGender(creature.gender())
+				.withDetails(examine.textFor(creature.species), found == null ? null : growsInto(found.key())));
 		}
 
 		return views;
