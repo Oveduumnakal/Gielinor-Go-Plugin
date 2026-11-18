@@ -71,6 +71,8 @@ final class WindowPages implements WindowShell.PageActions
 	private final SummaryPainter summary;
 	private final BagPainter bag;
 	private final TasksPage tasks;
+	private final StoragePage storage;
+	private final StoragePageFlow storageFlow;
 	private WindowStyle style;
 	private MotionMode mode = MotionMode.FULL;
 	private WindowTab tab = WindowTab.PARTY;
@@ -101,6 +103,8 @@ final class WindowPages implements WindowShell.PageActions
 		this.summary = new SummaryPainter(pictures, sink);
 		this.bag = new BagPainter(sink);
 		this.tasks = new TasksPage(sink);
+		this.storage = new StoragePage(pictures, sink);
+		this.storageFlow = new StoragePageFlow(storage, actions, new StorageHost());
 	}
 
 	/**
@@ -161,6 +165,12 @@ final class WindowPages implements WindowShell.PageActions
 		return tasks;
 	}
 
+	/** @return the Storage page, whose list and ticks the tests drive */
+	StoragePage storagePage()
+	{
+		return storage;
+	}
+
 	/** @return the Party page's motion, for tests */
 	PartyMotion motion()
 	{
@@ -184,6 +194,7 @@ final class WindowPages implements WindowShell.PageActions
 	public void closed()
 	{
 		motion.reset();
+		storage.reset();
 		state.back();
 		enter = false;
 		tab = WindowTab.PARTY;
@@ -208,6 +219,13 @@ final class WindowPages implements WindowShell.PageActions
 			state.back();
 			tasks.layout(body, style, panel);
 			return tasks.hits(panel);
+		}
+
+		if (current == WindowTab.STORAGE && panel != null && style != null)
+		{
+			state.back();
+			storage.layout(body, style, panel.storage());
+			return storage.hits(panel.storage(), WindowShell.PAGE_ORDER);
 		}
 
 		if (current != WindowTab.PARTY || panel == null || style == null)
@@ -365,6 +383,13 @@ final class WindowPages implements WindowShell.PageActions
 			return true;
 		}
 
+		if (current == WindowTab.STORAGE && panel != null)
+		{
+			storage.layout(ctx.body, ctx.style, panel.storage());
+			storage.paint(g, ctx, panel.storage());
+			return true;
+		}
+
 		if (current != WindowTab.PARTY || panel == null)
 			return false;
 
@@ -463,6 +488,12 @@ final class WindowPages implements WindowShell.PageActions
 		String id = hit.id();
 		if (pressBag(id, panel))
 			return;
+
+		if (tab == WindowTab.STORAGE)
+		{
+			storageFlow.press(id);
+			return;
+		}
 
 		int place = rowIndex(id);
 		if (place >= 0)
@@ -588,6 +619,12 @@ final class WindowPages implements WindowShell.PageActions
 		if (panel == null)
 			return;
 
+		if (tab == WindowTab.STORAGE)
+		{
+			storageFlow.menu(hit.id(), x, y, keyboard);
+			return;
+		}
+
 		int place = ID_SUMMARY_MENU.equals(hit.id()) ? state.index() : rowIndex(hit.id());
 		if (place < 0 || place >= panel.team().size())
 			return;
@@ -606,12 +643,14 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		if (tab == WindowTab.TASKS)
 			tasks.wheel(x, y, rotation);
+		else if (tab == WindowTab.STORAGE)
+			storage.wheel(x, y, rotation);
 	}
 
 	@Override
 	public boolean pointerPressed(int x, int y)
 	{
-		return tab == WindowTab.TASKS && tasks.pressed(x, y);
+		return tab == WindowTab.TASKS && tasks.pressed(x, y) || tab == WindowTab.STORAGE && storage.pressed(x, y);
 	}
 
 	@Override
@@ -619,12 +658,14 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		if (tab == WindowTab.TASKS)
 			tasks.dragged(x, y);
+		else if (tab == WindowTab.STORAGE)
+			storage.dragged(x, y);
 	}
 
 	@Override
 	public boolean pointerReleased(int x, int y)
 	{
-		return tab == WindowTab.TASKS && tasks.released();
+		return tab == WindowTab.TASKS && tasks.released() || tab == WindowTab.STORAGE && storage.released();
 	}
 
 	@Override
@@ -799,6 +840,42 @@ final class WindowPages implements WindowShell.PageActions
 		finally
 		{
 			g.dispose();
+		}
+	}
+
+	/** What the Storage page asks of the window around it. */
+	private final class StorageHost implements StoragePageFlow.Host
+	{
+		@Override
+		public void menu(List<ContextMenu.Item> items, int x, int y, boolean keyboard)
+		{
+			shell.openMenu(items, x, y, keyboard, clock.getAsLong());
+		}
+
+		@Override
+		public void modal(Modal dialog, TextBox box)
+		{
+			shell.openModal(dialog, box, clock.getAsLong());
+		}
+
+		@Override
+		public String takeDraft()
+		{
+			return shell.takeDraft();
+		}
+
+		@Override
+		public List<CreatureView> storage()
+		{
+			PanelState panel = loaded();
+			return panel == null ? Collections.emptyList() : panel.storage();
+		}
+
+		@Override
+		public Map<ItemType, Integer> items()
+		{
+			PanelState panel = loaded();
+			return panel == null ? Collections.emptyMap() : panel.items();
 		}
 	}
 
