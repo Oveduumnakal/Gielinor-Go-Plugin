@@ -292,7 +292,7 @@ public class BossEggTest
 		GielinorGoPartyMessage old = gson.fromJson(wire, GielinorGoPartyMessage.class);
 		old.setMemberId(ANN);
 
-		assertEquals(9, GielinorGoPartyMessage.PROTOCOL);
+		assertEquals(10, GielinorGoPartyMessage.PROTOCOL);
 		assertFalse(bob.receive(old, BOB, "Ann"));
 		assertEquals("", bob.offerFrom(ANN));
 		assertEquals("Ann runs a different version of Gielinor Go", bobTold.get(bobTold.size() - 1));
