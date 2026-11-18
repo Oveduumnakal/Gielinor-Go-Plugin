@@ -241,7 +241,11 @@ final class BalanceSpawn
 			.append(monsters == 1 ? " monster" : " monsters").append(" in view\n\n");
 		if (monsters == MONSTERS[0])
 			out.append("The mean wait from the moment the monsters come into view: each rolls at once, then every ")
-				.append("3 minutes. Waits over 2 hours are shown in hours.\n\n");
+				.append("3 minutes. In the game a monster rolls when it spawns into view and then one random monster ")
+				.append("that may roll does so every 25 game ticks (15 seconds, `GielinorGoPlugin.REROLL_TICKS`, ")
+				.append("private), so at most 4 rolls a minute whatever the number of monsters. The model is exact ")
+				.append("up to about 12 monsters and at most 15 seconds optimistic. Waits over 2 hours are shown ")
+				.append("in hours. The monsters must be within 20 tiles (`SPAWN_RANGE`, private).\n\n");
 
 		BalanceTable table = new BalanceTable(heading("Tier"));
 		for (Rarity rarity : Rarity.values())
