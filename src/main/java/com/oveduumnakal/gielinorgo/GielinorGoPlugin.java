@@ -5,6 +5,7 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -96,6 +97,9 @@ import net.runelite.client.util.Text;
 public class GielinorGoPlugin extends Plugin
 {
 	private static final Logger log = LoggerFactory.getLogger(GielinorGoPlugin.class);
+
+	/** Where the pointer counts as being when it is outside the canvas: far from every bubble and creature. */
+	private static final int OFF_CANVAS = -100_000;
 
 	/** Game ticks between extra chances for a monster already in view to turn wild. */
 	private static final int REROLL_TICKS = 25;
@@ -190,6 +194,10 @@ public class GielinorGoPlugin extends Plugin
 	private GoPersistence persistence;
 	private WildOverlay wildOverlay;
 	private WildHover wildHover;
+	private WildBubbles bubbles;
+	private WildBubbleOverlay bubbleOverlay;
+	private BubbleInput bubbleInput;
+	private volatile boolean bubblesFailed;
 	private WildBodies bodies;
 	private final NoticeBoard noticeBoard = new NoticeBoard();
 	private final CueGate cueGate = new CueGate();
@@ -312,6 +320,7 @@ public class GielinorGoPlugin extends Plugin
 		startWindow();
 		startControls();
 		startTracker();
+		startBubbles();
 		clientThread.invoke(this::startOnClientThread);
 	}
 
@@ -319,6 +328,7 @@ public class GielinorGoPlugin extends Plugin
 	protected void shutDown()
 	{
 		stopTracker();
+		stopBubbles();
 		stopControls();
 		stopWindow();
 		keyManager.unregisterKeyListener(hotkeys);
@@ -470,6 +480,7 @@ public class GielinorGoPlugin extends Plugin
 		effects.clear();
 		jarFlight.clear();
 		bodies.clear();
+		bubbles.hideNow();
 		tracker.clear();
 		bankSpots.clear();
 		game.setBankNear(false);
@@ -663,6 +674,7 @@ public class GielinorGoPlugin extends Plugin
 		if (!playable())
 		{
 			bodies.clear();
+			bubbles.hideNow();
 			tracker.clearWild(System.currentTimeMillis());
 		}
 		else if (ticks % REROLL_TICKS == 0)
@@ -696,11 +708,16 @@ public class GielinorGoPlugin extends Plugin
 		jarFlight.clientTick();
 		watchWindow();
 		if (!loaded)
+		{
+			if (bubbles != null)
+				bubbles.hideNow();
+
 			return;
+		}
 
 		long now = System.currentTimeMillis();
 		bodies.clientTick(now, combatWatch.inCombat(now), this::inBattleWithWild);
-		wildMenu();
+		wildPointer();
 		follower.clientTick();
 		stage.clientTick();
 		arena.clientTick();
@@ -780,38 +797,51 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
-	 * Adds the Catch and Battle entries to the menu while the mouse is over a wild creature's body, with the one
-	 * the player most likely wants first. The
-	 * entries are client-side only and nothing is sent to the game. They are added only while the mouse is over the
-	 * game view (the menu then has a "Walk here"), never over an interface, and never while the menu is open. The
-	 * entries always sit below the game's own, so a plain left click on the body is not ours.
+	 * Moves the wild creature bubbles on with the pointer, and adds the Catch and Battle entries to the menu while
+	 * the mouse is over a wild creature's body, with the one the player most likely wants first. The entries are
+	 * client-side only and nothing is sent to the game. They are added only while the mouse is over the game view
+	 * (the menu then has a "Walk here"), never over an interface, and never while the menu is open. The entries
+	 * always sit below the game's own, so a plain left click on the body is not ours. Over a painted bubble the
+	 * game's entries are cleared instead, as under the painted window, so the game offers nothing there.
 	 */
-	private void wildMenu()
+	private void wildPointer()
 	{
 		try
 		{
-			if (bodies.isEmpty() || client.isMenuOpen() || client.getMouseCanvasPosition() == null)
+			net.runelite.api.Point mouse = client.getMouseCanvasPosition();
+			boolean menuOpen = client.isMenuOpen();
+			boolean overScene = false;
+			boolean hasOurs = false;
+			if (mouse != null && !menuOpen)
+			{
+				for (MenuEntry entry : client.getMenu().getMenuEntries())
+				{
+					hasOurs |= entry.getType() == MenuAction.RUNELITE && WildMenu.isOurs(entry.getOption());
+					overScene |= entry.getType() == MenuAction.WALK;
+				}
+			}
+
+			bubbleTick(mouse, overScene, menuOpen);
+			if (bodies.isEmpty() || menuOpen || mouse == null)
 			{
 				wildHover.clear();
 				return;
 			}
 
-			MenuEntry[] present = client.getMenu().getMenuEntries();
-			boolean overScene = false;
-			boolean hasOurs = false;
-			for (MenuEntry entry : present)
+			if (bubbles.covers(mouse.getX(), mouse.getY()) && !dragKey.held())
 			{
-				hasOurs |= entry.getType() == MenuAction.RUNELITE && WildMenu.isOurs(entry.getOption());
-				overScene |= entry.getType() == MenuAction.WALK;
+				client.getMenu().setMenuEntries(new MenuEntry[0]);
+				wildHover.clear();
+				return;
 			}
 
-			net.runelite.api.Point mouse = client.getMouseCanvasPosition();
 			WildBody hit = overScene || hasOurs ? bodies.under(mouse) : null;
 			WildEntry tracked = hit == null ? null : tracker.get(hit.entry().wildId());
 			if (tracked != null && !hasOurs)
 				addWildOptions(tracked);
 
-			if (tracked != null && WildHover.wanted(config.wildTooltip(), false, true, director.active()))
+			if (tracked != null && !bubbles.showing(tracked.wildId())
+				&& WildHover.wanted(config.wildTooltip(), false, true, director.active()))
 				wildHover.update(tracked.wildId(), WildTip.text(tracked), System.currentTimeMillis());
 			else
 				wildHover.clear();
@@ -820,6 +850,246 @@ public class GielinorGoPlugin extends Plugin
 		{
 			wildHover.clear();
 			log.debug("Gielinor Go: could not add the wild creature's menu entries", e);
+		}
+	}
+
+	/** @return whether the bubbles are wanted: the setting is on and they have not failed this session */
+	private boolean bubblesOn()
+	{
+		return config.wildBubbles() && !bubblesFailed;
+	}
+
+	/**
+	 * Moves the bubbles' model on by one client tick: works out which creature the pointer is near, what it
+	 * offers, and what the bubbles must keep clear of. Paused while the game's menu is open, dismissed during a
+	 * battle or where wild creatures may not appear, dropped at once when the setting is off or they failed. A
+	 * failure turns the bubbles off for the session, which leaves the game's menu entries.
+	 *
+	 * @param mouse the pointer on the canvas, or null when it is outside it
+	 * @param overScene whether the game's menu holds a "Walk here", which means the pointer is over the game view
+	 * @param menuOpen whether the game's menu is open
+	 */
+	private void bubbleTick(net.runelite.api.Point mouse, boolean overScene, boolean menuOpen)
+	{
+		try
+		{
+			if (!bubblesOn())
+			{
+				bubbles.hideNow();
+				return;
+			}
+
+			bubbles.pause(menuOpen);
+			if (menuOpen)
+				return;
+
+			long now = System.currentTimeMillis();
+			if (director.active() || !playable())
+			{
+				bubbles.dismiss(now);
+				return;
+			}
+
+			int px = mouse == null ? OFF_CANVAS : mouse.getX();
+			int py = mouse == null ? OFF_CANVAS : mouse.getY();
+			Rectangle viewport = new Rectangle(client.getViewportXOffset(), client.getViewportYOffset(),
+				client.getViewportWidth(), client.getViewportHeight());
+			List<Rectangle> blockers = new ArrayList<>();
+			if (window.shell().isOpen())
+				blockers.add(window.screenBounds());
+
+			int currentId = bubbles.wildId();
+			if (currentId != WildBubbles.NO_TARGET && bodies.anchorsOf(currentId) == null)
+			{
+				bubbles.hideNow();
+				currentId = WildBubbles.NO_TARGET;
+			}
+
+			boolean currentEligible = false;
+			boolean currentNear = false;
+			List<WildBubbles.Candidate> candidates = new ArrayList<>();
+			for (WildBody body : bodies.all())
+			{
+				int id = body.entry().wildId();
+				BubbleAnchors anchors = bubbleEligible(body) ? bodies.anchorsOf(id) : null;
+				if (anchors == null)
+					continue;
+
+				boolean near = overScene && mouse != null && nearBody(body, px, py);
+				double dx = px - anchors.originX();
+				double dy = py - anchors.originY();
+				candidates.add(new WildBubbles.Candidate(id, near, dx * dx + dy * dy));
+				if (id == currentId)
+				{
+					currentEligible = true;
+					currentNear = near;
+				}
+			}
+
+			boolean inside = currentNear || bubbles.holds(px, py);
+			WildBubbles.Pick pick = WildBubbles.pick(currentId, currentEligible, inside, candidates);
+			WildBody picked = pick.wildId() == WildBubbles.NO_TARGET ? null : bodies.get(pick.wildId());
+			WildEntry entry = picked == null ? null : tracker.get(pick.wildId());
+			if (entry == null)
+			{
+				bubbles.tick(null, null, viewport, false, blockers, px, py, now, config.windowAnimations());
+				return;
+			}
+
+			boolean near = false;
+			for (WildBubbles.Candidate candidate : candidates)
+			{
+				if (candidate.wildId() == pick.wildId())
+					near = candidate.near();
+			}
+
+			bubbles.tick(bubbleOffer(entry, picked, now), bodies.anchorsOf(pick.wildId()), viewport, near,
+				blockers, px, py, now, config.windowAnimations());
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			bubblesBroke(e);
+		}
+	}
+
+	/**
+	 * @param body a wild creature's body
+	 * @return whether it may have bubbles: tracked, drawn, not hidden for the player's combat, not leaving and not in
+	 *     a catch or battle
+	 */
+	private boolean bubbleEligible(WildBody body)
+	{
+		WildLife.State state = body.life().state();
+		return tracker.get(body.entry().wildId()) != null && body.drawn() && !body.hidden()
+			&& !body.life().leaving() && state != WildLife.State.IN_CATCH && state != WildLife.State.IN_BATTLE;
+	}
+
+	private boolean nearBody(WildBody body, int px, int py)
+	{
+		Shape reach = bodies.reachOf(body.entry().wildId(), WildBubbles.NEAR_TILES);
+		return reach != null && reach.contains(px, py) || body.contains(px, py);
+	}
+
+	private BubbleOffer bubbleOffer(WildEntry entry, WildBody body, long now)
+	{
+		int wildId = entry.wildId();
+		List<JarSuggest.JarChoice> owned = jarChoices(entry);
+		JarType jar = game.jarToThrow();
+		JarSuggest.JarChoice shown = null;
+		for (JarSuggest.JarChoice choice : owned)
+		{
+			if (choice.jar() == jar)
+				shown = choice;
+		}
+
+		boolean knockedOut = knockedOut(wildId);
+		boolean ready = !entry.battled() && game.canBattle(now, config.chooseBattleActions())
+			&& !body.life().leaving();
+		return new BubbleOffer(wildId, jar, owned, ready, knockedOut, WildCardContent.of(entry, shown, knockedOut));
+	}
+
+	/** Creates the wild creature bubbles, their overlay and their mouse input, and registers them. */
+	private void startBubbles()
+	{
+		bubblesFailed = false;
+		bubbles = new WildBubbles();
+		bubbleOverlay = new WildBubbleOverlay(client, bodies, bubbles, new BubblePainter(), config::windowStyle,
+			config::windowAnimations, config::windowFraction, () -> loaded && bubblesOn(),
+			System::currentTimeMillis, this::bubblesBroke);
+		bubbleInput = new BubbleInput(bubbleOverlay::hits, dragKey, bubbleSink());
+		overlayManager.add(bubbleOverlay);
+		mouseManager.registerMouseListener(bubbleInput);
+	}
+
+	/** Unregisters the wild creature bubbles. */
+	private void stopBubbles()
+	{
+		mouseManager.unregisterMouseListener(bubbleInput);
+		overlayManager.remove(bubbleOverlay);
+		bubbleOverlay.publish(BubbleHits.EMPTY);
+		clientThread.invoke(bubbles::hideNow);
+	}
+
+	/**
+	 * Called when the bubbles threw while painting or while acting on a click: they are off for the rest of the
+	 * session and the game's own menu entries are used. Runs on the game thread.
+	 *
+	 * @param cause what was thrown
+	 */
+	private void bubblesBroke(Throwable cause)
+	{
+		log.debug("Gielinor Go: the wild creature bubbles failed, using the game's menu entries", cause);
+		bubblesFailed = true;
+		bubbles.hideNow();
+		bubbleOverlay.publish(BubbleHits.EMPTY);
+	}
+
+	/** @return where the mouse events of the bubbles go, each carried over to the game thread */
+	private BubbleInput.Sink bubbleSink()
+	{
+		return new BubbleInput.Sink()
+		{
+			@Override
+			public void pressed(int generation, BubbleKind kind, JarType jar, int button)
+			{
+				clientThread.invoke(() -> bubblePressed(generation, kind, jar, button));
+			}
+
+			@Override
+			public void pressedOutside(int generation)
+			{
+				clientThread.invoke(() -> bubblePressedOutside(generation));
+			}
+		};
+	}
+
+	private void bubblePressedOutside(int generation)
+	{
+		try
+		{
+			if (bubblesOn() && loaded)
+				bubbles.pressedOutside(generation, System.currentTimeMillis());
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			bubblesBroke(e);
+		}
+	}
+
+	/**
+	 * Acts on a press that was taken on a bubble: throws the jar the bubble shows, starts the battle, or picks a
+	 * jar from the cluster. Runs on the game thread; a failure turns the bubbles off.
+	 *
+	 * @param generation the generation of the click targets the press was made against
+	 * @param kind the bubble that was pressed
+	 * @param jar the jar of the pressed bubble, or null
+	 * @param button the button, 1 for left and 3 for right
+	 */
+	private void bubblePressed(int generation, BubbleKind kind, JarType jar, int button)
+	{
+		try
+		{
+			if (!bubblesOn() || !saveLive())
+				return;
+
+			BubbleAction action = bubbles.press(generation, kind, jar, button, System.currentTimeMillis());
+			if (action.kind() == BubbleAction.Kind.THROW)
+			{
+				throwJar(action.wildId(), game.jarToThrow());
+			}
+			else if (action.kind() == BubbleAction.Kind.BATTLE)
+			{
+				battle(action.wildId());
+			}
+			else if (action.kind() == BubbleAction.Kind.SELECT_JAR)
+			{
+				game.selectJar(action.jar());
+				refreshPanel();
+			}
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			bubblesBroke(e);
 		}
 	}
 

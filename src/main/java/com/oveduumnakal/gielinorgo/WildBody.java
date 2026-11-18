@@ -557,6 +557,35 @@ final class WildBody
 		}
 	}
 
+	/**
+	 * Gives the ground the body stands on grown by some tiles on every side, as the shape that counts as near it.
+	 * Any failure counts as no shape.
+	 *
+	 * @param tilesOut how many tiles to grow it by on each side
+	 * @return the tiles as a polygon on the canvas, or null while the body is not drawn or the polygon cannot be
+	 *     worked out, as near the edge of the screen
+	 */
+	Shape reach(int tilesOut)
+	{
+		try
+		{
+			StageAnchors.Spot at = spot;
+			if (body == null || at == null || !body.isActive())
+				return null;
+
+			WorldView view = client.getTopLevelWorldView();
+			int[] middle = WildFootprint.centre(x, y, tiles, view == null ? 0 : view.getBaseX(),
+				view == null ? 0 : view.getBaseY());
+			LocalPoint footprint = view == null ? at.point() : new LocalPoint(middle[0], middle[1], view);
+			return Perspective.getCanvasTileAreaPoly(client, footprint, tiles + 2 * Math.max(0, tilesOut));
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not work out the ground near a wild body", e);
+			return null;
+		}
+	}
+
 	private List<Shape> hitShapes(LocalPoint at)
 	{
 		List<Shape> shapes = new ArrayList<>();

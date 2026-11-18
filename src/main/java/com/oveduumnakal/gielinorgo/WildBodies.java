@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,9 +21,11 @@ import org.slf4j.LoggerFactory;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.NPC;
+import net.runelite.api.Perspective;
 import net.runelite.api.Player;
 import net.runelite.api.Point;
 import net.runelite.api.WorldView;
+import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 
 /**
@@ -43,6 +46,9 @@ final class WildBodies
 
 	/** Farthest a new body stands from the real monster's tile, as the game counts distance: two tiles. */
 	static final int SPAWN_MAX_DISTANCE = 2;
+
+	/** Scene units in one tile. */
+	private static final int TILE = 128;
 
 	/** The game's angle scale for a full turn, for a random facing. */
 	private static final int FULL_TURN = 2048;
@@ -371,6 +377,78 @@ final class WildBodies
 		Farewell gone = farewells.get(wildId);
 		LastPlace place = body != null && body.lastSpot() != null ? body.lastSpot() : gone == null ? null : gone.spot;
 		return place == null ? null : place.in(client.getTopLevelWorldView());
+	}
+
+	/**
+	 * Finds where the bubbles of a wild creature hang: its middle and the line of its tag, on the canvas.
+	 *
+	 * @param wildId the wild creature's id
+	 * @return the two points, or null when it has no place or either point is off the canvas
+	 */
+	BubbleAnchors anchorsOf(int wildId)
+	{
+		try
+		{
+			StageAnchors.Spot spot = spotOf(wildId);
+			if (spot == null)
+				return null;
+
+			Point origin = Perspective.localToCanvas(client, spot.point(), spot.plane(), spot.height() / 2);
+			Point head = Perspective.localToCanvas(client, spot.point(), spot.plane(),
+				spot.height() + WildOverlay.TAG_HEIGHT_OFFSET);
+			if (origin == null || head == null)
+				return null;
+
+			return new BubbleAnchors(origin.getX(), origin.getY(), head.getX(), head.getY());
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not place a wild creature's bubbles", e);
+			return null;
+		}
+	}
+
+	/**
+	 * Gives the shape that counts as near a wild creature: its ground grown by some tiles, or, where that polygon
+	 * cannot be worked out, an ellipse around its middle.
+	 *
+	 * @param wildId the wild creature's id
+	 * @param tilesOut how many tiles beyond its edge still count as near
+	 * @return the shape on the canvas, or null when the creature has no body drawn
+	 */
+	Shape reachOf(int wildId, int tilesOut)
+	{
+		WildBody body = bodies.get(wildId);
+		if (body == null)
+			return null;
+
+		Shape ground = body.reach(tilesOut);
+		if (ground != null)
+			return ground;
+
+		try
+		{
+			StageAnchors.Spot spot = body.spot();
+			WorldView view = client.getTopLevelWorldView();
+			if (spot == null || view == null)
+				return null;
+
+			LocalPoint at = spot.point();
+			Point here = Perspective.localToCanvas(client, at, spot.plane(), 0);
+			Point beside = Perspective.localToCanvas(client, new LocalPoint(at.getX() + TILE, at.getY(), view),
+				spot.plane(), 0);
+			Point middle = Perspective.localToCanvas(client, at, spot.plane(), spot.height() / 2);
+			if (here == null || beside == null || middle == null)
+				return null;
+
+			double pixels = Math.hypot(beside.getX() - here.getX(), beside.getY() - here.getY());
+			return BubbleLayout.reachFallback(middle.getX(), middle.getY(), body.tiles(), tilesOut, pixels);
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not work out the ground near a wild body", e);
+			return null;
+		}
 	}
 
 	/**
