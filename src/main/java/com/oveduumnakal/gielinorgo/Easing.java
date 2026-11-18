@@ -54,6 +54,19 @@ enum Easing
 		}
 	},
 
+	/** Goes only a little past 1 (peak about 1.037) and comes back; the pop for a path that extrapolates. */
+	OUT_BACK_SOFT
+	{
+		@Override
+		double curve(double t)
+		{
+			double c1 = 1.0;
+			double c3 = 2.0;
+			double u = t - 1.0;
+			return 1.0 + c3 * u * u * u + c1 * u * u;
+		}
+	},
+
 	/** Gentle at both ends, for a highlight that glides. */
 	IN_OUT_SINE
 	{
