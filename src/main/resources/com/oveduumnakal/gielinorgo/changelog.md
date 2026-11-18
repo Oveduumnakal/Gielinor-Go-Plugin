@@ -107,6 +107,8 @@ A Creature Log, daily tasks and daily events give you goals.
   its species. (#205)
 - **Pinned tracker.** Pin daily and weekly tasks and carried eggs to a small box on the game screen with live
   progress. (#216)
+- **XP while you are away.** XP you gain on mobile, in another client or with the plugin off trains your team the next
+  time you log in, with jars for the skills and for level-ups. (#219)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

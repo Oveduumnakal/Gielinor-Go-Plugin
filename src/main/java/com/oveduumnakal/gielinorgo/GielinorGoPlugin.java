@@ -175,6 +175,7 @@ public class GielinorGoPlugin extends Plugin
 	private final CombatWatch combatWatch = new CombatWatch();
 	private final Map<Integer, NPC> candidates = new HashMap<>();
 	private final Map<Skill, Integer> lastXp = new EnumMap<>(Skill.class);
+	private final XpLedger ledger = new XpLedger();
 	private final Map<Skill, Integer> lastLevel = new EnumMap<>(Skill.class);
 	private final StepCounter stepCounter = new StepCounter();
 	private final BankSpots bankSpots = new BankSpots();
@@ -326,8 +327,15 @@ public class GielinorGoPlugin extends Plugin
 		GoPersistence endingPersistence = persistence;
 		String endingProfile = saveProfileKey;
 		boolean endingUnsaved = unsaved;
+		Map<String, Integer> endingXp = ledger.stamp();
 		loaded = false;
-		clientThread.invoke(() -> SaveFlush.write(endingGame, endingPersistence, endingProfile, endingUnsaved));
+		clientThread.invoke(() ->
+		{
+			if (endingGame != null && endingXp != null)
+				endingGame.stampXp(endingXp);
+
+			SaveFlush.write(endingGame, endingPersistence, endingProfile, endingUnsaved);
+		});
 		clientThread.invoke(stage::clear);
 		clientThread.invoke(arena::clear);
 		clientThread.invoke(bodies::clear);
@@ -347,6 +355,7 @@ public class GielinorGoPlugin extends Plugin
 		candidates.clear();
 		lastXp.clear();
 		lastLevel.clear();
+		ledger.reset();
 		stepCounter.reset();
 	}
 
@@ -471,6 +480,7 @@ public class GielinorGoPlugin extends Plugin
 		{
 			lastXp.clear();
 			lastLevel.clear();
+			ledger.reset();
 		}
 	}
 
@@ -561,6 +571,7 @@ public class GielinorGoPlugin extends Plugin
 	public void onStatChanged(StatChanged event)
 	{
 		Skill skill = event.getSkill();
+		ledger.read(skill.name(), event.getXp());
 		Integer previousXp = lastXp.put(skill, event.getXp());
 		Integer previousLevel = lastLevel.put(skill, event.getLevel());
 		if (previousXp == null || previousLevel == null || !loaded)
@@ -638,6 +649,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		ticks++;
+		reconcileXp();
 		watchCombat();
 		steering();
 		battleScene();
@@ -815,6 +827,11 @@ public class GielinorGoPlugin extends Plugin
 		loadSave();
 		StatBaseline.seed(Arrays.asList(Skill.values()), lastXp, lastLevel, client::getSkillExperience,
 			client::getRealSkillLevel);
+		Map<String, Integer> now = new HashMap<>();
+		for (Map.Entry<Skill, Integer> reading : lastXp.entrySet())
+			now.put(reading.getKey().name(), reading.getValue());
+
+		ledger.seed(now);
 		WorldView view = client.getTopLevelWorldView();
 		if (view == null)
 			return;
@@ -1087,6 +1104,7 @@ public class GielinorGoPlugin extends Plugin
 		game.starterSeed(account == -1L ? null : Long.valueOf(account));
 		saveProfileKey = configManager.getRSProfileKey();
 		loaded = true;
+		ledger.markUnreconciled();
 		helloDue = true;
 		helloAsksBack = true;
 		unsaved = false;
@@ -1100,8 +1118,58 @@ public class GielinorGoPlugin extends Plugin
 		if (!loaded || game == null)
 			return;
 
+		stampXp();
 		SaveFlush.write(game, persistence, saveProfileKey, unsaved);
 		unsaved = false;
+	}
+
+	/**
+	 * Writes the XP the client reported into the save's snapshot, when the ledger allows it: only after this login was
+	 * compared with the save, and never on a world that keeps its own XP.
+	 */
+	private void stampXp()
+	{
+		Map<String, Integer> xp = ledger.stamp();
+		if (xp != null && game.stampXp(xp))
+			unsaved = true;
+	}
+
+	/**
+	 * Credits the XP gained since the save was last written, once per login, on the first game tick when every skill's
+	 * login reading is in. It waits for the save of the logged-in account to be the one that is loaded. A failure is
+	 * logged and never retried, so it cannot credit twice.
+	 */
+	private void reconcileXp()
+	{
+		boolean worldOk = OfflineXp.countsWorld(worldTypeNames());
+		ledger.worldOk(worldOk);
+		if (!ledger.reconcileDue() || !worldOk || saveProfileKey == null
+			|| !saveProfileKey.equals(configManager.getRSProfileKey()))
+			return;
+
+		try
+		{
+			if (config.offlineProgress())
+				game.addOfflineXp(OfflineXp.compute(game.xpSnapshot(), ledger.login(), random));
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not count the XP gained while away", e);
+		}
+		finally
+		{
+			ledger.markReconciled();
+			stampXp();
+		}
+	}
+
+	private List<String> worldTypeNames()
+	{
+		List<String> names = new ArrayList<>();
+		for (WorldType type : client.getWorldType())
+			names.add(type.name());
+
+		return names;
 	}
 
 	private void refreshPanel()

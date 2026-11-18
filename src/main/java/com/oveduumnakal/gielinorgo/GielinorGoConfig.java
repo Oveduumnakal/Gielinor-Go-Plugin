@@ -560,6 +560,24 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Whether XP gained while the plugin was not watching trains the team at login.
+	 *
+	 * @return true to count XP gained while away
+	 */
+	@ConfigItem(
+		keyName = "offlineProgress",
+		name = "Count XP gained while away",
+		description = "Counts the XP you gained since the last time you played with this plugin,\n"
+			+ "for example on mobile, and trains your team with it when you log in.\n"
+			+ "No web request is made. The XP is read from the game when you log in.",
+		position = 32
+	)
+	default boolean offlineProgress()
+	{
+		return true;
+	}
+
+	/**
 	 * Whether the pinned tracker box shows on the game screen.
 	 *
 	 * @return true to show the tracker
