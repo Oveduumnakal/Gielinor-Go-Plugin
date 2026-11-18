@@ -134,6 +134,8 @@ A Creature Log, daily tasks and daily events give you goals.
   version on both sides. (#220)
 - **New style icons.** Ranged, Magic, Stab, Slash and Crush have new pictures wherever a creature or move shows its
   style. (#258)
+- **New jar pictures.** All 17 jars have new artwork wherever a jar is shown: the Bag, the throw, and the floating
+  lines. (#261)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
