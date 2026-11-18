@@ -132,6 +132,8 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Battle balance.** Wild creatures now appear within one level of their usual level, Hex hits as hard as a Magic
   bolt, and Rare Magic creatures are a little tougher so no Rare style is left behind. Friend battles need the same
   version on both sides. (#220)
+- **New style icons.** Ranged, Magic, Stab, Slash and Crush have new pictures wherever a creature or move shows its
+  style. (#258)
 - **New jar pictures.** All 17 jars have new artwork wherever a jar is shown: the Bag, the throw, and the floating
   lines. (#261)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
