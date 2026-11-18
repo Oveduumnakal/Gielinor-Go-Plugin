@@ -91,6 +91,8 @@ A Creature Log, daily tasks and daily events give you goals.
   turn by turn. (#98)
 - **Painted window.** A new in-game window drawn on the game screen, with six tabs and two looks. The jar button on
   the game screen opens and closes it. (#223)
+- **Party and Summary.** Your team of six as rows with portrait, nickname, gender, style, level and health and XP
+  bars; click one for its Summary. (#224)
 - **Battle buttons on the game screen.** While a battle waits for your choice, the box on the game screen has
   buttons for Attack, Switch, Catch, Item and Run, so you can steer a battle without hotkeys. (#225)
 - **Painted window tabs.** The painted window has Party, Bag, Storage, Collection, Tasks and Battle, plus an in-window
@@ -101,6 +103,14 @@ A Creature Log, daily tasks and daily events give you goals.
   twice as many tiles. Eggs you already carry keep their old target. (#206)
 - **Rarer finds.** Stronger monsters turn wild less often: Uncommon at 0.6 times the chance, Rare 0.35, Epic 0.15 and
   Legendary 0.05. The Wild creature rarity setting stays the rate for Common ones. (#213)
+- **Seen and caught marks.** A mark beside each wild creature's name shows whether its species is new to you,
+  seen or already caught. (#209)
+- **Wild creature tooltip.** Hover a wild creature to see its name, level, style and whether you have seen or caught
+  its species. (#205)
+- **Hunter creatures.** Pyre foxes, kebbits, salamanders, moths, antelope, implings and other Hunter creatures with
+  no combat level now turn wild and can be battled and caught; their level is their Hunter level. (#207)
+- **Sort and filter Storage.** Sort stored creatures by level, species, rarity, date caught or nickname, and filter
+  them by level, style, rarity, rating, gender, gilded or nickname, showing or hiding each. (#212)
 - **Wandering lead.** When you stand still your lead creature wanders around within 3 tiles of you, and walks back
   to your trail when you set off. A setting turns it off. (#208)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

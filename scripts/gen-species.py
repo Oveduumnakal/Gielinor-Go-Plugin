@@ -22,6 +22,9 @@ the small Monkey Guard is missing). A wild monster is matched to its species by 
 combat level can turn wild. When the optional dump (the abextm/osrs-cache release gen-animations.py reads) is given,
 the ids of every NPC in it that has the species' name (any letter case) and a combat level above 0 are added after the
 wiki ids. Without it only the wiki ids are written.
+
+Hunter creatures (issue #207): the game gives them no combat level, so no wiki row above lists them. The hand-kept
+scripts/species-hunter.json adds them (level = Hunter level, "hunter": true) so a regenerated file keeps them.
 """
 import json
 import re
@@ -41,6 +44,7 @@ QUEST_KEEP = "scripts/species-quest-keep.txt"
 EXAMINE_OUT = "src/main/resources/com/oveduumnakal/gielinorgo/examine.json"
 QUEST_LIST = "src/test/resources/quest-species.txt"
 QUEST_CATEGORY = "Category:Quest_monsters"
+HUNTER = "scripts/species-hunter.json"
 UA = "species-data-script/1.0"
 PAGE = 500
 QUERY = ("bucket('infobox_monster').select('page_name','name','combat_level','attack_style','attribute',"
@@ -211,11 +215,28 @@ def record(entry, stats=None):
         data["traits"] = traits
     if ids:
         data["ids"] = ids
+    if len(entry) > 6 and entry[6]:
+        data["hunter"] = True
     if len(entry) > 5 and entry[5]:
         data["quest"] = True
     if stats:
         data["stats"] = stats
     return data
+
+
+def hunter_entries(taken, path=HUNTER):
+    """Returns the Hunter creatures of scripts/species-hunter.json as species entries flagged as Hunter (issue #207).
+
+    The game gives them no combat level, so the wiki rows above never include them and level is the Hunter level. The
+    run fails when a name is also a wiki species, as the hunter file would then hide it. gen-hunter-species.py merges
+    the same file into the current species.json without the network.
+    """
+    with open(path, encoding="utf-8") as f:
+        rows = json.load(f)
+    clash = sorted(r["name"] for r in rows if r["name"].lower() in taken)
+    if clash:
+        raise SystemExit("%s names species the wiki already lists: %s" % (path, clash))
+    return [(r["name"], r["level"], r["style"], r.get("traits", []), r["ids"], False, True) for r in rows]
 
 
 def kept_stats(path=OUT):
@@ -353,6 +374,8 @@ def main():
         extra = dump_ids(sys.argv[1])
         entries = [e[:4] + (merge_ids(e[4], extra.get(e[0].lower(), [])),) + e[5:] for e in entries]
     entries = [e[:4] + (e[4][:MAX_IDS],) + e[5:] for e in entries]
+    entries += hunter_entries({e[0].lower() for e in entries})
+    entries.sort(key=lambda e: e[0].lower())
     stats = kept_stats()
     with open(OUT, "w", encoding="utf-8") as f:
         f.write("[\n")

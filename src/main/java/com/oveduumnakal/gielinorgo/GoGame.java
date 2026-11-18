@@ -798,14 +798,29 @@ final class GoGame
 	 * Records that the player met a species in the wild.
 	 *
 	 * @param entry the wild creature that appeared
+	 * @return true when the species was new to the player, false when it was seen before
 	 */
-	void markSeen(WildEntry entry)
+	boolean markSeen(WildEntry entry)
 	{
 		if (!data.seen.add(entry.species().key()))
-			return;
+			return false;
 
 		log = null;
 		dirty = true;
+		return true;
+	}
+
+	/**
+	 * Works out what the Creature Log knows of a wild creature's species now. It reads the saved counts directly,
+	 * never the Log's entry list.
+	 *
+	 * @param entry the wild creature, whose {@link WildEntry#firstMeeting()} was set when it appeared
+	 * @return caught with the count, else new for a first meeting, else seen
+	 */
+	WildRecord recordOf(WildEntry entry)
+	{
+		Integer count = data.caught.get(entry.species().key());
+		return WildRecord.of(count == null ? 0 : count, entry.firstMeeting());
 	}
 
 	/**
@@ -3384,6 +3399,7 @@ final class GoGame
 				MoveLearning.pending(creature, moves), BondRules.hearts(creature.bond), waitingText(creature))
 				.withSpecies(found)
 				.withGender(creature.gender())
+				.withCaught(creature.caughtAtMs)
 				.withDetails(examine.textFor(creature.species), found == null ? null : growsInto(found.key())));
 		}
 
