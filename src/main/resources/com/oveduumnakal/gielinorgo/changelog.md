@@ -107,6 +107,8 @@ A Creature Log, daily tasks and daily events give you goals.
   seen or already caught. (#209)
 - **Wild creature tooltip.** Hover a wild creature to see its name, level, style and whether you have seen or caught
   its species. (#205)
+- **Hunter creatures.** Pyre foxes, kebbits, salamanders, moths, antelope, implings and other Hunter creatures with
+  no combat level now turn wild and can be battled and caught; their level is their Hunter level. (#207)
 - **Sort and filter Storage.** Sort stored creatures by level, species, rarity, date caught or nickname, and filter
   them by level, style, rarity, rating, gender, gilded or nickname, showing or hiding each. (#212)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

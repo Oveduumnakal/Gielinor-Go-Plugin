@@ -20,6 +20,7 @@ final class Species
 	private List<Trait> traits;
 	private int[] ids;
 	private boolean quest;
+	private boolean hunter;
 	private double[] stats;
 
 	/** Used by Gson. */
@@ -198,6 +199,48 @@ final class Species
 	{
 		this.quest = true;
 		return this;
+	}
+
+	/**
+	 * Tells whether this is a Hunter creature: the game gives its NPCs no combat level, so {@link #level()} is its
+	 * Hunter level and only its listed NPC ids turn wild.
+	 *
+	 * @return true for a pyre fox, a kebbit, a salamander, an impling and the like
+	 */
+	boolean hunter()
+	{
+		return hunter;
+	}
+
+	/**
+	 * Marks the species as a Hunter creature, for tests and for building species in code.
+	 *
+	 * @return this species
+	 */
+	Species asHunter()
+	{
+		this.hunter = true;
+		return this;
+	}
+
+	/**
+	 * Tells whether the game uses an NPC id for this species.
+	 *
+	 * @param npcId the NPC id
+	 * @return true when the id is in the species' id list
+	 */
+	boolean hasNpcId(int npcId)
+	{
+		if (ids == null)
+			return false;
+
+		for (int id : ids)
+		{
+			if (id == npcId)
+				return true;
+		}
+
+		return false;
 	}
 
 	/** @return the NPC ids the game uses for this species, for drawing its portrait; empty when none are known */
