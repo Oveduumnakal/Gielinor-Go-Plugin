@@ -74,6 +74,7 @@ import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
+import net.runelite.client.ui.overlay.tooltip.TooltipManager;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.LinkBrowser;
 import net.runelite.client.util.Text;
@@ -147,6 +148,9 @@ public class GielinorGoPlugin extends Plugin
 	private ModelOutlineRenderer outlineRenderer;
 
 	@Inject
+	private TooltipManager tooltipManager;
+
+	@Inject
 	private Gson gson;
 
 	@Inject
@@ -183,6 +187,7 @@ public class GielinorGoPlugin extends Plugin
 	private GoGame game;
 	private GoPersistence persistence;
 	private WildOverlay wildOverlay;
+	private WildHover wildHover;
 	private WildBodies bodies;
 	private final NoticeBoard noticeBoard = new NoticeBoard();
 	private final CueGate cueGate = new CueGate();
@@ -271,7 +276,8 @@ public class GielinorGoPlugin extends Plugin
 		skilling = loadSkilling(species, animations);
 		lastSkillingMs = -SkillingRules.COOLDOWN_MS;
 		bodies = new WildBodies(client, animations, random);
-		wildOverlay = new WildOverlay(client, bodies, config, outlineRenderer);
+		wildHover = new WildHover();
+		wildOverlay = new WildOverlay(client, bodies, config, outlineRenderer, wildHover, tooltipManager);
 		floatingText = new FloatingTextOverlay(client, noticeBoard, this::spotFor, this::tagFor);
 		overlayManager.add(wildOverlay);
 		overlayManager.add(floatingText);
@@ -762,24 +768,33 @@ public class GielinorGoPlugin extends Plugin
 		try
 		{
 			if (bodies.isEmpty() || client.isMenuOpen() || client.getMouseCanvasPosition() == null)
+			{
+				wildHover.clear();
 				return;
+			}
 
 			MenuEntry[] present = client.getMenu().getMenuEntries();
 			boolean overScene = false;
+			boolean hasOurs = false;
 			for (MenuEntry entry : present)
 			{
-				if (entry.getType() == MenuAction.RUNELITE && WildMenu.isOurs(entry.getOption()))
-					return;
-
+				hasOurs |= entry.getType() == MenuAction.RUNELITE && WildMenu.isOurs(entry.getOption());
 				overScene |= entry.getType() == MenuAction.WALK;
 			}
 
-			WildBody hit = overScene ? bodies.under(client.getMouseCanvasPosition()) : null;
-			if (hit != null && tracker.get(hit.entry().wildId()) != null)
-				addWildOptions(hit.entry());
+			WildBody hit = overScene || hasOurs ? bodies.under(client.getMouseCanvasPosition()) : null;
+			WildEntry tracked = hit == null ? null : tracker.get(hit.entry().wildId());
+			if (tracked != null && !hasOurs)
+				addWildOptions(tracked);
+
+			if (tracked != null && WildHover.wanted(config.wildTooltip(), false, true, director.active()))
+				wildHover.update(tracked.wildId(), WildTip.text(tracked), System.currentTimeMillis());
+			else
+				wildHover.clear();
 		}
 		catch (RuntimeException | AssertionError e)
 		{
+			wildHover.clear();
 			log.debug("Gielinor Go: could not add the wild creature's menu entries", e);
 		}
 	}

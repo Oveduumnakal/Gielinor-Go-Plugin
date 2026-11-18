@@ -543,6 +543,23 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Whether hovering a wild creature shows a small tooltip about it.
+	 *
+	 * @return true to show the tooltip
+	 */
+	@ConfigItem(
+		keyName = "wildTooltip",
+		name = "Wild creature tooltip",
+		description = "Shows a small tooltip with the name, level, style and Creature Log record when you hover a wild"
+			+ " creature.\nIt hides while a menu is open and during a battle.",
+		position = 29
+	)
+	default boolean wildTooltip()
+	{
+		return true;
+	}
+
+	/**
 	 * The share of the game screen's width the painted window takes. It follows the game window. Set by dragging the
 	 * window's edge and by the size presets; not shown in the settings.
 	 *
