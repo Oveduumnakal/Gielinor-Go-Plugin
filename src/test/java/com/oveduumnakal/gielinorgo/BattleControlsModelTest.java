@@ -219,6 +219,14 @@ public class BattleControlsModelTest
 	}
 
 	@Test
+	public void theItemButtonIsGreyWhenNoItemWouldHelp()
+	{
+		model.show(viewWithItems(Collections.emptyList()), BattleControlsModel.Keys.NONE);
+
+		assertFalse(hit("item").enabled());
+	}
+
+	@Test
 	public void backAndARightClickGoBackOneStep()
 	{
 		List<BattleView.Option> both = pair();

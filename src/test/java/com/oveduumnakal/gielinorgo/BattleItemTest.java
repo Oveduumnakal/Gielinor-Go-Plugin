@@ -11,8 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JPopupMenu;
 
 import org.junit.Test;
 
@@ -298,46 +296,5 @@ public class BattleItemTest
 
 		game.data().addItems(ItemType.LARGE_SALVE, 1);
 		assertEquals(BattleChoice.item(ItemType.LARGE_SALVE, 0), game.quickItem(session));
-	}
-
-	@Test
-	public void theItemButtonListsItemsAndUsesOneAtOnceWhenItHelpsOneCreature()
-	{
-		List<BattleChoice> chosen = new ArrayList<>();
-		BattleBox box = new BattleBox(chosen::add);
-		Combatant mine = new Combatant(GOBLIN, "Bob", 40, 0.5);
-		Combatant foe = new Combatant(GOBLIN, "Foe", 10, 1.0);
-		List<BattleView.Option> both = Arrays.asList(new BattleView.Option(0, "Bob", 40, 0.5),
-			new BattleView.Option(1, "Ann", 30, 0.2));
-		List<BattleView.ItemOption> items = Arrays.asList(
-			new BattleView.ItemOption(ItemType.SMALL_SALVE, 3, both),
-			new BattleView.ItemOption(ItemType.ANTIDOTE, 1, Collections.singletonList(both.get(0))));
-		box.show(new BattleView(mine, foe, false, false, null, 0, 10, 1.0, Collections.emptyList(), items));
-
-		assertTrue(box.itemButton().isEnabled());
-		JPopupMenu menu = box.itemMenu();
-		assertEquals(2, menu.getComponentCount());
-		assertTrue("a salve for two creatures opens a list", menu.getComponent(0) instanceof JMenu);
-		JMenu salve = (JMenu) menu.getComponent(0);
-		assertEquals(2, salve.getItemCount());
-		salve.getItem(1).doClick();
-		assertEquals(Arrays.asList(BattleChoice.item(ItemType.SMALL_SALVE, 1)), chosen);
-
-		((javax.swing.JMenuItem) menu.getComponent(1)).doClick();
-		assertEquals(BattleChoice.item(ItemType.ANTIDOTE, 0), chosen.get(1));
-	}
-
-	@Test
-	public void theItemButtonIsGreyWhenNoItemWouldHelp()
-	{
-		BattleBox box = new BattleBox(choice ->
-		{
-		});
-		Combatant mine = new Combatant(GOBLIN, "Bob", 40, 1.0);
-		Combatant foe = new Combatant(GOBLIN, "Foe", 10, 1.0);
-
-		box.show(new BattleView(mine, foe, false, false, null, 0, 10, 1.0, Collections.emptyList()));
-
-		assertFalse(box.itemButton().isEnabled());
 	}
 }

@@ -18,8 +18,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/** Checks what the panel shows of moves: the view, the tooltip lines and the words of the moves dialog. */
-public class MovePanelTest
+/** Checks what the creature view carries of moves: the known ones and the ones that wait to be learned. */
+public class CreatureViewMovesTest
 {
 	private static final Move CLAW = new Move("claw", "Claw", CombatType.STAB, 1.25, 0.95);
 
@@ -45,40 +45,6 @@ public class MovePanelTest
 		assertEquals(1, waiting.pending().size());
 		assertFalse("a move that waits changes the view, so the card redraws", plain.equals(waiting));
 		assertEquals(plain, view(Arrays.asList(TestMoves.BITE, CLAW), Collections.emptyList()));
-	}
-
-	@Test
-	public void theTooltipListsTheMovesAndWhatWaits()
-	{
-		CreatureView waiting = waiting();
-
-		String tip = PanelUi.tooltipMoves(waiting);
-
-		assertTrue(tip, tip.contains("<br>Bite: Stab, power 1, accuracy 100%"));
-		assertTrue(tip, tip.contains("<br>Claw: Stab, power 1.25, accuracy 95%"));
-		assertTrue(tip, tip.endsWith("<br>Wants to learn Dragonfire"));
-		assertEquals("", PanelUi.tooltipMoves(view(Collections.emptyList(), Collections.emptyList())));
-	}
-
-	@Test
-	public void theDialogOffersEachKnownMoveToForgetAndASkip()
-	{
-		CreatureView waiting = waiting();
-
-		assertEquals(Arrays.asList("Forget Bite", "Forget Claw", "Skip"), MoveDialog.options(waiting));
-		String message = MoveDialog.message(waiting);
-		assertTrue(message, message.contains("New move: Dragonfire"));
-		assertTrue(message, message.contains("Magic, power 1.6, accuracy 90%"));
-		assertTrue(message, message.contains("Smaug (Green dragon)"));
-	}
-
-	@Test
-	public void withNothingWaitingTheDialogOnlyListsTheMoves()
-	{
-		CreatureView plain = view(Arrays.asList(TestMoves.BITE, CLAW), Collections.emptyList());
-
-		assertTrue(MoveDialog.options(plain).isEmpty());
-		assertFalse(MoveDialog.message(plain).contains("New move"));
 	}
 
 	@Test

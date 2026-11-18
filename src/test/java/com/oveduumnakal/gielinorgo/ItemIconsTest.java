@@ -61,13 +61,9 @@ public class ItemIconsTest
 			assertNotNull(type.name(), ItemIcons.image(type));
 			assertEquals(ItemIcons.ICON_SIZE, ItemIcons.image(type).getWidth());
 			assertEquals(ItemIcons.ICON_SIZE, ItemIcons.image(type).getHeight());
-			assertNotNull(type.name(), ItemIcons.swing(type));
-			assertNotNull(type.name(), ItemIcons.swingGrey(type));
 		}
 
 		assertNull(ItemIcons.image(null));
-		assertNull(ItemIcons.swing(null));
-		assertNull(ItemIcons.swingGrey(null));
 	}
 
 	private static BufferedImage read(ItemType type) throws IOException

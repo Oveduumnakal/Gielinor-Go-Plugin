@@ -4,13 +4,10 @@
  */
 package com.oveduumnakal.gielinorgo;
 
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import javax.swing.JPanel;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -225,25 +222,5 @@ public class MilestonesTest
 		assertTrue(first.paid());
 		assertFalse(third.paid());
 		assertEquals(87, third.current());
-	}
-
-	@Test
-	public void theStripAndTheListFitTheNarrowPanel()
-	{
-		game.load(saveWithCaught(87));
-		MilestoneView view = game.snapshot().milestones();
-		MilestoneStrip strip = new MilestoneStrip();
-		strip.update(view);
-		strip.setSize(new Dimension(209, 120));
-		strip.doLayout();
-		JPanel list = MilestoneStrip.list(view);
-		list.setSize(new Dimension(225, 400));
-		list.doLayout();
-		BufferedImage image = new BufferedImage(225, 400, BufferedImage.TYPE_INT_ARGB);
-		list.printAll(image.getGraphics());
-
-		assertTrue(strip.isVisible());
-		assertTrue(strip.getPreferredSize().width <= 209);
-		assertTrue(list.getPreferredSize().width <= 225);
 	}
 }

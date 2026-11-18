@@ -30,7 +30,6 @@ public interface GielinorGoConfig extends Config
 	String WHATS_NEW_DISMISSED = "whatsNewDismissed";
 
 	/** Key of the setting that shows the painted window's jar button. */
-	String WINDOW_PREVIEW = "windowPreview";
 
 	/** Key of the painted window's size preset. */
 	String WINDOW_SIZE = "windowSize";
@@ -240,9 +239,9 @@ public interface GielinorGoConfig extends Config
 		keyName = "chooseBattleActions",
 		name = "Choose battle actions",
 		description = "A battle with a wild creature or a City Champion waits for you each turn: Attack, Switch,"
-			+ " Catch or Run.\nChoose in the side panel, or with the hotkeys below. With no choice in time, your"
-			+ " creature attacks by itself.\nOff means a battle is one click and plays itself, with your lead"
-			+ " alone.\nA friend battle is played turn by turn only when both players have this on.",
+			+ " Catch or Run.\nChoose with the buttons on the game screen, or with the hotkeys below. With no choice"
+			+ " in time, your creature attacks by itself.\nOff means a battle is one click and plays itself, with your"
+			+ " lead alone.\nA friend battle is played turn by turn only when both players have this on.",
 		position = 11
 	)
 	default boolean chooseBattleActions()
@@ -294,7 +293,7 @@ public interface GielinorGoConfig extends Config
 		keyName = "switchKey",
 		name = "Switch hotkey",
 		description = "Steps in the next creature that can fight while a battle waits for your choice. Unset by"
-			+ " default.\nTo pick a particular creature, use the Switch button in the side panel.",
+			+ " default.\nTo pick a particular creature, use the Switch button in the battle controls box.",
 		position = 14
 	)
 	default Keybind switchKey()
@@ -346,7 +345,7 @@ public interface GielinorGoConfig extends Config
 		name = "Item hotkey",
 		description = "Uses the first healing item that would help while a battle waits for your choice: Small"
 			+ " salve, Large salve, Revive draught, then Antidote.\nIt costs your turn. To pick the item and the"
-			+ " creature, use the Item button in the side panel. Unset by default.",
+			+ " creature, use the Item button in the battle controls box. Unset by default.",
 		position = 17
 	)
 	default Keybind itemKey()
@@ -437,25 +436,6 @@ public interface GielinorGoConfig extends Config
 	default boolean sounds()
 	{
 		return true;
-	}
-
-	/**
-	 * Whether the painted in-game window can be reached. It is a preview: only the shell is built, and the side panel
-	 * is unchanged.
-	 *
-	 * @return true to show the window's jar button on the game screen, off by default
-	 */
-	@ConfigItem(
-		keyName = GielinorGoConfig.WINDOW_PREVIEW,
-		name = "Painted window (preview)",
-		description = "Preview of the new in-game window that will replace the side panel. Shows a jar button on the"
-			+ " game screen that opens it.\nOnly the window's frame and tabs are built so far, and the side panel works"
-			+ " as before.\nIt closes in combat and during a battle.",
-		position = 21
-	)
-	default boolean windowPreview()
-	{
-		return false;
 	}
 
 	/**

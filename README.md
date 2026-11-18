@@ -27,8 +27,8 @@ Then replace this comment with:
 ## Getting started
 
 1. Open the **Plugin Hub** in RuneLite, search for **Gielinor Go** and click **Install**.
-2. Click the Gielinor Go icon in the sidebar to open the panel. You start with 10 Bronze jars. On the Team tab,
-   pick your first creature: an Imp, a Gnome Archer or a Wizard.
+2. Click the Gielinor Go icon in the sidebar (or the jar on the game screen) to open the window. You start with 10
+   Bronze jars. On the Party tab, pick your first creature: an Imp, a Gnome Archer or a Wizard.
 3. Walk near monsters until one turns wild: a smaller, outlined copy with a level tag appears beside it.
 4. Right-click the copy and choose **Catch** to throw a jar. The menu shows your odds.
 5. Left-click a wild one to **Battle** it. Click it again while it lies knocked out to
@@ -136,7 +136,7 @@ Then replace this comment with:
 - **Choose your own turns**
 
   Turn on **Choose battle actions** and each turn waits for you: **Attack**, **Switch**, **Catch**, **Item** or
-  **Run**, from the panel or with hotkeys. Do nothing for 10 seconds and your creature attacks by itself.
+  **Run**, from the battle controls box on the game screen or with hotkeys. Do nothing for 10 seconds and your creature attacks by itself.
 
 <!--
 IMAGE 06 · docs/img/06-battle-scene.png · full width

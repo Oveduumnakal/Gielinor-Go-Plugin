@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 public class WindowOverlaysTest
 {
 	private long now = 5_000L;
-	private boolean shown = true;
 	private MotionMode motion = MotionMode.FULL;
 
 	private WindowToggle toggle()
@@ -29,7 +28,7 @@ public class WindowOverlaysTest
 		Graphics2D g = jar.createGraphics();
 		g.fillRect(2, 2, 14, 14);
 		g.dispose();
-		return new WindowToggle(() -> shown, () -> WindowTheme.DARK_GLASS, () -> motion, () -> now, jar);
+		return new WindowToggle(() -> WindowTheme.DARK_GLASS, () -> motion, () -> now, jar);
 	}
 
 	private static int opaque(BufferedImage image)
@@ -56,19 +55,13 @@ public class WindowOverlaysTest
 	}
 
 	@Test
-	public void theToggleIsADraggableSquareThatPaintsOnlyWhileTheSettingIsOn()
+	public void theToggleIsADraggableSquare()
 	{
 		WindowToggle toggle = toggle();
 		BufferedImage image = new BufferedImage(80, 80, BufferedImage.TYPE_INT_ARGB);
 
 		assertEquals(new Dimension(WindowToggle.SIZE, WindowToggle.SIZE), render(toggle, image));
 		assertTrue(opaque(image) > WindowToggle.SIZE * WindowToggle.SIZE / 2);
-
-		shown = false;
-		BufferedImage hidden = new BufferedImage(80, 80, BufferedImage.TYPE_INT_ARGB);
-		assertNull(render(toggle, hidden));
-		assertEquals(0, opaque(hidden));
-		assertNull(toggle.bounds());
 	}
 
 	@Test
@@ -120,7 +113,7 @@ public class WindowOverlaysTest
 	@Test
 	public void aToggleWithNoPictureStillPaints()
 	{
-		WindowToggle plain = new WindowToggle(() -> true, () -> WindowTheme.RUNELITE_DARK, () -> MotionMode.OFF,
+		WindowToggle plain = new WindowToggle(() -> WindowTheme.RUNELITE_DARK, () -> MotionMode.OFF,
 			() -> now, null);
 		BufferedImage image = new BufferedImage(80, 80, BufferedImage.TYPE_INT_ARGB);
 

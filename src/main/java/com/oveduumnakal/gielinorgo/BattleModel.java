@@ -195,7 +195,19 @@ final class BattleModel
 	 */
 	static String describeElite(EliteView view)
 	{
-		return EliteCard.describe(view);
+		switch (view.mode())
+		{
+			case LOCKED:
+				return "Earn all " + EliteRun.SIGILS_NEEDED + " sigils · " + view.sigils() + " / "
+					+ EliteRun.SIGILS_NEEDED;
+			case AWAY:
+				return "Go to the Champions' Guild";
+			case HERE:
+				return "Four Elite trainers and the Grand Champion, back to back. Health carries over and nothing "
+					+ "rests until the run ends.";
+			default:
+				return view.opponent() + ": " + view.team();
+		}
 	}
 
 	private static void rival(List<BattleBlock> blocks, RivalView view)
