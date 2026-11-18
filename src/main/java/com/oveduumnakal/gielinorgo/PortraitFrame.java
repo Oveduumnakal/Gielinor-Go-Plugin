@@ -70,7 +70,14 @@ final class PortraitFrame
 
 		g.setColor(rarity(row.rarity()));
 		double stripe = Math.max(2.0, style.px(STRIPE_UNITS));
-		g.fill(new Rectangle2D.Double(box.getX(), box.getY(), stripe, box.getHeight()));
+		double lean = Math.min(skew, box.getWidth() / 2.0);
+		Path2D.Double edge = new Path2D.Double();
+		edge.moveTo(box.getX() + lean, box.getY());
+		edge.lineTo(box.getX() + lean + stripe, box.getY());
+		edge.lineTo(box.getX() + stripe, box.getMaxY());
+		edge.lineTo(box.getX(), box.getMaxY());
+		edge.closePath();
+		g.fill(edge);
 		if (row.gilded() && mode.loops())
 			sweep(g, style, box, now);
 

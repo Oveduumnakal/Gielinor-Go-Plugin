@@ -62,6 +62,9 @@ final class RowModel
 		/** It has the level to evolve but not the condition. */
 		WAITING("Waiting"),
 
+		/** Its rolls are weak, strong or exceptional; the card of the side panel shows the same word. */
+		RATING("Rating"),
+
 		/** A rare gilded creature: a gold frame. */
 		GILDED("Gilded");
 
@@ -120,6 +123,9 @@ final class RowModel
 
 		if (view.evolvesWhen() != null)
 			badges.add(Badge.WAITING);
+
+		if (view.rating() != StatRolls.Rating.AVERAGE)
+			badges.add(Badge.RATING);
 
 		if (view.gilded())
 			badges.add(Badge.GILDED);
@@ -190,6 +196,13 @@ final class RowModel
 	String species()
 	{
 		return view.name();
+	}
+
+	/** @return the one-word rating of its rolls, such as {@code Strong}; the badge exists unless it is average */
+	String rating()
+	{
+		StatRolls.Rating rating = view.rating();
+		return rating.label();
 	}
 
 	/** @return whether the creature has a nickname, so the species is a second line on the Summary */
@@ -286,6 +299,8 @@ final class RowModel
 				words.add(badge.label());
 			else if (badge == Badge.WAITING)
 				words.add(view.evolvesWhen());
+			else if (badge == Badge.RATING)
+				words.add(rating());
 		}
 
 		return words;
@@ -328,6 +343,9 @@ final class RowModel
 
 		if (newMove())
 			text.append("\nWants to learn " + pendingName());
+
+		if (has(Badge.RATING))
+			text.append("\nIts rolls are " + rating().toLowerCase(Locale.ROOT));
 
 		if (state == State.RESTING)
 			text.append("\nResting: it is too tired to be at its best");

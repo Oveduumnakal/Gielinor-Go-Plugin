@@ -248,7 +248,7 @@ final class PartyPainter
 	}
 
 	/**
-	 * Picks the one tag a row has room for: a state word first, then what it waits for, then Lead.
+	 * Picks the one tag a row has room for: a state word first, then what it waits for, then the rating, then Lead.
 	 *
 	 * @param model the row
 	 * @return the tag, or an empty text for none
@@ -263,6 +263,9 @@ final class PartyPainter
 
 		if (model.has(RowModel.Badge.WAITING))
 			return RowModel.Badge.WAITING.label();
+
+		if (model.has(RowModel.Badge.RATING))
+			return model.rating();
 
 		return model.lead() ? RowModel.Badge.LEAD.label() : "";
 	}
@@ -457,7 +460,7 @@ final class PartyPainter
 		text.draw(g, BANNER, title, bold, ThemeColor.TEXT, PageText.Align.LEFT);
 		int top = title.y + bm.getHeight() + pad / 4;
 		Rectangle note = new Rectangle(title.x, top, title.width, Math.max(0, layout.resetButton.y - pad / 4 - top));
-		text.drawWrapped(g, "Begin again with a fresh save.", note, small, ThemeColor.SUBTEXT);
+		text.drawWrapped(g, "Begin a fresh save.", note, small, ThemeColor.SUBTEXT);
 		button(g, ctx, layout.resetButton, "Reset", WindowPages.ID_RESET_PROGRESS);
 		button(g, ctx, layout.dismissButton, "Dismiss", WindowPages.ID_DISMISS);
 	}

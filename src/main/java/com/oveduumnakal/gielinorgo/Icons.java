@@ -122,9 +122,16 @@ final class Icons
 
 	private static void slash(Graphics2D g)
 	{
-		g.draw(new Arc2D.Double(-0.55, 0.0, 1.5, 1.4, 40, 80, Arc2D.OPEN));
-		g.draw(new Line2D.Double(0.2, 0.9, 0.5, 0.62));
-		g.draw(new Line2D.Double(0.1, 0.8, 0.32, 1.0));
+		Path2D.Double blade = new Path2D.Double();
+		blade.moveTo(1.0, 0.0);
+		blade.lineTo(0.78, 0.0);
+		blade.lineTo(0.12, 0.66);
+		blade.lineTo(0.34, 0.88);
+		blade.lineTo(1.0, 0.22);
+		blade.closePath();
+		g.fill(blade);
+		g.draw(new Line2D.Double(0.04, 0.58, 0.42, 0.96));
+		g.draw(new Line2D.Double(0.02, 0.98, 0.2, 0.8));
 	}
 
 	private static void crush(Graphics2D g)

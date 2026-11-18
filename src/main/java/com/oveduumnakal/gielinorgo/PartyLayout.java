@@ -200,10 +200,12 @@ final class PartyLayout
 			name = new Rectangle(left, row.y + pad / 2, Math.max(0, gender.x - pad - left), topH);
 			int tagW = Math.max(0, Math.min(name.width * 2 / 5, m.slant * 6));
 			tags = new Rectangle(name.x + name.width - tagW, name.y, tagW, topH);
-			int pctW = Math.max(m.slant * 3, 1);
+			int pctW = Math.max(m.slant * 4, 1);
 			hp = new Rectangle(left, barsTop, Math.max(1, right - left - pctW - pad), hpH);
-			hpText = new Rectangle(hp.x + hp.width + pad, barsTop - Math.max(1, pad / 2), pctW, hpH + pad);
-			xp = new Rectangle(left, barsTop + hpH + Math.max(1, pad / 2), Math.max(1, right - left), xpH);
+			int textTop = barsTop - Math.max(1, pad / 2);
+			int textH = Math.max(hpH + pad, row.y + row.height - textTop);
+			hpText = new Rectangle(hp.x + hp.width + pad, textTop, pctW, textH);
+			xp = new Rectangle(left, barsTop + hpH + Math.max(1, pad / 2), hp.width, xpH);
 		}
 	}
 }

@@ -580,7 +580,9 @@ final class WindowPages implements WindowShell.PageActions
 	private boolean openSummaryMenu()
 	{
 		Hit highlighted = shell.focus().highlighted();
-		if (highlighted != null && !ID_SUMMARY_MENU.equals(highlighted.id()))
+		boolean onButton = highlighted != null && highlighted.kind() != Hit.Kind.TAB
+			&& !ID_SUMMARY_MENU.equals(highlighted.id());
+		if (onButton)
 			return false;
 
 		for (Hit hit : shell.hits())
