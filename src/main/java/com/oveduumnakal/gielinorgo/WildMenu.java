@@ -10,22 +10,14 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * What the menu offers over a wild creature's body, and in which order. The first entry is the one a plain left
- * click does. Which action that is lives in one constant, {@link #LEFT_CLICK_CATCHES}. Holds no RuneLite types.
+ * What the game menu offers over a wild creature's body, and in which order. Holds no RuneLite types.
  */
 final class WildMenu
 {
 	/**
-	 * Whether a plain left click on a wild creature throws the selected jar. When false (the owner's choice of
-	 * 2026-11-12), a left click starts a battle instead, except on a knocked-out creature
-	 * ({@link #leftClickCatches(boolean, boolean)}). Flip it here.
-	 */
-	static final boolean LEFT_CLICK_CATCHES = false;
-
-	/**
 	 * Whether Catch becomes a list of jars when the player owns two or more. When false the menu is the flat one
 	 * of {@link #topFirst}: one Catch with the selected jar, and one per owned specialty jar that fits the creature.
-	 * The owner's switch if the submenu misbehaves in the game, like {@link #LEFT_CLICK_CATCHES}.
+	 * The owner's switch if the submenu misbehaves in the game.
 	 */
 	static final boolean SUBMENU = true;
 
@@ -74,40 +66,6 @@ final class WildMenu
 	}
 
 	/**
-	 * Works out what a plain left click does for a wild creature in some state: the default
-	 * ({@link #LEFT_CLICK_CATCHES}) while it stands, a catch once it lies knocked out, and a catch whenever a
-	 * battle would be refused (no team, or no rested lead).
-	 *
-	 * @param knockedOut whether the creature lies knocked out after losing a battle
-	 * @param canBattle whether a battle could start now
-	 * @return true when the left click throws the selected jar, false when it starts a battle
-	 */
-	static boolean leftClickCatches(boolean knockedOut, boolean canBattle)
-	{
-		return knockedOut || !canBattle || LEFT_CLICK_CATCHES;
-	}
-
-	/**
-	 * Tells whether a wild creature's entries may take the plain left click under a setting.
-	 *
-	 * @param mode the player's setting
-	 * @param inCombat whether the player is fighting a real monster now
-	 * @return true when the entries go on top of the menu, false when they go below the game's own entries
-	 */
-	static boolean leftClickAllowed(LeftClickMode mode, boolean inCombat)
-	{
-		switch (mode)
-		{
-			case ALWAYS:
-				return true;
-			case NEVER:
-				return false;
-			default:
-				return !inCombat;
-		}
-	}
-
-	/**
 	 * Builds the target text of a wild creature's menu entries: the coloured name and the level, with the record
 	 * words (New, Seen or Caught) after the level when the record is known.
 	 *
@@ -126,21 +84,6 @@ final class WildMenu
 	}
 
 	/**
-	 * Builds the plain heading of the painted menu: the name and the level, with the record words after the level.
-	 *
-	 * @param prefix the words in front of the name, such as "Gilded ", or an empty string
-	 * @param name the species name
-	 * @param level the creature level
-	 * @param record what the Creature Log knows of the species, or null when it is not known yet
-	 * @return the text, such as {@code Gilded Chicken (Lv 3 - New)}
-	 */
-	static String title(String prefix, String name, int level, WildRecord record)
-	{
-		String suffix = record == null ? "" : " - " + record.label();
-		return prefix + name + " (Lv " + level + suffix + ")";
-	}
-
-	/**
 	 * Tells whether a menu entry's words are one of this plugin's wild creature entries.
 	 *
 	 * @param option the entry's words
@@ -152,16 +95,16 @@ final class WildMenu
 	}
 
 	/**
-	 * Lists the entries for one wild creature, the left-click one first.
+	 * Lists the entries for one wild creature, the first one on top.
 	 *
 	 * @param standard the jar the player has selected, or null when they have none
 	 * @param specialty the specialty jars that are good against this creature
 	 * @param withBattle whether a battle may be started now
-	 * @param leftClickCatches whether the catch entries come before the battle entry
+	 * @param catchFirst whether the catch entries come before the battle entry
 	 * @return the entries, top of the menu first
 	 */
 	static List<Item> topFirst(JarType standard, List<JarType> specialty, boolean withBattle,
-		boolean leftClickCatches)
+		boolean catchFirst)
 	{
 		List<Item> catches = new ArrayList<>();
 		catches.add(new Item(CATCH, standard));
@@ -170,11 +113,11 @@ final class WildMenu
 
 		List<Item> items = new ArrayList<>();
 		Item battle = withBattle ? new Item(BATTLE, null) : null;
-		if (battle != null && !leftClickCatches)
+		if (battle != null && !catchFirst)
 			items.add(battle);
 
 		items.addAll(catches);
-		if (battle != null && leftClickCatches)
+		if (battle != null && catchFirst)
 			items.add(battle);
 
 		return items;
@@ -269,18 +212,18 @@ final class WildMenu
 	/**
 	 * Lays the whole menu out, top of the menu first. With fewer than two owned jars, or with
 	 * {@code submenu} false, it is the flat menu of {@link #topFirst}. Otherwise, with Battle on top
-	 * ({@code withBattle && !leftClickCatches}) it is Battle and the Catch list; with Catch on top it is a plain Catch
-	 * with the standard jar (what a left click throws), the Catch list, and Battle last when it is offered.
+	 * ({@code withBattle && !catchFirst}) it is Battle and the Catch list; with Catch on top it is a plain Catch
+	 * with the standard jar (the selected jar), the Catch list, and Battle last when it is offered.
 	 *
-	 * @param standard the jar a plain left click throws, or null when the player has none
+	 * @param standard the jar the plain Catch entry throws, or null when the player has none
 	 * @param owned every owned jar with its odds
 	 * @param withBattle whether a battle may be started now
-	 * @param leftClickCatches whether the catch entries come before the battle entry
+	 * @param catchFirst whether the catch entries come before the battle entry
 	 * @param submenu whether the list may be used, normally {@link #SUBMENU}
 	 * @return the entries, top first
 	 */
 	static List<Top> layout(JarType standard, List<JarSuggest.JarChoice> owned, boolean withBattle,
-		boolean leftClickCatches, boolean submenu)
+		boolean catchFirst, boolean submenu)
 	{
 		List<Top> tops = new ArrayList<>();
 		if (!submenu || owned.size() < 2)
@@ -295,7 +238,7 @@ final class WildMenu
 			for (JarSuggest.JarChoice choice : specialty)
 				jars.add(choice.jar());
 
-			for (Item item : topFirst(standard, jars, withBattle, leftClickCatches))
+			for (Item item : topFirst(standard, jars, withBattle, catchFirst))
 				tops.add(item.isCatch() ? new Top(TopKind.CATCH_PLAIN, item.jar(), Collections.emptyList())
 					: new Top(TopKind.BATTLE, null, Collections.emptyList()));
 
@@ -303,7 +246,7 @@ final class WildMenu
 		}
 
 		Top list = new Top(TopKind.CATCH_SUBMENU, null, rowsOf(owned));
-		boolean battleFirst = withBattle && !leftClickCatches;
+		boolean battleFirst = withBattle && !catchFirst;
 		if (battleFirst)
 			tops.add(new Top(TopKind.BATTLE, null, Collections.emptyList()));
 		else
