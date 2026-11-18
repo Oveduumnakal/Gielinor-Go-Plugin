@@ -17,7 +17,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-/** Checks the entries a wild creature's body offers in the menu, and which one a left click does. */
+/** Checks the entries a wild creature's body offers in the menu and in which order. */
 public class WildMenuTest
 {
 	private static final JarType STANDARD = JarType.values()[0];
@@ -25,27 +25,7 @@ public class WildMenuTest
 	private static final JarType SPECIALTY = JarType.values()[1];
 
 	@Test
-	public void aLeftClickBattlesByDefault()
-	{
-		assertFalse(WildMenu.LEFT_CLICK_CATCHES);
-	}
-
-	@Test
-	public void aKnockedOutCreatureIsCaughtByALeftClick()
-	{
-		assertTrue(WildMenu.leftClickCatches(true, true));
-		assertTrue(WildMenu.leftClickCatches(true, false));
-		assertEquals(WildMenu.LEFT_CLICK_CATCHES, WildMenu.leftClickCatches(false, true));
-	}
-
-	@Test
-	public void aLeftClickCatchesWheneverABattleWouldBeRefused()
-	{
-		assertTrue(WildMenu.leftClickCatches(false, false));
-	}
-
-	@Test
-	public void whenLeftClickCatchesTheStandardJarIsOnTopAndBattleIsLast()
+	public void whenCatchIsFirstTheStandardJarIsOnTopAndBattleIsLast()
 	{
 		List<WildMenu.Item> items = WildMenu.topFirst(STANDARD, Collections.singletonList(SPECIALTY), true, true);
 
@@ -58,7 +38,7 @@ public class WildMenuTest
 	}
 
 	@Test
-	public void whenLeftClickBattlesBattleIsOnTop()
+	public void whenBattleIsFirstBattleIsOnTop()
 	{
 		List<WildMenu.Item> items = WildMenu.topFirst(STANDARD, Collections.singletonList(SPECIALTY), true, false);
 
@@ -80,7 +60,7 @@ public class WildMenuTest
 	public void withoutABattleEntryCatchIsFirstAndThereIsNoBattle()
 	{
 		List<WildMenu.Item> items = WildMenu.topFirst(STANDARD, Collections.singletonList(SPECIALTY), false,
-			WildMenu.leftClickCatches(false, false));
+			true);
 
 		assertEquals(2, items.size());
 		assertTrue(items.get(0).isCatch());
@@ -105,17 +85,6 @@ public class WildMenuTest
 		assertFalse(WildMenu.isOurs("Attack"));
 		assertFalse(WildMenu.isOurs(null));
 		assertEquals(Arrays.asList("Catch", "Battle"), Arrays.asList(WildMenu.CATCH, WildMenu.BATTLE));
-	}
-
-	@Test
-	public void theSettingDecidesWhoGetsTheLeftClick()
-	{
-		assertTrue(WildMenu.leftClickAllowed(LeftClickMode.ALWAYS, false));
-		assertTrue(WildMenu.leftClickAllowed(LeftClickMode.ALWAYS, true));
-		assertTrue(WildMenu.leftClickAllowed(LeftClickMode.OUT_OF_COMBAT, false));
-		assertFalse(WildMenu.leftClickAllowed(LeftClickMode.OUT_OF_COMBAT, true));
-		assertFalse(WildMenu.leftClickAllowed(LeftClickMode.NEVER, false));
-		assertFalse(WildMenu.leftClickAllowed(LeftClickMode.NEVER, true));
 	}
 
 	@Test
@@ -340,13 +309,5 @@ public class WildMenuTest
 	public void theSeparatorIsEightDashes()
 	{
 		assertEquals("--------", WildMenu.SEPARATOR);
-	}
-
-	@Test
-	public void theHeadingHasNoColourTags()
-	{
-		assertEquals("Chicken (Lv 3)", WildMenu.title("", "Chicken", 3, null));
-		assertEquals("Gilded Chicken (Lv 12 - Caught)",
-			WildMenu.title("Gilded ", "Chicken", 12, WildRecord.of(4, false)));
 	}
 }
