@@ -44,6 +44,12 @@ final class StoragePageFlow
 	/** The menu item that starts a release. */
 	static final String RELEASE = "Release...";
 
+	/** The menu item that starts carrying a creature to another place in the Box with the keys. */
+	static final String MOVE_WITHIN = "Move within box";
+
+	/** The menu item that puts a creature last in the Box. */
+	static final String MOVE_TO_END = "Move to the end of the box";
+
 	/** What the page needs from the window around it. */
 	interface Host
 	{
@@ -128,10 +134,48 @@ final class StoragePageFlow
 		if (place < 0 || place >= storage.size())
 			return;
 
-		if (page.selecting())
+		if (page.carrying() >= 0)
+			putDown(place);
+		else if (page.selecting())
 			page.toggle(place);
 		else
 			actions.moveToTeam(pick(place, storage.get(place)));
+	}
+
+	/**
+	 * The button that went down on the page came up.
+	 *
+	 * @param x the pointer's x in window pixels
+	 * @param y the pointer's y in window pixels
+	 * @return whether the press became a scroll or a drag, so the release is not a click
+	 */
+	boolean released(int x, int y)
+	{
+		boolean took = page.released(x, y);
+		int[] drop = page.takeMove();
+		if (drop != null)
+			arrange(drop[0], drop[1]);
+
+		return took;
+	}
+
+	private void putDown(int place)
+	{
+		int from = page.carrying();
+		page.stopCarrying();
+		if (from != place)
+			arrange(from, place);
+	}
+
+	private void arrange(int from, int onto)
+	{
+		List<CreatureView> storage = host.storage();
+		if (from < 0 || from >= storage.size())
+			return;
+
+		TradePick dragged = pick(from, storage.get(from));
+		TradePick target = onto < 0 || onto >= storage.size() ? null : pick(onto, storage.get(onto));
+		actions.arrangeStorage(dragged, target);
 	}
 
 	private boolean pressControl(String id)
@@ -215,6 +259,12 @@ final class StoragePageFlow
 		if (place < 0 || place >= storage.size())
 			return;
 
+		if (page.carrying() >= 0)
+		{
+			putDown(place);
+			return;
+		}
+
 		if (page.selecting())
 		{
 			if (keyboard)
@@ -231,6 +281,12 @@ final class StoragePageFlow
 		items.add(ContextMenu.Item.of(RENAME, () -> rename(place, view)));
 		items.add(useItem(place, view));
 		items.add(ContextMenu.Item.of(RELEASE, () -> releaseOne(place, view)));
+		if (page.arrangeAllowed())
+		{
+			items.add(ContextMenu.Item.of(MOVE_WITHIN, () -> page.carry(place)));
+			items.add(ContextMenu.Item.of(MOVE_TO_END, () -> arrange(place, -1)));
+		}
+
 		host.menu(items, x, y, keyboard);
 	}
 

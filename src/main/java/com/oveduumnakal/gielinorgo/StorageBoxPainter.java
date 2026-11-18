@@ -176,10 +176,9 @@ final class StorageBoxPainter
 	 * @param text draws strings and tells the tests about them
 	 * @param card the card's box
 	 * @param view the highlighted creature, or null
-	 * @param arranging whether dragging rearranges, which decides the middle hint line
+	 * @param how the middle hint line: what a drag does now, or why it does nothing
 	 */
-	static void card(Graphics2D g, PageContext ctx, PageText text, Rectangle card, CreatureView view,
-		boolean arranging)
+	static void card(Graphics2D g, PageContext ctx, PageText text, Rectangle card, CreatureView view, String how)
 	{
 		WindowStyle st = ctx.style;
 		st.panel(g, rect(card));
@@ -218,7 +217,6 @@ final class StorageBoxPainter
 		g.setColor(st.color(WindowStyle.hpColor(model.hp())));
 		g.fillRect(inner.x, y, (int) Math.round(inner.width * model.hp()), barH);
 		y += barH + m.pad;
-		String how = arranging ? "Drag to rearrange." : "Clear the sort and filter to drag.";
 		int room = inner.y + inner.height - y;
 		text.drawWrapped(g, "Click to move to your team.\n" + how + "\nRight-click for more.",
 			new Rectangle(inner.x, y, inner.width, Math.max(0, room)), small, ThemeColor.SUBTEXT);

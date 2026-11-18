@@ -77,7 +77,18 @@ final class StoragePage
 	/** The hint over the list while rows are ticked. */
 	static final String SELECT_HINT = "Tick the creatures to release, then press Release selected.";
 
+	/** What the Box says when a drag is refused because a sort or filter is on. */
+	static final String REFUSE_SORT = "Clear the sort and filter to rearrange";
+
+	/** What the Box says when a drag is refused because Select mode is on. */
+	static final String REFUSE_SELECT = "Press Done to rearrange";
+
+	/** What the Box says while the keys carry a creature; the name goes in. */
+	static final String CARRY_HINT = "Carrying %s: arrows pick a place, Enter puts it there, Esc cancels.";
+
 	private static final double ROW_UNITS = StorageGroups.ROW_UNITS;
+	private static final double AUTO_SCROLL_EDGE_UNITS = 16;
+	private static final double AUTO_SCROLL_UNITS = 4;
 	private static final String FILTER_TIP = "Show only some creatures. Click a filter chip to show or hide it.";
 	private static final String VIEW_TIP = "Change how creatures are shown: List, Box or By species.";
 	private static final String SORT_TIP = "Sort the list. Box order keeps the order the creatures were stored in.";
@@ -95,6 +106,11 @@ final class StoragePage
 	private StorageGrid grid;
 	private Rectangle card = new Rectangle();
 	private int cells;
+	private StorageDrag drag = new StorageDrag(4);
+	private int dragThreshold = 4;
+	private String refused;
+	private int carrying = NOT_ON_TEAM;
+	private int[] move;
 	private List<CreatureView> shown;
 	private StorageQuery query = StorageQuery.NONE;
 	private List<StorageView.Entry> entries = new ArrayList<>();
@@ -150,6 +166,9 @@ final class StoragePage
 	{
 		mode = next;
 		list.setOffset(0);
+		carrying = NOT_ON_TEAM;
+		refused = null;
+		drag.cancel();
 	}
 
 	/** @return the places in storage of the creatures shown, in display order */
@@ -191,6 +210,8 @@ final class StoragePage
 	{
 		selecting = on;
 		ticked.clear();
+		carrying = NOT_ON_TEAM;
+		refused = null;
 	}
 
 	/**
@@ -223,6 +244,8 @@ final class StoragePage
 	{
 		query = next;
 		list.setOffset(0);
+		carrying = NOT_ON_TEAM;
+		refused = null;
 		arrange(storage);
 	}
 
@@ -233,6 +256,62 @@ final class StoragePage
 		ticked.clear();
 		shown = null;
 		source = null;
+		carrying = NOT_ON_TEAM;
+		refused = null;
+		move = null;
+		drag.cancel();
+	}
+
+	/**
+	 * @return whether dragging a cell rearranges storage: only in the Box, outside Select mode, with the creatures in
+	 *         box order and no filter, so a cell's slot is the creature's real place
+	 */
+	boolean arrangeAllowed()
+	{
+		return mode == StorageMode.BOX && !selecting && query.sort() == StorageQuery.Sort.BOX_ORDER
+			&& !query.active();
+	}
+
+	/** @return the words for why a drag does not rearrange now, or for what a drag does when it does */
+	String dragHint()
+	{
+		if (arrangeAllowed())
+			return "Drag to rearrange.";
+
+		return selecting ? REFUSE_SELECT + "." : REFUSE_SORT + ".";
+	}
+
+	/** @return the place of the creature being carried by the keys, or -1 */
+	int carrying()
+	{
+		return carrying;
+	}
+
+	/**
+	 * Starts carrying a creature, so the arrow keys pick its new place and Enter puts it there.
+	 *
+	 * @param place the creature's place in storage
+	 */
+	void carry(int place)
+	{
+		carrying = place;
+	}
+
+	/** Stops carrying; the creature stays where it is. */
+	void stopCarrying()
+	{
+		carrying = NOT_ON_TEAM;
+	}
+
+	/**
+	 * @return the move the last drop asked for as {@code {from, onto}} places, where onto is -1 for an empty cell
+	 *         (put last), or null when there is none; asking clears it
+	 */
+	int[] takeMove()
+	{
+		int[] taken = move;
+		move = null;
+		return taken;
 	}
 
 	/**
@@ -345,6 +424,13 @@ final class StoragePage
 		}
 
 		card = new Rectangle();
+		int threshold = StorageDrag.threshold(style);
+		if (threshold != dragThreshold && !drag.pressed())
+		{
+			drag = new StorageDrag(threshold);
+			dragThreshold = threshold;
+		}
+
 		if (mode == StorageMode.BOX)
 			layoutBox(viewport, style);
 		else if (mode == StorageMode.SPECIES)
@@ -380,6 +466,14 @@ final class StoragePage
 		card = grid.detail(viewport, style.metrics().pad);
 		list.setRowDragScrolls(false);
 		list.layout(area, grid.stride(), StorageGrid.rows(cells), style);
+		if (drag.dragging() && arrangeAllowed())
+		{
+			int near = style.px(AUTO_SCROLL_EDGE_UNITS);
+			if (drag.pointerY() < viewport.y + near)
+				list.scrollBy(-style.px(AUTO_SCROLL_UNITS));
+			else if (drag.pointerY() > viewport.y + viewport.height - near)
+				list.scrollBy(style.px(AUTO_SCROLL_UNITS));
+		}
 	}
 
 	private FontMetrics chipMetrics(WindowStyle style)
@@ -631,8 +725,7 @@ final class StoragePage
 		}
 
 		if (!query.active())
-			text.draw(g, selecting ? SELECT_HINT : HINT, controls.strip(), small, ThemeColor.SUBTEXT,
-				PageText.Align.LEFT);
+			text.draw(g, stripText(storage), controls.strip(), small, ThemeColor.SUBTEXT, PageText.Align.LEFT);
 
 		if (entries.isEmpty())
 		{
@@ -701,6 +794,8 @@ final class StoragePage
 		WindowStyle st = ctx.style;
 		Rectangle clip = list.viewport();
 		clip.width = list.contentWidth();
+		boolean dragging = drag.dragging() && arrangeAllowed();
+		int over = dragging ? cellAt(drag.pointerX(), drag.pointerY()) : NOT_ON_TEAM;
 		list.paint(g, st, (gr, row, box) ->
 		{
 			for (int column = 0; column < StorageGrid.COLUMNS; column++)
@@ -712,19 +807,24 @@ final class StoragePage
 				Rectangle at = cellBox(slot);
 				if (slot >= entries.size())
 				{
-					StorageBoxPainter.empty(gr, st, at, false);
+					StorageBoxPainter.empty(gr, st, at, dragging && slot == over);
 					continue;
 				}
 
 				StorageView.Entry entry = entries.get(slot);
 				String id = rowId(entry.place());
+				boolean lifted = dragging && slot == drag.from() || entry.place() == carrying;
 				StorageBoxPainter.Look look = new StorageBoxPainter.Look(selecting, ticked.contains(entry.place()),
-					false, false, ctx.hoverOf(id), ctx.pressOf(id));
+					lifted, dragging && slot == over && slot != drag.from(), ctx.hoverOf(id), ctx.pressOf(id));
 				StorageBoxPainter.cell(gr, ctx, pictures, text, entry.view(), at, clip, look);
 			}
 		});
 		if (!card.isEmpty())
-			StorageBoxPainter.card(g, ctx, text, card, highlighted(ctx), false);
+			StorageBoxPainter.card(g, ctx, text, card, highlighted(ctx), dragHint());
+
+		if (dragging && drag.from() < entries.size())
+			StorageBoxPainter.ghost(g, ctx, pictures, entries.get(drag.from()).view(), grid.cellSize(),
+				drag.pointerX(), drag.pointerY());
 	}
 
 	private CreatureView highlighted(PageContext ctx)
@@ -732,6 +832,20 @@ final class StoragePage
 		int place = place(ctx.highlight);
 		int at = displayIndex(place);
 		return at < 0 ? null : entries.get(at).view();
+	}
+
+	private String stripText(List<CreatureView> storage)
+	{
+		if (carrying >= 0 && carrying < storage.size())
+		{
+			CreatureView view = storage.get(carrying);
+			return String.format(CARRY_HINT, view.nickname() == null ? view.name() : view.nickname());
+		}
+
+		if (refused != null)
+			return refused;
+
+		return selecting ? SELECT_HINT : HINT;
 	}
 
 	private void paintChips(Graphics2D g, PageContext ctx, PageText text, Font small)
@@ -1010,8 +1124,15 @@ final class StoragePage
 	 */
 	boolean pressed(int x, int y)
 	{
+		refused = null;
 		boolean onBar = list.scrollable() && list.trackBounds().contains(x, y);
 		boolean took = list.onPress(x, y);
+		if (mode == StorageMode.BOX)
+		{
+			int slot = onBar ? NOT_ON_TEAM : cellAt(x, y);
+			drag.press(slot >= 0 && slot < entries.size() ? slot : NOT_ON_TEAM, x, y);
+		}
+
 		return onBar && took;
 	}
 
@@ -1022,12 +1143,50 @@ final class StoragePage
 	void dragged(int x, int y)
 	{
 		list.onDrag(x, y);
+		if (mode == StorageMode.BOX)
+			drag.moved(x, y);
 	}
 
-	/** @return whether the press became a scroll, so the release is not a click */
-	boolean released()
+	/**
+	 * The button came up. A drop of one creature on another cell of the Box is left for {@link #takeMove}.
+	 *
+	 * @param x the pointer's x in window pixels
+	 * @param y the pointer's y in window pixels
+	 * @return whether the press became a scroll or a drag, so the release is not a click
+	 */
+	boolean released(int x, int y)
 	{
-		return list.onRelease();
+		boolean scrolled = list.onRelease();
+		if (mode != StorageMode.BOX)
+			return scrolled;
+
+		StorageDrag.Result result = drag.release(cellAt(x, y));
+		if (scrolled)
+			return true;
+
+		if (result.kind() != StorageDrag.Kind.DROP && result.kind() != StorageDrag.Kind.CANCEL)
+			return false;
+
+		if (!arrangeAllowed())
+			refused = selecting ? REFUSE_SELECT : REFUSE_SORT;
+		else if (result.kind() == StorageDrag.Kind.DROP)
+			move = new int[] {result.from(), result.to() < entries.size() ? result.to() : NOT_ON_TEAM};
+
+		return true;
+	}
+
+	/**
+	 * @param x a point's x in window pixels
+	 * @param y a point's y in window pixels
+	 * @return the Box cell under the point, empty cells included, or -1
+	 */
+	private int cellAt(int x, int y)
+	{
+		Rectangle view = list.viewport();
+		if (mode != StorageMode.BOX || grid == null || !view.contains(x, y))
+			return NOT_ON_TEAM;
+
+		return grid.slotAt(x - view.x, y - view.y, list.offset(), cells);
 	}
 
 	private static Rectangle2D rect(Rectangle r)
