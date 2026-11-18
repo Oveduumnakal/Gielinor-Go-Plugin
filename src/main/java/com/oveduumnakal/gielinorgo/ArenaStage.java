@@ -108,6 +108,12 @@ final class ArenaStage implements StageAnchors
 		}
 
 		@Override
+		public boolean turning()
+		{
+			return foe != null && foe.turning();
+		}
+
+		@Override
 		public double x()
 		{
 			return centerX;
@@ -358,7 +364,7 @@ final class ArenaStage implements StageAnchors
 				return due;
 
 			walking = false;
-			TeamScript.Tick tick = current.tick();
+			TeamScript.Tick tick = current.tick(acting.settled());
 			if (tick.done())
 			{
 				finish();

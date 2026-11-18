@@ -271,6 +271,63 @@ public class BattleTimelineTest
 		assertTrue(BattleTimeline.lunge(BattleTimeline.LUNGE_TICKS / 2, -0.15) < 0);
 	}
 
+	@Test
+	public void theNextBeatWaitsWhileAnAttackerIsStillTurning()
+	{
+		BattleTimeline timeline = new BattleTimeline(TWO_HITS, true);
+
+		assertEquals(BattleTimeline.Beat.LEAD_ATTACKS, beatOf(timeline.tick(true, true)));
+		for (int i = 0; i < BattleTimeline.BEAT_TICKS - 1; i++)
+			assertNull(timeline.tick(true, true));
+
+		assertNull("held once", timeline.tick(true, false));
+		assertEquals(1, timeline.takeHeldTicks());
+		assertEquals(BattleTimeline.Beat.FOE_ATTACKS, beatOf(timeline.tick(true, true)));
+	}
+
+	@Test
+	public void aStuckBodyHoldsTheBattleForAtMostTheCap()
+	{
+		BattleTimeline timeline = new BattleTimeline(TWO_HITS, true);
+		timeline.tick(true, true);
+		for (int i = 0; i < BattleTimeline.BEAT_TICKS - 1; i++)
+			timeline.tick(true, true);
+
+		for (int i = 0; i < BattleTimeline.MAX_HOLD_TICKS; i++)
+			assertNull("held " + i, timeline.tick(true, false));
+
+		assertEquals(BattleTimeline.Beat.FOE_ATTACKS, beatOf(timeline.tick(true, false)));
+		assertEquals(BattleTimeline.MAX_HOLD_TICKS, timeline.takeHeldTicks());
+		assertEquals("cleared once read", 0, timeline.takeHeldTicks());
+	}
+
+	@Test
+	public void theBeatThatEndsTheBattleIsNeverHeld()
+	{
+		BattleTimeline timeline = new BattleTimeline(Collections.singletonList(
+			step(BattleTimeline.Beat.LEAD_ATTACKS)), true);
+		timeline.tick(true, true);
+		for (int i = 0; i < BattleTimeline.BEAT_TICKS - 1; i++)
+			timeline.tick(true, true);
+
+		assertEquals(BattleTimeline.Beat.FINISH, beatOf(timeline.tick(true, false)));
+		assertEquals(0, timeline.takeHeldTicks());
+	}
+
+	@Test
+	public void theOldTickIsTheSameAsSettled()
+	{
+		BattleTimeline old = new BattleTimeline(TWO_HITS, true);
+		BattleTimeline gated = new BattleTimeline(TWO_HITS, true);
+
+		for (int i = 0; i < 12; i++)
+		{
+			BattleTimeline.Step a = old.tick(true);
+			BattleTimeline.Step b = gated.tick(true, true);
+			assertEquals("tick " + i, a == null ? null : a.beat(), b == null ? null : b.beat());
+		}
+	}
+
 	private static BattleTimeline.Step step(BattleTimeline.Beat beat)
 	{
 		return new BattleTimeline.Step(beat, null);

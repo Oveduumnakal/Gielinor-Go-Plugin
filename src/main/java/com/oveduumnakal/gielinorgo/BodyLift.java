@@ -79,4 +79,19 @@ final class BodyLift
 	{
 		return lift(restLowest(y, count), heightScale);
 	}
+
+	/**
+	 * Works out how far a posed body has to be moved up to rest on the ground: a held death pose often sinks the
+	 * body, and the creature is gone from the game soon after, so nothing there stops it going under the floor.
+	 *
+	 * @param y the posed vertices' Y values, where more is lower
+	 * @param count how many of them are real vertices
+	 * @return scene units to lift it, rounded up, 0 when its lowest point is at most {@link #LIFT_FLOOR} below the
+	 *     ground; a body above the ground is never moved
+	 */
+	static int restOnGround(float[] y, int count)
+	{
+		double lowest = lowest(y, count);
+		return lowest > LIFT_FLOOR ? (int) Math.ceil(lowest) : 0;
+	}
 }

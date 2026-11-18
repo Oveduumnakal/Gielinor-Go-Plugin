@@ -118,7 +118,9 @@ A Creature Log, daily tasks and daily events give you goals.
   towns and other cities, next to any bank (even one that was already in view), and while the bank is open.
   (#202, #203)
 - **Battle scenes.** A map load no longer forfeits a battle, and status tags sit on the right creature and clear
-  when the status ends, and a shortened team battle always shows both creatures attacking. (#133, #137, #138, #200)
+  when the status ends, a reply waits until a melee attacker is back on its spot, defeated creatures lie on top of
+  the ground, and a shortened team battle always shows both creatures attacking. (#133, #137, #138, #199, #200,
+  #201)
 - **Spell projectiles.** Bind, Hex, Flame Lash and Hellfire show their own bolt instead of the Fire Strike
   bolt. (#197)
 - **World.** The follower and the arena foe stay on your side of walls, projectile colours no longer change other

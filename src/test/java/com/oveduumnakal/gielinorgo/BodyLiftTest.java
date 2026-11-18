@@ -55,4 +55,26 @@ public class BodyLiftTest
 		assertEquals(30, BodyLift.lift(60.0, 64));
 		assertEquals(0, BodyLift.lift(0.0, 128));
 	}
+
+	@Test
+	public void aPosedBodyBelowTheGroundIsRestedOnIt()
+	{
+		assertEquals(26, BodyLift.restOnGround(new float[]{-150, 25.2f, 3}, 3));
+		assertEquals(40, BodyLift.restOnGround(new float[]{-150, 40}, 2));
+	}
+
+	@Test
+	public void aPosedBodyOnOrAboveTheGroundIsLeftAlone()
+	{
+		assertEquals(0, BodyLift.restOnGround(new float[]{-150, 0}, 2));
+		assertEquals(0, BodyLift.restOnGround(new float[]{-150, -20, -5}, 3));
+		assertEquals(0, BodyLift.restOnGround(new float[]{-150, 4}, 2));
+		assertEquals(0, BodyLift.restOnGround(new float[0], 0));
+	}
+
+	@Test
+	public void aPosedBodyIgnoresVerticesBeyondTheCount()
+	{
+		assertEquals(0, BodyLift.restOnGround(new float[]{-150, -2, 900}, 2));
+	}
 }
