@@ -512,7 +512,7 @@ public class StorageSortFilterTest
 
 		rig.key(KeyEvent.VK_UP);
 
-		assertEquals("the window's own move takes over, to the control before the first row", StoragePage.ID_SORT,
+		assertEquals("the window's own move takes over, to the control before the first row", StoragePage.ID_VIEW,
 			rig.shell.focus().highlight());
 	}
 }

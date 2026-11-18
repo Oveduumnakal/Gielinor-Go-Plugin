@@ -773,19 +773,28 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		return tab == WindowTab.TASKS && tasks.released()
 			|| tab == WindowTab.COLLECTION && collection.released()
-			|| tab == WindowTab.STORAGE && storage.released()
+			|| tab == WindowTab.STORAGE && storageFlow.released(x, y)
 			|| tab == WindowTab.BATTLE && battle.released();
 	}
 
 	@Override
 	public int depth()
 	{
+		if (tab == WindowTab.STORAGE)
+			return storage.carrying() >= 0 ? 1 : 0;
+
 		return tab == WindowTab.PARTY ? state.depth() : 0;
 	}
 
 	@Override
 	public void back()
 	{
+		if (tab == WindowTab.STORAGE && storage.carrying() >= 0)
+		{
+			storage.stopCarrying();
+			return;
+		}
+
 		state.back();
 		shown = null;
 	}

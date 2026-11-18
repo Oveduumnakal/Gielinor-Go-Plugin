@@ -583,6 +583,13 @@ Every feature and every number, in detail. For the short version, see the [READM
   nickname, and **Filter** shows only some creatures: pick a level, style, rarity, rating, gender, gilded or
   nicknamed, then click its chip to flip between showing and hiding it. Your choice is kept until you restart
   RuneLite. **Select** with **Tick all shown** ticks only what you can see, and hidden creatures are never released.
+  **View** switches Storage between **List**, **Box** and **By species** (it starts on List each time RuneLite
+  starts). In **Box**, creatures sit in a grid of eight columns with a card beside it for the one you point at: drag
+  one onto another to swap them, or onto an empty cell to put it last, and the order is saved. A plain click still
+  moves the creature to your team. Dragging works with Sort on Box order, no filter and Select off. With the keys, the
+  arrows move between cells, and **Move within box** in a creature's menu carries it: pick a place with the arrows,
+  press Enter to put it there and Esc to cancel. **By species** puts a heading over each species with how many you
+  have and the best level. **Select** works in every view, and in By species a click on a heading ticks the group.
   **Collection** is the Creature Log of every species you can meet in the game
   (1,139): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
   Click a species you have seen or caught for its examine text, evolution line (stages you have not met show as
