@@ -254,7 +254,7 @@ public class GoGameExtrasTest
 		assertTrue(game.data().eggs.isEmpty());
 		assertEquals(1, game.data().team.size());
 		assertEquals("no other species is Epic in this test", "king black dragon", lead().species);
-		assertEquals(1, lead().level());
+		assertEquals(20, lead().level());
 		assertEquals(1, (int) game.data().caught.get("king black dragon"));
 	}
 
