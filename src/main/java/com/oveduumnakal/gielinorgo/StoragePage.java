@@ -13,6 +13,7 @@ import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -175,6 +176,25 @@ final class StoragePage
 	int[] shownPlaces()
 	{
 		return StorageView.places(entries);
+	}
+
+	/**
+	 * @return the creatures shown, in the order the current view shows them and Up and Down visit them: the arranged
+	 *         list, or in the By species view each species group in turn
+	 */
+	List<StorageView.Entry> displayEntries()
+	{
+		if (mode != StorageMode.SPECIES)
+			return Collections.unmodifiableList(entries);
+
+		List<StorageView.Entry> shownList = new ArrayList<>();
+		for (StorageGroups.Item item : groups.items())
+		{
+			if (!item.heading())
+				shownList.add(item.entry());
+		}
+
+		return shownList;
 	}
 
 	/** @return the View button's box */
@@ -679,7 +699,7 @@ final class StoragePage
 		text.append("\nReleasing pays ")
 			.append(ReleaseRules.xp(view))
 			.append(" XP to your lead");
-		return text.append("\nRight-click to rename or release").toString();
+		return text.append("\nRight-click for Summary, rename or release").toString();
 	}
 
 	/**
@@ -1051,21 +1071,7 @@ final class StoragePage
 	/** @return the places of the creatures in the order Up and Down visit them in the current view */
 	private int[] displayOrder()
 	{
-		if (mode != StorageMode.SPECIES)
-			return StorageView.places(entries);
-
-		List<Integer> places = new ArrayList<>();
-		for (StorageGroups.Item item : groups.items())
-		{
-			if (!item.heading())
-				places.add(item.entry().place());
-		}
-
-		int[] order = new int[places.size()];
-		for (int i = 0; i < order.length; i++)
-			order[i] = places.get(i);
-
-		return order;
+		return StorageView.places(displayEntries());
 	}
 
 	private int rowOf(int place, int displayAt)

@@ -22,8 +22,8 @@ import static org.junit.Assert.assertTrue;
 /** Dragging and carrying creatures in the Storage Box: swaps, drops on empty cells, refusals, keys and scrolling. */
 public class StorageBoxDragTest
 {
-	private static final int CARRY_ITEM = 3;
-	private static final int END_ITEM = 4;
+	private static final int CARRY_ITEM = 5;
+	private static final int END_ITEM = 6;
 	private static final String[] NAMES = {"Goblin", "Cow", "Imp", "Man", "Rat"};
 
 	private static List<CreatureView> stored(int count)
@@ -280,8 +280,8 @@ public class StorageBoxDragTest
 	}
 
 	/**
-	 * Chooses the nth enabled item of a creature's menu: Move to team, Rename, Release (Use item is greyed out
-	 * with no items), then the two Box items.
+	 * Chooses the nth enabled item of a creature's menu: Summary, Move to team, Rename, Moves, Release (Use item is
+	 * greyed out with no items), then the two Box items.
 	 */
 	private static void menuItem(PartyRig rig, String id, int item)
 	{

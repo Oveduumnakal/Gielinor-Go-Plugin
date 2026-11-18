@@ -124,15 +124,15 @@ public class StoragePageTest
 	{
 		PartyRig rig = page(stored(2));
 
-		menuItem(rig, StoragePage.rowId(1), 0);
+		menuItem(rig, StoragePage.rowId(1), 1);
 		assertEquals("moveToTeam STORAGE#1", rig.calls.get(0));
 
-		menuItem(rig, StoragePage.rowId(0), 2);
+		menuItem(rig, StoragePage.rowId(0), 4);
 		rig.key(KeyEvent.VK_DOWN);
 		rig.key(KeyEvent.VK_ENTER);
 		assertEquals("useItem STORAGE#0 SMALL_SALVE", rig.calls.get(1));
 
-		menuItem(rig, StoragePage.rowId(0), 1);
+		menuItem(rig, StoragePage.rowId(0), 2);
 		rig.key(KeyEvent.VK_ESCAPE);
 		assertEquals("a cancelled Rename changes nothing", 2, rig.calls.size());
 	}
@@ -142,7 +142,7 @@ public class StoragePageTest
 	{
 		PartyRig rig = page(stored(2));
 
-		menuItem(rig, StoragePage.rowId(1), 3);
+		menuItem(rig, StoragePage.rowId(1), 5);
 		assertTrue("nothing is released before the answer", rig.calls.isEmpty());
 		rig.key(KeyEvent.VK_ENTER);
 
@@ -154,7 +154,7 @@ public class StoragePageTest
 	{
 		PartyRig rig = page(stored(2));
 
-		menuItem(rig, StoragePage.rowId(1), 3);
+		menuItem(rig, StoragePage.rowId(1), 5);
 		rig.key(KeyEvent.VK_ESCAPE);
 
 		assertTrue(rig.calls.isEmpty());
@@ -165,7 +165,7 @@ public class StoragePageTest
 	{
 		PartyRig rig = page(stored(2));
 
-		menuItem(rig, StoragePage.rowId(1), 3);
+		menuItem(rig, StoragePage.rowId(1), 5);
 		chooseYes(rig);
 
 		assertEquals(Collections.singletonList("release STORAGE#1"), rig.calls);
@@ -180,13 +180,13 @@ public class StoragePageTest
 		for (int place = 0; place < 2; place++)
 		{
 			PartyRig rig = page(list);
-			menuItem(rig, StoragePage.rowId(place), 3);
+			menuItem(rig, StoragePage.rowId(place), 5);
 			chooseYes(rig);
 			assertTrue("the first Yes is not enough", rig.calls.isEmpty());
 			rig.key(KeyEvent.VK_ENTER);
 			assertTrue("the second box also defaults to No", rig.calls.isEmpty());
 
-			menuItem(rig, StoragePage.rowId(place), 3);
+			menuItem(rig, StoragePage.rowId(place), 5);
 			chooseYes(rig);
 			chooseYes(rig);
 			assertEquals(Collections.singletonList("release STORAGE#" + place), rig.calls);
@@ -197,7 +197,7 @@ public class StoragePageTest
 	public void aReleaseForACreatureThatMovedLandsOnNothing()
 	{
 		PartyRig rig = page(stored(3));
-		menuItem(rig, StoragePage.rowId(2), 3);
+		menuItem(rig, StoragePage.rowId(2), 5);
 
 		List<CreatureView> changed = stored(3);
 		changed.set(2, PartyRig.creature("Dragon", 90, 1.0, null));

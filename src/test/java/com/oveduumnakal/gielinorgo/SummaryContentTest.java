@@ -4,10 +4,14 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.Test;
 
@@ -204,5 +208,74 @@ public class SummaryContentTest
 			.label());
 		assertNull(c.gender());
 		assertTrue(c.moves().isEmpty());
+	}
+
+	@Test
+	public void caughtTextIsTheDayInTheGivenZone()
+	{
+		long ms = 1_794_000_000_000L;
+		ZoneId utc = ZoneId.of("UTC");
+		String expected = "Caught " + DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH).withZone(utc)
+			.format(Instant.ofEpochMilli(ms));
+
+		assertEquals(expected, SummaryContent.caughtText(ms, utc));
+	}
+
+	@Test
+	public void theZoneDecidesWhichDayItWas()
+	{
+		long ms = Instant.parse("2026-11-12T23:30:00Z").toEpochMilli();
+
+		assertEquals("Caught 12 Nov 2026", SummaryContent.caughtText(ms, ZoneId.of("UTC")));
+		assertEquals("Caught 13 Nov 2026", SummaryContent.caughtText(ms, ZoneId.of("Pacific/Auckland")));
+	}
+
+	@Test
+	public void caughtIsEmptyWhenTheTimeIsUnknown()
+	{
+		assertEquals("", SummaryContent.caughtText(0L, ZoneId.of("UTC")));
+		assertEquals("", SummaryContent.of(RowModel.of(plain(), 0), ZoneId.of("UTC")).caught());
+	}
+
+	@Test
+	public void caughtComesFromTheViewsTimeInTheGivenZone()
+	{
+		long ms = Instant.parse("2026-11-12T10:00:00Z").toEpochMilli();
+		SummaryContent c = SummaryContent.of(RowModel.of(plain().withCaught(ms), 0), ZoneId.of("UTC"));
+
+		assertEquals("Caught 12 Nov 2026", c.caught());
+	}
+
+	@Test
+	public void aStatLineHasTheRealNumberWhenTheViewKnowsIt()
+	{
+		SummaryContent c = content(plain().withStats(84, 31, 22, 40));
+		List<SummaryContent.StatLine> stats = c.stats();
+
+		assertEquals("84", stats.get(0).valueText());
+		assertEquals("31", stats.get(1).valueText());
+		assertEquals("22", stats.get(2).valueText());
+		assertEquals("40", stats.get(3).valueText());
+		assertEquals("+3", stats.get(0).rollText());
+		assertEquals("+7%", stats.get(1).netText());
+	}
+
+	@Test
+	public void aStatLineHasNoNumberWhenTheViewDoesNotKnowIt()
+	{
+		for (SummaryContent.StatLine line : content(plain()).stats())
+			assertEquals("", line.valueText());
+	}
+
+	@Test
+	public void theStatsTipGivesEachNumberItsRollAndNetChange()
+	{
+		SummaryContent c = content(plain().withStats(84, 31, 22, 40));
+		String tip = c.statsTip();
+
+		assertTrue(tip, tip.startsWith("Health 84: roll +3"));
+		assertTrue(tip, tip.contains("\nAttack 31: roll -2, +7%"));
+		assertTrue(tip, tip.contains("Brave"));
+		assertEquals("", content(plain()).statsTip());
 	}
 }

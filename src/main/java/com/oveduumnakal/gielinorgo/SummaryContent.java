@@ -4,6 +4,9 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +33,8 @@ final class SummaryContent
 
 	/** The most moves a creature knows. */
 	static final int MAX_MOVES = 4;
+
+	private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
 
 	/** A chip: the creature's style or one of its traits. */
 	static final class Chip
@@ -63,13 +68,26 @@ final class SummaryContent
 		private final int roll;
 		private final String rollText;
 		private final String netText;
+		private final String valueText;
 
 		StatLine(String label, int roll, String rollText, String netText)
+		{
+			this(label, roll, rollText, netText, "");
+		}
+
+		StatLine(String label, int roll, String rollText, String netText, String valueText)
 		{
 			this.label = label;
 			this.roll = roll;
 			this.rollText = rollText;
 			this.netText = netText;
+			this.valueText = valueText;
+		}
+
+		/** @return the stat itself, such as {@code 84}, or an empty text when the view does not know it */
+		String valueText()
+		{
+			return valueText;
 		}
 
 		/** @return the stat's name */
@@ -141,9 +159,12 @@ final class SummaryContent
 	private final List<StatLine> stats;
 	private final List<MoveLine> moves;
 	private final String pending;
+	private final String caught;
 
-	private SummaryContent(RowModel row, List<Chip> chips, List<StatLine> stats, List<MoveLine> moves, String pending)
+	private SummaryContent(RowModel row, List<Chip> chips, List<StatLine> stats, List<MoveLine> moves, String pending,
+		String caught)
 	{
+		this.caught = caught;
 		this.row = row;
 		this.chips = Collections.unmodifiableList(chips);
 		this.stats = Collections.unmodifiableList(stats);
@@ -159,7 +180,20 @@ final class SummaryContent
 	 */
 	static SummaryContent of(RowModel row)
 	{
+		return of(row, ZoneId.systemDefault());
+	}
+
+	/**
+	 * Words the Summary of a creature, with the day it was caught in a given time zone.
+	 *
+	 * @param row the creature's row
+	 * @param zone the zone the catch day is worked out in
+	 * @return its content
+	 */
+	static SummaryContent of(RowModel row, ZoneId zone)
+	{
 		CreatureView view = row.view();
+		int[] numbers = view.stats();
 		List<Chip> chips = new ArrayList<>();
 		chips.add(new Chip(view.type().label(), true));
 		for (Trait trait : view.traits())
@@ -175,7 +209,9 @@ final class SummaryContent
 			int roll = rolls.roll(stat);
 			long net = Math.round((rolls.factor(stat) - 1.0) * 100);
 			String netText = net == 0 ? "" : (net > 0 ? "+" : "") + net + "%";
-			stats.add(new StatLine(stat.label(), roll, roll > 0 ? "+" + roll : String.valueOf(roll), netText));
+			String value = numbers == null || stat.ordinal() >= numbers.length ? ""
+				: String.valueOf(numbers[stat.ordinal()]);
+			stats.add(new StatLine(stat.label(), roll, roll > 0 ? "+" + roll : String.valueOf(roll), netText, value));
 		}
 
 		List<MoveLine> moves = new ArrayList<>();
@@ -186,7 +222,22 @@ final class SummaryContent
 		}
 
 		String pending = view.pending().isEmpty() ? null : "New move: " + view.pending().get(0).name();
-		return new SummaryContent(row, chips, stats, moves, pending);
+		return new SummaryContent(row, chips, stats, moves, pending, caughtText(view.caughtAtMs(), zone));
+	}
+
+	/**
+	 * Words the day a creature was caught.
+	 *
+	 * @param ms the catch time in epoch milliseconds, or 0 or less when unknown
+	 * @param zone the zone the day is worked out in
+	 * @return {@code Caught 12 Nov 2026}, or an empty text when the time is unknown
+	 */
+	static String caughtText(long ms, ZoneId zone)
+	{
+		if (ms <= 0)
+			return "";
+
+		return "Caught " + DAY.withZone(zone).format(Instant.ofEpochMilli(ms));
 	}
 
 	private static String capitalised(String name)
@@ -222,6 +273,39 @@ final class SummaryContent
 	String level()
 	{
 		return row.levelText();
+	}
+
+	/** @return when the creature was caught, such as {@code Caught 12 Nov 2026}, or an empty text when unknown */
+	String caught()
+	{
+		return caught;
+	}
+
+	/**
+	 * @return one line per stat with its number, roll and net change, or an empty text when the numbers are unknown
+	 */
+	String statsTip()
+	{
+		StringBuilder text = new StringBuilder();
+		for (StatLine line : stats)
+		{
+			if (line.valueText().isEmpty())
+				return "";
+
+			if (text.length() > 0)
+				text.append('\n');
+
+			text.append(line.label())
+				.append(' ')
+				.append(line.valueText())
+				.append(": roll ")
+				.append(line.rollText());
+			if (!line.netText().isEmpty())
+				text.append(", ").append(line.netText()).append(" with the ").append(row.view().temperamentLabel())
+					.append(" nature");
+		}
+
+		return text.toString();
 	}
 
 	/** @return the style chip first, then each trait the species has besides its style */
