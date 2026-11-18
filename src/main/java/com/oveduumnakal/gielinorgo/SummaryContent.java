@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -194,14 +195,7 @@ final class SummaryContent
 	{
 		CreatureView view = row.view();
 		int[] numbers = view.stats();
-		List<Chip> chips = new ArrayList<>();
-		chips.add(new Chip(view.type().label(), true));
-		for (Trait trait : view.traits())
-		{
-			if (trait != Trait.forStyle(view.type()))
-				chips.add(new Chip(capitalised(trait.name()), false));
-		}
-
+		List<Chip> chips = chipsFor(view.type(), view.traits());
 		List<StatLine> stats = new ArrayList<>();
 		StatRolls rolls = view.rolls();
 		for (Stat stat : Stat.values())
@@ -223,6 +217,26 @@ final class SummaryContent
 
 		String pending = view.pending().isEmpty() ? null : "New move: " + view.pending().get(0).name();
 		return new SummaryContent(row, chips, stats, moves, pending, caughtText(view.caughtAtMs(), zone));
+	}
+
+	/**
+	 * Works out the chips of a creature: its combat style first, then each trait besides the one its style implies.
+	 *
+	 * @param style the creature's combat style
+	 * @param traits the creature's traits, in the order they should appear
+	 * @return the chips, the style chip first
+	 */
+	static List<Chip> chipsFor(CombatType style, Collection<Trait> traits)
+	{
+		List<Chip> chips = new ArrayList<>();
+		chips.add(new Chip(style.label(), true));
+		for (Trait trait : traits)
+		{
+			if (trait != Trait.forStyle(style))
+				chips.add(new Chip(capitalised(trait.name()), false));
+		}
+
+		return chips;
 	}
 
 	/**
