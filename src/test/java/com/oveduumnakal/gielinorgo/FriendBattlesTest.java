@@ -200,6 +200,7 @@ public class FriendBattlesTest
 
 		for (int seed = 1; seed <= 40; seed++)
 		{
+			reviveAll();
 			fromAnn.clear();
 			fromBob.clear();
 			ann = new FriendBattles(dragons, new Random(seed), () -> now, message -> fromAnn.add(sentBy(message, ANN)),
@@ -246,6 +247,7 @@ public class FriendBattlesTest
 		meet();
 		for (int round = 0; round < 20; round++)
 		{
+			reviveAll();
 			now += FriendBattles.REST_MS;
 			ann.challenge(BOB, "Bob", annData);
 			TeamBattleResult bobSaw = bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
@@ -257,7 +259,7 @@ public class FriendBattlesTest
 	}
 
 	@Test
-	public void aFriendBattleChangesNothingInTheSave()
+	public void aFriendBattleChangesNothingInTheSaveExceptThatTheCreaturesThatLostFaint()
 	{
 		meet();
 		ann.challenge(BOB, "Bob", annData);
@@ -266,7 +268,9 @@ public class FriendBattlesTest
 
 		assertEquals(0, annData.battlesWon);
 		assertEquals(0, bobData.battlesWon);
-		assertEquals(1.0, bobData.team.get(0).hpFraction, 0.0);
+		assertEquals(1.0, annData.team.get(0).hpFraction, 0.0);
+		assertFalse(annData.team.get(0).fainted);
+		assertTrue("Bob's chicken lost and fainted", bobData.team.get(0).fainted);
 		assertEquals(0, annData.trainerXp);
 	}
 
@@ -467,6 +471,7 @@ public class FriendBattlesTest
 		int annWins = 0;
 		for (int round = 0; round < 30; round++)
 		{
+			reviveAll();
 			now += FriendBattles.REST_MS;
 			ann.challenge(BOB, "Bob", annData);
 			TeamBattleResult bobSaw = bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
@@ -497,6 +502,7 @@ public class FriendBattlesTest
 
 		for (int round = 0; round < 10; round++)
 		{
+			reviveAll();
 			now += FriendBattles.REST_MS;
 			ann.challenge(BOB, "Bob", annData);
 			TeamBattleResult bobSaw = bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
@@ -774,6 +780,15 @@ public class FriendBattlesTest
 	}
 
 	/** Lets the two players learn of each other, as two hellos through the party would. */
+	private void reviveAll()
+	{
+		for (Creature creature : annData.team)
+			creature.revive(1.0, now);
+
+		for (Creature creature : bobData.team)
+			creature.revive(1.0, now);
+	}
+
 	private void meet()
 	{
 		ann.hello(annData, false);

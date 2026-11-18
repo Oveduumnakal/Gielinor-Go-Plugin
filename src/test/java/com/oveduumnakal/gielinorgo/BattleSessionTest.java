@@ -456,6 +456,8 @@ public class BattleSessionTest
 		assertEquals(0, game.data().battlesWon);
 		assertTrue(closing(game, lost, last).endsWith("Rest and try again"));
 
+		assertTrue(lead().fainted);
+		assertTrue("Lumbridge is a city, so the revive is free", game.reviveAtBank(lead()));
 		now += Creature.FULL_REST_MS;
 		BattleSession ran = game.startChallenge("lumbridge");
 

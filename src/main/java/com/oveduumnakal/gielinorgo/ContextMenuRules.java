@@ -5,7 +5,6 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -15,8 +14,9 @@ import java.util.function.Consumer;
  * row and for the Summary page's actions. The items come in a fixed order with Summary first, a dim item says why it
  * is dim beside it, and an item the creature cannot use at all is not offered. Make lead is dim for the lead and during
  * an Elite run; Move to storage is dim during an Elite run and unless {@link TeamSwapRule} allows it here; Use
- * item is dim when no owned item would help; Revive only exists for a fainted creature. Pure rules over plain values,
- * tested without a window. Holds no RuneLite types.
+ * item is dim when no owned item would help; Revive only exists for a fainted creature, is free, and is dim during an
+ * Elite run and unless {@link TeamSwapRule} allows it here, while the Revive draught is offered by Use item
+ * anywhere. Pure rules over plain values, tested without a window. Holds no RuneLite types.
  */
 final class ContextMenuRules
 {
@@ -38,7 +38,7 @@ final class ContextMenuRules
 	/** The label of the item that offers the healing items. */
 	static final String USE_ITEM = "Use item";
 
-	/** The label of the item that brings a fainted creature back. */
+	/** The label of the item that brings a fainted creature back for free. */
 	static final String REVIVE = "Revive";
 
 	/** Why Make lead and Move to storage are dim during an Elite run. */
@@ -124,7 +124,7 @@ final class ContextMenuRules
 		/** Offers the healing items the creature can use. */
 		void useItem();
 
-		/** Brings the creature back. */
+		/** Brings the fainted creature back for free; the game checks the place. */
 		void revive();
 	}
 
@@ -136,6 +136,9 @@ final class ContextMenuRules
 
 		/** Moves the creature to the team. */
 		void moveToTeam();
+
+		/** Revives the fainted creature: the game decides whether it may happen here. */
+		void revive();
 
 		/** Opens the Rename box. */
 		void rename();
@@ -216,6 +219,9 @@ final class ContextMenuRules
 		else
 			list.add(ContextMenu.Item.of(StoragePageFlow.MOVE_TO_TEAM, commands::moveToTeam));
 
+		if (facts.row.state() == RowModel.State.FAINTED)
+			list.add(ContextMenu.Item.of(REVIVE, commands::revive));
+
 		list.add(ContextMenu.Item.of(StoragePageFlow.RENAME, commands::rename));
 		list.add(ContextMenu.Item.of(MOVES, commands::moves));
 		list.add(usableItems(facts) ? ContextMenu.Item.of(StoragePageFlow.USE_ITEM, commands::useItem)
@@ -274,9 +280,8 @@ final class ContextMenuRules
 
 	private static ContextMenu.Item revive(Facts facts, Commands commands)
 	{
-		Integer owned = facts.items == null ? null : facts.items.get(ItemType.REVIVE);
-		if (owned == null || owned <= 0)
-			return ContextMenu.Item.disabled(REVIVE, NO_ITEM_REASON);
+		if (facts.eliteBusy)
+			return ContextMenu.Item.disabled(REVIVE, ELITE_REASON);
 
 		if (!facts.storageEnabled)
 			return ContextMenu.Item.disabled(REVIVE, SWAP_REASON);
@@ -288,15 +293,12 @@ final class ContextMenuRules
 	 * Lists the items a creature can use outside battle.
 	 *
 	 * @param facts what the rules look at
-	 * @return the items, in the order of {@link ItemType#values()}; a fainted creature uses none here, since Revive has
-	 *         its own item
+	 * @return the items, in the order of {@link ItemType#values()}; a fainted creature can only use a Revive draught
 	 */
 	static List<ItemType> usable(Facts facts)
 	{
-		if (facts.row.state() == RowModel.State.FAINTED)
-			return Collections.emptyList();
-
-		return ItemMenu.usable(facts.items, facts.row.view().hpFraction());
+		boolean fainted = facts.row.state() == RowModel.State.FAINTED;
+		return ItemMenu.usable(facts.items, facts.row.view().hpFraction(), fainted);
 	}
 
 	/**

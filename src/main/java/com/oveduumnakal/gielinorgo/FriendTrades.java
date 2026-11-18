@@ -68,6 +68,12 @@ final class FriendTrades implements GoGame.TradeLocks
 		{
 			return creature != null ? creature == other.creature : egg != null && egg == other.egg;
 		}
+
+		/** @return whether it may be traded: an egg, or a creature that has not fainted */
+		private boolean tradeable()
+		{
+			return creature == null || !creature.fainted;
+		}
 	}
 
 	/** An offer the player made that the friend has not answered yet. */
@@ -215,6 +221,12 @@ final class FriendTrades implements GoGame.TradeLocks
 			incoming.remove(friendId);
 			send(GielinorGoPartyMessage.REFUSE, friendId, offer.id);
 			tell("You no longer have what " + friendName + " asked for", Tone.BAD);
+			return;
+		}
+
+		if (offer.asked != null && !offer.asked.tradeable())
+		{
+			tell(reviveFirst(offer.asked), Tone.BAD);
 			return;
 		}
 
@@ -501,6 +513,12 @@ final class FriendTrades implements GoGame.TradeLocks
 			return;
 		}
 
+		if (!give.tradeable())
+		{
+			tell(reviveFirst(give), Tone.BAD);
+			return;
+		}
+
 		if (outgoing != null && now - outgoing.sentMs <= OFFER_TIMEOUT_MS)
 		{
 			tell("Still waiting for an answer to your last offer", Tone.BAD);
@@ -587,7 +605,8 @@ final class FriendTrades implements GoGame.TradeLocks
 		outgoing = null;
 		Item theirs = message.give();
 		boolean asExpected = mine.want == null ? theirs == null : valid(theirs) && sameThing(mine.want, theirs);
-		if (!asExpected || !unchanged(mine.give, mine.offered) || !roomFor(theirs, mine.give))
+		boolean stays = mine.give.tradeable() && unchanged(mine.give, mine.offered);
+		if (!asExpected || !stays || !roomFor(theirs, mine.give))
 		{
 			send(GielinorGoPartyMessage.REFUSE, sender, mine.id);
 			tell("The trade with " + senderName + " fell through", Tone.BAD);
@@ -663,7 +682,7 @@ final class FriendTrades implements GoGame.TradeLocks
 	private boolean swapConfirmed(long sender, Incoming offer, String senderName)
 	{
 		incoming.remove(sender);
-		boolean kept = offer.asked == null || owns(offer.asked);
+		boolean kept = offer.asked == null || owns(offer.asked) && offer.asked.tradeable();
 		if (!kept || !roomFor(offer.theirs, offer.asked))
 		{
 			send(GielinorGoPartyMessage.REFUSE, sender, offer.id);
@@ -840,7 +859,8 @@ final class FriendTrades implements GoGame.TradeLocks
 		for (Creature creature : game.data().team)
 		{
 			boolean same = Species.keyFor(creature.species).equals(Species.keyFor(want.species()));
-			if (same && creature.level() == want.level() && sameRolls(want, describe(new Mine(creature, null)))
+			if (same && !creature.fainted && creature.level() == want.level()
+				&& sameRolls(want, describe(new Mine(creature, null)))
 				&& sameMoves(want, describe(new Mine(creature, null))))
 				return new Mine(creature, null);
 		}
@@ -974,6 +994,18 @@ final class FriendTrades implements GoGame.TradeLocks
 	private static String noRoom(Item coming)
 	{
 		return coming.egg() != null ? "You cannot carry another egg" : "Storage is full";
+	}
+
+	/**
+	 * Words why a fainted creature cannot be traded: a trade would revive it for free.
+	 *
+	 * @param mine the creature
+	 * @return the line to show
+	 */
+	private String reviveFirst(Mine mine)
+	{
+		Creature creature = mine.creature;
+		return "Revive " + (creature.nickname != null ? creature.nickname : game.speciesNameOf(creature)) + " first";
 	}
 
 	private boolean owns(Mine mine)

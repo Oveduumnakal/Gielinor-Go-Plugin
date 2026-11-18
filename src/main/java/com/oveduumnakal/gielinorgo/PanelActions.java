@@ -27,6 +27,14 @@ interface PanelActions
 	void moveToStorage(TradePick pick);
 
 	/**
+	 * Revives a fainted team member or stored creature for free. It works where the team may be changed, see
+	 * {@link TeamSwapRule}, and not during an Elite run. The pick is checked again on the game thread.
+	 *
+	 * @param pick the creature as the panel showed it
+	 */
+	void reviveAtBank(TradePick pick);
+
+	/**
 	 * Moves a stored creature onto the team, when the team has room.
 	 *
 	 * @param pick the stored creature as the panel showed it

@@ -83,6 +83,24 @@ final class ItemRules
 	}
 
 	/**
+	 * Tells whether using an item on a creature outside battle would do something, counting that the creature may have
+	 * fainted. A fainted creature can only be helped by a Revive draught, never by a salve.
+	 *
+	 * @param type the item
+	 * @param health the creature's share of full health right now, from 0 to 1
+	 * @param fainted whether the creature has fainted
+	 * @return true for a Revive draught on a fainted creature or one too tired to battle, and for a salve on a
+	 *     creature that has not fainted and is below full health
+	 */
+	static boolean appliesOutsideBattle(ItemType type, double health, boolean fainted)
+	{
+		if (fainted)
+			return type.revives();
+
+		return appliesOutsideBattle(type, health);
+	}
+
+	/**
 	 * Works out the health a creature has after an item.
 	 *
 	 * @param type the item

@@ -1351,4 +1351,60 @@ public class FriendTradesTest
 	{
 		return list.get(list.size() - 1);
 	}
+
+	@Test
+	public void aFaintedCreatureCannotBeOfferedAndAHealthyOneStillCan()
+	{
+		annImp.faint(now);
+
+		ann.offer(BOB, "Bob", annImp, null);
+
+		assertEquals("Revive Imp first", last(annTold));
+		assertTrue(fromAnn.isEmpty());
+		assertFalse(ann.waitingOn(BOB));
+
+		annImp.revive(1.0, now);
+		ann.offer(BOB, "Bob", annImp, null);
+
+		assertTrue(ann.waitingOn(BOB));
+	}
+
+	@Test
+	public void aFaintedCreatureCannotBeAnsweredWithAndItIsNotFoundByAnOffer()
+	{
+		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
+		bob.receive(last(fromAnn), BOB, "Ann");
+		bobCow.faint(now);
+
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
+
+		assertEquals("Revive Cow first", last(bobTold));
+		assertSame("nothing moved", bobCow, bobGame.data().team.get(0));
+		assertTrue(bobCow.fainted);
+	}
+
+	@Test
+	public void anOfferAskingForTheOnlyMatchingCreatureWhenItIsFaintedIsTurnedDown()
+	{
+		bobCow.faint(now);
+
+		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
+		assertFalse(bob.receive(last(fromAnn), BOB, "Ann"));
+
+		assertEquals(GielinorGoPartyMessage.REFUSE, last(fromBob).kind());
+	}
+
+	@Test
+	public void aCreatureThatFaintsAfterTheFriendAgreedIsNotGivenAway()
+	{
+		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
+		bob.receive(last(fromAnn), BOB, "Ann");
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
+		annImp.faint(now);
+
+		assertTrue(ann.receive(last(fromBob), ANN, "Bob"));
+
+		assertEquals("The trade with Bob fell through", last(annTold));
+		assertSame(annImp, annGame.data().team.get(0));
+	}
 }

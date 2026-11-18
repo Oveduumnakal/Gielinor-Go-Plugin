@@ -36,6 +36,9 @@ final class StoragePageFlow
 	/** The menu item that moves a creature to the team. */
 	static final String MOVE_TO_TEAM = "Move to team";
 
+	/** The menu item that revives a fainted creature for free; the Storage tab only opens where that is allowed. */
+	static final String REVIVE = ContextMenuRules.REVIVE;
+
 	/** The menu item that renames a creature. */
 	static final String RENAME = "Rename...";
 
@@ -376,6 +379,12 @@ final class StoragePageFlow
 			public void moveToTeam()
 			{
 				actions.moveToTeam(pick(place, view));
+			}
+
+			@Override
+			public void revive()
+			{
+				actions.reviveAtBank(pick(place, view));
 			}
 
 			@Override

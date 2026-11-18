@@ -71,4 +71,21 @@ public class ItemRulesTest
 		assertEquals(0.5, ItemRules.healthAfter(ItemType.REVIVE, 0.1), EPSILON);
 		assertEquals(0.8, ItemRules.healthAfter(ItemType.REVIVE, 0.8), EPSILON);
 	}
+
+	@Test
+	public void aReviveDraughtWorksOnAFaintedCreatureAndASalveDoesNot()
+	{
+		assertTrue(ItemRules.appliesOutsideBattle(ItemType.REVIVE, 0.9, true));
+		assertTrue(ItemRules.appliesOutsideBattle(ItemType.REVIVE, 0.0, true));
+		assertFalse(ItemRules.appliesOutsideBattle(ItemType.SMALL_SALVE, 0.0, true));
+		assertFalse(ItemRules.appliesOutsideBattle(ItemType.LARGE_SALVE, 0.0, true));
+	}
+
+	@Test
+	public void theOlderOverloadAndTheUnfaintedCaseAreUnchanged()
+	{
+		assertTrue(ItemRules.appliesOutsideBattle(ItemType.SMALL_SALVE, 0.5, false));
+		assertFalse(ItemRules.appliesOutsideBattle(ItemType.REVIVE, 0.9, false));
+		assertTrue(ItemRules.appliesOutsideBattle(ItemType.REVIVE, 0.1, false));
+	}
 }

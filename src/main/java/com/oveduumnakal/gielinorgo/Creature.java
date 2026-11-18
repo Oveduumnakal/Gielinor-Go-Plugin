@@ -30,6 +30,12 @@ final class Creature
 	/** Wall-clock time the creature was caught, in milliseconds. */
 	long caughtAtMs;
 
+	/**
+	 * Whether the creature has fainted: it reached 0 health in a battle. A fainted creature never rests back up; it
+	 * comes back only through {@link #revive(double, long)}. False in an older save, so nobody starts fainted.
+	 */
+	boolean fainted;
+
 	/** Whether this is a rare gilded creature. Only its looks differ. */
 	boolean gilded;
 
@@ -168,7 +174,35 @@ final class Creature
 	 */
 	double hpFractionAt(long nowMs)
 	{
+		if (fainted)
+			return 0.0;
+
 		double rested = Math.max(0, nowMs - hpStampMs) / (double) FULL_REST_MS;
 		return Math.max(0.0, Math.min(1.0, hpFraction + rested));
+	}
+
+	/**
+	 * Makes the creature faint: it has no health and stays that way until it is revived.
+	 *
+	 * @param nowMs the current wall-clock time in milliseconds
+	 */
+	void faint(long nowMs)
+	{
+		fainted = true;
+		hpFraction = 0.0;
+		hpStampMs = nowMs;
+	}
+
+	/**
+	 * Brings the creature back to the given health. It rests from there as usual.
+	 *
+	 * @param share the share of full health it comes back with, clamped to 0 to 1
+	 * @param nowMs the current wall-clock time in milliseconds
+	 */
+	void revive(double share, long nowMs)
+	{
+		fainted = false;
+		hpFraction = Math.max(0.0, Math.min(1.0, share));
+		hpStampMs = nowMs;
 	}
 }

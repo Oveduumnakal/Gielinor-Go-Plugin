@@ -198,6 +198,9 @@ final class SaveData
 		creature.nickname = Nickname.clean(creature.nickname);
 		creature.npcId = Math.max(0, creature.npcId);
 		creature.bond = Math.max(0, creature.bond);
+		if (creature.fainted)
+			creature.hpFraction = 0.0;
+
 		creature.rollHp = StatRolls.clamp(creature.rollHp);
 		creature.rollAttack = StatRolls.clamp(creature.rollAttack);
 		creature.rollDefence = StatRolls.clamp(creature.rollDefence);

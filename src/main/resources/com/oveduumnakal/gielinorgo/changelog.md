@@ -122,6 +122,8 @@ A Creature Log, daily tasks and daily events give you goals.
   time you log in, with jars for the skills and for level-ups. (#219)
 - **Details for stored creatures.** Storage creatures have the same Summary as your team, with the real stat numbers
   and the day you caught them. (#215)
+- **Fainting.** A creature that reaches 0 health faints and stays down until you revive it in a city or at a bank
+  (or with a Revive draught anywhere); it comes back at 50%. (#221)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
