@@ -101,6 +101,8 @@ A Creature Log, daily tasks and daily events give you goals.
   there is no hidden old-panel setting any more. (#227)
 - **Sort and filter Storage.** Sort stored creatures by level, species, rarity, date caught or nickname, and filter
   them by level, style, rarity, rating, gender, gilded or nickname, showing or hiding each. (#212)
+- **Storage views.** Switch Storage between a list, a Box grid you can rearrange by dragging, and a list grouped
+  by species. (#211)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
