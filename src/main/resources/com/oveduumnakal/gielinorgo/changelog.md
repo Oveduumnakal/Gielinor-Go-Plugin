@@ -94,6 +94,8 @@ A Creature Log, daily tasks and daily events give you goals.
   the side panel is unchanged. (#223)
 - **Battle buttons on the game screen.** While a battle waits for your choice, the box on the game screen has
   buttons for Attack, Switch, Catch, Item and Run, so you can steer a battle without hotkeys. (#225)
+- **Painted window tabs.** The painted window now has every page the side panel has: Bag, Storage, Collection, Tasks and
+  Battle, plus an in-window change log and a Feedback menu. The side panel is unchanged. (#226)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
