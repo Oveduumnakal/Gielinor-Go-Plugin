@@ -14,7 +14,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   wanders a step or two (never more than 3 tiles from where it appeared), stays about 3 minutes (the clock stops
   while you fight or catch it) and fades out over 2 seconds when its time is up, when you walk more than 25 tiles away or change floors. If there is no free
   tile you can walk to, no wild creature appears. Click it to **Battle** it (a plain left click does that), or
-  right-click it for **Battle** and **Catch**. Hover over it to see its name, level, style, rarity and whether you have met or caught its species (switch this off with **Wild creature tooltip**; it hides while a menu is open and during a battle). Once your lead has beaten it and it lies knocked out, a plain left
+  right-click it for **Battle** and **Catch**; with two or more jars, Catch opens a list: the jars worth throwing first (best odds, the cheaper one on a tie), a line, then every other jar you own, each with its odds and how many you have. Hover over it to see its name, level, style, rarity and whether you have met or caught its species (switch this off with **Wild creature tooltip**; it hides while a menu is open and during a battle). Once your lead has beaten it and it lies knocked out, a plain left
   click throws your selected jar instead. When no creature can fight (your team is empty, or, with **Choose battle actions** on, your lead is too tired;
   with it off, the whole team is), Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
   behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer

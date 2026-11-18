@@ -14,8 +14,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 - **Wild creatures.** Monsters near you turn wild as their own smaller copies. Wild creatures never need a second
   player and do not appear in instances. (#1, #15, #50, #60)
-- **Catching.** Right-click a wild creature to see your odds, then throw a jar. A knocked-out creature is twice as
-  easy to catch. (#17, #32, #51)
+- **Catching.** Right-click a wild creature for Battle and a Catch list of your jars, best odds first, then throw one.
+  A knocked-out creature is twice as easy to catch. (#17, #32, #51, #210)
 - **Spawn variety.** Featured species, night spawns and weekend events change what turns wild. (#27)
 
 ### Your team

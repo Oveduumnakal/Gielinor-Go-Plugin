@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.Menu;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.NPC;
@@ -1658,17 +1659,80 @@ public class GielinorGoPlugin extends Plugin
 		boolean canBattle = game.canBattle(System.currentTimeMillis(), config.chooseBattleActions());
 		boolean withBattle = !entry.battled() && !director.active() && body != null && !body.life().leaving()
 			&& canBattle;
-		List<WildMenu.Item> items = WildMenu.topFirst(game.jarToThrow(), game.matchingSpecialtyJars(entry),
-			withBattle, WildMenu.leftClickCatches(knockedOut(wildId), canBattle));
+		List<WildMenu.Top> tops = WildMenu.layout(game.jarToThrow(), jarChoices(entry), withBattle,
+			WildMenu.leftClickCatches(knockedOut(wildId), canBattle), WildMenu.SUBMENU);
 		boolean leftClick = WildMenu.leftClickAllowed(config.leftClickWild(),
 			combatWatch.inCombat(System.currentTimeMillis()));
-		for (int i = items.size() - 1; i >= 0; i--)
+		for (int i = tops.size() - 1; i >= 0; i--)
 		{
-			WildMenu.Item item = items.get(i);
-			if (item.isCatch())
-				addCatchOption(entry, target, item.jar(), leftClick);
+			WildMenu.Top top = tops.get(i);
+			if (top.kind() == WildMenu.TopKind.CATCH_PLAIN)
+				addCatchOption(entry, target, top.jar(), leftClick);
+			else if (top.kind() == WildMenu.TopKind.CATCH_SUBMENU)
+				addCatchSubmenu(wildId, target, top.rows(), leftClick);
 			else
 				addBattleOption(wildId, target, leftClick);
+		}
+	}
+
+	/**
+	 * Lists every jar the player owns with its odds against one wild creature right now.
+	 *
+	 * @param entry the wild creature
+	 * @return one choice per owned jar, in enum order
+	 */
+	private List<JarSuggest.JarChoice> jarChoices(WildEntry entry)
+	{
+		boolean knockedOut = knockedOut(entry.wildId());
+		double healthLeft = inBattleWith(entry) ? foeHealthLeft() : CatchOdds.NOT_IN_BATTLE;
+		List<JarSuggest.JarChoice> choices = new ArrayList<>();
+		for (Map.Entry<JarType, Integer> owned : game.ownedJars().entrySet())
+		{
+			JarType jar = owned.getKey();
+			boolean matching = jar.specialty() && entry.traits().contains(jar.trait());
+			choices.add(new JarSuggest.JarChoice(jar, owned.getValue(),
+				CatchOdds.of(jar, entry, knockedOut, healthLeft), matching));
+		}
+
+		return choices;
+	}
+
+	/**
+	 * Adds the Catch entry that opens the list of jars: the suggested ones, a grey line, then the rest. The entry
+	 * itself does nothing when clicked; a row throws its jar.
+	 *
+	 * @param wildId the wild creature's id
+	 * @param target the coloured creature name and level
+	 * @param rows the rows of the list, top first
+	 * @param leftClick whether the entry may take the left click; false sinks it below the game's own entries
+	 */
+	private void addCatchSubmenu(int wildId, String target, List<WildMenu.Row> rows, boolean leftClick)
+	{
+		MenuEntry parent = client.getMenu()
+			.createMenuEntry(-1)
+			.setOption(WildMenu.CATCH)
+			.setTarget(target)
+			.setType(MenuAction.RUNELITE)
+			.setDeprioritized(!leftClick);
+		Menu sub = parent.createSubMenu();
+		for (int i = rows.size() - 1; i >= 0; i--)
+		{
+			WildMenu.Row row = rows.get(i);
+			if (row.kind() == WildMenu.RowKind.SEPARATOR)
+			{
+				sub.createMenuEntry(-1)
+					.setOption("<col=808080>" + WildMenu.SEPARATOR + "</col>")
+					.setType(MenuAction.RUNELITE);
+				continue;
+			}
+
+			JarSuggest.JarChoice choice = row.choice();
+			JarType jar = choice.jar();
+			sub.createMenuEntry(-1)
+				.setOption(WildMenu.jarOption(choice))
+				.setTarget(WildMenu.jarTarget(choice))
+				.setType(MenuAction.RUNELITE)
+				.onClick(clicked -> throwJar(wildId, jar));
 		}
 	}
 
@@ -1697,9 +1761,8 @@ public class GielinorGoPlugin extends Plugin
 		String odds = " - no jars";
 		if (jar != null)
 		{
-			double chance = inBattleWith(entry)
-				? CatchRules.inBattle(jar, entry.combatLevel(), entry.traits(), foeHealthLeft())
-				: CatchRules.chance(jar, entry.combatLevel(), entry.weakened(), entry.traits(), knockedOut(wildId));
+			double chance = CatchOdds.of(jar, entry, knockedOut(wildId),
+				inBattleWith(entry) ? foeHealthLeft() : CatchOdds.NOT_IN_BATTLE);
 			odds = " - " + jar.label() + " jar " + percent(chance);
 		}
 
