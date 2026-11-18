@@ -16,7 +16,9 @@ Every feature and every number, in detail. For the short version, see the [READM
   click throws your selected jar instead. When no creature can fight (your team is empty, or, with **Choose battle actions** on, your lead is too tired;
   with it off, the whole team is), Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
   behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
-  finds. At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
+  finds. Hunter creatures such as pyre foxes, kebbits, salamanders, moths, antelope and implings have no combat level
+  in the game; they turn wild like any other monster and their level is their Hunter level.
+  At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
   the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
   seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
@@ -560,7 +562,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   **Bag** holds your jars, healing items (hover for what each does) and the eggs you carry. **Storage** holds the
   creatures you are not carrying. **Collection** is the Creature Log of every species you can meet in the game
-  (1,096): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
+  (1,139): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
   Click a species you have seen or caught for its examine text, evolution line (stages you have not met show as
   `???`), how many you have caught and whether you own a gilded one, and right-click it for **Open wiki**. **Tasks**
   has your daily and weekly tasks, the login streak and the milestone list. **Battle** lists the City Champions, the

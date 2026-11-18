@@ -41,7 +41,7 @@ Then replace this comment with:
 - **Monsters near you turn wild**
 
   A wild creature is its own smaller copy that stands beside the real monster for about three minutes. There are
-  1,096 species to find, from chickens to bosses. Wild creatures do not appear inside instances.
+  1,139 species to find, from chickens to bosses. Wild creatures do not appear inside instances.
 
 - **Boss eggs**
 

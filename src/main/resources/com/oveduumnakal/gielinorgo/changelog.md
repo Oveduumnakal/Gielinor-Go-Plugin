@@ -97,6 +97,8 @@ A Creature Log, daily tasks and daily events give you goals.
   change log and a Feedback menu. (#226)
 - **The side panel is gone.** The sidebar jar button and the jar on the game screen open the painted window, and
   there is no hidden old-panel setting any more. (#227)
+- **Hunter creatures.** Pyre foxes, kebbits, salamanders, moths, antelope, implings and other Hunter creatures with
+  no combat level now turn wild and can be battled and caught; their level is their Hunter level. (#207)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
