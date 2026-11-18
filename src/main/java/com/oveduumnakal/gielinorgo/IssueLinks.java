@@ -42,7 +42,7 @@ final class IssueLinks
 	static final List<String> BUG_AREAS = Collections.unmodifiableList(Arrays.asList(
 		"Wild creatures / catching",
 		"Battles / training",
-		"Side panel (team, storage, creature log)",
+		"Game window (party, bag, storage, collection)",
 		"Saved progress",
 		"Configuration / settings",
 		"Other"));
@@ -51,7 +51,7 @@ final class IssueLinks
 	static final List<String> FEATURE_AREAS = Collections.unmodifiableList(Arrays.asList(
 		"Wild creatures / catching",
 		"Battles / training",
-		"Side panel (team, storage, creature log)",
+		"Game window (party, bag, storage, collection)",
 		"Saved progress",
 		"Configuration / settings",
 		"New / other"));

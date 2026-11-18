@@ -56,7 +56,7 @@ A Creature Log, daily tasks and daily events give you goals.
   (#82)
 - **Left-click setting.** Choose whether a left click on a wild creature is yours always, never, or only out of
   combat. (#87)
-- **Report a bug and Request a feature.** The Feedback button in the panel opens GitHub with your text filled in.
+- **Report a bug and Request a feature.** The Feedback button in the window opens GitHub with your text filled in.
   (#81)
 - **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
   beside you, and three species are only met this way. (#90)
@@ -89,13 +89,14 @@ A Creature Log, daily tasks and daily events give you goals.
   for a gold sigil and a daily reward. (#97)
 - **Choose your turns against friends.** When you both have Choose battle actions on, a friend battle is played
   turn by turn. (#98)
-- **Painted window (preview).** A new in-game window drawn on the game screen, with six tabs and two looks, can be
-  turned on with Painted window (preview) in the settings. Only its frame, tabs and footer are built so far, and
-  the side panel is unchanged. (#223)
+- **Painted window.** A new in-game window drawn on the game screen, with six tabs and two looks. The jar button on
+  the game screen opens and closes it. (#223)
 - **Battle buttons on the game screen.** While a battle waits for your choice, the box on the game screen has
   buttons for Attack, Switch, Catch, Item and Run, so you can steer a battle without hotkeys. (#225)
-- **Painted window tabs.** The painted window now has every page the side panel has: Bag, Storage, Collection, Tasks and
-  Battle, plus an in-window change log and a Feedback menu. The side panel is unchanged. (#226)
+- **Painted window tabs.** The painted window has Party, Bag, Storage, Collection, Tasks and Battle, plus an in-window
+  change log and a Feedback menu. (#226)
+- **The side panel is gone.** The sidebar jar button and the jar on the game screen open the painted window, and
+  there is no hidden old-panel setting any more. (#227)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

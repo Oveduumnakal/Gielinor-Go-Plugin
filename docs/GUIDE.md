@@ -62,8 +62,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   Training a skill can turn up a jar that is much better on one kind of creature. Mining finds Cave jars for
   creatures you meet underground, Agility finds Swift jars for fast attackers, Prayer finds Blessed jars for
   undead and demons, and so on for almost every skill. When you own one that suits the creature in front of
-  you, it shows up as its own **Catch** option with its odds. Every jar has its own small picture, in the jar list on
-  the panel, on the champion cards and beside the "Found a ... jar" lines that float over your head.
+  you, it shows up as its own **Catch** option with its odds. Every jar has its own small picture, in the Bag,
+  on the champion cards and beside the "Found a ... jar" lines that float over your head.
 
   The Attack, Strength and Defence skills find their own jars: **Stab** jars (Attack), **Slash** jars (Strength)
   and **Crush** jars (Defence), each ×2.5 on creatures of that style. A save from before the split turns its old
@@ -96,9 +96,9 @@ Every feature and every number, in detail. For the short version, see the [READM
   up while training Herblore or Cooking and after about one battle win in ten; Herblore also finds Antidotes.
   Bigger XP drops find more, up to a 30% chance, and the roll is separate from the specialty jar's, so one drop can
   give a jar, an item, both or neither. Battle wins can also drop a Large salve (3%) or a Revive draught (2%), and
-  your first win over each City Champion pays 2 Large salves and a Revive draught. Right-click a creature on the
-  Team or Storage tab and choose **Use** to pick an item that would help it; one that would do nothing is not
-  offered and never spent. Health also comes back by itself over five minutes. The **Items** line under the jar list
+  your first win over each City Champion pays 2 Large salves and a Revive draught. Right-click a creature in the
+  Party and choose **Use item** to pick an item that would help it; one that would do nothing is not
+  offered and never spent. Health also comes back by itself over five minutes. The Bag
   shows how many of each you own, greyed at zero. Items cannot be traded.
 
 - **Everything shows where it happens**
@@ -112,8 +112,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   first kill of each boss the plugin sees always gives its egg, and after that one kill in 20 does. A completed
   raid counts as one kill of its final boss: the Great Olm for the Chambers of Xeric, Verzik Vitur for the Theatre
   of Blood and Elidinis' Warden for the Tombs of Amascut, solo or in a group. The egg appears after the fight
-  (`You found a Vorkath egg!`) and works in instances, where no wild creature ever turns up. It shows on the Team
-  tab as `Vorkath egg` and hatches by walking into a level 1 creature of that exact boss, rolled and gilded like any
+  (`You found a Vorkath egg!`) and works in instances, where no wild creature ever turns up. It shows in the Bag as `Vorkath egg` and hatches by walking into a level 1 creature of that exact boss, rolled and gilded like any
   other egg. Nothing about loot is read, only the kill-count line. With three eggs already carried the new one
   waits, one per boss, and arrives when a slot frees up (a waiting egg is lost if you log out, and the first-kill
   egg is then given again at the next kill). Re-fightable instance bosses such as Vorkath are in the Creature Log
@@ -123,7 +122,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Your first creature**
 
-  A new player sees **Choose your first creature** at the top of the Team tab: an Imp (Melee), a Gnome Archer
+  A new player sees **Choose your first creature** at the top of the Party tab: an Imp (Melee), a Gnome Archer
   (Ranged) or a Wizard (Magic), one of each style. Each card shows the portrait, the style, the temperament and
   rating it rolled (rolled like a catch, so two Imps differ) and what it grows into. Click a card, then **Yes**: the
   creature joins as your lead at level 5 and starts following you. The three are rolled once and stay the same while
@@ -143,7 +142,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Your lead creature follows a step behind you as a small copy of itself, so it never gets in the way. A gilded
   lead follows in gold. A creature looks like the monster you caught: the small Monkey Guard stays small, in the
-  follower, the Team card and the battle scenes. Creatures that hatch, evolve or come from a trade, and creatures
+  follower, the Party row and the battle scenes. Creatures that hatch, evolve or come from a trade, and creatures
   caught before this was added, look like the species' usual monster. Only you can see it, it cannot be clicked, and
   you can switch it off in the settings.
 
@@ -248,7 +247,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Turn on **Choose battle actions** in the settings (it is off by default, and then every battle plays itself as
   described above, with your whole team: the next creature steps in on its own). A battle with a wild creature or a City Champion then waits for you each
-  turn, and the battle box appears at the top of the side panel, above the tabs, with both creatures' health, a
+  turn, and the battle controls box appears on the game screen, with both creatures' health, a
   countdown bar and five buttons:
 
   - **Attack**: your creature attacks, then the other one does (or the other way round: the faster creature is
@@ -266,7 +265,7 @@ Every feature and every number, in detail. For the short version, see the [READM
     a creature of your team that is still up and hurt, a Revive draught brings back a creature that fainted in this
     battle at half health, and an Antidote cures poison, venom or burn on the creature in the fight. The button lists
     only items that would do something and asks which creature when an item could help several. The item is spent
-    once the turn is played, and nothing is spent when it would do nothing. From a creature's card in the panel,
+    once the turn is played, and nothing is spent when it would do nothing. From a creature's menu in the window,
     items cannot be used while a battle is on.
   - **Run**: ends the battle. Nothing is won and that creature cannot be battled again. Logging out, hopping, walking
     more than 15 tiles away or the monster going away counts as running.
@@ -276,7 +275,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   health values, and you can set **Attack**, **Switch**, **Catch**, **Item** and **Run** hotkeys (none are set by default, so no
   key is taken from chat or dialogue, and they work only while a choice is open). The Switch hotkey steps in the first
   creature that can fight, and the Item hotkey uses the first item that would help (Small salve, Large salve, Revive
-  draught, Antidote); use the panel buttons to pick a creature or an item.
+  draught, Antidote); use the box's buttons to pick a creature or an item.
 
   Every blow and every switch ("Go, Bob!", "Bob comes back", "You ran away") floats as it happens, with no summary.
   With **Battle animations** on, the scene waits for you between turns: the lead and the wild creature (or the two
@@ -301,7 +300,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Releasing creatures**
 
-  Right-click a creature in Storage and choose **Release**, or press **Select** at the top of the Storage tab, tick
+  Right-click a creature in Storage and choose **Release**, or press **Select** at the top of the Storage page, tick
   as many creatures as you like and press **Release selected**. One confirm lists the names and the total XP. Your
   lead creature gains creature XP for each one: 20 plus 4 for every level of the released creature, times 1 for a
   Common, 1.5 for an Uncommon, 2 for a Rare, 3 for an Epic and 4 for a Legendary. A Level 10 Common pays 60 XP. The
@@ -317,7 +316,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Gilded creatures**
 
-  One wild creature in 500 is gilded: gold outline in the world, gold name in your panel. They are only for
+  One wild creature in 500 is gilded: gold outline in the world, gold name in your window. They are only for
   showing off.
 
 - **Bond**
@@ -334,7 +333,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Featured today**
 
   Each day one species of every rarity is featured, the same for every player on the same plugin version, and a
-  featured species turns wild three times as often. The Today section at the top of the Log tab names them and
+  featured species turns wild three times as often. The Today section in the Collection tab names them and
   shows when they change (midnight UTC). A star marks them in the Log, and the Log's filter has a **Featured**
   choice.
 
@@ -363,7 +362,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   task every Monday. They are the same for every player. Daily tasks are things like catching a few creatures,
   catching ones of one combat style, catching one underground, winning battles, walking, gaining XP in any skill or
   hatching an egg. The weekly task is bigger: beat a City Champion, catch 25 creatures, win 15 battles or walk
-  5,000 tiles. They show on the Team tab under your eggs, with a bar for each and the time left to the reset.
+  5,000 tiles. They show on the Tasks tab (and the top three in the Party tab), with a bar for each and the time left to the reset.
 
 - **Rewards are paid for you**
 
@@ -374,7 +373,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Days played**
 
   The first catch of each UTC day pays 2 Bronze jars and adds a day to your days played. The count only goes up:
-  missing a day costs nothing. Every 7th day played pays an Uncommon egg. The Team tab shows the day you are on
+  missing a day costs nothing. Every 7th day played pays an Uncommon egg. The window shows the day you are on
   and how many days are left to the next egg. The plugin goes by your computer's clock, so changing the clock would
   cheat; nothing stops that in a single-player side game.
 
@@ -391,14 +390,14 @@ Every feature and every number, in detail. For the short version, see the [READM
   type and an egg of the rarest creature in it. Milestones you had already reached are paid when you log in. When
   your egg bag is full an egg reward waits until you have a free slot.
 
-- **Progress on the Log tab**
+- **Progress on the Collection tab**
 
-  Under the Log header the next goal shows with a bar (`Next: 100 species`, `87 / 100`). The **Milestones...**
-  button lists every milestone and family with its bar, its reward and a tick once it is paid.
+  The Collection tab shows the next goal with a bar (`Next: 100 species`, `87 / 100`), and the Tasks tab lists
+  every milestone and family with its bar, its reward and a tick once it is paid.
 
 - **Titles**
 
-  The panel header shows your title next to your trainer level: **Grand Champion** after the Elite challenge and
+  The window shows your title next to your trainer level: **Grand Champion** after the Elite challenge and
   **Master Collector** for a complete Log. When you hold both, click the title in the header to switch between
   them. The one you pick is saved; until you pick, the header shows the one you earned last of the two in that
   order (Master Collector).
@@ -492,7 +491,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Rewards**
 
-  The first clear earns the title **Grand Champion** (shown in the panel header), 10 Dragon jars, 3 of every
+  The first clear earns the title **Grand Champion** (shown in the window), 10 Dragon jars, 3 of every
   specialty jar and a Legendary egg. Clearing it again pays 2 Dragon jars. Beating Elite trainers pays creature XP,
   half as much once you have cleared the challenge.
 
@@ -541,73 +540,58 @@ Every feature and every number, in detail. For the short version, see the [READM
   except the gilded creature's sound, which always plays. Battle hits, jar finds and task progress are silent, and
   so is everything while the plugin is hidden in PvP areas. Switch them off with **Sounds** in the settings.
 
-### Side panel
+### The window
 
-- **Team, Storage, Creature Log and Battle**
+- **Opening it**
 
-  The side panel shows your team with portraits, health and XP bars, the eggs you are carrying, your daily and weekly tasks, the
-  creatures you have stored, and a Creature Log of every species you can meet in the game (1,096) so you can see what
-  you have caught, what you have only seen, and how rare the missing ones are. The Battle tab lists the friends and City Champions
-  you can challenge. The top of the Log tab shows what is featured today and which event is on.
+  Click the Gielinor Go jar in RuneLite's sidebar, or the jar button at the top left of the game screen, to open and
+  close the window. It has six tabs: **Party**, **Bag**, **Storage**, **Collection**, **Tasks** and **Battle**, and a
+  footer with the change log, the Feedback menu, the window size and style buttons and **Reset window**. Nothing is
+  shown before your save has loaded; the jar says "Still loading your save." instead.
 
-  Click a species you have seen or caught and a box under the list shows the monster's examine text, its evolution
-  line (stages you have not met yet show as `???`), how many you have caught and whether you own a gilded one.
-  Right-click a species you have seen or caught and choose **Open wiki** to open its page on the Old School RuneScape
-  Wiki in your browser. A species you have never met shows neither the box nor the menu.
+- **Party and Summary**
+
+  Party lists your team of up to six as rows with portrait, nickname, gender, style, level, health and XP bars. A new
+  player sees **Choose your first creature** here. Left-click a row for its **Summary** (stats, nature, moves, bond,
+  evolution hint). Right-click a row, or press Enter on a highlighted one, for **Make lead**, **Move to storage**,
+  **Rename**, **Moves**, **Use item** and **Open wiki**. A small column on the right shows your eggs and top tasks.
+
+- **Bag, Storage, Collection, Tasks and Battle**
+
+  **Bag** holds your jars, healing items (hover for what each does) and the eggs you carry. **Storage** holds the
+  creatures you are not carrying. **Collection** is the Creature Log of every species you can meet in the game
+  (1,096): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
+  Click a species you have seen or caught for its examine text, evolution line (stages you have not met show as
+  `???`), how many you have caught and whether you own a gilded one, and right-click it for **Open wiki**. **Tasks**
+  has your daily and weekly tasks, the login streak and the milestone list. **Battle** lists the City Champions, the
+  Elite challenge, your Rival, your party friends and trades.
 
   You can move a creature between your team and Storage only inside a city or town (any City Champion's area, or a
   town such as Civitas illa Fortis, Hosidius, Prifddinas, Burthorpe or Catherby), within 10 tiles of a banker, a bank
   booth or a bank chest, or while the bank is open. A town does not let you challenge its champion; only a champion's
-  own city does. Anywhere else the panel says "Go to a city or a bank to change your team". Making another team member the lead is allowed anywhere, and so is a catch that goes to Storage because
-  your team is full, a creature you receive in a trade, a hatched egg and releasing a stored creature.
-
-- **Starting over**
-
-  **Reset progress...** is a small link at the very bottom of the Team tab. It asks once, listing what you would lose
-  (team, Storage, Log species, sigils, eggs), and only the **Yes, reset** button goes ahead; **No** is the default. A
-  reset puts your whole save back to a new player's, with 10 Bronze jars. Settings and hotkeys are kept, and other
-  accounts are not touched. It is refused with a reason while a battle, a trade or an Elite run is on, and while you
-  are logged out. The old save is copied aside first as a safety net. There is no button to bring it back, so if you
-  reset by mistake, ask for help and it can be copied back by hand.
-
-- **Change log**
-
-  The button at the bottom of the panel opens the change log: every release, newest first, with a short overview and
-  the changes by area. After the plugin updates, the button reads **What's New** in orange until you open it. A
-  first install does not show the badge.
-
-- **Feedback**
-
-  The **Feedback** button at the bottom of the panel offers **Report a bug** and **Request a feature**. Each opens a
-  short form; **Submit** opens GitHub's new-issue page in your browser with what you wrote already filled in. You
-  review it and post it there. The plugin sends nothing itself, and a bug report adds the plugin version for you.
-
-### Painted window (preview)
-
-- **Painted window (preview)**
-
-  A new in-game window is being built to replace the side panel. It is a preview: turn on **Painted window (preview)**
-  in the settings and a jar button appears at the top left of the game screen; click it to open or close the window.
-  So far it has its frame, six tabs (Party, Bag, Storage, Collection, Tasks and Battle) with placeholder pages, and a
-  footer. The pages come in later updates, and the side panel works as before until they do. Storage is greyed out,
-  and shakes when clicked, unless you could move a creature between your team and Storage (see the side panel notes
-  above).
+  own city does. Anywhere else the Storage tab is greyed out and shakes when clicked. Making another team member the
+  lead is allowed anywhere, and so is a catch that goes to Storage because your team is full, a creature you receive
+  in a trade, a hatched egg and releasing a stored creature.
 
 - **Closing and the jar button**
 
   Real combat (and the five seconds after it) and any Gielinor Go battle close the window with a short pop-up
   message, and the jar button turns grey until they end. Click it again after that to reopen. A click on the grey
-  jar shows why it cannot open, and so does opening it before your save has loaded. A pulsing dot on the jar means
-  something waits for you: a creature has a move to decide on, an egg is ready, a task was completed, or you have a
-  creature to choose.
+  jar shows why it cannot open (the sidebar jar cannot grey, so it shows the same message). A pulsing dot on the jar
+  means something waits for you: a creature has a move to decide on, an egg is ready, a task was completed, or you
+  have a creature to choose. While you fight, every tab stays shut until the fighting stops.
 
 - **Moving and resizing**
 
-  Hold RuneLite's drag key (Alt unless you changed it in RuneLite's own settings) and drag the window or the jar
-  button to move them; drag the window's edge to resize it. It keeps its shape and follows the size of the game
-  window. Without a drag key (KDE desktop mode on a Steam Deck uses Alt+drag for its own window), use **Window size**
-  in the settings, or the **Reset window** and size buttons at the foot of the window. **Window style** (or the style
-  button) switches between Dark glass and RuneLite dark.
+  Hold RuneLite's drag key (Alt unless you changed it) and drag the window or the jar button to move them; drag the
+  window's edge to resize it. It keeps its shape and follows the size of the game window. **Window style** (or the
+  style button) switches between Dark glass and RuneLite dark, and **Window animations** sets Full, Reduced or Off.
+
+  On a Steam Deck in KDE desktop mode, Alt+drag moves the whole RuneLite window instead. To change that, either set
+  another key in RuneLite's own settings (Configuration, RuneLite, **Drag hotkey**; Shift or Ctrl work), or change
+  KDE's shortcut under System Settings, Window Management, Window Behavior, **Modifier key** for the window
+  actions. Or skip dragging: pick a size with **Window size** in the settings, or use the **Reset window** and
+  size buttons at the foot of the window.
 
 - **Keyboard and controller**
 
@@ -615,8 +599,38 @@ Every feature and every number, in detail. For the short version, see the [READM
   Down move the highlight, Enter or Space press it, Esc goes back and then closes, and Backspace goes back without
   closing. Click in the game world and the arrow keys and Enter go back to the game; typing in chat is never touched.
   Turn this off with **Window keyboard**, hide the hint line with **Show key hints**, and set **Open window key** to
-  open and close the window from the keyboard (not set by default). A controller works through Steam Input: map the
-  D-pad to the arrow keys, A to Enter, B to Escape and the bumpers to Left and Right.
+  open and close the window from the keyboard (not set by default).
+
+  A suggested Steam Input layout: D-pad to the arrow keys, A to Enter, B to Escape, and the left and right bumpers to
+  Left and Right. That plays the window like a Pokemon menu.
+
+- **Battle controls box**
+
+  When **Choose battle actions** is on, a small box on the game screen shows whenever a battle waits for your choice,
+  with both creatures' health, the time left and the buttons **Attack**, **Switch**, **Catch**, **Item** and **Run**.
+  Click a button; Attack, Switch and Item open a list when there is something to pick, and a right-click or **Back**
+  goes back one step. No hotkeys are needed. Hold RuneLite's drag key to move the box.
+
+- **Starting over**
+
+  **Reset progress...** is a button in the banner of the Party page. It asks once, listing what you would lose
+  (team, Storage, Log species, sigils, eggs), and only **Yes, reset** goes ahead; **No** is the default. A reset puts
+  your whole save back to a new player's, with 10 Bronze jars. Settings and hotkeys are kept, and other accounts are
+  not touched. It is refused with a reason while a battle, a trade or an Elite run is on, and while you are logged
+  out. The old save is copied aside first as a safety net. There is no button to bring it back, so if you reset by
+  mistake, ask for help and it can be copied back by hand.
+
+- **Change log**
+
+  The footer button opens the change log in the window: every release, newest first, with a short overview and the
+  changes by area. After the plugin updates, the button reads **What's New** until you open it. A first install does
+  not show the badge.
+
+- **Feedback**
+
+  The footer **Feedback** button offers **Report a bug** and **Request a feature**. Each opens GitHub's new-issue
+  page in your browser with the plugin version and area already filled in. You write the rest there and post it. The
+  plugin sends nothing itself.
 
 ## Links
 

@@ -63,7 +63,7 @@ body:
       options:
         - Wild creatures / catching
         - Battles / training
-        - Side panel (team, storage, creature log)
+        - Game window (party, bag, storage, collection)
         - Saved progress
         - Configuration / settings
         - Other

@@ -105,7 +105,7 @@ public class GielinorGoPlugin extends Plugin
 	/** Rarity used to read a species' event boost back out of the calendar's chance: the chance times this. */
 	private static final int BOOST_ONE_IN = 100;
 
-	/** Game ticks between side panel refreshes while nothing changes, so resting health still creeps up. */
+	/** Game ticks between window refreshes while nothing changes, so resting health still creeps up. */
 	private static final int PANEL_TICKS = 5;
 
 	/** Game ticks between saves of changed progress. */
