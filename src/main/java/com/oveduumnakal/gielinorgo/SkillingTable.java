@@ -23,14 +23,19 @@ import com.google.gson.JsonParseException;
 /**
  * Which species a gathering skill brings, loaded from the bundled {@code skilling.json}
  * ({@code scripts/skilling-species.json} is the source). Each skill has a list of species with the skill level they
- * start at, and a few species are exclusive: met only while skilling, one time in so many.
+ * start at, and a few species are exclusive: met only while skilling, one time in so many. Both the picks and the
+ * exclusive odds follow the tier of the species: they are multiplied by {@link Rarity#wildFactor()}, so a Rare
+ * species is met far less often than a Common one, as it is for monsters.
  */
 final class SkillingTable
 {
 	/** Resource path of the bundled list, relative to this package. */
 	static final String RESOURCE = "skilling.json";
 
-	/** Added to a species' level when weighing the picks, so stronger species are likelier as the skill grows. */
+	/**
+	 * Added to a species' skill level when weighing the picks, so stronger species are likelier as the skill grows.
+	 * The weight is then multiplied by the species' {@link Rarity#wildFactor()}.
+	 */
 	static final int WEIGHT_BASE = 10;
 
 	private final Map<String, List<Row>> bySkill = new HashMap<>();
@@ -125,8 +130,9 @@ final class SkillingTable
 	}
 
 	/**
-	 * Picks a species for an XP drop. An exclusive species of the skill comes first at its odds; otherwise one of the
-	 * species the skill level has reached, stronger ones likelier.
+	 * Picks a species for an XP drop. An exclusive species of the skill comes first at its odds times the factor of
+	 * its tier ({@link Rarity#wildFactor()}, so 1 in 20 becomes about 1 in 133 for an Epic one); otherwise one of the
+	 * species the skill level has reached, stronger ones likelier and higher tiers rarer.
 	 *
 	 * @param skill the skill's name in capitals, such as {@code FISHING}
 	 * @param skillLevel the player's level in that skill
@@ -137,12 +143,12 @@ final class SkillingTable
 	{
 		for (Row row : exclusiveBySkill.getOrDefault(skill, Collections.emptyList()))
 		{
-			if (skillLevel >= row.minLevel && random.nextInt(Math.max(1, row.oneIn)) == 0)
+			if (skillLevel >= row.minLevel && random.nextDouble() * Math.max(1, row.oneIn) < row.factor())
 				return row.species;
 		}
 
 		List<Row> open = new ArrayList<>();
-		int total = 0;
+		double total = 0;
 		for (Row row : bySkill.getOrDefault(skill, Collections.emptyList()))
 		{
 			if (skillLevel >= row.minLevel)
@@ -155,7 +161,7 @@ final class SkillingTable
 		if (open.isEmpty())
 			return null;
 
-		int roll = random.nextInt(total);
+		double roll = random.nextDouble() * total;
 		for (Row row : open)
 		{
 			roll -= row.weight();
@@ -164,6 +170,18 @@ final class SkillingTable
 		}
 
 		return open.get(open.size() - 1).species;
+	}
+
+	/**
+	 * Weighs one species among the picks of a skill: its level weight times its tier factor.
+	 *
+	 * @param species the species
+	 * @param minLevel the skill level the species starts at
+	 * @return {@link #WEIGHT_BASE} plus {@code minLevel}, times {@link Rarity#wildFactor()} of the species' tier
+	 */
+	static double weight(Species species, int minLevel)
+	{
+		return (WEIGHT_BASE + minLevel) * species.rarity().wildFactor();
 	}
 
 	/**
@@ -246,9 +264,14 @@ final class SkillingTable
 			this.oneIn = oneIn;
 		}
 
-		int weight()
+		double weight()
 		{
-			return WEIGHT_BASE + minLevel;
+			return SkillingTable.weight(species, minLevel);
+		}
+
+		double factor()
+		{
+			return species.rarity().wildFactor();
 		}
 	}
 }
