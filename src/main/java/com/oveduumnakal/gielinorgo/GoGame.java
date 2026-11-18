@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -483,16 +484,133 @@ final class GoGame
 		if (gained > 0)
 			payTasks(startTasks().gainedXp(gained));
 
+		trainTeam(gained, false);
+	}
+
+	/**
+	 * Turns OSRS XP into creature XP and shares it across the team.
+	 *
+	 * @param gained OSRS XP gained
+	 * @param equally true to share equally with no extra for the lead, false for the usual lead share
+	 * @return the creature XP handed out, 0 when the team is empty or the XP did not make a whole point
+	 */
+	private long trainTeam(int gained, boolean equally)
+	{
 		if (gained <= 0 || data.team.isEmpty())
-			return;
+			return 0;
 
 		xpCarry += gained;
 		long creatureXp = xpCarry / XpRules.OSRS_XP_PER_CREATURE_XP;
 		if (creatureXp == 0)
-			return;
+			return 0;
 
 		xpCarry -= creatureXp * XpRules.OSRS_XP_PER_CREATURE_XP;
-		shareXp(creatureXp);
+		shareXp(creatureXp, equally);
+		return creatureXp;
+	}
+
+	/**
+	 * Credits XP gained while the plugin was not watching: it trains the team (shared equally, the lead gets no extra),
+	 * and pays specialty jars, healing items and Bronze jars for levels gained. It never pays tasks, days played or
+	 * walking rewards, and never reads the clock.
+	 *
+	 * @param result what the login's offline XP is worth
+	 */
+	void addOfflineXp(OfflineXp.Result result)
+	{
+		if (result.isEmpty())
+			return;
+
+		String capped = result.capped() ? " (capped)" : "";
+		long trained = (xpCarry + result.totalXp()) / XpRules.OSRS_XP_PER_CREATURE_XP;
+		boolean told = false;
+		if (trained > 0 && !data.team.isEmpty())
+		{
+			tell("Welcome back: your team trained +" + String.format(Locale.ROOT, "%,d", trained)
+				+ " XP while you were away" + capped, Tone.GOOD);
+			told = true;
+		}
+
+		trainTeam(result.totalXp(), true);
+		int jars = 0;
+		JarType pictured = null;
+		int most = 0;
+		for (Map.Entry<JarType, Integer> found : result.jars().entrySet())
+		{
+			data.addJars(found.getKey(), found.getValue());
+			jars += found.getValue();
+			if (found.getValue() > most)
+			{
+				most = found.getValue();
+				pictured = found.getKey();
+			}
+		}
+
+		int levelJars = result.levelUps() * JARS_PER_LEVEL_UP;
+		if (levelJars > 0)
+		{
+			data.addJars(JarType.BRONZE, levelJars);
+			jars += levelJars;
+			if (levelJars > most)
+				pictured = JarType.BRONZE;
+		}
+
+		int items = 0;
+		ItemType shown = null;
+		most = 0;
+		for (Map.Entry<ItemType, Integer> found : result.items().entrySet())
+		{
+			data.addItems(found.getKey(), found.getValue());
+			items += found.getValue();
+			if (found.getValue() > most)
+			{
+				most = found.getValue();
+				shown = found.getKey();
+			}
+		}
+
+		dirty = true;
+		if (jars > 0)
+		{
+			tell("Found " + (jars == 1 ? "a jar" : jars + " jars") + " while you were away" + (told ? "" : capped),
+				Tone.FIND, pictured);
+			told = true;
+		}
+
+		if (items > 0)
+			notices.accept(Notice.playerItem("Found " + (items == 1 ? "an item" : items + " items")
+				+ " while you were away" + (told ? "" : capped), Tone.FIND, shown));
+	}
+
+	/**
+	 * Writes the OSRS XP the client reported into the save's snapshot, for the next login to compare against.
+	 *
+	 * @param xp the current XP by {@code Skill} name; only values above zero are kept
+	 * @return true when the snapshot changed and the save needs writing
+	 */
+	boolean stampXp(Map<String, Integer> xp)
+	{
+		boolean changed = false;
+		for (Map.Entry<String, Integer> entry : xp.entrySet())
+		{
+			Integer value = entry.getValue();
+			if (value == null || value <= 0 || "OVERALL".equals(entry.getKey()))
+				continue;
+
+			Integer old = data.osrsXp.put(entry.getKey(), value);
+			changed |= !value.equals(old);
+		}
+
+		if (changed)
+			dirty = true;
+
+		return changed;
+	}
+
+	/** @return a copy of the OSRS XP snapshot the save holds, by {@code Skill} name */
+	Map<String, Integer> xpSnapshot()
+	{
+		return new HashMap<>(data.osrsXp);
 	}
 
 	/**
@@ -3280,6 +3398,18 @@ final class GoGame
 
 	private void shareXp(long creatureXp)
 	{
+		shareXp(creatureXp, false);
+	}
+
+	/**
+	 * Shares creature XP across the team, applies each creature's bond bonus, and tells the player what grew, evolved
+	 * or learned.
+	 *
+	 * @param creatureXp creature XP to hand out
+	 * @param equally true to share equally with no extra for the lead
+	 */
+	private void shareXp(long creatureXp, boolean equally)
+	{
 		int[] before = new int[data.team.size()];
 		for (int i = 0; i < before.length; i++)
 			before[i] = data.team.get(i).level();
@@ -3288,7 +3418,11 @@ final class GoGame
 		for (int i = 0; i < before.length; i++)
 			xpBefore[i] = data.team.get(i).xp;
 
-		XpRules.share(data.team, creatureXp);
+		if (equally)
+			XpRules.shareEqually(data.team, creatureXp, random);
+		else
+			XpRules.share(data.team, creatureXp);
+
 		for (int i = 0; i < before.length; i++)
 		{
 			Creature member = data.team.get(i);

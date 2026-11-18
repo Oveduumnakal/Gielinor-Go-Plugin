@@ -235,6 +235,52 @@ public class DataTest
 	}
 
 	@Test
+	public void anOldSaveLoadsWithNoXpSnapshot()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"team\":[{\"species\":\"goblin\",\"xp\":5}]}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+
+		assertTrue(loaded.osrsXp.isEmpty());
+	}
+
+	@Test
+	public void theXpSnapshotSurvivesARoundTrip()
+	{
+		MapStore store = new MapStore();
+		GoPersistence persistence = new GoPersistence(store, gson);
+		SaveData data = new SaveData();
+		data.osrsXp.put("MINING", 123_456);
+
+		persistence.save(data);
+
+		assertEquals(Integer.valueOf(123_456), persistence.load().osrsXp.get("MINING"));
+	}
+
+	@Test
+	public void negativeAndNullSnapshotEntriesAreDropped()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"osrsXp\":{\"MINING\":-4,\"FISHING\":null,"
+			+ "\"OVERALL\":500,\"ATTACK\":77}}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+
+		assertEquals(1, loaded.osrsXp.size());
+		assertEquals(Integer.valueOf(77), loaded.osrsXp.get("ATTACK"));
+	}
+
+	@Test
+	public void aNullSnapshotLoadsAsEmpty()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"osrsXp\":null}");
+
+		assertTrue(new GoPersistence(store, gson).load().osrsXp.isEmpty());
+	}
+
+	@Test
 	public void anOldSaveWithoutANicknameStillLoads()
 	{
 		MapStore store = new MapStore();
