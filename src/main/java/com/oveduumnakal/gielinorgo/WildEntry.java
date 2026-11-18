@@ -20,6 +20,8 @@ final class WildEntry
 	private boolean battled;
 	private boolean weakened;
 	private int npcId;
+	private boolean firstMeeting;
+	private volatile WildRecord record;
 
 	WildEntry(int wildId, Species species, int level, int combatLevel)
 	{
@@ -98,6 +100,40 @@ final class WildEntry
 	int npcId()
 	{
 		return npcId;
+	}
+
+	/**
+	 * Notes whether this creature's appearance was the first time its species was ever seen.
+	 *
+	 * @param first true when the species was new to the player
+	 * @return this entry
+	 */
+	WildEntry withFirstMeeting(boolean first)
+	{
+		this.firstMeeting = first;
+		return this;
+	}
+
+	/** @return whether this creature's appearance was the first time its species was ever seen */
+	boolean firstMeeting()
+	{
+		return firstMeeting;
+	}
+
+	/** @return what the Creature Log knows of this species, or null until the plugin has worked it out */
+	WildRecord record()
+	{
+		return record;
+	}
+
+	/**
+	 * Stores what the Creature Log knows of this species, for the overlay to read.
+	 *
+	 * @param record the record
+	 */
+	void record(WildRecord record)
+	{
+		this.record = record;
 	}
 
 	/** @return the creature's own id; no two wild creatures share one, and it is not a monster's index */

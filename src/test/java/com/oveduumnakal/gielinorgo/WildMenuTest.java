@@ -116,4 +116,36 @@ public class WildMenuTest
 		assertFalse(WildMenu.leftClickAllowed(LeftClickMode.NEVER, false));
 		assertFalse(WildMenu.leftClickAllowed(LeftClickMode.NEVER, true));
 	}
+
+	@Test
+	public void targetWithoutARecordIsTheOldText()
+	{
+		assertEquals("<col=4aa3ff>Chicken</col> (Lv 3)", WildMenu.target("", "Chicken", 0x4AA3FF, 3, null));
+		assertEquals("Gilded <col=4aa3ff>Chicken</col> (Lv 3)",
+			WildMenu.target("Gilded ", "Chicken", 0x4AA3FF, 3, null));
+	}
+
+	@Test
+	public void targetAddsTheRecordWords()
+	{
+		assertEquals("<col=4aa3ff>Chicken</col> (Lv 3 - New)",
+			WildMenu.target("", "Chicken", 0x4AA3FF, 3, WildRecord.of(0, true)));
+		assertEquals("<col=4aa3ff>Chicken</col> (Lv 3 - Seen)",
+			WildMenu.target("", "Chicken", 0x4AA3FF, 3, WildRecord.of(0, false)));
+		assertEquals("Gilded <col=4aa3ff>Chicken</col> (Lv 12 - Caught)",
+			WildMenu.target("Gilded ", "Chicken", 0x4AA3FF, 12, WildRecord.of(4, false)));
+	}
+
+	@Test
+	public void targetKeepsLeadingZeroInTheHexColour()
+	{
+		assertEquals("<col=00ff00>Imp</col> (Lv 7 - Seen)",
+			WildMenu.target("", "Imp", 0x00FF00, 7, WildRecord.of(0, false)));
+	}
+
+	@Test
+	public void targetIgnoresTheAlphaByteOfTheColour()
+	{
+		assertEquals("<col=4aa3ff>Imp</col> (Lv 7)", WildMenu.target("", "Imp", 0xFF4AA3FF, 7, null));
+	}
 }
