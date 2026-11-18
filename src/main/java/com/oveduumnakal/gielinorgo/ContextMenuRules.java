@@ -14,9 +14,9 @@ import java.util.function.Consumer;
  * What a creature's menu offers, and when each item is dim: one rule set for the menu a click or Enter opens on a Party
  * row and for the Summary page's actions. The items come in a fixed order with Summary first, a dim item says why it
  * is dim beside it, and an item the creature cannot use at all is not offered. Make lead is dim for the lead and during
- * an Elite run; Move to storage is dim during an Elite run and unless {@link TeamSwapRule} allows it here; Pin to
- * tracker stays dim until the tracker exists; Use item is dim when no owned item would help; Revive only exists for
- * a fainted creature. Pure rules over plain values, tested without a window. Holds no RuneLite types.
+ * an Elite run; Move to storage is dim during an Elite run and unless {@link TeamSwapRule} allows it here; Use
+ * item is dim when no owned item would help; Revive only exists for a fainted creature. Pure rules over plain values,
+ * tested without a window. Holds no RuneLite types.
  */
 final class ContextMenuRules
 {
@@ -25,9 +25,6 @@ final class ContextMenuRules
 
 	/** The label of the item that makes a creature the lead. */
 	static final String MAKE_LEAD = "Make lead";
-
-	/** The label of the item that pins a creature to the on-screen tracker. */
-	static final String PIN = "Pin to tracker";
 
 	/** The label of the item that moves a creature to storage. */
 	static final String STORAGE = "Move to storage";
@@ -43,9 +40,6 @@ final class ContextMenuRules
 
 	/** The label of the item that brings a fainted creature back. */
 	static final String REVIVE = "Revive";
-
-	/** Why Pin to tracker is dim. */
-	static final String PIN_REASON = "Coming with the tracker";
 
 	/** Why Make lead and Move to storage are dim during an Elite run. */
 	static final String ELITE_REASON = "Finish the Elite run";
@@ -150,7 +144,6 @@ final class ContextMenuRules
 	{
 		List<ContextMenu.Item> list = new ArrayList<>();
 		list.add(makeLead(facts, commands));
-		list.add(ContextMenu.Item.disabled(PIN, PIN_REASON));
 		list.add(moveToStorage(facts, commands));
 		list.add(ContextMenu.Item.of(RENAME, commands::rename));
 		list.add(ContextMenu.Item.of(MOVES, commands::moves));

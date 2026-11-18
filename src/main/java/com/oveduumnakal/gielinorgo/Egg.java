@@ -23,6 +23,9 @@ final class Egg
 	/** The species key of a boss egg, or null for an ordinary egg that hatches into a random creature. */
 	String species;
 
+	/** Whether the player pinned this egg to the on-screen tracker. Absent, and so false, in older saves. */
+	boolean pinned;
+
 	/** Used by Gson. */
 	Egg()
 	{

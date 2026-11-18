@@ -24,8 +24,15 @@ final class TaskView
 		private final boolean done;
 		private final String reward;
 		private final boolean weekly;
+		private final boolean pinned;
 
 		Row(String label, int progress, int goal, boolean done, String reward, boolean weekly)
+		{
+			this(label, progress, goal, done, reward, weekly, false);
+		}
+
+		private Row(String label, int progress, int goal, boolean done, String reward, boolean weekly,
+			boolean pinned)
 		{
 			this.label = label;
 			this.progress = progress;
@@ -33,6 +40,24 @@ final class TaskView
 			this.done = done;
 			this.reward = reward;
 			this.weekly = weekly;
+			this.pinned = pinned;
+		}
+
+		/**
+		 * Copies the row with its pin.
+		 *
+		 * @param isPinned whether the task is pinned to the tracker
+		 * @return the new row
+		 */
+		Row withPinned(boolean isPinned)
+		{
+			return new Row(label, progress, goal, done, reward, weekly, isPinned);
+		}
+
+		/** @return whether the task is pinned to the on-screen tracker */
+		boolean pinned()
+		{
+			return pinned;
 		}
 
 		/** @return the words the player reads, such as {@code Catch 3 Ranged creatures} */

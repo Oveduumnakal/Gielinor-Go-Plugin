@@ -463,8 +463,23 @@ final class WindowStyle
 	 */
 	void text(Graphics2D g, String s, int x, int baselineY, Font font, ThemeColor colour)
 	{
+		text(g, s, x, baselineY, font, color(colour));
+	}
+
+	/**
+	 * Draws text in a plain colour at a baseline, for a colour that is not part of the theme, such as a rarity's.
+	 *
+	 * @param g the graphics
+	 * @param s the text
+	 * @param x the left edge
+	 * @param baselineY the baseline
+	 * @param font the font, from {@link #font}
+	 * @param colour the colour
+	 */
+	void text(Graphics2D g, String s, int x, int baselineY, Font font, Color colour)
+	{
 		g.setFont(font);
-		g.setColor(color(colour));
+		g.setColor(colour);
 		g.drawString(s, x, baselineY);
 	}
 

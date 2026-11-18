@@ -206,6 +206,9 @@ public class GielinorGoPlugin extends Plugin
 	private BattleDirector director;
 	private BattleControls battleControls;
 	private WindowInput controlsInput;
+	private TrackerOverlay trackerOverlay;
+	private TrackerModel trackerModel;
+	private TrackerView lastTracker = TrackerView.NONE;
 	private WildCatchMenu wildCatchMenu;
 	private WildMenuOverlay wildMenuOverlay;
 	private WildMenuInput wildMenuInput;
@@ -313,6 +316,7 @@ public class GielinorGoPlugin extends Plugin
 		clientToolbar.addNavigation(navButton);
 		startWindow();
 		startControls();
+		startTracker();
 		startWildMenu();
 		clientThread.invoke(this::startOnClientThread);
 	}
@@ -320,6 +324,7 @@ public class GielinorGoPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
+		stopTracker();
 		stopWildMenu();
 		stopControls();
 		stopWindow();
@@ -455,6 +460,7 @@ public class GielinorGoPlugin extends Plugin
 		closePaintedMenu();
 		choiceOpen = false;
 		battleControls.model().show(null, BattleControlsModel.Keys.NONE);
+		clearTracker();
 		pendingLines.clear();
 		saveNow();
 		trades.clear();
@@ -661,6 +667,7 @@ public class GielinorGoPlugin extends Plugin
 			offerRandomCandidate();
 		}
 
+		trackerTick();
 		boolean changed = game.takeDirty();
 		unsaved |= changed;
 		if (changed || ticks % PANEL_TICKS == 0)
@@ -1112,6 +1119,7 @@ public class GielinorGoPlugin extends Plugin
 		helloAsksBack = true;
 		unsaved = false;
 		tracker.clear();
+		clearTracker();
 		refreshPanel();
 	}
 
@@ -1128,6 +1136,32 @@ public class GielinorGoPlugin extends Plugin
 	{
 		PanelState state = game.snapshot().withBattle(director.view());
 		publishWindow(state);
+		lastTracker = state.tracker();
+		trackerOverlay.publish(trackerModel.frame(lastTracker, System.currentTimeMillis()));
+	}
+
+	/**
+	 * Moves the tracker on one game tick: hands it the pinned eggs that hatched, unpins the tasks whose "Done!" has
+	 * shown long enough, and draws the lines again so a finished line leaves on time rather than at the next refresh.
+	 */
+	private void trackerTick()
+	{
+		long now = System.currentTimeMillis();
+		for (String label : game.takePinNews())
+			trackerModel.hatched(label, now);
+
+		for (String id : trackerModel.expired(now))
+			game.unpinTask(TrackerView.taskSlot(id));
+
+		trackerOverlay.publish(trackerModel.frame(lastTracker, now));
+	}
+
+	/** Forgets what the tracker shows, for when there is no save to show it from. */
+	private void clearTracker()
+	{
+		trackerModel.clear();
+		lastTracker = TrackerView.NONE;
+		trackerOverlay.publish(Collections.emptyList());
 	}
 
 	/** @return the party members who also play, named as the party service names them */
@@ -2768,6 +2802,24 @@ public class GielinorGoPlugin extends Plugin
 			}
 
 			@Override
+			public void pinTask(int slot, boolean pinned)
+			{
+				onGameThread(() ->
+				{
+					if (pinned)
+						game.pinTask(slot);
+					else
+						game.unpinTask(slot);
+				});
+			}
+
+			@Override
+			public void pinEgg(TradePick pick, boolean pinned)
+			{
+				onGameThread(() -> game.pinEgg(pick, pinned));
+			}
+
+			@Override
 			public void pickTitle(String title)
 			{
 				onGameThread(() -> game.pickTitle(title));
@@ -2893,6 +2945,23 @@ public class GielinorGoPlugin extends Plugin
 		overlayManager.add(battleControls);
 		mouseManager.registerMouseListener(controlsInput);
 		mouseManager.registerMouseWheelListener(controlsInput);
+	}
+
+	/** Creates the pinned tracker and registers it. It takes no mouse input, so every click goes to the game. */
+	private void startTracker()
+	{
+		trackerModel = new TrackerModel();
+		trackerOverlay = new TrackerOverlay(config::windowStyle, config::windowFraction, client::getCanvasWidth,
+			client::getCanvasHeight, config::showTracker, director::active, () -> loaded,
+			() -> onGameThread(game::unpinAll));
+		overlayManager.add(trackerOverlay);
+	}
+
+	/** Unregisters the pinned tracker. */
+	private void stopTracker()
+	{
+		overlayManager.remove(trackerOverlay);
+		trackerOverlay.publish(Collections.emptyList());
 	}
 
 	/** Creates the painted wild creature menu, its overlay and its mouse and key input, and registers them. */

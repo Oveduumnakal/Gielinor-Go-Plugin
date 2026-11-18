@@ -114,6 +114,8 @@ A Creature Log, daily tasks and daily events give you goals.
   them by level, style, rarity, rating, gender, gilded or nickname, showing or hiding each. (#212)
 - **Wandering lead.** When you stand still your lead creature wanders around within 3 tiles of you, and walks back
   to your trail when you set off. A setting turns it off. (#208)
+- **Pinned tracker.** Pin daily and weekly tasks and carried eggs to a small box on the game screen with live
+  progress. (#216)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
