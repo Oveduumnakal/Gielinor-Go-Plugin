@@ -70,7 +70,8 @@ final class Icons
 
 	/**
 	 * Draws the mark of a combat style: a dagger for Stab, a curved blade for Slash, a hammer for Crush, a bow for
-	 * Ranged and a star of four points for Magic.
+	 * Ranged and a staff for Magic, from the bundled pictures ({@link StyleIcons}). When a picture is missing it draws
+	 * the old vector marks instead: a dagger, a curved blade, a hammer, a bow and a star of four points.
 	 *
 	 * @param g the graphics, with the colour set
 	 * @param style the style
@@ -80,6 +81,9 @@ final class Icons
 	 */
 	static void style(Graphics2D g, CombatType style, double x, double y, double size)
 	{
+		if (StyleIcons.draw(g, style, x, y, size))
+			return;
+
 		AffineTransform saved = g.getTransform();
 		Stroke stroke = g.getStroke();
 		g.translate(x, y);
