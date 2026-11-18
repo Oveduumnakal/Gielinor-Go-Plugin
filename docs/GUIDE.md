@@ -14,17 +14,29 @@ Every feature and every number, in detail. For the short version, see the [READM
   wanders a step or two (never more than 3 tiles from where it appeared), stays about 3 minutes (the clock stops
   while you fight or catch it) and fades out over 2 seconds when its time is up, when you walk more than 25 tiles away or change floors. If there is no free
   tile you can walk to, no wild creature appears. Click it to **Battle** it (a plain left click does that), or
-  right-click it for **Battle** and **Catch**. Hover over it to see its name, level, style, rarity and whether you have met or caught its species (switch this off with **Wild creature tooltip**; it hides while a menu is open and during a battle). Once your lead has beaten it and it lies knocked out, a plain left
+  right-click it for **Battle** and **Catch**; with two or more jars, Catch opens a list: the jars worth throwing first (best odds, the cheaper one on a tie), a line, then every other jar you own, each with its odds and how many you have. Hover over it to see its name, level, style, rarity and whether you have met or caught its species (switch this off with **Wild creature tooltip**; it hides while a menu is open and during a battle). Once your lead has beaten it and it lies knocked out, a plain left
   click throws your selected jar instead. When no creature can fight (your team is empty, or, with **Choose battle actions** on, your lead is too tired;
   with it off, the whole team is), Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
   behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
   finds (the **Wild creature rarity** setting is the chance for Common monsters; Uncommon ones turn wild 0.6 times as
-  often, Rare 0.35, Epic 0.15 and Legendary 0.05). At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
+  often, Rare 0.35, Epic 0.15 and Legendary 0.05). Hunter creatures such as pyre foxes, kebbits, salamanders, moths,
+  antelope and implings have no combat level in the game; they turn wild like any other monster and their level is
+  their Hunter level. At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
   the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
   seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
   While you are in combat with a real monster (and for 5 seconds after), wild creatures are hidden: not drawn, not
   clickable, and none new appear; they return where they were, unless their time ran out meanwhile.
+
+- **The painted wild creature menu**
+
+  The **Wild creature menu** setting chooses what a right click on a wild creature opens. **Game** (the default) is
+  the game's own menu with Battle and Catch added. **Painted** is a menu in the window's style: the creature's name
+  and level, then Battle and Catch. With two or more jars, Catch opens a list beside the menu (hover it, click it,
+  or press Right): the jars worth throwing first, a thin line, then every other jar, each with its odds and how
+  many you have. Up, Down, Left, Right, Enter and Esc work too. Hold **Shift** while you right-click to get the
+  game's own menu for that tile instead (Walk here, Examine). A left click works the same in both modes, and the
+  game's own menu is used if the painted one ever fails.
 
 - **While skilling**
 
@@ -169,6 +181,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   follower, the Party row and the battle scenes. Creatures that hatch, evolve or come from a trade, and creatures
   caught before this was added, look like the species' usual monster. Only you can see it, it cannot be clicked, and
   you can switch it off in the settings.
+  When you stand still it wanders around within 3 tiles of you, and walks back to your trail when you set off; the
+  setting "Lead wanders when you stop" turns that off.
 
 - **Every creature is one of a kind**
 
@@ -325,7 +339,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Releasing creatures**
 
   Right-click a creature in Storage and choose **Release**, or press **Select** at the top of the Storage page, tick
-  as many creatures as you like and press **Release selected**. One confirm lists the names and the total XP. Your
+  as many creatures as you like and press **Release selected**. Filter first, then **Tick all shown**, to release a
+  whole set at once. One confirm lists the names and the total XP. Your
   lead creature gains creature XP for each one: 20 plus 4 for every level of the released creature, times 1 for a
   Common, 1.5 for an Uncommon, 2 for a Rare, 3 for an Epic and 4 for a Legendary. A Level 10 Common pays 60 XP. The
   XP counts like any other, so it can level the lead, teach it moves and evolve it. A release never pays jars or
@@ -585,8 +600,19 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Bag, Storage, Collection, Tasks and Battle**
 
   **Bag** holds your jars, healing items (hover for what each does) and the eggs you carry. **Storage** holds the
-  creatures you are not carrying. **Collection** is the Creature Log of every species you can meet in the game
-  (1,096): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
+  creatures you are not carrying. On Storage, **Sort** orders the list by level, species, rarity, date caught or
+  nickname, and **Filter** shows only some creatures: pick a level, style, rarity, rating, gender, gilded or
+  nicknamed, then click its chip to flip between showing and hiding it. Your choice is kept until you restart
+  RuneLite. **Select** with **Tick all shown** ticks only what you can see, and hidden creatures are never released.
+  **View** switches Storage between **List**, **Box** and **By species** (it starts on List each time RuneLite
+  starts). In **Box**, creatures sit in a grid of eight columns with a card beside it for the one you point at: drag
+  one onto another to swap them, or onto an empty cell to put it last, and the order is saved. A plain click still
+  moves the creature to your team. Dragging works with Sort on Box order, no filter and Select off. With the keys, the
+  arrows move between cells, and **Move within box** in a creature's menu carries it: pick a place with the arrows,
+  press Enter to put it there and Esc to cancel. **By species** puts a heading over each species with how many you
+  have and the best level. **Select** works in every view, and in By species a click on a heading ticks the group.
+  **Collection** is the Creature Log of every species you can meet in the game
+  (1,139): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
   Click a species you have seen or caught for its examine text, evolution line (stages you have not met show as
   `???`), how many you have caught and whether you own a gilded one, and right-click it for **Open wiki**. **Tasks**
   has your daily and weekly tasks, the login streak and the milestone list. **Battle** lists the City Champions, the

@@ -50,6 +50,7 @@ public class ExamineTableTest
 		assertEquals(0, ExamineTable.empty().size());
 	}
 
+	/** Every species has a line or is on the short list; Hunter creatures have no wiki monster box and are left out. */
 	@Test
 	public void everySpeciesHasALineOrIsOnTheShortList() throws IOException
 	{
@@ -58,6 +59,9 @@ public class ExamineTableTest
 
 		for (Species entry : species.all())
 		{
+			if (entry.hunter())
+				continue;
+
 			String line = table.textFor(entry.key());
 			if (WITHOUT.contains(entry.key()))
 			{

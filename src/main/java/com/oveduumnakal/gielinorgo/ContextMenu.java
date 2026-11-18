@@ -49,13 +49,17 @@ final class ContextMenu
 		private final boolean enabled;
 		private final String reason;
 		private final Runnable action;
+		private final boolean separator;
+		private final boolean opens;
 
-		private Item(String label, boolean enabled, String reason, Runnable action)
+		private Item(String label, boolean enabled, String reason, Runnable action, boolean separator, boolean opens)
 		{
 			this.label = label;
 			this.enabled = enabled;
 			this.reason = reason == null ? "" : reason;
 			this.action = action;
+			this.separator = separator;
+			this.opens = opens;
 		}
 
 		/**
@@ -65,7 +69,7 @@ final class ContextMenu
 		 */
 		static Item of(String label, Runnable action)
 		{
-			return new Item(label, true, null, action);
+			return new Item(label, true, null, action, false, false);
 		}
 
 		/**
@@ -75,7 +79,58 @@ final class ContextMenu
 		 */
 		static Item disabled(String label, String reason)
 		{
-			return new Item(label, false, reason, null);
+			return new Item(label, false, reason, null, false, false);
+		}
+
+		/**
+		 * @param label the text
+		 * @param detail a short text drawn at the right edge, such as the odds of a jar; may be empty
+		 * @param action what to do when it is chosen
+		 * @return an enabled item with a detail beside it
+		 */
+		static Item detailed(String label, String detail, Runnable action)
+		{
+			return new Item(label, true, detail, action, false, false);
+		}
+
+		/**
+		 * An item that opens a nested list. It is drawn with an arrow, and choosing it runs the action without
+		 * closing the menu: the action is what shows the list.
+		 *
+		 * @param label the text
+		 * @param action what to do when it is chosen
+		 * @return an enabled item that keeps the menu open
+		 */
+		static Item opener(String label, Runnable action)
+		{
+			return new Item(label, true, null, action, false, true);
+		}
+
+		/**
+		 * @param label the text, drawn dim, such as the name of what the menu is about
+		 * @return a row that cannot be chosen and is skipped by the keys
+		 */
+		static Item header(String label)
+		{
+			return new Item(label, false, null, null, false, false);
+		}
+
+		/** @return a thin line between two groups of items; it cannot be chosen and the keys skip it */
+		static Item line()
+		{
+			return new Item("", false, null, null, true, false);
+		}
+
+		/** @return whether this is the thin line made by {@link #line()} */
+		boolean isLine()
+		{
+			return separator;
+		}
+
+		/** @return whether choosing it shows a nested list and keeps the menu open */
+		boolean opens()
+		{
+			return opens;
 		}
 
 		/** @return the text */
@@ -172,21 +227,54 @@ final class ContextMenu
 	{
 		int pad = style.metrics().pad;
 		itemHeight = fm.getHeight() + pad / 2;
-		int gap = 2 * pad;
-		int widest = 0;
-		for (Item item : items)
-		{
-			int w = fm.stringWidth(item.label) + (item.reason.isEmpty() ? 0 : gap + fm.stringWidth(item.reason));
-			widest = Math.max(widest, w);
-		}
-
-		Dimension size = new Dimension(widest + 2 * pad, items.size() * itemHeight + pad);
+		Dimension size = size(style, fm);
 		bounds = Tooltip.place(size, anchor, canvas, 0);
 		List<Rectangle> list = new ArrayList<>();
 		for (int i = 0; i < items.size(); i++)
 			list.add(new Rectangle(bounds.x, bounds.y + pad / 2 + i * itemHeight, bounds.width, itemHeight));
 
 		boxes = list;
+	}
+
+	/**
+	 * Measures the menu as it would be laid out now, without placing it.
+	 *
+	 * @param style the style
+	 * @param fm the measures of {@link #font}
+	 * @return the width and height of the menu's box
+	 */
+	Dimension size(WindowStyle style, FontMetrics fm)
+	{
+		int pad = style.metrics().pad;
+		int rowHeight = fm.getHeight() + pad / 2;
+		int gap = 2 * pad;
+		int widest = 0;
+		for (Item item : items)
+		{
+			int w = fm.stringWidth(item.label) + (item.reason.isEmpty() ? 0 : gap + fm.stringWidth(item.reason));
+			if (item.opens)
+				w += gap + arrowWidth(fm);
+
+			widest = Math.max(widest, w);
+		}
+
+		return new Dimension(widest + 2 * pad, items.size() * rowHeight + pad);
+	}
+
+	/**
+	 * Moves an open menu to a new anchor and works its boxes out again. A nested list uses it to sit beside the menu
+	 * that opened it.
+	 *
+	 * @param x the anchor's x
+	 * @param y the anchor's y
+	 * @param canvas the canvas bounds
+	 * @param style the style
+	 * @param fm the measures of {@link #font}
+	 */
+	void anchorAt(int x, int y, Rectangle canvas, WindowStyle style, FontMetrics fm)
+	{
+		anchor = new Point(x, y);
+		layout(canvas, style, fm);
 	}
 
 	/** @return the menu's box, by its final place */
@@ -256,8 +344,11 @@ final class ContextMenu
 		if (!open || highlight < 0 || !items.get(highlight).enabled)
 			return false;
 
-		Runnable action = items.get(highlight).action;
-		close();
+		Item item = items.get(highlight);
+		Runnable action = item.action;
+		if (!item.opens)
+			close();
+
 		if (action != null)
 			action.run();
 
@@ -401,15 +492,40 @@ final class ContextMenu
 				g.fillRect(box.x + style.metrics().border, box.y, box.width - 2 * style.metrics().border, box.height);
 			}
 
+			if (item.separator)
+			{
+				g.setColor(style.color(ThemeColor.ROW_BORDER));
+				g.fillRect(box.x + pad, box.y + box.height / 2, box.width - 2 * pad, 1);
+				continue;
+			}
+
 			int baseline = box.y + (box.height + fm.getAscent() - fm.getDescent()) / 2;
 			style.text(g, item.label, box.x + pad, baseline, font,
 				item.enabled ? ThemeColor.TEXT : ThemeColor.TAB_DISABLED_TEXT);
 			if (!item.reason.isEmpty())
 				style.text(g, item.reason, box.x + box.width - pad - fm.stringWidth(item.reason), baseline, font,
 					ThemeColor.SUBTEXT);
+
+			if (item.opens)
+				paintArrow(g, style, box, fm, pad);
 		}
 
 		g.setTransform(saved);
 		g.setComposite(savedComposite);
+	}
+
+	private static int arrowWidth(FontMetrics fm)
+	{
+		return Math.max(4, fm.getHeight() / 3);
+	}
+
+	private static void paintArrow(Graphics2D g, WindowStyle style, Rectangle box, FontMetrics fm, int pad)
+	{
+		int w = arrowWidth(fm);
+		int h = 2 * w;
+		int x = box.x + box.width - pad - w;
+		int y = box.y + (box.height - h) / 2;
+		g.setColor(style.color(ThemeColor.TEXT));
+		g.fillPolygon(new int[] {x, x + w, x}, new int[] {y, y + h / 2, y + h}, 3);
 	}
 }

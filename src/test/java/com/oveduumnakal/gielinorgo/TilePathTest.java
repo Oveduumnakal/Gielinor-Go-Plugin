@@ -362,4 +362,22 @@ public class TilePathTest
 
 		assertNull(ArenaSpots.lead(map.path(), 8, 7, 1.0, 2, 7, 12));
 	}
+
+	@Test
+	public void aFinderThatAvoidsATileNeverRoutesOverItAndLeavesTheOriginalAlone()
+	{
+		TilePath tiles = open(5).path();
+		TilePath around = tiles.avoiding(2, 2);
+
+		List<int[]> straight = tiles.route(0, 2, 4, 2, 10);
+		List<int[]> detour = around.route(0, 2, 4, 2, 10);
+
+		assertTrue(straight.stream().anyMatch(tile -> tile[0] == 2 && tile[1] == 2));
+		assertNotNull(detour);
+		assertEquals(4, detour.size());
+		assertFalse(detour.stream().anyMatch(tile -> tile[0] == 2 && tile[1] == 2));
+		assertNull(around.route(0, 0, 2, 2, 10));
+		assertFalse(around.standable(2, 2));
+		assertTrue(around.standable(1, 2));
+	}
 }

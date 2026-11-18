@@ -248,7 +248,7 @@ final class WindowPages implements WindowShell.PageActions
 		{
 			state.back();
 			storage.layout(body, style, panel.storage());
-			return storage.hits(panel.storage(), WindowShell.PAGE_ORDER);
+			return storage.hits(WindowShell.PAGE_ORDER);
 		}
 
 		if (current == WindowTab.BATTLE && panel != null && style != null)
@@ -773,19 +773,28 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		return tab == WindowTab.TASKS && tasks.released()
 			|| tab == WindowTab.COLLECTION && collection.released()
-			|| tab == WindowTab.STORAGE && storage.released()
+			|| tab == WindowTab.STORAGE && storageFlow.released(x, y)
 			|| tab == WindowTab.BATTLE && battle.released();
 	}
 
 	@Override
 	public int depth()
 	{
+		if (tab == WindowTab.STORAGE)
+			return storage.carrying() >= 0 ? 1 : 0;
+
 		return tab == WindowTab.PARTY ? state.depth() : 0;
 	}
 
 	@Override
 	public void back()
 	{
+		if (tab == WindowTab.STORAGE && storage.carrying() >= 0)
+		{
+			storage.stopCarrying();
+			return;
+		}
+
 		state.back();
 		shown = null;
 	}
@@ -796,6 +805,9 @@ final class WindowPages implements WindowShell.PageActions
 		PanelState panel = loaded();
 		if (panel != null && tab == WindowTab.COLLECTION)
 			return collectionKey(keyCode);
+
+		if (panel != null && tab == WindowTab.STORAGE)
+			return storageKey(keyCode);
 
 		if (panel != null && tab == WindowTab.BATTLE)
 			return battle.key(keyCode);
@@ -820,6 +832,16 @@ final class WindowPages implements WindowShell.PageActions
 			default:
 				return false;
 		}
+	}
+
+	private boolean storageKey(int keyCode)
+	{
+		int place = storage.keyTarget(keyCode, shell.focus().highlight());
+		if (place < 0)
+			return false;
+
+		shell.focus().highlightKey(StoragePage.rowId(place));
+		return true;
 	}
 
 	private boolean collectionKey(int keyCode)
@@ -965,7 +987,7 @@ final class WindowPages implements WindowShell.PageActions
 		}
 	}
 
-	private static FontMetrics metrics(Font font)
+	static FontMetrics metrics(Font font)
 	{
 		Graphics2D g = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics();
 		try
@@ -991,6 +1013,12 @@ final class WindowPages implements WindowShell.PageActions
 		public void modal(Modal dialog, TextBox box)
 		{
 			shell.openModal(dialog, box, clock.getAsLong());
+		}
+
+		@Override
+		public boolean keyboardLed()
+		{
+			return shell.focus().keyboardLed();
 		}
 
 		@Override

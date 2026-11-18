@@ -32,6 +32,8 @@ final class ScrollList
 	static final double WHEEL_ROWS = 1.5;
 
 	private int rowHeight = 1;
+	private int[] tops;
+	private boolean rowsScroll = true;
 	private int count;
 	private int barWidth = 8;
 	private int minThumb = 16;
@@ -70,12 +72,77 @@ final class ScrollList
 	 */
 	void layout(Rectangle viewport, int rowHeight, int count, WindowStyle style)
 	{
+		this.tops = null;
 		this.viewport = new Rectangle(viewport);
 		this.rowHeight = Math.max(1, rowHeight);
 		this.count = Math.max(0, count);
 		this.barWidth = Math.max(4, style.px(BAR_UNITS));
 		this.minThumb = Math.max(8, style.px(MIN_THUMB_UNITS));
 		setOffset(offset);
+	}
+
+	/**
+	 * Sets where and how the list lays out when its rows have different heights, such as headings among rows. Call
+	 * it in place of {@link #layout} each frame; the next {@link #layout} goes back to equal rows.
+	 *
+	 * @param viewport the visible area
+	 * @param heights the height of each row in pixels; one row for each entry
+	 * @param style the style, for the bar's size
+	 */
+	void layoutRows(Rectangle viewport, int[] heights, WindowStyle style)
+	{
+		int[] sums = new int[heights.length + 1];
+		int tallest = 1;
+		for (int i = 0; i < heights.length; i++)
+		{
+			int each = Math.max(1, heights[i]);
+			sums[i + 1] = sums[i] + each;
+			tallest = Math.max(tallest, each);
+		}
+
+		layout(viewport, tallest, heights.length, style);
+		this.tops = sums;
+		setOffset(offset);
+	}
+
+	/**
+	 * Chooses whether a drag that starts on a row scrolls the list. Turn it off where a drag on a row means
+	 * something else, such as moving a creature; the bar and the wheel still scroll.
+	 *
+	 * @param on whether dragging the rows scrolls the list
+	 */
+	void setRowDragScrolls(boolean on)
+	{
+		rowsScroll = on;
+	}
+
+	private int top(int index)
+	{
+		return tops == null ? index * rowHeight : tops[index];
+	}
+
+	private int heightOf(int index)
+	{
+		return tops == null ? rowHeight : tops[index + 1] - tops[index];
+	}
+
+	private int rowAtOffset(int y)
+	{
+		if (tops == null)
+			return y / rowHeight;
+
+		int low = 0;
+		int high = count - 1;
+		while (low < high)
+		{
+			int mid = (low + high + 1) >>> 1;
+			if (tops[mid] <= y)
+				low = mid;
+			else
+				high = mid - 1;
+		}
+
+		return low;
 	}
 
 	/** @return the visible area */
@@ -90,7 +157,7 @@ final class ScrollList
 		return count;
 	}
 
-	/** @return the height of one row in pixels */
+	/** @return the height of one row in pixels; with rows of different heights, the tallest */
 	int rowHeight()
 	{
 		return rowHeight;
@@ -99,7 +166,7 @@ final class ScrollList
 	/** @return the height of all the rows together */
 	int contentHeight()
 	{
-		return count * rowHeight;
+		return tops == null ? count * rowHeight : tops[count];
 	}
 
 	/** @return whether there is more than fits, so the bar shows and the list scrolls */
@@ -149,7 +216,7 @@ final class ScrollList
 	/** @return the index of the first row that shows, even in part; 0 when the list is empty */
 	int firstVisible()
 	{
-		return Math.min(Math.max(0, count - 1), offset() / rowHeight);
+		return count == 0 ? 0 : Math.min(count - 1, rowAtOffset(offset()));
 	}
 
 	/** @return the index of the last row that shows, even in part; -1 when the list is empty */
@@ -158,7 +225,7 @@ final class ScrollList
 		if (count == 0)
 			return -1;
 
-		return Math.min(count - 1, (offset() + viewport.height - 1) / rowHeight);
+		return Math.min(count - 1, rowAtOffset(offset() + viewport.height - 1));
 	}
 
 	/**
@@ -172,8 +239,8 @@ final class ScrollList
 		if (index < 0 || index >= count)
 			return null;
 
-		Rectangle box = new Rectangle(viewport.x, viewport.y - offset() + index * rowHeight, contentWidth(),
-			rowHeight);
+		Rectangle box = new Rectangle(viewport.x, viewport.y - offset() + top(index), contentWidth(),
+			heightOf(index));
 		Rectangle seen = box.intersection(new Rectangle(viewport.x, viewport.y, contentWidth(), viewport.height));
 		return seen.isEmpty() ? null : seen;
 	}
@@ -190,8 +257,11 @@ final class ScrollList
 		if (x < viewport.x || x >= viewport.x + contentWidth() || y < viewport.y || y >= viewport.y + viewport.height)
 			return -1;
 
-		int index = (y - viewport.y + offset()) / rowHeight;
-		return index >= 0 && index < count ? index : -1;
+		int at = y - viewport.y + offset();
+		if (count == 0 || at < 0 || at >= contentHeight())
+			return -1;
+
+		return rowAtOffset(at);
 	}
 
 	/**
@@ -204,8 +274,8 @@ final class ScrollList
 		if (index < 0 || index >= count)
 			return;
 
-		int top = index * rowHeight;
-		int bottom = top + rowHeight;
+		int top = top(index);
+		int bottom = top + heightOf(index);
 		if (top < offset)
 			setOffset(top);
 		else if (bottom > offset + viewport.height)
@@ -225,8 +295,8 @@ final class ScrollList
 		g.clipRect(viewport.x, viewport.y, viewport.width, viewport.height);
 		int last = lastVisible();
 		for (int i = firstVisible(); i <= last; i++)
-			painter.paint(g, i, new Rectangle(viewport.x, viewport.y - offset() + i * rowHeight, contentWidth(),
-				rowHeight));
+			painter.paint(g, i, new Rectangle(viewport.x, viewport.y - offset() + top(i), contentWidth(),
+				heightOf(i)));
 
 		g.setClip(saved);
 		paintBar(g, style);
@@ -322,6 +392,9 @@ final class ScrollList
 
 			return true;
 		}
+
+		if (!rowsScroll)
+			return true;
 
 		drag = Drag.PENDING;
 		dragStartY = y;

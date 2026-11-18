@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -364,5 +365,105 @@ public class ContextMenuTest
 		ContextMenu menu = open(false);
 		assertEquals(4, menu.items().size());
 		assertEquals(100, menu.anchor().x);
+	}
+
+	private static ContextMenu.Item itemOf(ContextMenu menu, int index)
+	{
+		return menu.items().get(index);
+	}
+
+	private ContextMenu openNested()
+	{
+		ContextMenu menu = new ContextMenu();
+		menu.open(Arrays.asList(
+			ContextMenu.Item.header("Chicken"),
+			ContextMenu.Item.of("Battle", () -> ran.add("Battle")),
+			ContextMenu.Item.line(),
+			ContextMenu.Item.opener("Catch", () -> ran.add("Catch")),
+			ContextMenu.Item.detailed("Bronze jar", "60% (x3)", () -> ran.add("Bronze"))), 100, 100, CANVAS, STYLE,
+			FM, false, 0);
+		return menu;
+	}
+
+	@Test
+	public void anOpenerRunsItsActionAndKeepsTheMenuOpen()
+	{
+		ContextMenu menu = openNested();
+		Rectangle box = menu.itemBounds(3);
+
+		boolean consumed = menu.onMousePressed(box.x + 5, box.y + 2, MouseEvent.BUTTON1);
+
+		assertTrue(consumed);
+		assertEquals(Collections.singletonList("Catch"), ran);
+		assertTrue(menu.isOpen());
+	}
+
+	@Test
+	public void anOpenerChosenByAKeyKeepsTheMenuOpenToo()
+	{
+		ContextMenu menu = openNested();
+		menu.move(1);
+		menu.move(1);
+
+		assertEquals(3, menu.highlight());
+		assertTrue(menu.activate());
+		assertTrue(menu.isOpen());
+		assertEquals(Collections.singletonList("Catch"), ran);
+	}
+
+	@Test
+	public void anItemWithADetailClosesTheMenuAndRuns()
+	{
+		ContextMenu menu = openNested();
+		Rectangle box = menu.itemBounds(4);
+
+		menu.onMousePressed(box.x + 5, box.y + 2, MouseEvent.BUTTON1);
+
+		assertEquals(Collections.singletonList("Bronze"), ran);
+		assertFalse(menu.isOpen());
+	}
+
+	@Test
+	public void theHeaderAndTheLineCannotBeChosenAndTheKeysSkipThem()
+	{
+		ContextMenu menu = openNested();
+		Rectangle header = menu.itemBounds(0);
+		Rectangle line = menu.itemBounds(2);
+
+		menu.onMousePressed(header.x + 5, header.y + 2, MouseEvent.BUTTON1);
+		menu.onMousePressed(line.x + 5, line.y + 2, MouseEvent.BUTTON1);
+
+		assertTrue(menu.isOpen());
+		assertTrue(ran.isEmpty());
+		assertTrue(itemOf(menu, 2).isLine());
+		menu.move(1);
+		assertEquals(1, menu.highlight());
+		menu.move(1);
+		assertEquals(3, menu.highlight());
+	}
+
+	@Test
+	public void theMenuIsWideEnoughForTheDetailAndTheArrow()
+	{
+		ContextMenu menu = openNested();
+		int needed = FM.stringWidth("Bronze jar") + FM.stringWidth("60% (x3)");
+
+		assertTrue(menu.bounds().width > needed);
+	}
+
+	@Test
+	public void aMenuWithALineAnArrowAndADetailPaints()
+	{
+		ContextMenu menu = openNested();
+		BufferedImage image = WidgetKit.canvas(500, 400);
+		Graphics2D g = WidgetKit.graphics(image);
+
+		menu.paint(g, STYLE, CANVAS, MotionMode.OFF, 1000);
+		g.dispose();
+
+		Rectangle b = menu.bounds();
+		assertTrue(WidgetKit.painted(image, b.x, b.y, b.width, b.height) > 0);
+		assertTrue(itemOf(menu, 3).opens());
+		assertFalse(itemOf(menu, 1).opens());
 	}
 }

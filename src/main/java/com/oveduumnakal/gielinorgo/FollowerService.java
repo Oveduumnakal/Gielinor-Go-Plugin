@@ -65,6 +65,8 @@ final class FollowerService
 	private final AnimationTable animations;
 	private final Function<String, Species> speciesLookup;
 	private final FollowerPath path = new FollowerPath();
+	private boolean wander;
+	private boolean strollFailed;
 	private CreatureBody body;
 	private String shownKey;
 	private boolean shownGilded;
@@ -146,6 +148,42 @@ final class FollowerService
 	}
 
 	/**
+	 * Sets whether the lead may wander near the player when the player stands still. Called once per game tick from
+	 * the setting. Turning it off while the lead is out wandering brings it back to the player.
+	 *
+	 * @param on true to let the lead wander
+	 */
+	void setWander(boolean on)
+	{
+		wander = on;
+	}
+
+	/**
+	 * Starts an idle stroll when one is due, or brings the lead back to the player's trail after one. The tile
+	 * search only runs when a stroll is actually due, once every few seconds, and never while the player walks. A
+	 * failure turns strolling off for the rest of the session and puts the lead down next to the player again.
+	 *
+	 * @param view the top level world view
+	 */
+	private void steerStroll(WorldView view)
+	{
+		try
+		{
+			path.setStrolling(wander && !strollFailed);
+			if (path.rejoinDue())
+				path.rejoin(ground(view, path.plane()), routerOver(view));
+			else if (path.strollDue())
+				path.startStroll(new CollisionGround(view, path.plane()).path());
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: the follower's stroll failed, turning it off", e);
+			strollFailed = true;
+			path.reset();
+		}
+	}
+
+	/**
 	 * Tells the path where the player is drawn right now, as a world tile with a fraction.
 	 *
 	 * @param view the top level world view
@@ -206,6 +244,10 @@ final class FollowerService
 		}
 
 		followDrawnCharacter(view);
+		if (!path.placed())
+			return;
+
+		steerStroll(view);
 		if (!path.placed())
 			return;
 

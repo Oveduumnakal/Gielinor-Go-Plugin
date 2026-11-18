@@ -4,19 +4,22 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 /**
- * What a press on the Storage page does: move a creature to the team, tick it, rename it, use an item on it, or
- * release it after a painted confirmation. A release only reaches {@link PanelActions} from the Yes button of a
- * confirmation whose default button is No; a gilded, strong, exceptional or nicknamed creature asks a second time.
- * Before a confirmed release is sent each creature is checked against the storage list as it is now, so a list that
- * changed while the box was open releases nothing it should not. Holds no RuneLite types.
+ * What a press on the Storage page does: move a creature to the team, tick it, rename it, use an item on it, release
+ * it after a painted confirmation, or change the sort and filters through their menus and chips. A release only
+ * reaches {@link PanelActions} from the Yes button of a confirmation whose default button is No; a gilded, strong,
+ * exceptional or nicknamed creature asks a second time. Before a confirmed release is sent each creature is checked
+ * against the storage list as it is now, so a list that changed while the box was open releases nothing it should
+ * not. Holds no RuneLite types.
  */
 final class StoragePageFlow
 {
@@ -41,6 +44,12 @@ final class StoragePageFlow
 	/** The menu item that starts a release. */
 	static final String RELEASE = "Release...";
 
+	/** The menu item that starts carrying a creature to another place in the Box with the keys. */
+	static final String MOVE_WITHIN = "Move within box";
+
+	/** The menu item that puts a creature last in the Box. */
+	static final String MOVE_TO_END = "Move to the end of the box";
+
 	/** What the page needs from the window around it. */
 	interface Host
 	{
@@ -61,6 +70,12 @@ final class StoragePageFlow
 		 * @param box its text box, or null
 		 */
 		void modal(Modal dialog, TextBox box);
+
+		/** @return whether the keys, not the pointer, are in charge, so a menu opens with its first item lit */
+		default boolean keyboardLed()
+		{
+			return false;
+		}
 
 		/** @return the text kept from a Rename box the window closed on, or an empty text */
 		String takeDraft();
@@ -99,6 +114,9 @@ final class StoragePageFlow
 	 */
 	void press(String id)
 	{
+		if (pressControl(id))
+			return;
+
 		if (StoragePage.ID_SELECT.equals(id))
 		{
 			page.select(!page.selecting());
@@ -116,10 +134,113 @@ final class StoragePageFlow
 		if (place < 0 || place >= storage.size())
 			return;
 
-		if (page.selecting())
+		if (page.carrying() >= 0)
+			putDown(place);
+		else if (page.selecting())
 			page.toggle(place);
 		else
 			actions.moveToTeam(pick(place, storage.get(place)));
+	}
+
+	/**
+	 * The button that went down on the page came up.
+	 *
+	 * @param x the pointer's x in window pixels
+	 * @param y the pointer's y in window pixels
+	 * @return whether the press became a scroll or a drag, so the release is not a click
+	 */
+	boolean released(int x, int y)
+	{
+		boolean took = page.released(x, y);
+		int[] drop = page.takeMove();
+		if (drop != null)
+			arrange(drop[0], drop[1]);
+
+		return took;
+	}
+
+	private void putDown(int place)
+	{
+		int from = page.carrying();
+		page.stopCarrying();
+		if (from != place)
+			arrange(from, place);
+	}
+
+	private void arrange(int from, int onto)
+	{
+		List<CreatureView> storage = host.storage();
+		if (from < 0 || from >= storage.size())
+			return;
+
+		TradePick dragged = pick(from, storage.get(from));
+		TradePick target = onto < 0 || onto >= storage.size() ? null : pick(onto, storage.get(onto));
+		actions.arrangeStorage(dragged, target);
+	}
+
+	private boolean pressControl(String id)
+	{
+		List<CreatureView> storage = host.storage();
+		StorageQuery query = page.query();
+		if (StoragePage.ID_SORT.equals(id))
+		{
+			Rectangle b = page.sortBounds();
+			host.menu(StorageMenus.sort(query, next -> page.setQuery(next, host.storage())), b.x, b.y + b.height,
+				host.keyboardLed());
+			return true;
+		}
+
+		if (StoragePage.ID_FILTER.equals(id))
+		{
+			Rectangle b = page.filterBounds();
+			List<ContextMenu.Item> items = StorageMenus.filter(query, next -> page.setQuery(next, host.storage()),
+				children -> host.menu(children, b.x, b.y + b.height, true));
+			host.menu(items, b.x, b.y + b.height, host.keyboardLed());
+			return true;
+		}
+
+		if (StoragePage.ID_VIEW.equals(id))
+		{
+			page.setMode(page.mode().next());
+			return true;
+		}
+
+		int heading = StoragePage.group(id);
+		if (heading >= 0)
+		{
+			if (page.selecting())
+				page.toggleGroup(heading);
+
+			return true;
+		}
+
+		if (StoragePage.ID_TICK_ALL.equals(id))
+		{
+			page.tickAllShown();
+			return true;
+		}
+
+		if (StoragePage.ID_CLEAR.equals(id))
+		{
+			page.setQuery(query.cleared(), storage);
+			return true;
+		}
+
+		int chip = StoragePage.chip(id);
+		if (chip >= 0)
+		{
+			page.setQuery(query.flipped(chip), storage);
+			return true;
+		}
+
+		int cross = StoragePage.chipRemove(id);
+		if (cross >= 0)
+		{
+			page.setQuery(query.without(cross), storage);
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -138,6 +259,12 @@ final class StoragePageFlow
 		if (place < 0 || place >= storage.size())
 			return;
 
+		if (page.carrying() >= 0)
+		{
+			putDown(place);
+			return;
+		}
+
 		if (page.selecting())
 		{
 			if (keyboard)
@@ -154,6 +281,12 @@ final class StoragePageFlow
 		items.add(ContextMenu.Item.of(RENAME, () -> rename(place, view)));
 		items.add(useItem(place, view));
 		items.add(ContextMenu.Item.of(RELEASE, () -> releaseOne(place, view)));
+		if (page.arrangeAllowed())
+		{
+			items.add(ContextMenu.Item.of(MOVE_WITHIN, () -> page.carry(place)));
+			items.add(ContextMenu.Item.of(MOVE_TO_END, () -> arrange(place, -1)));
+		}
+
 		host.menu(items, x, y, keyboard);
 	}
 
@@ -218,9 +351,13 @@ final class StoragePageFlow
 		List<CreatureView> views = new ArrayList<>();
 		long total = 0;
 		StringBuilder names = new StringBuilder();
+		TreeSet<Integer> visible = new TreeSet<>();
+		for (int place : page.shownPlaces())
+			visible.add(place);
+
 		for (int place : page.ticked())
 		{
-			if (place >= storage.size())
+			if (place >= storage.size() || !visible.contains(place))
 				continue;
 
 			places.add(place);
