@@ -14,7 +14,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   wanders a step or two (never more than 3 tiles from where it appeared), stays about 3 minutes (the clock stops
   while you fight or catch it) and fades out over 2 seconds when its time is up, when you walk more than 25 tiles away or change floors. If there is no free
   tile you can walk to, no wild creature appears. Click it to **Battle** it (a plain left click does that), or
-  right-click it for **Battle** and **Catch**. Hover over it to see its name, level, style, rarity and whether you have met or caught its species (switch this off with **Wild creature tooltip**; it hides while a menu is open and during a battle). Once your lead has beaten it and it lies knocked out, a plain left
+  right-click it for **Battle** and **Catch**; with two or more jars, Catch opens a list: the jars worth throwing first (best odds, the cheaper one on a tie), a line, then every other jar you own, each with its odds and how many you have. Hover over it to see its name, level, style, rarity and whether you have met or caught its species (switch this off with **Wild creature tooltip**; it hides while a menu is open and during a battle). Once your lead has beaten it and it lies knocked out, a plain left
   click throws your selected jar instead. When no creature can fight (your team is empty, or, with **Choose battle actions** on, your lead is too tired;
   with it off, the whole team is), Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
   behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
@@ -27,6 +27,16 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   While you are in combat with a real monster (and for 5 seconds after), wild creatures are hidden: not drawn, not
   clickable, and none new appear; they return where they were, unless their time ran out meanwhile.
+
+- **The painted wild creature menu**
+
+  The **Wild creature menu** setting chooses what a right click on a wild creature opens. **Game** (the default) is
+  the game's own menu with Battle and Catch added. **Painted** is a menu in the window's style: the creature's name
+  and level, then Battle and Catch. With two or more jars, Catch opens a list beside the menu (hover it, click it,
+  or press Right): the jars worth throwing first, a thin line, then every other jar, each with its odds and how
+  many you have. Up, Down, Left, Right, Enter and Esc work too. Hold **Shift** while you right-click to get the
+  game's own menu for that tile instead (Walk here, Examine). A left click works the same in both modes, and the
+  game's own menu is used if the painted one ever fails.
 
 - **While skilling**
 
