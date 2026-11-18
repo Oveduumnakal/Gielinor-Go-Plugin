@@ -33,6 +33,9 @@ import static org.junit.Assert.assertTrue;
  * {@code Stab} and nothing else: every roll, hit and verdict is as before.
  * For issue 200 the 11 team cases whose cut showed only one creature's blows were re-recorded on purpose: 19 shown
  * hit lines changed (the middle blow is now the nearest one by the other creature); results and rolls are as before.
+ * For issue 220 (Hex power 0.8 to 1.0, Rare Magic stat factors times 1.05, wild level spread one level either way)
+ * the recording was checked and none of its 89 cases changed: they fight hand-made species and the test moves in
+ * {@code TestMoves}, never the shipped {@code species.json} or {@code moves.json}, and no wild level is rolled.
  */
 public class BattleGoldensTest
 {

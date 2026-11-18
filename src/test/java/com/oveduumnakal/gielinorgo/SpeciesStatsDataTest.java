@@ -59,6 +59,24 @@ public class SpeciesStatsDataTest
 	}
 
 	@Test
+	public void rareMagicSpeciesAreNudgedUpSoMagicIsNotTheWeakestRareStyle() throws IOException
+	{
+		double sum = 0;
+		int count = 0;
+		for (Species species : species().catchable())
+		{
+			if (species.style() != CombatType.MAGIC || species.rarity() != Rarity.RARE)
+				continue;
+
+			sum += species.factor(Stat.HEALTH) + species.factor(Stat.ATTACK) + species.factor(Stat.DEFENCE);
+			count += 3;
+		}
+
+		assertTrue("expected the Rare Magic species, got " + count, count >= 100);
+		assertTrue("mean health, attack and defence factor " + sum / count, sum / count >= 1.04);
+	}
+
+	@Test
 	public void theFourFactorsOfATypicalSpeciesMultiplyToAboutOne() throws IOException
 	{
 		List<Double> products = new ArrayList<>();

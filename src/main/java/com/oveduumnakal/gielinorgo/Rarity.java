@@ -52,6 +52,19 @@ enum Rarity
 	}
 
 	/**
+	 * Gives the level an egg of this tier hatches at: 1 for Common, 5 for Uncommon, 10 for Rare, 20 for Epic and 30 for
+	 * Legendary, so a rare egg is worth some training and not a level 1 creature. It holds for a boss egg too. The
+	 * level is stored as XP, like any creature's.
+	 *
+	 * @return the level, from 1 up to 30
+	 */
+	int hatchLevel()
+	{
+		int[] levels = {1, 5, 10, 20, 30};
+		return levels[ordinal()];
+	}
+
+	/**
 	 * Gives how much this tier changes how often a monster turns wild: 1 for Common, 0.6 for Uncommon, 0.35 for Rare,
 	 * 0.15 for Epic and 0.05 for Legendary. It multiplies the chance of one monster turning wild.
 	 *

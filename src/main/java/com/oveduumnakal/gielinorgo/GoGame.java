@@ -2536,8 +2536,8 @@ final class GoGame
 	}
 
 	/**
-	 * Hatches an egg into a level 1 creature: of the egg's own species for a boss egg, otherwise of a random species
-	 * of the egg's rarity.
+	 * Hatches an egg into a creature at the level of the egg's tier, see {@link Rarity#hatchLevel()}: of the egg's own
+	 * species for a boss egg, otherwise of a random species of the egg's rarity.
 	 *
 	 * @param egg the egg whose walking is done
 	 * @return true when the egg is used up; false when there is no room, so it waits
@@ -2566,7 +2566,7 @@ final class GoGame
 			born = pool.get(random.nextInt(pool.size()));
 		}
 
-		Creature creature = new Creature(born.key(), 1, clock.getAsLong());
+		Creature creature = new Creature(born.key(), egg.rarityTier().hatchLevel(), clock.getAsLong());
 		creature.gilded = random.nextInt(gildedOneIn()) == 0;
 		creature.setRolls(StatRolls.roll(random));
 		creature.rollGender(random);
