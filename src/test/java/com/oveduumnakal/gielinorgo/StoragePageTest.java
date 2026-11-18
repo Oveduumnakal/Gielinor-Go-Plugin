@@ -435,7 +435,7 @@ public class StoragePageTest
 		list.set(0, PartyRig.creature("Goblin", 9, 0.0, null).withFainted(true));
 		PartyRig rig = page(list);
 
-		menuItem(rig, StoragePage.rowId(0), 1);
+		menuItem(rig, StoragePage.rowId(0), 2);
 
 		assertEquals(Collections.singletonList("reviveAtBank STORAGE#0"), rig.calls);
 	}
