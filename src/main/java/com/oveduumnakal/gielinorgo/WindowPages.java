@@ -70,6 +70,7 @@ final class WindowPages implements WindowShell.PageActions
 	private final PartyPainter party;
 	private final SummaryPainter summary;
 	private final BagPainter bag;
+	private final TasksPage tasks;
 	private WindowStyle style;
 	private MotionMode mode = MotionMode.FULL;
 	private WindowTab tab = WindowTab.PARTY;
@@ -99,6 +100,7 @@ final class WindowPages implements WindowShell.PageActions
 		this.party = new PartyPainter(pictures, motion, sink);
 		this.summary = new SummaryPainter(pictures, sink);
 		this.bag = new BagPainter(sink);
+		this.tasks = new TasksPage(sink);
 	}
 
 	/**
@@ -153,6 +155,12 @@ final class WindowPages implements WindowShell.PageActions
 		return state;
 	}
 
+	/** @return the Tasks page, whose milestone list the tests drive */
+	TasksPage tasksPage()
+	{
+		return tasks;
+	}
+
 	/** @return the Party page's motion, for tests */
 	PartyMotion motion()
 	{
@@ -193,6 +201,13 @@ final class WindowPages implements WindowShell.PageActions
 		{
 			state.back();
 			return bag.hits(bagLayout(body, panel), panel);
+		}
+
+		if (current == WindowTab.TASKS && panel != null && style != null)
+		{
+			state.back();
+			tasks.layout(body, style, panel);
+			return tasks.hits(panel);
 		}
 
 		if (current != WindowTab.PARTY || panel == null || style == null)
@@ -340,6 +355,13 @@ final class WindowPages implements WindowShell.PageActions
 		if (current == WindowTab.BAG && panel != null)
 		{
 			bag.paint(g, ctx, bagLayout(ctx.body, ctx.style, panel), panel);
+			return true;
+		}
+
+		if (current == WindowTab.TASKS && panel != null)
+		{
+			tasks.layout(ctx.body, ctx.style, panel);
+			tasks.paint(g, ctx, panel);
 			return true;
 		}
 
@@ -582,7 +604,27 @@ final class WindowPages implements WindowShell.PageActions
 	@Override
 	public void wheel(int x, int y, int rotation)
 	{
-		return;
+		if (tab == WindowTab.TASKS)
+			tasks.wheel(x, y, rotation);
+	}
+
+	@Override
+	public boolean pointerPressed(int x, int y)
+	{
+		return tab == WindowTab.TASKS && tasks.pressed(x, y);
+	}
+
+	@Override
+	public void pointerDragged(int x, int y)
+	{
+		if (tab == WindowTab.TASKS)
+			tasks.dragged(x, y);
+	}
+
+	@Override
+	public boolean pointerReleased(int x, int y)
+	{
+		return tab == WindowTab.TASKS && tasks.released();
 	}
 
 	@Override

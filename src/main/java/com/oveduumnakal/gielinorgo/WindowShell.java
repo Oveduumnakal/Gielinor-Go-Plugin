@@ -212,6 +212,41 @@ final class WindowShell
 		 */
 		void wheel(int x, int y, int rotation);
 
+		/**
+		 * A button went down on the page with no menu or dialog open, so a scroll list can take the press.
+		 *
+		 * @param x the pointer's x in window pixels
+		 * @param y the pointer's y in window pixels
+		 * @return whether the press landed on a list's scroll bar, so it is not a click on what lies under it
+		 */
+		default boolean pointerPressed(int x, int y)
+		{
+			return false;
+		}
+
+		/**
+		 * The pointer moved with a button down that went down on the page.
+		 *
+		 * @param x the pointer's x in window pixels
+		 * @param y the pointer's y in window pixels
+		 */
+		default void pointerDragged(int x, int y)
+		{
+			return;
+		}
+
+		/**
+		 * The button that went down on the page came up.
+		 *
+		 * @param x the pointer's x in window pixels
+		 * @param y the pointer's y in window pixels
+		 * @return whether the press became a scroll, so the release is not a click
+		 */
+		default boolean pointerReleased(int x, int y)
+		{
+			return false;
+		}
+
 		/** @return how many pages deep the window is, 0 on a tab's own page */
 		int depth();
 
@@ -647,6 +682,12 @@ final class WindowShell
 			return;
 		}
 
+		if (pages.pointerPressed(x, y))
+		{
+			pressedId = null;
+			return;
+		}
+
 		Hit hit = hitAt(x, y);
 		pressedId = hit != null && hit.enabled() ? hit.id() : null;
 	}
@@ -673,6 +714,9 @@ final class WindowShell
 			return;
 		}
 
+		if (pages.pointerReleased(x, y))
+			return;
+
 		Hit hit = hitAt(x, y);
 		if (hit == null)
 			return;
@@ -696,11 +740,17 @@ final class WindowShell
 	 * The pointer moved with a button down that went down inside the window.
 	 *
 	 * @param x the pointer's x in window pixels
+	 * @param y the pointer's y in window pixels
 	 */
-	void onDragged(int x)
+	void onDragged(int x, int y)
 	{
-		if (open && modalOpen())
+		if (!open)
+			return;
+
+		if (modalOpen())
 			modal.onMouseDragged(x);
+		else if (!menu.isOpen())
+			pages.pointerDragged(x, y);
 	}
 
 	/**

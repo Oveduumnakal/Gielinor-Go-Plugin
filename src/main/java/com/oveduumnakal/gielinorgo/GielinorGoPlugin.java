@@ -2765,7 +2765,7 @@ public class GielinorGoPlugin extends Plugin
 			@Override
 			public void dragged(int x, int y)
 			{
-				clientThread.invoke(() -> window.shell().onDragged(x));
+				clientThread.invoke(() -> window.shell().onDragged(x, y));
 			}
 
 			@Override
