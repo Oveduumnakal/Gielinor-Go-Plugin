@@ -237,7 +237,7 @@ Then replace this comment with:
 
 | Setting | Default | What it does |
 |---|---|---|
-| Wild creature rarity | 1 in 8 | How often a nearby monster turns wild. Lower numbers mean more wild creatures. |
+| Wild creature rarity | 1 in 8 | How often a nearby Common monster turns wild; stronger ones are rarer. Lower numbers mean more wild creatures. |
 | Left-click wild creatures | Not while in combat | Whether a left click on a wild creature battles or catches it. |
 | Skilling encounters | On | Fishing, Woodcutting, Mining, Farming and Hunter XP sometimes bring a wild creature. |
 | Choose battle actions | Off | Each battle turn waits for you instead of playing itself. |

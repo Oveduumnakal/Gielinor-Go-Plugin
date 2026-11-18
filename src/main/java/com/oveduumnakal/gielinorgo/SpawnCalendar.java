@@ -222,6 +222,23 @@ final class SpawnCalendar
 	}
 
 	/**
+	 * Works out the chance that one real monster turns wild on one roll: {@link #chance} times the factor of its
+	 * tier ({@link Rarity#wildFactor()}), so stronger monsters are rarer finds. It is separate from {@link #chance}
+	 * on purpose: a skilling encounter reads the event boost out of {@link #chance} and must not be weighted this
+	 * way. The factor applies with spawn events off too.
+	 *
+	 * @param species the species
+	 * @param oneIn the setting: a Common monster turns wild one time in this many
+	 * @param events whether spawn events are on; when off every boost is 1
+	 * @param clock the date and time
+	 * @return a chance from 0 to 1
+	 */
+	double monsterChance(Species species, int oneIn, boolean events, SpawnClock clock)
+	{
+		return Math.min(1.0, chance(species, oneIn, events, clock) * species.rarity().wildFactor());
+	}
+
+	/**
 	 * Works out the gilded odds for a species that turned wild.
 	 *
 	 * @param species the species

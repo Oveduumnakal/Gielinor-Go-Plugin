@@ -36,7 +36,7 @@ final class GoGame
 	static final String TITLE_MASTER_COLLECTOR = "MASTER_COLLECTOR";
 
 	/** Tiles the player walks to find one Bronze jar. */
-	static final int TILES_PER_JAR = 150;
+	static final int TILES_PER_JAR = 300;
 
 	/** Bronze jars given for each OSRS level-up. */
 	static final int JARS_PER_LEVEL_UP = 3;
