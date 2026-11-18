@@ -17,7 +17,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.function.BooleanSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
@@ -33,8 +32,7 @@ import net.runelite.client.util.ImageUtil;
  * The jar icon on the game screen that opens and closes the painted window. It is an overlay RuneLite can move (hold
  * the drag key and drag it), top left by default. RuneLite gives an overlay no left click, so {@link WindowInput} reads
  * {@link #bounds()} and reports the click. While the window cannot open (combat, a battle) the icon is grey and shakes
- * when clicked; a pulsing dot shows when something is waiting. It is drawn in the window's style and shows only while
- * the "Painted window (preview)" setting is on.
+ * when clicked; a pulsing dot shows when something is waiting. It is drawn in the window's style.
  */
 final class WindowToggle extends Overlay
 {
@@ -47,7 +45,6 @@ final class WindowToggle extends Overlay
 	private static final float LOCKED_ALPHA = 0.55f;
 	private static final double SHAKE_PX = 4;
 
-	private final BooleanSupplier shown;
 	private final Supplier<WindowTheme> theme;
 	private final Supplier<MotionMode> motion;
 	private final LongSupplier clock;
@@ -61,16 +58,13 @@ final class WindowToggle extends Overlay
 	/**
 	 * Creates the toggle.
 	 *
-	 * @param shown whether the icon is on screen, which follows the preview setting
 	 * @param theme the window style
 	 * @param motion the "Window animations" setting
 	 * @param clock the time in milliseconds
 	 * @param icon the jar picture, or null to draw a plain square
 	 */
-	WindowToggle(BooleanSupplier shown, Supplier<WindowTheme> theme, Supplier<MotionMode> motion, LongSupplier clock,
-		BufferedImage icon)
+	WindowToggle(Supplier<WindowTheme> theme, Supplier<MotionMode> motion, LongSupplier clock, BufferedImage icon)
 	{
-		this.shown = shown;
 		this.theme = theme;
 		this.motion = motion;
 		this.clock = clock;
@@ -132,12 +126,6 @@ final class WindowToggle extends Overlay
 	{
 		try
 		{
-			if (!shown.getAsBoolean())
-			{
-				bounds = null;
-				return null;
-			}
-
 			Rectangle placed = getBounds();
 			bounds = placed == null || placed.isEmpty() ? null : new Rectangle(placed.x, placed.y, SIZE, SIZE);
 			paintIcon(graphics, clock.getAsLong());

@@ -30,7 +30,6 @@ public interface GielinorGoConfig extends Config
 	String WHATS_NEW_DISMISSED = "whatsNewDismissed";
 
 	/** Key of the setting that shows the painted window's jar button. */
-	String WINDOW_PREVIEW = "windowPreview";
 
 	/** Key of the painted window's size preset. */
 	String WINDOW_SIZE = "windowSize";
@@ -437,25 +436,6 @@ public interface GielinorGoConfig extends Config
 	default boolean sounds()
 	{
 		return true;
-	}
-
-	/**
-	 * Whether the painted in-game window can be reached. It is a preview: only the shell is built, and the side panel
-	 * is unchanged.
-	 *
-	 * @return true to show the window's jar button on the game screen, off by default
-	 */
-	@ConfigItem(
-		keyName = GielinorGoConfig.WINDOW_PREVIEW,
-		name = "Painted window (preview)",
-		description = "Preview of the new in-game window that will replace the side panel. Shows a jar button on the"
-			+ " game screen that opens it.\nOnly the window's frame and tabs are built so far, and the side panel works"
-			+ " as before.\nIt closes in combat and during a battle.",
-		position = 21
-	)
-	default boolean windowPreview()
-	{
-		return false;
 	}
 
 	/**

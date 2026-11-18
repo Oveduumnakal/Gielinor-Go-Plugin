@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import javax.inject.Inject;
-import javax.swing.SwingUtilities;
 
 import com.google.gson.Gson;
 import com.google.inject.Provides;
@@ -193,7 +192,6 @@ public class GielinorGoPlugin extends Plugin
 	private FollowerTagOverlay followerTag;
 	/** The lead creature's nickname for the overlay, kept up to date on the game thread. Null for none. */
 	private volatile String leadTag;
-	private GoPanel panel;
 	private PortraitService portraits;
 	private FollowerService follower;
 	private CatchEffects effects;
@@ -292,14 +290,13 @@ public class GielinorGoPlugin extends Plugin
 		hotkeys = new BattleHotkeys(config::attackKey, config::switchKey, config::catchKey, config::runKey,
 			config::itemKey, () -> choiceOpen, this::hotkeyPressed);
 		keyManager.registerKeyListener(hotkeys);
-		panel = new GoPanel(panelActions(), portraits);
-		panel.whatsNew(detectVersionChange());
+		detectVersionChange();
 		BufferedImage icon = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
 		navButton = NavigationButton.builder()
 			.tooltip("Gielinor Go")
 			.icon(icon)
 			.priority(7)
-			.panel(panel)
+			.onClick(() -> clientThread.invoke(this::toggleWindow))
 			.build();
 		clientToolbar.addNavigation(navButton);
 		startWindow();
@@ -1073,10 +1070,6 @@ public class GielinorGoPlugin extends Plugin
 	private void refreshPanel()
 	{
 		PanelState state = game.snapshot().withBattle(director.view());
-		FriendsState party = friendsState();
-		GoPanel target = panel;
-		SwingUtilities.invokeLater(() -> target.update(state));
-		SwingUtilities.invokeLater(() -> target.updateFriends(party));
 		publishWindow(state);
 	}
 
@@ -2603,8 +2596,7 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
-	 * Applies the painted window's settings that act at once: a new size preset resizes and centres the window, and
-	 * turning the preview off closes it.
+	 * Applies the painted window's settings that act at once: a new size preset resizes and centres the window.
 	 *
 	 * @param event the setting change
 	 */
@@ -2616,8 +2608,6 @@ public class GielinorGoPlugin extends Plugin
 
 		if (GielinorGoConfig.WINDOW_SIZE.equals(event.getKey()))
 			window.applyPreset(config.windowSize());
-		else if (GielinorGoConfig.WINDOW_PREVIEW.equals(event.getKey()) && !config.windowPreview())
-			clientThread.invoke(this::closeWindow);
 	}
 
 	/** Creates the painted window, its toggle, its notice and their input, and registers them. */
@@ -2631,7 +2621,7 @@ public class GielinorGoPlugin extends Plugin
 		window.shell().pages(new WindowPages(window.shell(), panelActions(), windowPortraits,
 			System::currentTimeMillis, PageText.Sink.NONE));
 		BufferedImage jar = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
-		windowToggle = new WindowToggle(config::windowPreview, config::windowStyle, config::windowAnimations,
+		windowToggle = new WindowToggle(config::windowStyle, config::windowAnimations,
 			System::currentTimeMillis, jar);
 		dragKey = new DragKey(runeLiteConfig::dragHotkey);
 		windowInput = new WindowInput(window::view, windowToggle::bounds, dragKey, windowSink());
@@ -2826,9 +2816,6 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void toggleWindow()
 	{
-		if (!config.windowPreview())
-			return;
-
 		long now = System.currentTimeMillis();
 		WindowShell shell = window.shell();
 		if (shell.isOpen())
@@ -2865,7 +2852,7 @@ public class GielinorGoPlugin extends Plugin
 		boolean locked = !WindowRules.mayOpen(fighting, battle, loaded && saveLive());
 		windowToggle.locked(locked);
 		WindowShell shell = window.shell();
-		if (shell.isOpen() && (locked || !config.windowPreview()))
+		if (shell.isOpen() && locked)
 		{
 			NoticeMessage why = WindowRules.closedNotice(fighting, battle);
 			boolean quick = why != null;
@@ -2877,7 +2864,7 @@ public class GielinorGoPlugin extends Plugin
 			}
 		}
 
-		windowToggle.waiting(config.windowPreview() && shell.waiting());
+		windowToggle.waiting(shell.waiting());
 		boolean typing = chatboxFocused();
 		if (typing && !chatTyping && shell.isOpen())
 			shell.focusLost(now);
@@ -2886,7 +2873,7 @@ public class GielinorGoPlugin extends Plugin
 		clearMenuUnderWindow();
 	}
 
-	/** Closes the painted window at once, for logout, world hop and the preview being turned off. */
+	/** Closes the painted window at once, for logout and world hop. */
 	private void closeWindow()
 	{
 		if (window != null)
@@ -2979,7 +2966,7 @@ public class GielinorGoPlugin extends Plugin
 		{
 			firstRunNoticed = false;
 		}
-		else if (!firstRunNoticed && config.windowPreview() && !window.shell().isOpen())
+		else if (!firstRunNoticed && !window.shell().isOpen())
 		{
 			firstRunNoticed = true;
 			noticeUnderToggle(NoticeMessage.FIRST_RUN);
