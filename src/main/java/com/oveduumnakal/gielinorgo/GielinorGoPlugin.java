@@ -480,7 +480,7 @@ public class GielinorGoPlugin extends Plugin
 		effects.clear();
 		jarFlight.clear();
 		bodies.clear();
-		bubbles.hideNow();
+		hideBubbles();
 		tracker.clear();
 		bankSpots.clear();
 		game.setBankNear(false);
@@ -674,7 +674,7 @@ public class GielinorGoPlugin extends Plugin
 		if (!playable())
 		{
 			bodies.clear();
-			bubbles.hideNow();
+			hideBubbles();
 			tracker.clearWild(System.currentTimeMillis());
 		}
 		else if (ticks % REROLL_TICKS == 0)
@@ -709,8 +709,7 @@ public class GielinorGoPlugin extends Plugin
 		watchWindow();
 		if (!loaded)
 		{
-			if (bubbles != null)
-				bubbles.hideNow();
+			hideBubbles();
 
 			return;
 		}
@@ -875,7 +874,7 @@ public class GielinorGoPlugin extends Plugin
 		{
 			if (!bubblesOn())
 			{
-				bubbles.hideNow();
+				hideBubbles();
 				return;
 			}
 
@@ -901,7 +900,7 @@ public class GielinorGoPlugin extends Plugin
 			int currentId = bubbles.wildId();
 			if (currentId != WildBubbles.NO_TARGET && bodies.anchorsOf(currentId) == null)
 			{
-				bubbles.hideNow();
+				hideBubbles();
 				currentId = WildBubbles.NO_TARGET;
 			}
 
@@ -1007,7 +1006,7 @@ public class GielinorGoPlugin extends Plugin
 		mouseManager.unregisterMouseListener(bubbleInput);
 		overlayManager.remove(bubbleOverlay);
 		bubbleOverlay.publish(BubbleHits.EMPTY);
-		clientThread.invoke(bubbles::hideNow);
+		clientThread.invoke(this::hideBubbles);
 	}
 
 	/**
@@ -1020,8 +1019,17 @@ public class GielinorGoPlugin extends Plugin
 	{
 		log.debug("Gielinor Go: the wild creature bubbles failed, using the game's menu entries", cause);
 		bubblesFailed = true;
-		bubbles.hideNow();
-		bubbleOverlay.publish(BubbleHits.EMPTY);
+		hideBubbles();
+	}
+
+	/** Drops the bubbles and their click targets at once. Runs on the game thread. */
+	private void hideBubbles()
+	{
+		if (bubbles != null)
+			bubbles.hideNow();
+
+		if (bubbleOverlay != null)
+			bubbleOverlay.publish(BubbleHits.EMPTY);
 	}
 
 	/** @return where the mouse events of the bubbles go, each carried over to the game thread */

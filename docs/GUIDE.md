@@ -13,7 +13,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   The real monster carries on as if nothing happened and is never touched. The wild copy is its own creature: it
   wanders a step or two (never more than 3 tiles from where it appeared), stays about 3 minutes (the clock stops
   while you fight or catch it) and fades out over 2 seconds when its time is up, when you walk more than 25 tiles away or change floors. If there is no free
-  tile you can walk to, no wild creature appears. Move the mouse near it for its **bubbles** (see **Bubbles** below), or right-click it for **Walk here**, **Battle** and **Catch**; with two or more jars, Catch opens a list: the jars worth throwing first (best odds, the cheaper one on a tie), a line, then every other jar you own, each with its odds and how many you have. Hover over it to see its name, level, style, rarity and whether you have met or caught its species (switch this off with **Wild creature tooltip**; it hides while a menu is open and during a battle). A plain left click on the copy no longer battles or catches: it walks like any other click. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
+  tile you can walk to, no wild creature appears. Move the mouse near it for its **bubbles** (see **Bubbles** below), or right-click it for **Walk here**, **Battle** and **Catch**; with two or more jars, Catch opens a list: the jars worth throwing first (best odds, the cheaper one on a tie), a line, then every other jar you own, each with its odds and how many you have. Hover over it to see its name, level, style, rarity and whether you have met or caught its species (switch this off with **Wild creature tooltip**; it hides while a menu is open, during a battle and while the creature's bubbles show). A plain left click on the copy no longer battles or catches: it walks like any other click. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
   finds (the **Wild creature rarity** setting is the chance for Common monsters; Uncommon ones turn wild 0.6 times as
   often, Rare 0.35, Epic 0.15 and Legendary 0.05). Hunter creatures such as pyre foxes, kebbits, salamanders, moths,
   antelope and implings have no combat level in the game; they turn wild like any other monster and their level is
@@ -33,7 +33,7 @@ Every feature and every number, in detail. For the short version, see the [READM
     one to select it (it does not throw). The selected jar stays selected after a throw.
   - **Middle bubble: Battle** (red, crossed swords). A click starts a battle.
   - **Right bubble: Info** (light blue, an "i"). Hover it for a short summary card of the creature next to it;
-    click it to pin the card until you click elsewhere or move away.
+    click it to pin the card until you click elsewhere or move the mouse away from the creature.
 
   The bubbles close a moment after the mouse leaves. They do not show during a battle, while the game menu is
   open or over the Gielinor Go window. Right-clicking the creature's body still opens the game's own menu with

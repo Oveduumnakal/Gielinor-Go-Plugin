@@ -203,6 +203,49 @@ public class WildBubblesTest
 		assertEquals(1.0, disc(frame(mid + 3000), BubbleKind.JAR).scale(), 1e-9);
 	}
 
+	private long retracting()
+	{
+		long t = open();
+		tick(false, FAR_X, FAR_Y, t);
+		tick(false, FAR_X, FAR_Y, t + 350);
+		return t + 550;
+	}
+
+	@Test
+	public void thePointerOnARetractingBubbleReopensItFromWhereItIs()
+	{
+		long mid = retracting();
+		BubbleFrame.Disc jar = disc(frame(mid), BubbleKind.JAR);
+		double before = jar.scale();
+
+		tick(false, jar.x(), jar.y(), mid);
+
+		assertTrue(bubbles.showing(ID));
+		assertEquals(before, disc(frame(mid), BubbleKind.JAR).scale(), 1e-9);
+	}
+
+	@Test
+	public void thePointerFarFromRetractingBubblesDoesNotReopenThem()
+	{
+		long mid = retracting();
+
+		tick(false, FAR_X, FAR_Y, mid);
+
+		assertFalse(bubbles.showing(ID));
+	}
+
+	@Test
+	public void aDismissedGroupDoesNotReopenFromTheBubblePosition()
+	{
+		long mid = retracting();
+		BubbleFrame.Disc jar = disc(frame(mid), BubbleKind.JAR);
+		bubbles.dismiss(mid);
+
+		tick(false, jar.x(), jar.y(), mid + 10);
+
+		assertFalse(bubbles.showing(ID));
+	}
+
 	@Test
 	public void theCorridorKeepsTheBubblesOpenWithTheMouseNotNearTheBody()
 	{

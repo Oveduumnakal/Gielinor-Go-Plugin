@@ -322,7 +322,7 @@ final class WildBubbles
 		settle(g, now);
 		if (g.phase == Phase.CLOSING)
 		{
-			if (near && !arcBlocked(anchors))
+			if (!arcBlocked(anchors) && (near || onMainDisc(g, anchors, px, py, now)))
 				reverse(g, now);
 			else
 				return;
@@ -593,6 +593,19 @@ final class WildBubbles
 			return BubbleFrame.NONE;
 
 		return new BubbleFrame(discs, card, gen, modal);
+	}
+
+	private boolean onMainDisc(Group g, BubbleAnchors anchors, int px, int py, long now)
+	{
+		List<BubbleFrame.Disc> discs = discs(g, geom(g, anchors, now), anchors, now, true);
+		for (int i = 0; i < 3; i++)
+		{
+			BubbleFrame.Disc disc = discs.get(i);
+			if (disc.painted() > 0 && Math.hypot(px - disc.x(), py - disc.y()) <= disc.painted() + HIT_SLOP)
+				return true;
+		}
+
+		return false;
 	}
 
 	private void retireCurrent(long now)
