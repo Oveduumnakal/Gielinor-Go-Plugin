@@ -74,6 +74,7 @@ final class WindowPages implements WindowShell.PageActions
 	private final CollectionPage collection;
 	private final StoragePage storage;
 	private final StoragePageFlow storageFlow;
+	private final BattlePage battle;
 	private WindowStyle style;
 	private MotionMode mode = MotionMode.FULL;
 	private WindowTab tab = WindowTab.PARTY;
@@ -107,6 +108,7 @@ final class WindowPages implements WindowShell.PageActions
 		this.collection = new CollectionPage(sink);
 		this.storage = new StoragePage(pictures, sink);
 		this.storageFlow = new StoragePageFlow(storage, actions, new StorageHost());
+		this.battle = new BattlePage(shell, actions, clock, sink);
 	}
 
 	/**
@@ -179,6 +181,12 @@ final class WindowPages implements WindowShell.PageActions
 		return storage;
 	}
 
+	/** @return the Battle page, whose scrolling column the tests drive */
+	BattlePage battlePage()
+	{
+		return battle;
+	}
+
 	/** @return the Party page's motion, for tests */
 	PartyMotion motion()
 	{
@@ -241,6 +249,13 @@ final class WindowPages implements WindowShell.PageActions
 			state.back();
 			storage.layout(body, style, panel.storage());
 			return storage.hits(panel.storage(), WindowShell.PAGE_ORDER);
+		}
+
+		if (current == WindowTab.BATTLE && panel != null && style != null)
+		{
+			state.back();
+			battle.layout(body, style, shell.snapshot());
+			return battle.hits();
 		}
 
 		if (current != WindowTab.PARTY || panel == null || style == null)
@@ -412,6 +427,13 @@ final class WindowPages implements WindowShell.PageActions
 			return true;
 		}
 
+		if (current == WindowTab.BATTLE && panel != null)
+		{
+			battle.layout(ctx.body, ctx.style, ctx.snapshot);
+			battle.paint(g, ctx);
+			return true;
+		}
+
 		if (current != WindowTab.PARTY || panel == null)
 			return false;
 
@@ -511,6 +533,12 @@ final class WindowPages implements WindowShell.PageActions
 		if (id.startsWith(CollectionPage.PREFIX))
 		{
 			collection.press(id);
+			return;
+		}
+
+		if (tab == WindowTab.BATTLE)
+		{
+			battle.press(hit, panel, shell.snapshot().friends());
 			return;
 		}
 
@@ -692,6 +720,9 @@ final class WindowPages implements WindowShell.PageActions
 			collection.wheel(x, y, rotation);
 		else if (tab == WindowTab.STORAGE)
 			storage.wheel(x, y, rotation);
+
+		if (tab == WindowTab.BATTLE)
+			battle.wheel(x, y, rotation);
 	}
 
 	@Override
@@ -699,7 +730,8 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		return tab == WindowTab.TASKS && tasks.pressed(x, y)
 			|| tab == WindowTab.COLLECTION && collection.pressed(x, y)
-			|| tab == WindowTab.STORAGE && storage.pressed(x, y);
+			|| tab == WindowTab.STORAGE && storage.pressed(x, y)
+			|| tab == WindowTab.BATTLE && battle.pressed(x, y);
 	}
 
 	@Override
@@ -711,6 +743,9 @@ final class WindowPages implements WindowShell.PageActions
 			collection.dragged(x, y);
 		else if (tab == WindowTab.STORAGE)
 			storage.dragged(x, y);
+
+		if (tab == WindowTab.BATTLE)
+			battle.dragged(x, y);
 	}
 
 	@Override
@@ -718,7 +753,8 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		return tab == WindowTab.TASKS && tasks.released()
 			|| tab == WindowTab.COLLECTION && collection.released()
-			|| tab == WindowTab.STORAGE && storage.released();
+			|| tab == WindowTab.STORAGE && storage.released()
+			|| tab == WindowTab.BATTLE && battle.released();
 	}
 
 	@Override
@@ -740,6 +776,9 @@ final class WindowPages implements WindowShell.PageActions
 		PanelState panel = loaded();
 		if (panel != null && tab == WindowTab.COLLECTION)
 			return collectionKey(keyCode);
+
+		if (panel != null && tab == WindowTab.BATTLE)
+			return battle.key(keyCode);
 
 		if (panel == null || tab != WindowTab.PARTY || state.page() != PageState.Page.SUMMARY)
 			return false;
