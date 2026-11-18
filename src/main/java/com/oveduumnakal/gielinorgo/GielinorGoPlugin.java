@@ -74,7 +74,6 @@ import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
-import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
 import net.runelite.client.util.LinkBrowser;
 import net.runelite.client.util.Text;
@@ -603,7 +602,7 @@ public class GielinorGoPlugin extends Plugin
 			}
 
 			lastSkillingMs = now;
-			game.markSeen(entry);
+			entry.withFirstMeeting(game.markSeen(entry)).record(game.recordOf(entry));
 			String kind = entry.gilded() ? "A gilded " : entry.roaming() ? "A roaming " : "A wild ";
 			announce(Notice.creature(entry.wildId(), kind + species.name() + " " + skilling.message(skill) + "!",
 				entry.gilded() || entry.roaming() ? Tone.FIND : Tone.INFO));
@@ -729,10 +728,25 @@ public class GielinorGoPlugin extends Plugin
 	private void wildTick()
 	{
 		long now = System.currentTimeMillis();
+		refreshRecords();
 		for (int wildId : bodies.gameTick(now))
 		{
 			tracker.remove(wildId);
 			stage.forget(wildId);
+		}
+	}
+
+	/** Brings every wild creature's seen-or-caught record up to date, so a catch changes the marks within a tick. */
+	private void refreshRecords()
+	{
+		try
+		{
+			for (WildEntry entry : tracker.all())
+				entry.record(game.recordOf(entry));
+		}
+		catch (RuntimeException e)
+		{
+			log.debug("Gielinor Go: could not refresh the wild creatures' records", e);
 		}
 	}
 
@@ -1527,7 +1541,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 		}
 
-		game.markSeen(entry);
+		entry.withFirstMeeting(game.markSeen(entry)).record(game.recordOf(entry));
 		if (entry.gilded())
 			playCue(Cue.GILDED);
 
@@ -1624,8 +1638,8 @@ public class GielinorGoPlugin extends Plugin
 	{
 		Species species = entry.species();
 		Rarity rarity = species.rarity();
-		String name = ColorUtil.wrapWithColorTag(species.name(), rarity.color());
-		String target = entry.prefix() + name + " (Lv " + entry.level() + ")";
+		String target = WildMenu.target(entry.prefix(), species.name(), rarity.color().getRGB(), entry.level(),
+			entry.record());
 		int wildId = entry.wildId();
 		WildBody body = bodies.get(wildId);
 		boolean canBattle = game.canBattle(System.currentTimeMillis(), config.chooseBattleActions());

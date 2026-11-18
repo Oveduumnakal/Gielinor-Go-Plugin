@@ -7,10 +7,12 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Monsters near you sometimes turn wild**
 
   When a monster turns wild, a smaller copy of it (75% size) appears on a free tile within two tiles of it, on
-  your side of any wall or fence, with a soft outline and a level tag. The real monster carries on as if nothing
-  happened and is never touched. The wild copy is its own creature: it wanders a step or two (never more than 3
-  tiles from where it appeared), stays about 3 minutes (the clock stops while you fight or catch it) and fades out
-  over 2 seconds when its time is up, when you walk more than 25 tiles away or change floors. If there is no free
+  your side of any wall or fence, with a soft outline and a level tag. A small mark beside the name shows what
+  your Creature Log knows: a star for a species you have never met, an eye for one you have seen but not caught,
+  a jar for one you have already caught. The right-click menu says the same in words (New, Seen, Caught).
+  The real monster carries on as if nothing happened and is never touched. The wild copy is its own creature: it
+  wanders a step or two (never more than 3 tiles from where it appeared), stays about 3 minutes (the clock stops
+  while you fight or catch it) and fades out over 2 seconds when its time is up, when you walk more than 25 tiles away or change floors. If there is no free
   tile you can walk to, no wild creature appears. Click it to **Battle** it (a plain left click does that), or
   right-click it for **Battle** and **Catch**. Once your lead has beaten it and it lies knocked out, a plain left
   click throws your selected jar instead. When no creature can fight (your team is empty, or, with **Choose battle actions** on, your lead is too tired;

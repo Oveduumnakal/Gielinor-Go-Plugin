@@ -14,13 +14,14 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 
 /**
  * The small pictures of the painted window, drawn in code so they recolour with the theme and need no image file: the
- * gender signs, one mark for each combat style, a heart, a star, the lead arrow and an egg. Each draws in the colour
- * the caller set on the graphics, inside the square whose top-left corner and side it is given, and leaves the
- * graphics' stroke as it found it. Gender and style are told apart by shape, never by colour alone. Holds no
- * RuneLite types.
+ * gender signs, one mark for each combat style, the seen and caught marks, a heart, a star, the lead arrow and an
+ * egg. Each draws in the colour the caller set on the graphics, inside the square whose top-left corner and side it
+ * is given, and leaves the graphics' stroke as it found it. Gender and style are told apart by shape, never by
+ * colour alone. Holds no RuneLite types.
  */
 final class Icons
 {
@@ -162,6 +163,73 @@ final class Icons
 		star.lineTo(0.38, 0.38);
 		star.closePath();
 		g.fill(star);
+	}
+
+	/**
+	 * Draws the mark that tells what the Creature Log knows of a wild creature's species: a filled star for new, an
+	 * eye for seen and a jar for caught.
+	 *
+	 * @param g the graphics, with the colour set
+	 * @param kind which mark
+	 * @param x the left edge of the square
+	 * @param y the top edge
+	 * @param size the side of the square
+	 */
+	static void mark(Graphics2D g, WildRecord.Kind kind, double x, double y, double size)
+	{
+		switch (kind)
+		{
+			case NEW:
+				g.fill(star(x + size / 2.0, y + size * 0.54, size * 0.46));
+				break;
+			case SEEN:
+				eye(g, x, y, size);
+				break;
+			default:
+				jar(g, x, y, size);
+				break;
+		}
+	}
+
+	/**
+	 * Draws an eye: an almond outline with a filled pupil.
+	 *
+	 * @param g the graphics, with the colour set
+	 * @param x the left edge of the square
+	 * @param y the top edge
+	 * @param size the side of the square
+	 */
+	static void eye(Graphics2D g, double x, double y, double size)
+	{
+		Stroke saved = g.getStroke();
+		g.setStroke(new BasicStroke((float) Math.max(1.0, size / 8.0), BasicStroke.CAP_ROUND,
+			BasicStroke.JOIN_ROUND));
+		double cy = y + size / 2.0;
+		Path2D.Double almond = new Path2D.Double();
+		almond.moveTo(x + size * 0.08, cy);
+		almond.quadTo(x + size * 0.5, y + size * 0.0, x + size * 0.92, cy);
+		almond.quadTo(x + size * 0.5, y + size * 1.0, x + size * 0.08, cy);
+		almond.closePath();
+		g.draw(almond);
+		double pupil = size * 0.3;
+		g.fill(new Ellipse2D.Double(x + (size - pupil) / 2.0, cy - pupil / 2.0, pupil, pupil));
+		g.setStroke(saved);
+	}
+
+	/**
+	 * Draws a jar: a lid bar, a narrow neck and a rounded body, all filled.
+	 *
+	 * @param g the graphics, with the colour set
+	 * @param x the left edge of the square
+	 * @param y the top edge
+	 * @param size the side of the square
+	 */
+	static void jar(Graphics2D g, double x, double y, double size)
+	{
+		g.fill(new Rectangle2D.Double(x + size * 0.24, y + size * 0.04, size * 0.52, size * 0.16));
+		g.fill(new Rectangle2D.Double(x + size * 0.32, y + size * 0.2, size * 0.36, size * 0.14));
+		g.fill(new RoundRectangle2D.Double(x + size * 0.1, y + size * 0.32, size * 0.8, size * 0.64, size * 0.3,
+			size * 0.3));
 	}
 
 	/**
