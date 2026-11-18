@@ -3384,6 +3384,7 @@ final class GoGame
 				MoveLearning.pending(creature, moves), BondRules.hearts(creature.bond), waitingText(creature))
 				.withSpecies(found)
 				.withGender(creature.gender())
+				.withCaught(creature.caughtAtMs)
 				.withDetails(examine.textFor(creature.species), found == null ? null : growsInto(found.key())));
 		}
 
