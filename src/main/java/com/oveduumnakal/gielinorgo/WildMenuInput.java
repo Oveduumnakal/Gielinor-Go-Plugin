@@ -35,7 +35,7 @@ final class WildMenuInput implements MouseListener
 	private final DragKey drag;
 	private final LongSupplier clock;
 	private final Sink sink;
-	private long openingUntil;
+	private volatile long openingUntil;
 	private boolean releaseTaken;
 	private boolean clickTaken;
 

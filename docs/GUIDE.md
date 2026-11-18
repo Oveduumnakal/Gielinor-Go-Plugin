@@ -25,6 +25,16 @@ Every feature and every number, in detail. For the short version, see the [READM
   While you are in combat with a real monster (and for 5 seconds after), wild creatures are hidden: not drawn, not
   clickable, and none new appear; they return where they were, unless their time ran out meanwhile.
 
+- **The painted wild creature menu**
+
+  The **Wild creature menu** setting chooses what a right click on a wild creature opens. **Game** (the default) is
+  the game's own menu with Battle and Catch added. **Painted** is a menu in the window's style: the creature's name
+  and level, then Battle and Catch. With two or more jars, Catch opens a list beside the menu (hover it, click it,
+  or press Right): the jars worth throwing first, a thin line, then every other jar, each with its odds and how
+  many you have. Up, Down, Left, Right, Enter and Esc work too. Hold **Shift** while you right-click to get the
+  game's own menu for that tile instead (Walk here, Examine). A left click works the same in both modes, and the
+  game's own menu is used if the painted one ever fails.
+
 - **While skilling**
 
   Fishing, Woodcutting, Mining, Farming and Hunter XP drops sometimes bring a wild creature to a free tile one or
