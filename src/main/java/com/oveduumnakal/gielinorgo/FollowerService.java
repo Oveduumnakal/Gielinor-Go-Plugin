@@ -524,6 +524,12 @@ final class FollowerService
 			body.meleeTurn(distance, act);
 	}
 
+	/** @return whether the follower is in the middle of a melee turn */
+	boolean turning()
+	{
+		return body != null && body.turning();
+	}
+
 	/**
 	 * Tells whether a spot on the ground is free to stand on, by the same check that picks the tile the lead walks
 	 * back to ({@link #endErrand()}).

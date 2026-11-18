@@ -197,6 +197,7 @@ final class TeamScript
 		private Entry current;
 		private int left;
 		private int age;
+		private int holdSpent;
 
 		private Run(List<Entry> entries, boolean open)
 		{
@@ -251,12 +252,31 @@ final class TeamScript
 		 */
 		Tick tick()
 		{
+			return tick(true);
+		}
+
+		/**
+		 * Moves the script on by one game tick, and holds the next blow while a melee attacker is still on its way
+		 * back, for at most {@link BattleTimeline#MAX_HOLD_TICKS} game ticks.
+		 *
+		 * @param settled whether neither creature is in the middle of a melee turn
+		 * @return what begins and which line is due on this tick; done once every entry has run its ticks
+		 */
+		Tick tick(boolean settled)
+		{
 			Entry started = null;
 			if (left == 0)
 			{
 				if (next >= entries.size())
 					return new Tick(null, null, !open, open);
 
+				if (!settled && holdSpent < BattleTimeline.MAX_HOLD_TICKS && entries.get(next).kind == Kind.HIT)
+				{
+					holdSpent++;
+					return new Tick(null, null, false);
+				}
+
+				holdSpent = 0;
 				current = entries.get(next++);
 				left = current.ticks;
 				age = 0;

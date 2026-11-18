@@ -196,6 +196,39 @@ public class TeamScriptTest
 	}
 
 	@Test
+	public void theNextHitWaitsWhileAnAttackerIsStillTurningButNotForever()
+	{
+		TeamScript.Run run = TeamScript.of(Arrays.asList(duel(0, 0, true, 2)), true).run();
+		TeamScript.Tick tick = run.tick(true);
+		while (tick.started() == null || tick.started().kind() != TeamScript.Kind.HIT)
+			tick = run.tick(true);
+
+		for (int i = 0; i < BattleTimeline.BEAT_TICKS - 1; i++)
+			assertEquals(null, run.tick(true).started());
+
+		for (int i = 0; i < BattleTimeline.MAX_HOLD_TICKS; i++)
+			assertEquals("held " + i, null, run.tick(false).started());
+
+		assertEquals(TeamScript.Kind.HIT, run.tick(false).started().kind());
+	}
+
+	@Test
+	public void theOldTickIsTheSameAsSettled()
+	{
+		TeamScript script = TeamScript.of(Arrays.asList(duel(0, 0, true, 2)), true);
+		TeamScript.Run old = script.run();
+		TeamScript.Run gated = script.run();
+
+		for (int i = 0; i < script.totalTicks(); i++)
+		{
+			TeamScript.Tick a = old.tick();
+			TeamScript.Tick b = gated.tick(true);
+			assertEquals("tick " + i, a.started() == null ? null : a.started().kind(),
+				b.started() == null ? null : b.started().kind());
+		}
+	}
+
+	@Test
 	public void aStretchedHitDelaysTheNextEntry()
 	{
 		Duel duel = duel(0, 0, true, 2);

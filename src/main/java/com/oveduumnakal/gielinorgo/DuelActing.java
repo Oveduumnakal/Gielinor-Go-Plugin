@@ -53,6 +53,12 @@ final class DuelActing
 			return 0;
 		}
 
+		/** @return whether the body is in the middle of a melee turn: stepping up, striking or stepping back */
+		default boolean turning()
+		{
+			return false;
+		}
+
 		/** @return the body's world x, in tiles */
 		double x();
 
@@ -106,6 +112,12 @@ final class DuelActing
 		public int actTicks(CreatureBody.Act act)
 		{
 			return follower.actTicks(act);
+		}
+
+		@Override
+		public boolean turning()
+		{
+			return follower.turning();
 		}
 
 		@Override
@@ -166,6 +178,16 @@ final class DuelActing
 		this.projectileModels = projectileModels;
 		this.lead = lead;
 		this.foe = foe;
+	}
+
+	/**
+	 * Tells whether the next attack may start.
+	 *
+	 * @return true when neither creature is in the middle of a melee turn
+	 */
+	boolean settled()
+	{
+		return !lead.turning() && !foe.turning();
 	}
 
 	/**
