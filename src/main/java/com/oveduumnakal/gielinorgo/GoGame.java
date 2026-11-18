@@ -36,7 +36,7 @@ final class GoGame
 	static final String TITLE_MASTER_COLLECTOR = "MASTER_COLLECTOR";
 
 	/** Tiles the player walks to find one Bronze jar. */
-	static final int TILES_PER_JAR = 150;
+	static final int TILES_PER_JAR = 300;
 
 	/** Bronze jars given for each OSRS level-up. */
 	static final int JARS_PER_LEVEL_UP = 3;
@@ -798,14 +798,29 @@ final class GoGame
 	 * Records that the player met a species in the wild.
 	 *
 	 * @param entry the wild creature that appeared
+	 * @return true when the species was new to the player, false when it was seen before
 	 */
-	void markSeen(WildEntry entry)
+	boolean markSeen(WildEntry entry)
 	{
 		if (!data.seen.add(entry.species().key()))
-			return;
+			return false;
 
 		log = null;
 		dirty = true;
+		return true;
+	}
+
+	/**
+	 * Works out what the Creature Log knows of a wild creature's species now. It reads the saved counts directly,
+	 * never the Log's entry list.
+	 *
+	 * @param entry the wild creature, whose {@link WildEntry#firstMeeting()} was set when it appeared
+	 * @return caught with the count, else new for a first meeting, else seen
+	 */
+	WildRecord recordOf(WildEntry entry)
+	{
+		Integer count = data.caught.get(entry.species().key());
+		return WildRecord.of(count == null ? 0 : count, entry.firstMeeting());
 	}
 
 	/**

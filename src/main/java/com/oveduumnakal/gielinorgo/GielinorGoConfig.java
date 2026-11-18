@@ -49,7 +49,9 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "wildChance",
 		name = "Wild creature rarity",
-		description = "A nearby monster turns wild one time in this many. Lower numbers mean more wild creatures.",
+		description = "A nearby Common monster turns wild one time in this many.\n"
+			+ "Stronger monsters are rarer: Legendary ones 20 times less often.\n"
+			+ "Lower numbers mean more wild creatures.",
 		position = 0
 	)
 	default int wildChance()
@@ -536,6 +538,23 @@ public interface GielinorGoConfig extends Config
 		position = 27
 	)
 	default boolean windowKeyHints()
+	{
+		return true;
+	}
+
+	/**
+	 * Whether hovering a wild creature shows a small tooltip about it.
+	 *
+	 * @return true to show the tooltip
+	 */
+	@ConfigItem(
+		keyName = "wildTooltip",
+		name = "Wild creature tooltip",
+		description = "Shows a small tooltip with the name, level, style and Creature Log record when you hover a wild"
+			+ " creature.\nIt hides while a menu is open and during a battle.",
+		position = 29
+	)
+	default boolean wildTooltip()
 	{
 		return true;
 	}
