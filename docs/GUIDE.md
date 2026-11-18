@@ -18,7 +18,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   click throws your selected jar instead. When no creature can fight (your team is empty, or, with **Choose battle actions** on, your lead is too tired;
   with it off, the whole team is), Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
   behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
-  finds. At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
+  finds (the **Wild creature rarity** setting is the chance for Common monsters; Uncommon ones turn wild 0.6 times as
+  often, Rare 0.35, Epic 0.15 and Legendary 0.05). At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
   the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
   seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
@@ -66,7 +67,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Earn jars by playing**
 
-  You start with 10 Bronze jars. Walking earns more ("Found a Bronze jar"), every level-up in the real game gives three, and battle wins
+  You start with 10 Bronze jars. Walking earns more ("Found a Bronze jar" every 300 tiles), every level-up in the real game gives three, and battle wins
   can drop better ones as your trainer level grows.
 
 - **Find specialty jars while skilling**
@@ -324,7 +325,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Eggs hatch as you walk**
 
   Battle wins sometimes drop an egg. Carry up to three, and each hatches into a new creature once you have
-  walked far enough. Rarer eggs take longer and hatch rarer creatures.
+  walked far enough. Rarer eggs take longer and hatch rarer creatures: a Common egg needs 1,000 tiles, an Uncommon
+  1,600, a Rare 2,400, an Epic 3,200 and a Legendary 4,000. An egg you already carry keeps its old target.
 
 - **Gilded creatures**
 
@@ -345,7 +347,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Featured today**
 
   Each day one species of every rarity is featured, the same for every player on the same plugin version, and a
-  featured species turns wild three times as often. The Today section in the Collection tab names them and
+  featured species turns wild three times as often (this multiplies with the tier's own factor). Fishing,
+  Woodcutting, Mining, Farming and Hunter encounters are not weighted by tier. The Today section in the Collection tab names them and
   shows when they change (midnight UTC). A star marks them in the Log, and the Log's filter has a **Featured**
   choice.
 
@@ -374,7 +377,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   task every Monday. They are the same for every player. Daily tasks are things like catching a few creatures,
   catching ones of one combat style, catching one underground, winning battles, walking, gaining XP in any skill or
   hatching an egg. The weekly task is bigger: beat a City Champion, catch 25 creatures, win 15 battles or walk
-  5,000 tiles. They show on the Tasks tab (and the top three in the Party tab), with a bar for each and the time left to the reset.
+  10,000 tiles (the daily walking task is 1,200 tiles). They show on the Tasks tab (and the top three in the Party tab), with a bar for each and the time left to the reset.
 
 - **Rewards are paid for you**
 
