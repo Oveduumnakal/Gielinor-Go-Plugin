@@ -1104,7 +1104,7 @@ final class WindowPages implements WindowShell.PageActions
 		@Override
 		public void revive()
 		{
-			actions.useItem(pick(), ItemType.REVIVE);
+			actions.reviveAtBank(pick());
 		}
 	}
 }

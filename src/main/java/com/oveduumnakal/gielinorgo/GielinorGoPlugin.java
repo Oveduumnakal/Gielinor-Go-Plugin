@@ -1402,7 +1402,7 @@ public class GielinorGoPlugin extends Plugin
 		BattleSession battle = game.startFriendBattle(friend);
 		BattleState state = battle.state();
 		Combatant first = state.mine();
-		boolean leadFirst = !battle.fighters().isEmpty() && battle.fighters().get(0) == game.data().lead();
+		boolean leadFirst = !battle.fighters().isEmpty() && battle.fighters().get(0) == game.followerCreature();
 		boolean staged = config.battleAnimations() && !stage.active()
 			&& arena.startOpen(state.foe().speciesKey(), first.speciesKey(), first.isGilded(), first.npcId(),
 				leadFirst);
@@ -1629,7 +1629,7 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void updateFollower()
 	{
-		Creature lead = config.showFollower() && !hiddenForPvp() ? game.data().lead() : null;
+		Creature lead = config.showFollower() && !hiddenForPvp() ? game.followerCreature() : null;
 		leadTag = lead != null && config.showLeadName()
 			? FollowerTagOverlay.nameFor(lead.nickname, game.speciesNameOf(lead), BondRules.hearts(lead.bond)) : null;
 		follower.gameTick(lead == null ? null : lead.species, lead == null ? 0 : lead.npcId,
@@ -2255,7 +2255,7 @@ public class GielinorGoPlugin extends Plugin
 		BattleState state = battle.state();
 		Combatant first = state.mine();
 		List<Creature> fighters = battle.fighters();
-		boolean leadFirst = fighters.get(0) == game.data().lead();
+		boolean leadFirst = fighters.get(0) == game.followerCreature();
 		boolean staged = config.battleAnimations() && !stage.active()
 			&& arena.startOpen(state.foe().speciesKey(), first.speciesKey(), first.isGilded(), first.npcId(),
 				leadFirst);

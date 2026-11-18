@@ -109,6 +109,8 @@ A Creature Log, daily tasks and daily events give you goals.
   progress. (#216)
 - **XP while you are away.** XP you gain on mobile, in another client or with the plugin off trains your team the next
   time you log in, with jars for the skills and for level-ups. (#219)
+- **Fainting.** A creature that reaches 0 health faints and stays down until you revive it in a city or at a bank
+  (or with a Revive draught anywhere); it comes back at 50%. (#221)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

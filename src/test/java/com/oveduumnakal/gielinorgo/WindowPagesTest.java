@@ -613,4 +613,22 @@ public class WindowPagesTest
 		for (String id : rig.ids())
 			assertFalse(id, id.startsWith("row:"));
 	}
+
+	private static List<CreatureView> withFaintedSecond()
+	{
+		return Arrays.asList(PartyRig.creature("Cow", 5, 1.0, null),
+			PartyRig.creature("Goblin", 9, 0.0, null).withFainted(true));
+	}
+
+	@Test
+	public void reviveInThePartyMenuAsksTheGameToReviveAtABank()
+	{
+		rig.publish(PartyRig.state(withFaintedSecond()), true);
+		rig.open();
+
+		openMenuOnRow(1);
+		chooseMenuItem(6);
+
+		assertEquals(Collections.singletonList("reviveAtBank TEAM#1"), rig.calls);
+	}
 }

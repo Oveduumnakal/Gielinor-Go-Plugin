@@ -427,4 +427,26 @@ public class StoragePageTest
 
 		return list;
 	}
+
+	@Test
+	public void aFaintedStoredCreatureHasAReviveItemThatAsksTheGame()
+	{
+		List<CreatureView> list = stored(2);
+		list.set(0, PartyRig.creature("Goblin", 9, 0.0, null).withFainted(true));
+		PartyRig rig = page(list);
+
+		menuItem(rig, StoragePage.rowId(0), 1);
+
+		assertEquals(Collections.singletonList("reviveAtBank STORAGE#0"), rig.calls);
+	}
+
+	@Test
+	public void aStoredCreatureThatIsUpHasNoReviveItem()
+	{
+		PartyRig rig = page(stored(2));
+
+		menuItem(rig, StoragePage.rowId(0), 1);
+
+		assertFalse(rig.calls.contains("reviveAtBank STORAGE#0"));
+	}
 }

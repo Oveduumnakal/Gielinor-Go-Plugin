@@ -692,7 +692,7 @@ final class GoGame
 	 */
 	private void walkWithLead(int tiles)
 	{
-		Creature lead = data.lead();
+		Creature lead = followerCreature();
 		if (lead != bondLead)
 		{
 			bondLead = lead;
@@ -901,8 +901,9 @@ final class GoGame
 		if (fought.won())
 			payChampionWin(foe, again);
 
-		return new TeamBattleResult(fought.won(), lines, fought.duels())
-			.withLeadFirst(fighters.get(0) == data.lead());
+		boolean leadFirst = fighters.get(0) == followerCreature();
+		promoteLiving();
+		return new TeamBattleResult(fought.won(), lines, fought.duels()).withLeadFirst(leadFirst);
 	}
 
 	/** Rewards an OSRS level-up with Bronze jars. */
@@ -1129,7 +1130,7 @@ final class GoGame
 		boolean won = state.ended() == TurnResult.Status.WON;
 		log.add(BattleSim.closing(state.mine(), state.foe(), won));
 		return new BattleResult(won, log, state.mine().hpFraction(), state.totalAttacks(), turns,
-			session.fighter(0), session.fighters().get(0) == data.lead());
+			session.fighter(0), session.fighters().get(0) == followerCreature());
 	}
 
 	private BattleSession startAutoBattle(WildEntry entry)
@@ -1677,6 +1678,12 @@ final class GoGame
 
 	private void settle(BattleSession session, TurnResult.Status status)
 	{
+		settleOutcome(session, status);
+		promoteLiving();
+	}
+
+	private void settleOutcome(BattleSession session, TurnResult.Status status)
+	{
 		BattleState state = session.state();
 		if (session.isElite())
 		{
@@ -1748,6 +1755,47 @@ final class GoGame
 		}
 
 		session.verdict(lines);
+	}
+
+	/**
+	 * Tells which creature walks beside the player and leads the team into a fight: the lead, or, when the lead has
+	 * fainted, the first creature of the team that has not.
+	 *
+	 * @return the creature, or null when the team is empty or every member has fainted
+	 */
+	Creature followerCreature()
+	{
+		Creature lead = data.lead();
+		if (lead == null || !lead.fainted)
+			return lead;
+
+		for (Creature creature : data.team)
+		{
+			if (!creature.fainted)
+				return creature;
+		}
+
+		return null;
+	}
+
+	/**
+	 * After a fight, puts the first creature that has not fainted in the lead's place when the lead has fainted. It
+	 * does nothing while an Elite run is open, since the order is frozen then; the run's end does it.
+	 */
+	private void promoteLiving()
+	{
+		if (eliteOpen() || data.team.isEmpty() || !data.team.get(0).fainted)
+			return;
+
+		for (int i = 1; i < data.team.size(); i++)
+		{
+			if (!data.team.get(i).fainted)
+			{
+				data.team.add(0, data.team.remove(i));
+				dirty = true;
+				return;
+			}
+		}
 	}
 
 	/**
@@ -2674,7 +2722,7 @@ final class GoGame
 			creatureXp += 20L + 5L * member.level();
 
 		shareXp(first ? creatureXp : creatureXp / 2);
-		addBond(data.lead(), BondRules.CHAMPION_POINTS);
+		addBond(followerCreature(), BondRules.CHAMPION_POINTS);
 		if (!first)
 			return;
 
@@ -3005,6 +3053,7 @@ final class GoGame
 		{
 			run.forfeit();
 			run = null;
+			promoteLiving();
 			tell("No creature is left to fight. The Elite run is over", Tone.BAD);
 			return null;
 		}
@@ -3061,6 +3110,7 @@ final class GoGame
 
 		run.forfeit();
 		run = null;
+		promoteLiving();
 		dirty = true;
 		tell("You gave up the Elite challenge. Your team rests again", Tone.INFO);
 	}
@@ -3132,6 +3182,7 @@ final class GoGame
 		{
 			run.forfeit();
 			run = null;
+			promoteLiving();
 			tell("No creature is left to fight. The Elite run is over", Tone.BAD);
 			return null;
 		}
@@ -3167,8 +3218,9 @@ final class GoGame
 			run = null;
 		}
 
-		return new TeamBattleResult(fought.won(), lines, fought.duels())
-			.withLeadFirst(fighters.get(0) == data.lead());
+		boolean leadFirst = fighters.get(0) == followerCreature();
+		promoteLiving();
+		return new TeamBattleResult(fought.won(), lines, fought.duels()).withLeadFirst(leadFirst);
 	}
 
 	/**
@@ -3184,7 +3236,7 @@ final class GoGame
 			creatureXp += 20L + 5L * member.level();
 
 		shareXp(data.eliteClears == 0 ? creatureXp : creatureXp / 2);
-		addBond(data.lead(), BondRules.CHAMPION_POINTS);
+		addBond(followerCreature(), BondRules.CHAMPION_POINTS);
 		payTasks(startTasks().battleWon());
 	}
 
@@ -3383,7 +3435,7 @@ final class GoGame
 		int before = lead.level();
 		long won = BondRules.withBonus(20L + 5L * entry.level(), BondRules.hearts(lead.bond));
 		lead.xp = XpRules.capped(lead.xp + won);
-		if (lead == data.lead())
+		if (lead == followerCreature())
 			addBond(lead, BondRules.WIN_POINTS);
 
 		if (lead.level() > before)
@@ -3888,6 +3940,7 @@ final class GoGame
 				MoveLearning.pending(creature, moves), BondRules.hearts(creature.bond), waitingText(creature))
 				.withSpecies(found)
 				.withGender(creature.gender())
+				.withFainted(creature.fainted)
 				.withDetails(examine.textFor(creature.species), found == null ? null : growsInto(found.key())));
 		}
 

@@ -136,14 +136,16 @@ public class GoGameFaintTest
 	@Test
 	public void aWinnerThatSurvivesIsNotFaintedAndOnlyTheOneThatDroppedIs()
 	{
-		game.data().team.add(new Creature("chicken", 1, now));
-		game.data().team.add(new Creature("goblin", 70, now));
+		Creature weak = new Creature("chicken", 1, now);
+		Creature strong = new Creature("goblin", 70, now);
+		game.data().team.add(weak);
+		game.data().team.add(strong);
 
 		BattleResult result = game.battle(wild(GOBLIN, 12, 5));
 
 		assertTrue(result.won());
-		assertTrue("the weak lead went down", member(0).fainted);
-		assertFalse("the strong one won", member(1).fainted);
+		assertTrue("the weak lead went down", weak.fainted);
+		assertFalse("the strong one won", strong.fainted);
 	}
 
 	@Test

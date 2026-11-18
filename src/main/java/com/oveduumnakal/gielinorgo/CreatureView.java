@@ -177,8 +177,7 @@ final class CreatureView
 	}
 
 	/**
-	 * Marks the creature as fainted. Nothing makes a creature faint yet; the painted window has the state ready for
-	 * when it does, and tests use it with a fake view.
+	 * Marks the creature as fainted, as {@link Creature#fainted} says; the window dresses a fainted row.
 	 *
 	 * @param down whether the creature is fainted
 	 * @return a copy of this view with the mark
@@ -217,7 +216,7 @@ final class CreatureView
 		return growsInto;
 	}
 
-	/** @return whether the creature is fainted; always false until fainting exists */
+	/** @return whether the creature has fainted */
 	boolean fainted()
 	{
 		return fainted;
@@ -367,6 +366,7 @@ final class CreatureView
 		CreatureView that = (CreatureView) other;
 		return level == that.level
 			&& gilded == that.gilded
+			&& fainted == that.fainted
 			&& Double.compare(xpProgress, that.xpProgress) == 0
 			&& Double.compare(hpFraction, that.hpFraction) == 0
 			&& rarity == that.rarity
@@ -408,6 +408,6 @@ final class CreatureView
 	public int hashCode()
 	{
 		return Objects.hash(name, level, xpProgress, hpFraction, rarity, type, gilded, nickname, rolls, npcId, moves,
-			pending, hearts);
+			pending, hearts, fainted);
 	}
 }

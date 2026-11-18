@@ -188,22 +188,33 @@ public class ContextMenuRulesTest
 	}
 
 	@Test
-	public void reviveIsOnlyOfferedForAFaintedCreatureAndNeedsADraughtAndAPlace()
+	public void reviveIsOnlyOfferedForAFaintedCreatureAndIsFreeButNeedsAPlaceAndNoEliteRun()
 	{
 		ContextMenuRules.Facts well = facts(1, 0.8, false, true, items(ItemType.REVIVE, 1));
 		RowModel down = RowModel.of(PartyRig.creature("Goblin", 9, 0.8, null).withFainted(true), 1);
 
 		assertFalse(labels(ContextMenuRules.party(well, commands)).contains("Revive"));
 		List<ContextMenu.Item> ready = ContextMenuRules.party(new ContextMenuRules.Facts(down, false, true,
-			items(ItemType.REVIVE, 1)), commands);
-		assertTrue(item(ready, "Revive").enabled());
+			Collections.emptyMap()), commands);
+		assertTrue("no draught is needed", item(ready, "Revive").enabled());
 		List<ContextMenu.Item> away = ContextMenuRules.party(new ContextMenuRules.Facts(down, false, false,
 			items(ItemType.REVIVE, 1)), commands);
 		assertFalse(item(away, "Revive").enabled());
 		assertEquals(ContextMenuRules.SWAP_REASON, item(away, "Revive").reason());
-		List<ContextMenu.Item> none = ContextMenuRules.party(new ContextMenuRules.Facts(down, false, true,
+		List<ContextMenu.Item> running = ContextMenuRules.party(new ContextMenuRules.Facts(down, true, true,
 			Collections.emptyMap()), commands);
-		assertFalse(item(none, "Revive").enabled());
+		assertFalse(item(running, "Revive").enabled());
+		assertEquals(ContextMenuRules.ELITE_REASON, item(running, "Revive").reason());
+	}
+
+	@Test
+	public void aFaintedCreatureCanUseAReviveDraughtAnywhere()
+	{
+		RowModel down = RowModel.of(PartyRig.creature("Goblin", 9, 0.0, null).withFainted(true), 1);
+		ContextMenuRules.Facts away = new ContextMenuRules.Facts(down, true, false, items(ItemType.REVIVE, 1));
+
+		assertEquals(Collections.singletonList(ItemType.REVIVE), ContextMenuRules.usable(away));
+		assertTrue(item(ContextMenuRules.party(away, commands), "Use item").enabled());
 	}
 
 	@Test

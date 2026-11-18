@@ -25,6 +25,19 @@ final class ItemMenu
 	 */
 	static List<ItemType> usable(Map<ItemType, Integer> owned, double health)
 	{
+		return usable(owned, health, false);
+	}
+
+	/**
+	 * Lists the owned items that would do something for a creature outside battle, counting that it may have fainted.
+	 *
+	 * @param owned how many of each item the player owns; may be null or empty
+	 * @param health the creature's share of full health as the window shows it
+	 * @param fainted whether the creature has fainted, which only a Revive draught helps
+	 * @return the items to offer, in the order of {@link ItemType#values()}; empty when none would help
+	 */
+	static List<ItemType> usable(Map<ItemType, Integer> owned, double health, boolean fainted)
+	{
 		List<ItemType> list = new ArrayList<>();
 		if (owned == null)
 			return list;
@@ -32,7 +45,7 @@ final class ItemMenu
 		for (ItemType type : ItemType.values())
 		{
 			Integer count = owned.get(type);
-			if (count != null && count > 0 && ItemRules.appliesOutsideBattle(type, health))
+			if (count != null && count > 0 && ItemRules.appliesOutsideBattle(type, health, fainted))
 				list.add(type);
 		}
 

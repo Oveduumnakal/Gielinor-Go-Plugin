@@ -94,14 +94,15 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Healing items**
 
   Four items help a hurt creature. A **Small salve** restores 25% health and a **Large salve** 60%. A **Revive
-  draught** lifts a creature that is too tired to battle (below 25% health) to 50%. An **Antidote** cures poison,
+  draught** lifts a creature that is too tired to battle (below 25% health) to 50%, and also brings back a creature
+  that has fainted, to 50%, anywhere. Salves do nothing for a fainted creature. An **Antidote** cures poison,
   venom and burn, in battle only. Small salves turn
   up while training Herblore or Cooking and after about one battle win in ten; Herblore also finds Antidotes.
   Bigger XP drops find more, up to a 30% chance, and the roll is separate from the specialty jar's, so one drop can
   give a jar, an item, both or neither. Battle wins can also drop a Large salve (3%) or a Revive draught (2%), and
   your first win over each City Champion pays 2 Large salves and a Revive draught. Right-click a creature in the
   Party and choose **Use item** to pick an item that would help it; one that would do nothing is not
-  offered and never spent. Health also comes back by itself over five minutes. The Bag
+  offered and never spent. Health also comes back by itself over five minutes, except for a fainted creature. The Bag
   shows how many of each you own, greyed at zero. Items cannot be traded.
 
 - **Everything shows where it happens**
@@ -232,12 +233,27 @@ Every feature and every number, in detail. For the short version, see the [READM
   coloured tag floats over an affected creature in a battle that is acted out, and the battle box shows the tag next
   to each name. Friends see the same statuses (party protocol 4).
 
+- **Fainting**
+
+  A creature of yours that reaches 0 health in a battle (wild, City Champion, rematch, rival or Elite) faints: the
+  line `Bob fainted. Revive it at a bank` appears, its row turns grey with a **Fainted** tag and an empty health bar,
+  and it never rests back up, in the team or in Storage. A creature that wins with health left just rests as before.
+  **Revive** (right-click a fainted creature in Party, Summary or Storage) brings it back at 50% for free, but only
+  where you may change your team: in a city or team town, near a banker, bank booth or chest, or with the bank open.
+  Away from those it is dim (`Needs a city or bank`), and during an Elite run it is dim too (`Finish the Elite run`).
+  A **Revive draught** works anywhere, also during an Elite run: **Use item** on the fainted creature. Fainted
+  creatures still get training XP and can still be made the lead, but they cannot be traded. If your lead has fainted,
+  the first creature that has not follows you and fights, and takes the lead after the battle. If everything you own
+  has fainted, you have no draught and nothing living to catch with, a passing healer stands your first creature up at
+  25% health 10 minutes after the last one fainted.
+
 - **Battles that play themselves**
 
   Choose **Battle** on a wild creature and your lead fights it right away. When it faints, the next creature of
   your team that can fight steps in by itself ("Go, Bob!") and the battle goes on; it is lost only when your whole
   team is down. Creatures below a quarter of their health sit out, so when the lead is too tired the first rested
-  creature opens. A win pays once and the creature that lands the last blow gets the creature XP. Each hit floats over the creature's
+  creature opens. A creature that reaches 0 health **faints**: it does not rest back up and sits out every battle
+  until you revive it (see **Fainting** below). A win pays once and the creature that lands the last blow gets the creature XP. Each hit floats over the creature's
   head, and the hits your own creature takes float over yours, so you never have to stop skilling or fighting. There are five styles and each beats two and loses to two (see the chart below). A creature's
   card tooltip reminds you of its style's match-up. There is no opening line: the fight goes
   straight from the face-off to the first blow. A creature that loses to you is easier to catch. Every attack is one of the creature's moves, and the
@@ -280,7 +296,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   - **Switch**: pick any other creature of your team that can still fight. It costs your turn, so the other creature
     attacks the one that steps in. When your creature faints you must pick the next one, and that switch is free.
     The battle is lost when your whole team is down. Only creatures rested to a quarter of their health or more
-    take part.
+    take part, and a creature that fainted in an earlier battle sits out.
   - **Catch** (wild creatures only): throws the jar chosen in the header. The chance grows with the health the
     creature has lost, from the normal chance at full health up to 1.5 times it near zero (the right-click menu shows
     the odds). A jar that does not hold costs your turn and the creature attacks; a catch or a creature that runs off
@@ -486,7 +502,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   The first win of each battle pays creature XP, trainer XP, jars of the best tier you have unlocked (3, 4, 5, 6 and
   8) and an egg (Rare, Rare, Epic, Epic, Legendary), as jars when you have no room for an egg. A loss costs nothing
-  except the health your creatures lost; rest and challenge again. After battle 5 the card stays, marked beaten.
+  except the health your creatures lost (a creature that reaches 0 faints, see **Fainting**); rest or revive and challenge
+  again. After battle 5 the card stays, marked beaten.
   Nothing Bryn gives needs another player.
 
 ### Elite challenge
@@ -505,7 +522,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   card shows `Elite 3 of 5` with **Continue** and **Forfeit**. While a run is open you cannot change your team or
   battle anything else. A creature you catch, hatch or receive meanwhile goes to storage, so the team keeps the health
   it carried. Lose a battle, forfeit or log out and the run is over; the next attempt starts at the first
-  trainer. You cannot start with a full egg bag (`Free an egg slot first`). The battles are acted out like a City
+  trainer. A creature that faints in the run stays fainted for the run unless you use a Revive draught, and you cannot
+  revive it at a bank until the run ends; fainted creatures stay fainted after it. You cannot start with a full egg bag (`Free an egg slot first`). The battles are acted out like a City
   Champion battle. With **Choose battle actions** off they are decided automatically.
 
 - **Choosing your turns**
@@ -580,7 +598,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   Party lists your team of up to six as rows with portrait, nickname, gender, style, level, health and XP bars. A new
   player sees **Choose your first creature** here. Left-click a row for its **Summary** (stats, nature, moves, bond,
   evolution hint). Right-click a row, or press Enter on a highlighted one, for **Make lead**, **Move to storage**,
-  **Rename**, **Moves**, **Use item** and **Open wiki**. A small column on the right shows your eggs and top tasks.
+  **Rename**, **Moves**, **Use item** and **Open wiki**, and **Revive** for a fainted creature, whose row is grey
+  with a **Fainted** tag. A small column on the right shows your eggs and top tasks.
 
 - **Bag, Storage, Collection, Tasks and Battle**
 

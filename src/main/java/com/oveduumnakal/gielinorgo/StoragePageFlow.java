@@ -32,6 +32,9 @@ final class StoragePageFlow
 	/** The menu item that moves a creature to the team. */
 	static final String MOVE_TO_TEAM = "Move to team";
 
+	/** The menu item that revives a fainted creature for free; the Storage tab only opens where that is allowed. */
+	static final String REVIVE = ContextMenuRules.REVIVE;
+
 	/** The menu item that renames a creature. */
 	static final String RENAME = "Rename...";
 
@@ -151,6 +154,9 @@ final class StoragePageFlow
 		CreatureView view = storage.get(place);
 		List<ContextMenu.Item> items = new ArrayList<>();
 		items.add(ContextMenu.Item.of(MOVE_TO_TEAM, () -> actions.moveToTeam(pick(place, view))));
+		if (view.fainted())
+			items.add(ContextMenu.Item.of(REVIVE, () -> actions.reviveAtBank(pick(place, view))));
+
 		items.add(ContextMenu.Item.of(RENAME, () -> rename(place, view)));
 		items.add(useItem(place, view));
 		items.add(ContextMenu.Item.of(RELEASE, () -> releaseOne(place, view)));
