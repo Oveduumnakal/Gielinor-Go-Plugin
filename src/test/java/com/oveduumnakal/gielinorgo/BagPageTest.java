@@ -97,7 +97,7 @@ public class BagPageTest
 		assertTrue(tip(rig, BagPainter.jarId(4)).contains("catch chance on"));
 		assertTrue(tip(rig, "bag:item:0").contains("Restores 25% health"));
 		assertTrue(tip(rig, "bag:egg:1").contains("steps to go"));
-		assertTrue(tip(rig, "bag:steps").contains("110 more tiles"));
+		assertTrue(tip(rig, "bag:steps").contains((GoGame.TILES_PER_JAR - 40) + " more tiles"));
 	}
 
 	@Test

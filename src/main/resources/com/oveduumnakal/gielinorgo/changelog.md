@@ -97,6 +97,8 @@ A Creature Log, daily tasks and daily events give you goals.
   change log and a Feedback menu. (#226)
 - **The side panel is gone.** The sidebar jar button and the jar on the game screen open the painted window, and
   there is no hidden old-panel setting any more. (#227)
+- **Longer walks.** A Bronze jar now takes 300 tiles, eggs take 1,000 to 4,000 tiles and the walking tasks ask for
+  twice as many tiles. Eggs you already carry keep their old target. (#206)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
