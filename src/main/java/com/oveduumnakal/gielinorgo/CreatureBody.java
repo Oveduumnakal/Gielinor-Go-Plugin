@@ -68,6 +68,7 @@ final class CreatureBody extends RuneLiteObject
 	private final int restLift;
 	private final AnimationController controller;
 	private boolean lying;
+	private boolean defeated;
 	private double size = 1.0;
 	private int level = OpacityFade.SOLID;
 	private Mode mode = Mode.LOOP;
@@ -400,6 +401,7 @@ final class CreatureBody extends RuneLiteObject
 	void act(Act act)
 	{
 		lying = false;
+		defeated = false;
 		lungeAge = BattleTimeline.LUNGE_TICKS;
 		cancelTurn();
 		switch (act)
@@ -418,7 +420,8 @@ final class CreatureBody extends RuneLiteObject
 				break;
 
 			default:
-				if (!pose(animations.death(npcId), Mode.HOLD))
+				defeated = pose(animations.death(npcId), Mode.HOLD);
+				if (!defeated)
 					layDown();
 
 				break;
@@ -479,6 +482,7 @@ final class CreatureBody extends RuneLiteObject
 	{
 		cancelTurn();
 		lying = false;
+		defeated = false;
 		lungeAge = BattleTimeline.LUNGE_TICKS;
 		restBase = base;
 		turnDistance = distance;
@@ -552,6 +556,7 @@ final class CreatureBody extends RuneLiteObject
 	{
 		cancelTurn();
 		lying = false;
+		defeated = false;
 		lungeAge = BattleTimeline.LUNGE_TICKS;
 		mode = Mode.LOOP;
 		playing = base;
@@ -625,11 +630,33 @@ final class CreatureBody extends RuneLiteObject
 		if (wide != NpcModels.NORMAL_SCALE || tall != NpcModels.NORMAL_SCALE)
 			posed.scale(wide, tall, wide);
 
-		int lift = BodyLift.lift(restLowest, tall);
-		if (lift > 0)
-			posed.translate(0, -lift, 0);
-
+		restOnTheGround(posed, tall);
 		return posed;
+	}
+
+	/**
+	 * Lifts a posed body onto the ground. A defeated body is rested on it by its lowest vertex every frame, so a death
+	 * animation that sinks it does not take it under the floor; this replaces the rest lift while it lies there. Any
+	 * other pose gets the rest lift, so a hop still leaves the ground. Never throws: on a failure the body is drawn as
+	 * it is.
+	 *
+	 * @param posed the posed copy of the model, already scaled
+	 * @param tall the height it was scaled to
+	 */
+	private void restOnTheGround(Model posed, int tall)
+	{
+		try
+		{
+			int lift = defeated
+				? BodyLift.restOnGround(posed.getVerticesY(), posed.getVerticesCount())
+				: BodyLift.lift(restLowest, tall);
+			if (lift > 0)
+				posed.translate(0, -lift, 0);
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: could not rest NPC {} on the ground", npcId, e);
+		}
 	}
 
 	private void layDown()
