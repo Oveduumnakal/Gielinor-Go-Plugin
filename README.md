@@ -243,6 +243,7 @@ Then replace this comment with:
 | Choose battle actions | Off | Each battle turn waits for you instead of playing itself. |
 | Battle animations | On | Battles are acted out in the game view. Off shows them as floating text. |
 | Lead creature follows you | On | Your lead walks a step behind you. |
+| Lead wanders when you stop | On | Your lead roams within 3 tiles of you while you stand still. |
 | Also print to chat | Off | Writes catches, battles and rewards to your chatbox as well. Only you see them. |
 | Sounds | On | A short game sound for a catch, a level-up, an evolution and other big moments. Uses the game's sound effect volume. |
 

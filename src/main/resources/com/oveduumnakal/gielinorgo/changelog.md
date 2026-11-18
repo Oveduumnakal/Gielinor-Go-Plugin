@@ -101,6 +101,8 @@ A Creature Log, daily tasks and daily events give you goals.
   twice as many tiles. Eggs you already carry keep their old target. (#206)
 - **Rarer finds.** Stronger monsters turn wild less often: Uncommon at 0.6 times the chance, Rare 0.35, Epic 0.15 and
   Legendary 0.05. The Wild creature rarity setting stays the rate for Common ones. (#213)
+- **Wandering lead.** When you stand still your lead creature wanders around within 3 tiles of you, and walks back
+  to your trail when you set off. A setting turns it off. (#208)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

@@ -146,6 +146,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   follower, the Party row and the battle scenes. Creatures that hatch, evolve or come from a trade, and creatures
   caught before this was added, look like the species' usual monster. Only you can see it, it cannot be clicked, and
   you can switch it off in the settings.
+  When you stand still it wanders around within 3 tiles of you, and walks back to your trail when you set off; the
+  setting "Lead wanders when you stop" turns that off.
 
 - **Every creature is one of a kind**
 
