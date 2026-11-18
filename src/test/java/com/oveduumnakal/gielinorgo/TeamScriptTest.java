@@ -358,12 +358,79 @@ public class TeamScriptTest
 		return new BattleLine("Archer beat Goblin (Lv 9)", Tone.GOOD, true);
 	}
 
+	@Test
+	public void aCutDuelShowsBothCreaturesAttackingWhateverItsLength()
+	{
+		for (int count = 4; count <= 40; count++)
+		{
+			for (boolean leadFirst : new boolean[]{true, false})
+			{
+				List<BattleLine> all = hits(count, leadFirst);
+				List<BattleLine> shown = TeamScript.cut(all);
+				String label = count + (leadFirst ? " lead first" : " foe first");
+
+				assertTrue(label, shown.size() <= TeamScript.TEAM_HIT_BEATS);
+				assertSame(label + " keeps the first blow", all.get(0), shown.get(0));
+				assertEquals(label + " keeps the killing blow", all.get(count - 1).text(),
+					shown.get(shown.size() - 1).text());
+				assertTrue(label + " lead attacks", has(shown, BattleLine.Kind.LEAD_HIT));
+				assertTrue(label + " foe attacks", has(shown, BattleLine.Kind.FOE_HIT));
+				int before = -1;
+				for (BattleLine line : shown)
+				{
+					int at = Integer.parseInt(line.text().substring("hit ".length()));
+					assertTrue(label + " keeps the order", at > before);
+					before = at;
+				}
+			}
+		}
+	}
+
+	@Test
+	public void nineHitsStartingWithTheFoeDoNotShowThreeFoeBlowsAndNoLeadBlow()
+	{
+		assertTrue(has(TeamScript.cut(hits(9, false)), BattleLine.Kind.LEAD_HIT));
+		assertTrue(has(TeamScript.cut(hits(5, true)), BattleLine.Kind.FOE_HIT));
+		assertTrue(has(TeamScript.cut(hits(13, true)), BattleLine.Kind.FOE_HIT));
+	}
+
+	@Test
+	public void theSameSideStreakCountsBlowsByOneCreatureInARow()
+	{
+		assertEquals(0, TeamScript.sameSideStreak(new ArrayList<BattleLine>()));
+		assertEquals(1, TeamScript.sameSideStreak(hits(6)));
+		List<BattleLine> foeOnly = new ArrayList<>(hits(5, false));
+		foeOnly.removeIf(line -> line.kind() == BattleLine.Kind.LEAD_HIT);
+		assertEquals(3, TeamScript.sameSideStreak(foeOnly));
+
+		List<BattleLine> mixed = new ArrayList<>(Arrays.asList(
+			hits(2, true).get(0), hits(2, false).get(0), hits(4, false).get(2), hits(4, false).get(2)));
+		assertEquals(3, TeamScript.sameSideStreak(mixed));
+		mixed.add(3, new BattleLine("stunned", Tone.INFO, false, BattleLine.Kind.SKIPPED, false, CombatType.STAB,
+			false));
+		assertEquals(2, TeamScript.sameSideStreak(mixed));
+	}
+
+	private static boolean has(List<BattleLine> lines, BattleLine.Kind kind)
+	{
+		for (BattleLine line : lines)
+			if (line.kind() == kind)
+				return true;
+
+		return false;
+	}
+
 	private static List<BattleLine> hits(int count)
+	{
+		return hits(count, true);
+	}
+
+	private static List<BattleLine> hits(int count, boolean leadFirst)
 	{
 		List<BattleLine> hits = new ArrayList<>();
 		for (int i = 0; i < count; i++)
 		{
-			boolean mine = i % 2 == 0;
+			boolean mine = (i % 2 == 0) == leadFirst;
 			hits.add(new BattleLine("hit " + i, mine ? Tone.GOOD : Tone.BAD, !mine,
 				mine ? BattleLine.Kind.LEAD_HIT : BattleLine.Kind.FOE_HIT, false, CombatType.STAB, false));
 		}

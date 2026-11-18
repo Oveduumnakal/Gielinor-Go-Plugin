@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * What an automatic wild battle with the whole team shows when a creature stepped in: the lines that float and the
  * beats that are acted out, one to one. Each duel, the stretch between two switches, is cut down to a few blows
@@ -16,6 +19,11 @@ import java.util.List;
  */
 final class WildScript
 {
+	private static final Logger log = LoggerFactory.getLogger(WildScript.class);
+
+	/** The run of blows by one creature that is worth a line in the log. */
+	private static final int LONG_STREAK = 3;
+
 	private final List<BattleLine> lines;
 	private final List<BattleTimeline.Step> steps;
 
@@ -60,7 +68,26 @@ final class WildScript
 
 		flush(hits, lines, steps);
 		lines.add(all.get(all.size() - 1));
+		logOneSidedShow(all, lines);
 		return new WildScript(lines, steps);
+	}
+
+	private static void logOneSidedShow(List<BattleLine> all, List<BattleLine> shown)
+	{
+		if (TeamScript.sameSideStreak(shown) < LONG_STREAK || TeamScript.sameSideStreak(all) >= all.size())
+			return;
+
+		boolean lead = false;
+		boolean foe = false;
+		for (BattleLine line : all)
+		{
+			lead |= line.kind() == BattleLine.Kind.LEAD_HIT;
+			foe |= line.kind() == BattleLine.Kind.FOE_HIT;
+		}
+
+		if (lead && foe)
+			log.warn("Gielinor Go: the shown battle has {} attacks by one side in a row: {}",
+				TeamScript.sameSideStreak(shown), shown);
 	}
 
 	private static void flush(List<BattleLine> hits, List<BattleLine> lines, List<BattleTimeline.Step> steps)
