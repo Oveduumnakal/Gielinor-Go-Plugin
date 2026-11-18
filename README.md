@@ -245,6 +245,7 @@ Then replace this comment with:
 | Lead creature follows you | On | Your lead walks a step behind you. |
 | Lead wanders when you stop | On | Your lead roams within 3 tiles of you while you stand still. |
 | Also print to chat | Off | Writes catches, battles and rewards to your chatbox as well. Only you see them. |
+| Count XP gained while away | On | XP from mobile or another client trains your team when you log in. |
 | Sounds | On | A short game sound for a catch, a level-up, an evolution and other big moments. Uses the game's sound effect volume. |
 
 The rest of the settings are described in the [full guide](docs/GUIDE.md).

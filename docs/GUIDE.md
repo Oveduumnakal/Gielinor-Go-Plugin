@@ -153,6 +153,27 @@ Every feature and every number, in detail. For the short version, see the [READM
   Every XP drop you earn, in any skill, also trains your team of up to six creatures. The creature in the lead
   slot learns twice as fast.
 
+- **XP you gain while away**
+
+  XP gained somewhere the plugin was not running, such as on mobile, in the official client or with the plugin
+  switched off, counts the next time you log in. The plugin remembers your XP in every skill, and at login it
+  compares that with what the game reports now. No web request is made.
+
+  What it pays: creature XP at one point for every 10 XP gained, shared **equally** across your whole team, with no
+  extra share for the lead (a bond bonus still applies to each creature); specialty jars and healing items by skill,
+  at the usual rate of one jar for every 20,000 XP and one item for every 30,000 XP (the part of a jar that is left
+  over is a chance); and 3 Bronze jars for each level you gained. You see up to three short lines: how much your team
+  trained, the jars found and the items found.
+
+  What it does not pay: steps, egg hatching, Bronze jars from walking, bond, daily and weekly tasks, days played and
+  anything that needs a place or an action, because the plugin cannot know when or where the XP was gained. At most
+  1,000,000 XP of one skill and 3,000,000 XP in all count in one login; the rest is dropped, and the first line says
+  it was capped.
+
+  It needs one login with the plugin first: the first login after an update only records your starting point. XP
+  from seasonal, deadman, tournament and similar worlds never counts. Turn it off with **Count XP gained while away**
+  in the settings; XP gained while it is off is not counted later.
+
 - **Your lead walks with you**
 
   Your lead creature follows a step behind you as a small copy of itself, so it never gets in the way. A gilded

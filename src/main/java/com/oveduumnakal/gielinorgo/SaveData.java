@@ -103,6 +103,12 @@ final class SaveData
 	/** Species keys of the bosses that have already paid their sure first-kill egg. Null in older saves. */
 	Set<String> bossKills = new LinkedHashSet<>();
 
+	/**
+	 * OSRS XP of each skill, by {@code Skill} name, as of the last time the plugin saw it, to count XP gained while it
+	 * was not watching. Null in older saves.
+	 */
+	Map<String, Integer> osrsXp = new HashMap<>();
+
 	/** The key the Warrior jar was saved under before it became the Stab, Slash and Crush jars. */
 	private static final String OLD_WARRIOR = "WARRIOR";
 
@@ -136,6 +142,9 @@ final class SaveData
 		tasks = tasks == null ? new TaskProgress() : tasks.sanitized();
 		milestones = milestones == null ? new LinkedHashSet<>() : new LinkedHashSet<>(milestones);
 		bossKills = bossKills == null ? new LinkedHashSet<>() : new LinkedHashSet<>(bossKills);
+		osrsXp = osrsXp == null ? new HashMap<>() : new HashMap<>(osrsXp);
+		osrsXp.values().removeIf(xp -> xp == null || xp < 0);
+		osrsXp.remove("OVERALL");
 		eggs.removeIf(egg -> egg == null);
 		team.removeIf(creature -> creature == null || creature.species == null);
 		storage.removeIf(creature -> creature == null || creature.species == null);
