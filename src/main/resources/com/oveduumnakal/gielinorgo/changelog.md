@@ -129,6 +129,9 @@ A Creature Log, daily tasks and daily events give you goals.
   (or with a Revive draught anywhere); it comes back at 50%. (#221)
 - **Stronger hatchlings.** Rarer eggs hatch at a higher level: Common 1, Uncommon 5, Rare 10, Epic 20 and Legendary
   30, boss eggs too. (#220)
+- **Battle balance.** Wild creatures now appear within one level of their usual level, Hex hits as hard as a Magic
+  bolt, and Rare Magic creatures are a little tougher so no Rare style is left behind. Friend battles need the same
+  version on both sides. (#220)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

@@ -62,9 +62,11 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	 * same species at the same level has other health, attack, defence and speed. Version 8 added battles that both
 	 * players steer turn by turn, with the messages {@link #TURN} and {@link #LEAVE} and the {@code steered} flag of a
 	 * challenge and its answer. Version 9 added the {@link #READY} message, which lets both players time a turn of
-	 * such a battle from the same moment, and made every ending of it send {@link #LEAVE}.
+	 * such a battle from the same moment, and made every ending of it send {@link #LEAVE}. Version 10 retuned the
+	 * battle data (the Hex move, the stat factors of Rare Magic species and the wild level spread), and both players
+	 * run the same simulation of a friend battle, so a build from before it would roll another winner.
 	 */
-	static final int PROTOCOL = 9;
+	static final int PROTOCOL = 10;
 
 	/** One creature or one egg named in a trade. Exactly one of the species and the egg rarity is set. */
 	static final class Item

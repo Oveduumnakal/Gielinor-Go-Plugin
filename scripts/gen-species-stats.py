@@ -15,6 +15,14 @@ Each factor is 0.75 to 1.25 (the owner's limit) and shapes a stat around the for
 Missing wiki numbers give 1.0. The three curve-based ratios and the speed value are scaled so their product is 1.0
 (a species that is tough pays for it elsewhere), then the three ratios are squeezed smoothly into the range.
 
+Magic balance (issue #220): the species factors above leave the Rare Magic creatures about 6 points of win rate behind
+the other styles at equal level (the balance harness, section 6g: 41 to 44% against 49 to 56%). Every Magic species of
+the Rare tier (combat level 81 to 150) therefore gets health, attack and defence times 1.05, capped at 1.25 and rounded
+to two places, before the never-worse pass. Speed is left alone. It lifts Rare Magic to about 50% and moves the other
+styles by one or two points. The step runs in every full run, so the file stays reproducible from the wiki. To apply
+only this step, without the network, to a species.json made without it: python3 scripts/gen-species-stats.py
+--adjust-only (it multiplies, so run it once on an unadjusted file, never twice).
+
 Never worse: along every evolution link of evolutions.json, a stat of the later stage is lifted until, at every
 creature level from the evolution level to 99, it is at least what the earlier stage had. The lifts are printed.
 """
@@ -41,6 +49,9 @@ MIN_FACTOR = 0.75
 MAX_FACTOR = 1.25
 FAST_MAX_ATTACK_SPEED = gen_species.FAST_MAX_ATTACK_SPEED
 SPEED_BY_TICKS = {4: 1.0, 5: 0.9}
+RARE_MIN_LEVEL = 81
+EPIC_MIN_LEVEL = 151
+RARE_MAGIC_NUDGE = 1.05
 MAX_LEVEL = 99
 
 
@@ -107,6 +118,18 @@ def factors(level, numbers, curves):
     return [round(health, 2), round(attack, 2), round(defence, 2), round(speed, 2)]
 
 
+def nudge_rare_magic(species):
+    """Multiplies health, attack and defence of every Rare Magic species by RARE_MAGIC_NUDGE (see the docstring)."""
+    nudged = 0
+    for e in species.values():
+        if e["style"] != "MAGIC" or "stats" not in e or not RARE_MIN_LEVEL <= e["level"] < EPIC_MIN_LEVEL:
+            continue
+        for i in range(3):
+            e["stats"][i] = min(MAX_FACTOR, round(e["stats"][i] * RARE_MAGIC_NUDGE, 2))
+        nudged += 1
+    return nudged
+
+
 def stat_value(index, species_level, level, factor):
     """The same formulas as Combatant.java with an average roll, rounded like Math.round."""
     tier = math.sqrt(max(1, species_level))
@@ -157,7 +180,28 @@ def never_worse(species):
     return lifted, sorted(set(stuck))
 
 
+def write(entries):
+    with open(OUT, "w", encoding="utf-8") as f:
+        f.write("[\n")
+        f.write(",\n".join(json.dumps(e, separators=(",", ":"), ensure_ascii=False) for e in entries))
+        f.write("\n]\n")
+
+
+def adjust_only():
+    """Applies the Rare Magic step and the never-worse pass to the species.json that is there, with no network."""
+    with open(OUT, encoding="utf-8") as f:
+        entries = json.load(f)
+    species = {e["name"].lower(): e for e in entries}
+    print("Rare Magic species nudged:", nudge_rare_magic(species))
+    lifted, stuck = never_worse(species)
+    print("lifted by the never-worse pass:", len(lifted), "could not be lifted within 1.25:", len(stuck))
+    write(entries)
+
+
 def main():
+    if "--adjust-only" in sys.argv[1:]:
+        adjust_only()
+        return
     with open(OUT, encoding="utf-8") as f:
         entries = json.load(f)
     species = {e["name"].lower(): e for e in entries}
@@ -186,16 +230,14 @@ def main():
             missing.append(e["name"])
         e["stats"] = factors(e["level"], numbers, curves)
     print("no wiki row (all 1.0):", len(missing), missing[:20])
+    print("Rare Magic species nudged:", nudge_rare_magic(species))
     lifted, stuck = never_worse(species)
     names = ("health", "attack", "defence", "speed")
     print("lifted by the never-worse pass:", len(lifted))
     for (dst, i), old in sorted(lifted.items())[:40]:
         print("  %s %s %.2f -> %.2f" % (species[dst]["name"], names[i], old, species[dst]["stats"][i]))
     print("could not be lifted within 1.25:", len(stuck), stuck[:20])
-    with open(OUT, "w", encoding="utf-8") as f:
-        f.write("[\n")
-        f.write(",\n".join(json.dumps(e, separators=(",", ":"), ensure_ascii=False) for e in entries))
-        f.write("\n]\n")
+    write(entries)
     for i, name in enumerate(names):
         values = sorted(e["stats"][i] for e in entries)
         print(name, "min %.2f median %.2f max %.2f" % (values[0], values[len(values) // 2], values[-1]))

@@ -180,6 +180,26 @@ public class RulesTest
 	}
 
 	@Test
+	public void wildLevelSpreadsOneLevelEitherSideOfTheBase()
+	{
+		int base = (int) Math.round(Math.sqrt(400) * 3);
+		Random random = new Random(11);
+		boolean below = false;
+		boolean exact = false;
+		boolean above = false;
+		for (int i = 0; i < 500; i++)
+		{
+			int offset = CatchRules.wildLevel(400, random) - base;
+			assertTrue("offset " + offset, offset >= -1 && offset <= 1);
+			below |= offset == -1;
+			exact |= offset == 0;
+			above |= offset == 1;
+		}
+
+		assertTrue(below && exact && above);
+	}
+
+	@Test
 	public void levelCurveRoundTrips()
 	{
 		for (int level = 1; level <= XpRules.MAX_LEVEL; level++)

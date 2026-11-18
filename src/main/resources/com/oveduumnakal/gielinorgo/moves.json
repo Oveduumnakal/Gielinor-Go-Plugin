@@ -25,7 +25,7 @@
 {"id":"grave_chill","name":"Grave chill","style":"MAGIC","power":1.4,"accuracy":0.9},
 {"id":"headbutt","name":"Headbutt","style":"CRUSH","power":1.35,"accuracy":0.9},
 {"id":"hellfire","name":"Hellfire","style":"MAGIC","power":2.0,"accuracy":0.8,"effect":{"status":"BURN","chance":0.2}},
-{"id":"hex","name":"Hex","style":"MAGIC","power":0.8,"accuracy":1.0},
+{"id":"hex","name":"Hex","style":"MAGIC","power":1.0,"accuracy":1.0},
 {"id":"icy_breath","name":"Icy breath","style":"MAGIC","power":1.6,"accuracy":0.9,"slot":"SECOND","icy":true,"effect":{"status":"FREEZE","chance":0.2}},
 {"id":"impale","name":"Impale","style":"STAB","power":1.9,"accuracy":0.75},
 {"id":"inferno","name":"Inferno","style":"MAGIC","power":2.2,"accuracy":0.75,"slot":"SECOND","effect":{"status":"BURN","chance":0.2}},
