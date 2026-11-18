@@ -48,9 +48,11 @@ Every feature and every number, in detail. For the short version, see the [READM
   of steady skilling at the default **Wild creature rarity**, never two within 3 minutes. Each skill has its own
   species (Fishing water creatures, Woodcutting birds and tree dwellers, Mining cave and rock creatures, Farming
   pests and field animals, Hunter prey). The species follows your level in the skill: a level 90 fisher meets
-  stronger creatures than a level 20 one. Three species are met **only** this way, one time in 20 and from skill
-  level 40: the River troll while Fishing, the Rock Golem while Mining and the Tree spirit while Woodcutting. Nothing
-  appears with the **Skilling encounters** setting off, in an instance or in a PvP area, or when there is no free
+  stronger creatures than a level 20 one, and a higher tier is rarer, the same factors as for monsters (Uncommon 0.6,
+  Rare 0.35, Epic 0.15, Legendary 0.05). Three species are met **only** this way, from skill level 40: the River
+  troll while Fishing, the Rock Golem while Mining and the Tree spirit while Woodcutting. They are Epic, so each is
+  about one encounter in 133 (one in 20 times 0.15). Nothing appears with the **Skilling encounters** setting off,
+  in an instance or in a PvP area, or when there is no free
   tile.
 
 - **Catch them with jars**
@@ -393,9 +395,10 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Each day one species of every rarity is featured, the same for every player on the same plugin version, and a
   featured species turns wild three times as often (this multiplies with the tier's own factor). Fishing,
-  Woodcutting, Mining, Farming and Hunter encounters are not weighted by tier. The Today section in the Collection tab names them and
-  shows when they change (midnight UTC). A star marks them in the Log, and the Log's filter has a **Featured**
-  choice.
+  Woodcutting, Mining, Farming and Hunter encounters are weighted by tier in the same way. The Today section in the
+  Collection tab names the featured species and shows when they change (midnight UTC). A star marks them in the Log,
+  and the Log's filter has a
+  **Featured** choice.
 
 - **Night**
 
