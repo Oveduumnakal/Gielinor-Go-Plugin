@@ -126,6 +126,21 @@ final class WildMenu
 	}
 
 	/**
+	 * Builds the plain heading of the painted menu: the name and the level, with the record words after the level.
+	 *
+	 * @param prefix the words in front of the name, such as "Gilded ", or an empty string
+	 * @param name the species name
+	 * @param level the creature level
+	 * @param record what the Creature Log knows of the species, or null when it is not known yet
+	 * @return the text, such as {@code Gilded Chicken (Lv 3 - New)}
+	 */
+	static String title(String prefix, String name, int level, WildRecord record)
+	{
+		String suffix = record == null ? "" : " - " + record.label();
+		return prefix + name + " (Lv " + level + suffix + ")";
+	}
+
+	/**
 	 * Tells whether a menu entry's words are one of this plugin's wild creature entries.
 	 *
 	 * @param option the entry's words

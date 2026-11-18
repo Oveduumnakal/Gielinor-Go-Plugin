@@ -341,4 +341,12 @@ public class WildMenuTest
 	{
 		assertEquals("--------", WildMenu.SEPARATOR);
 	}
+
+	@Test
+	public void theHeadingHasNoColourTags()
+	{
+		assertEquals("Chicken (Lv 3)", WildMenu.title("", "Chicken", 3, null));
+		assertEquals("Gilded Chicken (Lv 12 - Caught)",
+			WildMenu.title("Gilded ", "Chicken", 12, WildRecord.of(4, false)));
+	}
 }
