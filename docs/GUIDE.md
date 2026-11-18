@@ -13,30 +13,31 @@ Every feature and every number, in detail. For the short version, see the [READM
   The real monster carries on as if nothing happened and is never touched. The wild copy is its own creature: it
   wanders a step or two (never more than 3 tiles from where it appeared), stays about 3 minutes (the clock stops
   while you fight or catch it) and fades out over 2 seconds when its time is up, when you walk more than 25 tiles away or change floors. If there is no free
-  tile you can walk to, no wild creature appears. Click it to **Battle** it (a plain left click does that), or
-  right-click it for **Battle** and **Catch**; with two or more jars, Catch opens a list: the jars worth throwing first (best odds, the cheaper one on a tie), a line, then every other jar you own, each with its odds and how many you have. Hover over it to see its name, level, style, rarity and whether you have met or caught its species (switch this off with **Wild creature tooltip**; it hides while a menu is open and during a battle). Once your lead has beaten it and it lies knocked out, a plain left
-  click throws your selected jar instead. When no creature can fight (your team is empty, or, with **Choose battle actions** on, your lead is too tired;
-  with it off, the whole team is), Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
-  behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
+  tile you can walk to, no wild creature appears. Move the mouse near it for its **bubbles** (see **Bubbles** below), or right-click it for **Walk here**, **Battle** and **Catch**; with two or more jars, Catch opens a list: the jars worth throwing first (best odds, the cheaper one on a tie), a line, then every other jar you own, each with its odds and how many you have. Hover over it to see its name, level, style, rarity and whether you have met or caught its species (switch this off with **Wild creature tooltip**; it hides while a menu is open and during a battle). A plain left click on the copy no longer battles or catches: it walks like any other click. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
   finds (the **Wild creature rarity** setting is the chance for Common monsters; Uncommon ones turn wild 0.6 times as
   often, Rare 0.35, Epic 0.15 and Legendary 0.05). Hunter creatures such as pyre foxes, kebbits, salamanders, moths,
   antelope and implings have no combat level in the game; they turn wild like any other monster and their level is
-  their Hunter level. At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
-  the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
-  seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
+  their Hunter level. At most three wild creatures exist at once.
 
   While you are in combat with a real monster (and for 5 seconds after), wild creatures are hidden: not drawn, not
   clickable, and none new appear; they return where they were, unless their time ran out meanwhile.
 
-- **The painted wild creature menu**
+- **Bubbles**
 
-  The **Wild creature menu** setting chooses what a right click on a wild creature opens. **Game** (the default) is
-  the game's own menu with Battle and Catch added. **Painted** is a menu in the window's style: the creature's name
-  and level, then Battle and Catch. With two or more jars, Catch opens a list beside the menu (hover it, click it,
-  or press Right): the jars worth throwing first, a thin line, then every other jar, each with its odds and how
-  many you have. Up, Down, Left, Right, Enter and Esc work too. Hold **Shift** while you right-click to get the
-  game's own menu for that tile instead (Walk here, Examine). A left click works the same in both modes, and the
-  game's own menu is used if the painted one ever fails.
+  Move the mouse within about two tiles of a wild creature and three round bubbles pop out of it and settle in an
+  arc above it. The **Wild creature bubbles** setting (on by default) turns them on or off; off means the
+  right-click **Battle** and **Catch** entries are all you get.
+
+  - **Left bubble: the jar.** Its circle is coloured to match your selected jar. A left click throws that jar.
+    Hover it for about a second, or right-click it, and the jars you own pop out with how many of each; click
+    one to select it (it does not throw). The selected jar stays selected after a throw.
+  - **Middle bubble: Battle** (red, crossed swords). A click starts a battle.
+  - **Right bubble: Info** (light blue, an "i"). Hover it for a short summary card of the creature next to it;
+    click it to pin the card until you click elsewhere or move away.
+
+  The bubbles close a moment after the mouse leaves. They do not show during a battle, while the game menu is
+  open or over the Gielinor Go window. Right-clicking the creature's body still opens the game's own menu with
+  **Walk here**, **Battle** and **Catch** (with the jar list).
 
 - **While skilling**
 
@@ -293,7 +294,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   draws it. Switch it off in the settings.
 
   **Catch a knocked-out creature.** When your lead wins, the wild creature lies knocked out for about 10 seconds.
-  A plain left click on it, or **Catch** in the right-click menu, throws your selected jar (you can also do this
+  The jar bubble, or **Catch** in the right-click menu, throws your selected jar (you can also do this
   while it fights). A knocked-out creature is twice as easy to catch (x2.0); once it is back up it is x1.5 as
   before. Caught: the jar flies to the lying creature, which shrinks into it (it does not get up to flinch). Broke
   free: it gets up, turns to you, attacks and the scene ends. Ran away: it gets up and runs off fading out, and it

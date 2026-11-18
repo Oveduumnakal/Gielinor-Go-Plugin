@@ -30,9 +30,9 @@ Then replace this comment with:
 2. Click the Gielinor Go icon in the sidebar (or the jar on the game screen) to open the window. You start with 10
    Bronze jars. On the Party tab, pick your first creature: an Imp, a Gnome Archer or a Wizard.
 3. Walk near monsters until one turns wild: a smaller, outlined copy with a level tag appears beside it.
-4. Right-click the copy and choose **Catch** to throw a jar. The menu shows your odds.
-5. Left-click a wild one to **Battle** it. Click it again while it lies knocked out to
-   throw a jar at twice the odds.
+4. Move the mouse close to the copy: three bubbles pop out above it. Click the left bubble to throw your selected
+   jar. A knocked-out creature is twice as easy to catch.
+5. Click the middle red bubble to **Battle** it. The right bubble shows a short summary card.
 
 ## Features
 
@@ -125,7 +125,7 @@ Then replace this comment with:
 
 - **Battles that play themselves**
 
-  Left-click a wild creature and your lead walks up and fights it in front of you. When one of your creatures
+  Click the red Battle bubble on a wild creature and your lead walks up and fights it in front of you. When one of your creatures
   faints, the next steps in by itself. Each hit floats over the creature that took it, so you can carry on with
   what you were doing while the battle runs.
 
@@ -238,7 +238,7 @@ Then replace this comment with:
 | Setting | Default | What it does |
 |---|---|---|
 | Wild creature rarity | 1 in 8 | How often a nearby Common monster turns wild; stronger ones are rarer. Lower numbers mean more wild creatures. |
-| Left-click wild creatures | Not while in combat | Whether a left click on a wild creature battles or catches it. |
+| Wild creature bubbles | On | Three bubbles (jar, Battle, Info) pop out when the mouse is near a wild creature. Off uses the right-click Battle and Catch entries. |
 | Skilling encounters | On | Fishing, Woodcutting, Mining, Farming and Hunter XP sometimes bring a wild creature. |
 | Choose battle actions | Off | Each battle turn waits for you instead of playing itself. |
 | Battle animations | On | Battles are acted out in the game view. Off shows them as floating text. |
