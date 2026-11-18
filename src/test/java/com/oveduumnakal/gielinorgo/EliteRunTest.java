@@ -337,28 +337,4 @@ public class EliteRunTest
 		assertNull(run.fight(Collections.emptyList(), new Random(1)));
 		assertEquals(Arrays.asList(1, 1, 1), mineSeen);
 	}
-
-	@Test
-	public void theCardFitsThePanelInEveryMode()
-	{
-		PanelActions none = null;
-		for (EliteView.Mode mode : EliteView.Mode.values())
-		{
-			if (mode == EliteView.Mode.HIDDEN)
-				continue;
-
-			EliteView view = new EliteView(mode, 5, mode == EliteView.Mode.RUNNING ? 3 : 0, 5, "Elite of Might",
-				"Dagannoth Rex 80, Sarachnis 81, Cerberus 83, Skotizo 84, Abyssal Sire 85",
-				"10 Dragon jars, 3 of every specialty jar, a Legendary egg", mode == EliteView.Mode.HERE);
-			EliteCard card = new EliteCard(view, none);
-			card.setSize(new Dimension(209, 400));
-			card.doLayout();
-			card.setSize(new Dimension(209, card.getPreferredSize().height));
-			card.doLayout();
-			BufferedImage image = new BufferedImage(209, card.getHeight(), BufferedImage.TYPE_INT_ARGB);
-			card.printAll(image.getGraphics());
-
-			assertTrue(mode + " is too wide", card.getPreferredSize().width <= 209);
-		}
-	}
 }

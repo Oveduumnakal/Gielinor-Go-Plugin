@@ -4,8 +4,6 @@
  */
 package com.oveduumnakal.gielinorgo;
 
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
@@ -16,13 +14,13 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-/** Draws the Log tab's Today section offline and checks the featured filter. */
-public class LogTabTest
+/** Checks that the game's snapshot carries the featured species of the day. */
+public class TodaySnapshotTest
 {
 	private static final LocalDate SATURDAY = LocalDate.of(2026, 11, 14);
 
 	@Test
-	public void theTodaySectionAndTheFeaturedFilterWork()
+	public void theSnapshotCarriesTheFeaturedSpecies()
 	{
 		SpeciesTable table = new SpeciesTable(Arrays.asList(new Species("Rat", 1, CombatType.STAB),
 			new Species("Goblin", 13, CombatType.STAB), new Species("Dragon", 300, CombatType.STAB)));
@@ -52,13 +50,6 @@ public class LogTabTest
 		SpawnCalendar calendar = new SpawnCalendar(table);
 		game.today(() -> calendar.today(true, clock));
 		PanelState state = game.snapshot();
-
-		LogTab tab = new LogTab();
-		tab.setSize(new Dimension(225, 600));
-		tab.update(state);
-		tab.doLayout();
-		BufferedImage image = new BufferedImage(225, 600, BufferedImage.TYPE_INT_ARGB);
-		tab.paint(image.getGraphics());
 
 		assertEquals(2, state.today().featured().size());
 		assertTrue(state.today().isFeatured("Dragon"));

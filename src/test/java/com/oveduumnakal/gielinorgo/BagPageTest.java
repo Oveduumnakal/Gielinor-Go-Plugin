@@ -159,11 +159,4 @@ public class BagPageTest
 		Hit one = a.id().equals("bag:steps") || a.id().equals("bag:level") ? a : b;
 		return one.id().equals("bag:steps") || one.id().equals("bag:level") || one.id().equals(BagPainter.ID_TITLE);
 	}
-
-	@Test
-	public void theItemTextIsSharedWithTheSidePanel()
-	{
-		assertEquals("<html>" + BagText.itemTip(ItemType.REVIVE, 1).replace("\n", "<br>") + "</html>",
-			ItemsRow.tooltip(ItemType.REVIVE, 1));
-	}
 }

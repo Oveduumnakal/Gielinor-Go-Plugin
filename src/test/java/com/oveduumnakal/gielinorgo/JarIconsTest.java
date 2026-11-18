@@ -69,11 +69,9 @@ public class JarIconsTest
 			assertNotNull(type.name(), JarIcons.image(type));
 			assertEquals(JarIcons.ICON_SIZE, JarIcons.image(type).getWidth());
 			assertEquals(JarIcons.ICON_SIZE, JarIcons.image(type).getHeight());
-			assertNotNull(type.name(), JarIcons.swing(type));
 		}
 
 		assertEquals(null, JarIcons.image(null));
-		assertEquals(null, JarIcons.swing(null));
 	}
 
 	private static BufferedImage read(JarType type) throws IOException

@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,7 +128,7 @@ final class PortraitService implements PortraitSource
 			return;
 
 		BufferedImage ready = image;
-		SwingUtilities.invokeLater(() -> request.onReady.accept(ready));
+		request.onReady.accept(ready);
 	}
 
 	/**

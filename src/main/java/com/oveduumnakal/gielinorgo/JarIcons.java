@@ -8,7 +8,6 @@ import java.awt.image.BufferedImage;
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
-import javax.swing.ImageIcon;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +25,6 @@ final class JarIcons
 
 	private static final Logger log = LoggerFactory.getLogger(JarIcons.class);
 	private static final Map<JarType, BufferedImage> IMAGES = new EnumMap<>(JarType.class);
-	private static final Map<JarType, ImageIcon> ICONS = new EnumMap<>(JarType.class);
 
 	static
 	{
@@ -61,7 +59,6 @@ final class JarIcons
 			BufferedImage full = ImageUtil.loadImageResource(JarIcons.class, resourceName(type));
 			BufferedImage small = ImageUtil.resizeImage(full, ICON_SIZE, ICON_SIZE);
 			IMAGES.put(type, small);
-			ICONS.put(type, new ImageIcon(small));
 		}
 		catch (RuntimeException e)
 		{
@@ -78,16 +75,5 @@ final class JarIcons
 	static BufferedImage image(JarType type)
 	{
 		return type == null ? null : IMAGES.get(type);
-	}
-
-	/**
-	 * Finds a jar's picture for a Swing label or list line.
-	 *
-	 * @param type the jar, or null
-	 * @return the 16 pixel icon, or null when there is none
-	 */
-	static ImageIcon swing(JarType type)
-	{
-		return type == null ? null : ICONS.get(type);
 	}
 }
