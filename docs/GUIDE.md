@@ -130,8 +130,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   first kill of each boss the plugin sees always gives its egg, and after that one kill in 20 does. A completed
   raid counts as one kill of its final boss: the Great Olm for the Chambers of Xeric, Verzik Vitur for the Theatre
   of Blood and Elidinis' Warden for the Tombs of Amascut, solo or in a group. The egg appears after the fight
-  (`You found a Vorkath egg!`) and works in instances, where no wild creature ever turns up. It shows in the Bag as `Vorkath egg` and hatches by walking into a level 1 creature of that exact boss, rolled and gilded like any
-  other egg. Nothing about loot is read, only the kill-count line. With three eggs already carried the new one
+  (`You found a Vorkath egg!`) and works in instances, where no wild creature ever turns up. It shows in the Bag as `Vorkath egg` and hatches by walking into that exact boss at the level of its tier (see Eggs hatch as you walk), rolled and
+  gilded like any other egg. Nothing about loot is read, only the kill-count line. With three eggs already carried the new one
   waits, one per boss, and arrives when a slot frees up (a waiting egg is lost if you log out, and the first-kill
   egg is then given again at the next kill). Re-fightable instance bosses such as Vorkath are in the Creature Log
   because of this, though they never turn wild. A boss egg can be given to a friend in a trade.
@@ -371,6 +371,9 @@ Every feature and every number, in detail. For the short version, see the [READM
   Battle wins sometimes drop an egg. Carry up to three, and each hatches into a new creature once you have
   walked far enough. Rarer eggs take longer and hatch rarer creatures: a Common egg needs 1,000 tiles, an Uncommon
   1,600, a Rare 2,400, an Epic 3,200 and a Legendary 4,000. An egg you already carry keeps its old target.
+  The creature that hatches starts above level 1 for the rarer tiers: Common hatches at level 1, Uncommon at
+  level 5, Rare at 10, Epic at 20 and Legendary at 30, and a boss egg hatches at the level of its boss's tier
+  (Vorkath, a Legendary, at 30). From there it levels like any other creature.
 
 - **Gilded creatures**
 

@@ -220,7 +220,8 @@ final class BalanceProgress
 			.append(", `BossRules.LATER_CHANCE` ").append(BossRules.LATER_CHANCE)
 			.append(", `SaveData.MAX_EGGS` ").append(SaveData.MAX_EGGS)
 			.append(" eggs carried (every carried egg loses the same tiles, so they hatch side by side). ")
-			.append("An egg hatches at level 1 into a random species of its tier.\n\n");
+			.append("An egg hatches at the level of its tier (`Rarity.hatchLevel`) into a random species of ")
+			.append("its tier.\n\n");
 		out.append(hatchTable());
 		out.append(dropTable());
 		out.append(rateTable(data));
@@ -338,11 +339,13 @@ final class BalanceProgress
 
 	private static String worthTable(BalanceData data)
 	{
-		StringBuilder out = new StringBuilder("### 4d. What a level 1 hatch is worth\n\n");
-		out.append("A hatch starts at level 1 whatever its tier, but a wild creature of the same tier is caught at ")
-			.append("its wild level. Hours are at 100,000 OSRS XP per hour for a solo lead (team of 1).\n\n");
-		BalanceTable table = new BalanceTable("Tier", "Species", "Evolve at least once", "Mean first evolution level",
-			"Hours to that level", "Hours to level 30", "Typical wild level", "Hours to reach the wild level");
+		StringBuilder out = new StringBuilder("### 4d. What a hatch is worth\n\n");
+		out.append("A hatch starts at the level of its tier (`Rarity.hatchLevel`); a wild creature of the same tier ")
+			.append("is caught at its wild level. Hours are at 100,000 OSRS XP per hour for a solo lead (team of 1), ")
+			.append("counted from the hatch level.\n\n");
+		BalanceTable table = new BalanceTable("Tier", "Hatch level", "Creature XP at hatch", "Training it saves",
+			"Species", "Evolve at least once", "Mean first evolution level", "Hours to that level",
+			"Hours to level 30", "Typical wild level", "Hours to reach the wild level");
 		Random random = new Random(SEED);
 		double perHour = 100_000.0 / XpRules.OSRS_XP_PER_CREATURE_XP;
 		for (Rarity rarity : Rarity.values())
@@ -361,12 +364,15 @@ final class BalanceProgress
 
 			double first = evolving == 0 ? Double.NaN : levels / evolving;
 			int wild = typicalLevel(data, rarity, random);
-			table.row(rarity.label(), data.tier(rarity).size(), BalanceTable.pct(evolving / (double) Math.max(1,
+			long start = XpRules.xpForLevel(rarity.hatchLevel());
+			table.row(rarity.label(), rarity.hatchLevel(), start, BalanceTable.minutes(start / perHour * 60.0),
+				data.tier(rarity).size(), BalanceTable.pct(evolving / (double) Math.max(1,
 				data.tier(rarity).size())), first,
 				Double.isNaN(first) ? "n/a"
-					: BalanceTable.minutes(XpRules.xpForLevel((int) Math.round(first)) / perHour * 60.0),
-				BalanceTable.minutes(XpRules.xpForLevel(30) / perHour * 60.0), wild,
-				BalanceTable.minutes(XpRules.xpForLevel(wild) / perHour * 60.0));
+					: BalanceTable.minutes(Math.max(0, XpRules.xpForLevel((int) Math.round(first)) - start)
+						/ perHour * 60.0),
+				BalanceTable.minutes(Math.max(0, XpRules.xpForLevel(30) - start) / perHour * 60.0), wild,
+				BalanceTable.minutes(Math.max(0, XpRules.xpForLevel(wild) - start) / perHour * 60.0));
 		}
 
 		return out.append(table).toString();

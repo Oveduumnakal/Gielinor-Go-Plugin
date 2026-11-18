@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-/** Checks how a tier changes how often a monster turns wild (issue 213). */
+/** Checks how a tier changes how often a monster turns wild (issue 213) and what level its eggs hatch at (220). */
 public class RarityTest
 {
 	@Test
@@ -34,6 +34,28 @@ public class RarityTest
 			assertTrue(tiers[i].name(), tiers[i].wildFactor() > 0.0);
 			if (i > 0)
 				assertTrue(tiers[i].name(), tiers[i].wildFactor() <= tiers[i - 1].wildFactor());
+		}
+	}
+
+	@Test
+	public void hatchLevelByTier()
+	{
+		assertEquals(1, Rarity.COMMON.hatchLevel());
+		assertEquals(5, Rarity.UNCOMMON.hatchLevel());
+		assertEquals(10, Rarity.RARE.hatchLevel());
+		assertEquals(20, Rarity.EPIC.hatchLevel());
+		assertEquals(30, Rarity.LEGENDARY.hatchLevel());
+	}
+
+	@Test
+	public void hatchLevelNeverFallsWithTierAndStaysInsideTheLevelRange()
+	{
+		Rarity[] tiers = Rarity.values();
+		for (int i = 0; i < tiers.length; i++)
+		{
+			assertTrue(tiers[i].name(), tiers[i].hatchLevel() >= 1 && tiers[i].hatchLevel() <= 99);
+			if (i > 0)
+				assertTrue(tiers[i].name(), tiers[i].hatchLevel() > tiers[i - 1].hatchLevel());
 		}
 	}
 

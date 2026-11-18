@@ -127,6 +127,8 @@ A Creature Log, daily tasks and daily events give you goals.
   and the day you caught them. (#215)
 - **Fainting.** A creature that reaches 0 health faints and stays down until you revive it in a city or at a bank
   (or with a Revive draught anywhere); it comes back at 50%. (#221)
+- **Stronger hatchlings.** Rarer eggs hatch at a higher level: Common 1, Uncommon 5, Rare 10, Epic 20 and Legendary
+  30, boss eggs too. (#220)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
