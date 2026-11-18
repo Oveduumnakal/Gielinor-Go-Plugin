@@ -238,6 +238,43 @@ public class SpawnCalendarTest
 	}
 
 	@Test
+	public void aMonsterChanceIsTheChanceTimesItsTiersFactor()
+	{
+		SpawnClock noon = clock(MONDAY, NOON, NOON);
+		int[] levels = {20, 50, 100, 200, 400};
+		for (int i = 0; i < levels.length; i++)
+		{
+			Species species = new Species("Test " + levels[i], levels[i], CombatType.STAB);
+
+			assertEquals(Rarity.values()[i], species.rarity());
+			assertEquals(Rarity.values()[i].wildFactor() / 8, calendar.monsterChance(species, 8, false, noon), 1e-9);
+		}
+
+		Species common = new Species("Test common", 20, CombatType.STAB);
+		assertEquals(calendar.chance(common, 8, false, noon), calendar.monsterChance(common, 8, false, noon), 0.0);
+	}
+
+	@Test
+	public void aMonsterChanceStacksWithEventsAndNeverExceedsOne()
+	{
+		Species featured = calendar.featured(MONDAY).get(0);
+		SpawnClock noon = clock(MONDAY, NOON, NOON);
+
+		assertEquals(3.0 * featured.rarity().wildFactor() / 8, calendar.monsterChance(featured, 8, true, noon), 1e-9);
+		Species common = new Species("Test common", 20, CombatType.STAB);
+		assertEquals(1.0, calendar.monsterChance(common, 1, true, noon), 0.0);
+	}
+
+	@Test
+	public void theChanceItselfIsNotWeightedByRarity()
+	{
+		SpawnClock noon = clock(MONDAY, NOON, NOON);
+		Species legendary = new Species("Test legendary", 400, CombatType.STAB);
+
+		assertEquals(1.0 / 8, calendar.chance(legendary, 8, false, noon), 1e-9);
+	}
+
+	@Test
 	public void withSpawnEventsOffEveryMultiplierIsOne()
 	{
 		SpawnClock saturdayNight = clock(SATURDAY, NOON, MIDNIGHT);
