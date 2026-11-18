@@ -111,6 +111,8 @@ A Creature Log, daily tasks and daily events give you goals.
   no combat level now turn wild and can be battled and caught; their level is their Hunter level. (#207)
 - **Sort and filter Storage.** Sort stored creatures by level, species, rarity, date caught or nickname, and filter
   them by level, style, rarity, rating, gender, gilded or nickname, showing or hiding each. (#212)
+- **Wandering lead.** When you stand still your lead creature wanders around within 3 tiles of you, and walks back
+  to your trail when you set off. A setting turns it off. (#208)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
