@@ -265,7 +265,7 @@ public class GoGameTest
 	}
 
 	@Test
-	public void walkingEarnsABronzeJarEvery150Tiles()
+	public void walkingEarnsABronzeJarEveryJarLength()
 	{
 		game.addSteps(GoGame.TILES_PER_JAR - 1);
 		assertEquals(SaveData.STARTING_JARS, game.data().jarCount(JarType.BRONZE));

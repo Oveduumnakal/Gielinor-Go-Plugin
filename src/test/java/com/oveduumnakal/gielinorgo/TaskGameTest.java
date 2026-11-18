@@ -72,7 +72,7 @@ public class TaskGameTest
 		now = day * DAY + 1000L;
 		int before = game.data().jarCount(JarType.BRONZE);
 
-		game.addSteps(600);
+		game.addSteps(TaskKind.WALK.dailyGoal());
 
 		assertTrue(messages.contains("Daily task done: +2 Bronze jars"));
 		assertEquals(before + 4 + 2, game.data().jarCount(JarType.BRONZE));
@@ -84,10 +84,10 @@ public class TaskGameTest
 	public void aTaskPaysOnlyOnce()
 	{
 		now = dayWithDaily(TaskKind.WALK, true) * DAY + 1000L;
-		game.addSteps(600);
+		game.addSteps(TaskKind.WALK.dailyGoal());
 		int jars = game.data().jarCount(JarType.BRONZE);
 
-		game.addSteps(150);
+		game.addSteps(GoGame.TILES_PER_JAR);
 
 		assertEquals(jars + 1, game.data().jarCount(JarType.BRONZE));
 		assertEquals(1, messages.stream().filter(line -> line.startsWith("Daily task done")).count());
@@ -99,7 +99,7 @@ public class TaskGameTest
 		now = dayWithDaily(TaskKind.WALK, false) * DAY + 1000L;
 		long before = game.data().trainerXp;
 
-		game.addSteps(600);
+		game.addSteps(TaskKind.WALK.dailyGoal());
 
 		assertTrue(messages.contains("Daily task done: +100 trainer XP"));
 		assertEquals(before + 100L, game.data().trainerXp);
@@ -111,7 +111,7 @@ public class TaskGameTest
 		now = dayWithDaily(TaskKind.WALK, true) * DAY + 1000L;
 		game.data().trainerXp = XpRules.trainerXpForLevel(30);
 
-		game.addSteps(600);
+		game.addSteps(TaskKind.WALK.dailyGoal());
 
 		assertTrue(messages.contains("Daily task done: +2 Rune jars"));
 		assertEquals(2, game.data().jarCount(JarType.RUNE));
@@ -199,7 +199,7 @@ public class TaskGameTest
 		now = weekWith(TaskKind.WALK) * DAY + 1000L;
 		int before = game.data().jarCount(JarType.BRONZE);
 
-		for (int i = 0; i < 40; i++)
+		for (int i = 0; i < TaskKind.WALK.weeklyGoal() / 125; i++)
 			game.addSteps(125);
 
 		assertTrue(said("Weekly task done: +5 Bronze jars, +1 Rare egg"));
@@ -218,7 +218,7 @@ public class TaskGameTest
 			game.data().eggs.add(egg);
 		}
 
-		game.addSteps(5000);
+		game.addSteps(TaskKind.WALK.weeklyGoal());
 
 		assertTrue(said("Weekly task done: +5 Bronze jars, +5 Bronze jars instead of an egg"));
 		assertEquals(SaveData.MAX_EGGS, game.data().eggs.size());
