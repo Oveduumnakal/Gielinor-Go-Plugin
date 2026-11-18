@@ -229,7 +229,7 @@ public class WindowShellTest
 	}
 
 	@Test
-	public void thereAreSixTabsAndFourFooterAndHeaderButtonsInOrder()
+	public void thereAreSixTabsAndSixFooterAndHeaderButtonsInOrder()
 	{
 		openPainted(true);
 		List<String> ids = new ArrayList<>();
@@ -237,7 +237,7 @@ public class WindowShellTest
 			ids.add(hit.id());
 
 		assertEquals(Arrays.asList("tab:PARTY", "tab:BAG", "tab:STORAGE", "tab:COLLECTION", "tab:TASKS", "tab:BATTLE",
-			"btn:close", "btn:reset", "btn:theme", "btn:size"), ids);
+			"btn:close", "btn:reset", "btn:theme", "btn:size", "btn:changelog", "btn:feedback"), ids);
 		for (Hit hit : shell.hits())
 			assertTrue(hit.id(), new Rectangle(0, 0, W, H).contains(hit.bounds()));
 	}
@@ -347,6 +347,10 @@ public class WindowShellTest
 		key(KeyEvent.VK_SPACE);
 		key(KeyEvent.VK_DOWN);
 		key(KeyEvent.VK_ENTER);
+		key(KeyEvent.VK_DOWN);
+		assertEquals("btn:changelog", shell.focus().highlight());
+		key(KeyEvent.VK_DOWN);
+		assertEquals("btn:feedback", shell.focus().highlight());
 		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:close", shell.focus().highlight());
 

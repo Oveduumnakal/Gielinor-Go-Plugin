@@ -8,10 +8,11 @@ import java.awt.Rectangle;
 
 /**
  * Where everything of the painted window's shell sits, worked out from the window's size alone: the header with its six
- * tabs and the Close button, the page area, the hint line and the footer buttons. Every length is a number of layout
- * units in the 800 x 520 design space times the one window scale, so nothing is positioned in raw pixels and both
- * themes get the same boxes. The page area takes whatever room the other parts leave, so a window a pixel off the
- * design shape has no gap. Coordinates are window pixels. Holds no RuneLite types.
+ * tabs and the Close button, the page area, the hint line and the footer buttons (Reset window, the style and size
+ * buttons on the left, Change log and Feedback on the right). Every length is a number of layout units in the 800 x
+ * 520 design space times the one window scale, so nothing is positioned in raw pixels and both themes get the same
+ * boxes. The page area takes whatever room the other parts leave, so a window a pixel off the design shape has no
+ * gap. Coordinates are window pixels. Holds no RuneLite types.
  */
 final class WindowLayout
 {
@@ -43,13 +44,19 @@ final class WindowLayout
 	static final double BUTTON_GAP_UNITS = 8;
 
 	/** The width of the Reset window button, in layout units. */
-	static final double RESET_UNITS = 160;
+	static final double RESET_UNITS = 152;
 
 	/** The width of the style button, in layout units. */
-	static final double THEME_UNITS = 170;
+	static final double THEME_UNITS = 156;
 
 	/** The width of the window size button, in layout units. */
-	static final double SIZE_UNITS = 210;
+	static final double SIZE_UNITS = 176;
+
+	/** The width of the Change log button, in layout units. */
+	static final double CHANGELOG_UNITS = 134;
+
+	/** The width of the Feedback button, in layout units. */
+	static final double FEEDBACK_UNITS = 112;
 
 	/** The window scale everything is drawn at. */
 	final double scale;
@@ -81,6 +88,12 @@ final class WindowLayout
 	/** The window size button. */
 	final Rectangle size;
 
+	/** The Change log button, at the right end of the footer. */
+	final Rectangle changelog;
+
+	/** The Feedback button, at the right edge of the footer. */
+	final Rectangle feedback;
+
 	private WindowLayout(int width, int height)
 	{
 		scale = WindowFit.scale(width, height);
@@ -105,6 +118,8 @@ final class WindowLayout
 		reset = new Rectangle(m, buttonsTop, px(RESET_UNITS), buttonH);
 		theme = new Rectangle(reset.x + reset.width + gap, buttonsTop, px(THEME_UNITS), buttonH);
 		size = new Rectangle(theme.x + theme.width + gap, buttonsTop, px(SIZE_UNITS), buttonH);
+		feedback = new Rectangle(width - m - px(FEEDBACK_UNITS), buttonsTop, px(FEEDBACK_UNITS), buttonH);
+		changelog = new Rectangle(feedback.x - gap - px(CHANGELOG_UNITS), buttonsTop, px(CHANGELOG_UNITS), buttonH);
 	}
 
 	/**
