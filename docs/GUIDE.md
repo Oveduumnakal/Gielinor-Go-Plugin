@@ -16,7 +16,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   click throws your selected jar instead. When no creature can fight (your team is empty, or, with **Choose battle actions** on, your lead is too tired;
   with it off, the whole team is), Battle is not offered and a plain left click throws your jar. A click on the copy never walks you to the tile
   behind it. Any monster you can fight can turn wild, from chickens to bosses, and stronger monsters are rarer
-  finds. At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
+  finds (the **Wild creature rarity** setting is the chance for Common monsters; Uncommon ones turn wild 0.6 times as
+  often, Rare 0.35, Epic 0.15 and Legendary 0.05). At most three wild creatures exist at once. The **Left-click wild creatures** setting decides who gets
   the plain left click: **Always**, **Not while in combat** (the default: while you fight a real monster, and for 5
   seconds after, the left click goes to the game and Battle and Catch wait in the right-click menu) or **Never**.
 
@@ -333,7 +334,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Featured today**
 
   Each day one species of every rarity is featured, the same for every player on the same plugin version, and a
-  featured species turns wild three times as often. The Today section in the Collection tab names them and
+  featured species turns wild three times as often (this multiplies with the tier's own factor). Fishing,
+  Woodcutting, Mining, Farming and Hunter encounters are not weighted by tier. The Today section in the Collection tab names them and
   shows when they change (midnight UTC). A star marks them in the Log, and the Log's filter has a **Featured**
   choice.
 

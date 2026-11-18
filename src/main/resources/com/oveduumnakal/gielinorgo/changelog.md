@@ -97,6 +97,8 @@ A Creature Log, daily tasks and daily events give you goals.
   change log and a Feedback menu. (#226)
 - **The side panel is gone.** The sidebar jar button and the jar on the game screen open the painted window, and
   there is no hidden old-panel setting any more. (#227)
+- **Rarer finds.** Stronger monsters turn wild less often: Uncommon at 0.6 times the chance, Rare 0.35, Epic 0.15 and
+  Legendary 0.05. The Wild creature rarity setting stays the rate for Common ones. (#213)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
