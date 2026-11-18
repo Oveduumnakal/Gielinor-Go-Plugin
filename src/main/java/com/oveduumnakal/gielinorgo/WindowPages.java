@@ -69,6 +69,7 @@ final class WindowPages implements WindowShell.PageActions
 	private final PartyMotion motion;
 	private final PartyPainter party;
 	private final SummaryPainter summary;
+	private final BagPainter bag;
 	private WindowStyle style;
 	private MotionMode mode = MotionMode.FULL;
 	private WindowTab tab = WindowTab.PARTY;
@@ -97,6 +98,7 @@ final class WindowPages implements WindowShell.PageActions
 		this.motion = new PartyMotion(shell.animations());
 		this.party = new PartyPainter(pictures, motion, sink);
 		this.summary = new SummaryPainter(pictures, sink);
+		this.bag = new BagPainter(sink);
 	}
 
 	/**
@@ -187,6 +189,12 @@ final class WindowPages implements WindowShell.PageActions
 
 		tab = current;
 		PanelState panel = loaded();
+		if (current == WindowTab.BAG && panel != null && style != null)
+		{
+			state.back();
+			return bag.hits(bagLayout(body, panel), panel);
+		}
+
 		if (current != WindowTab.PARTY || panel == null || style == null)
 		{
 			state.back();
@@ -329,6 +337,12 @@ final class WindowPages implements WindowShell.PageActions
 	public boolean paint(Graphics2D g, WindowTab current, PageContext ctx)
 	{
 		PanelState panel = ctx.snapshot.state();
+		if (current == WindowTab.BAG && panel != null)
+		{
+			bag.paint(g, ctx, bagLayout(ctx.body, ctx.style, panel), panel);
+			return true;
+		}
+
 		if (current != WindowTab.PARTY || panel == null)
 			return false;
 
@@ -425,6 +439,9 @@ final class WindowPages implements WindowShell.PageActions
 			return;
 
 		String id = hit.id();
+		if (pressBag(id, panel))
+			return;
+
 		int place = rowIndex(id);
 		if (place >= 0)
 		{
@@ -461,6 +478,36 @@ final class WindowPages implements WindowShell.PageActions
 
 				break;
 		}
+	}
+
+	private BagLayout bagLayout(Rectangle body, PanelState panel)
+	{
+		return bagLayout(body, style, panel);
+	}
+
+	private static BagLayout bagLayout(Rectangle body, WindowStyle st, PanelState panel)
+	{
+		int jars = BagText.jarsShown(panel).size();
+		return BagLayout.of(body, st.metrics(), st.scale(), jars, panel.eggs().size());
+	}
+
+	private boolean pressBag(String id, PanelState panel)
+	{
+		if (BagPainter.ID_TITLE.equals(id))
+		{
+			List<String> titles = panel.titles();
+			if (titles.size() > 1)
+				actions.pickTitle(titles.get((titles.indexOf(panel.shownTitle()) + 1) % titles.size()));
+
+			return true;
+		}
+
+		int place = BagPainter.jarPlace(id);
+		List<JarType> jars = BagText.jarsShown(panel);
+		if (place >= 0 && place < jars.size())
+			actions.selectJar(jars.get(place));
+
+		return place >= 0;
 	}
 
 	private void openSummary(int place, PanelState panel, long now)
