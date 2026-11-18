@@ -258,7 +258,7 @@ final class WildBubbles
 				continue;
 
 			if (best == null || candidate.distSq() < best.distSq()
-				|| candidate.distSq() == best.distSq() && candidate.wildId() < best.wildId())
+				|| (candidate.distSq() == best.distSq() && candidate.wildId() < best.wildId()))
 				best = candidate;
 		}
 
@@ -314,7 +314,7 @@ final class WildBubbles
 			g = new Group(offer.wildId(), generation);
 			current = g;
 			for (int i = 0; i < 3; i++)
-			g.path[i] = BubbleMotion.appear(0, now, i, mode);
+				g.path[i] = BubbleMotion.appear(0, now, i, mode);
 		}
 
 		g.offer = offer;
@@ -482,7 +482,7 @@ final class WildBubbles
 		{
 			resetTimers(current);
 			for (Group g : retiring)
-			resetTimers(g);
+				resetTimers(g);
 		}
 
 		this.paused = paused;
@@ -614,7 +614,7 @@ final class WildBubbles
 	{
 		g.phase = Phase.CLOSING;
 		for (int i = 0; i < 3; i++)
-		g.path[i] = BubbleMotion.retract(BubbleMotion.clamp(g.path[i].value(now)), now, i, mode);
+			g.path[i] = BubbleMotion.retract(BubbleMotion.clamp(g.path[i].value(now)), now, i, mode);
 
 		closeCluster(g, now, false);
 		if (g.card != CardState.NONE)
@@ -627,7 +627,7 @@ final class WildBubbles
 	{
 		g.phase = Phase.OPENING;
 		for (int i = 0; i < 3; i++)
-		g.path[i] = BubbleMotion.appear(BubbleMotion.clamp(g.path[i].value(now)), now, i, mode);
+			g.path[i] = BubbleMotion.appear(BubbleMotion.clamp(g.path[i].value(now)), now, i, mode);
 
 		resetTimers(g);
 	}
@@ -725,7 +725,7 @@ final class WildBubbles
 		{
 			List<Point2D.Double> mains = new ArrayList<>();
 			for (int i = 0; i < 3; i++)
-			mains.add(arc.rest(i));
+				mains.add(arc.rest(i));
 
 			cluster = BubbleLayout.cluster(arc.x(0), arc.y(0), arc.radius(), choices.size(), g.clusterDir, mains,
 				arc.radius() * BubbleLayout.GROUP_GROWTH, area, blockers);
@@ -853,7 +853,7 @@ final class WildBubbles
 	private void updateHover(Group g, List<BubbleFrame.Disc> discs, double px, double py, long now)
 	{
 		for (int i = 0; i < 3; i++)
-		g.hover[i].set(over(discs.get(i), px, py) ? 1 : 0, now, mode);
+			g.hover[i].set(over(discs.get(i), px, py) ? 1 : 0, now, mode);
 
 		for (int i = 3; i < discs.size(); i++)
 		{
@@ -871,7 +871,7 @@ final class WildBubbles
 	{
 		List<Rectangle2D> zones = new ArrayList<>();
 		for (int i = 0; i < 3; i++)
-		zones.add(around(discs.get(i)));
+			zones.add(around(discs.get(i)));
 
 		zones.add(BubbleLayout.corridor(geom.arc, g.anchors.originY()));
 		if (g.cluster == ClusterState.OPEN && geom.cluster != null)

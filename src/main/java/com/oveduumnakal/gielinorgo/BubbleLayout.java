@@ -479,7 +479,7 @@ final class BubbleLayout
 	{
 		List<Point2D.Double> slots = new ArrayList<>();
 		for (Point2D.Double offset : offsets)
-		slots.add(new Point2D.Double(cx + offset.x, cy + offset.y));
+			slots.add(new Point2D.Double(cx + offset.x, cy + offset.y));
 
 		return new ClusterPlan(cx, cy, dir, slots, discBounds(cx, cy, offsets));
 	}
