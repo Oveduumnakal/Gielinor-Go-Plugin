@@ -427,6 +427,30 @@ public class GoGameExtrasTest
 		return stored.isEmpty() ? team.get(team.size() - 1) : stored.get(stored.size() - 1);
 	}
 
+	@Test
+	public void anEggAlreadyCarriedKeepsItsOwnTotal()
+	{
+		Egg old = new Egg(Rarity.COMMON);
+		old.tilesTotal = 500;
+		old.tilesLeft = 200;
+		game.data().eggs.add(old);
+
+		game.addSteps(199);
+		assertEquals(1, game.data().eggs.size());
+		assertEquals(500, firstEgg().tilesTotal);
+
+		game.addSteps(1);
+
+		assertTrue("hatched at its old target", game.data().eggs.isEmpty());
+	}
+
+	@Test
+	public void aNewEggUsesTheNewTotal()
+	{
+		assertEquals(1000, new Egg(Rarity.COMMON).tilesTotal);
+		assertEquals(4000, new Egg(Rarity.LEGENDARY).tilesTotal);
+	}
+
 	private Egg firstEgg()
 	{
 		return game.data().eggs.get(0);
