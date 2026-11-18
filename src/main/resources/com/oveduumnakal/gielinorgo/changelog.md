@@ -91,6 +91,8 @@ A Creature Log, daily tasks and daily events give you goals.
   turn by turn. (#98)
 - **Painted window.** A new in-game window drawn on the game screen, with six tabs and two looks. The jar button on
   the game screen opens and closes it. (#223)
+- **Party and Summary.** Your team of six as rows with portrait, nickname, gender, style, level and health and XP
+  bars; click one for its Summary. (#224)
 - **Battle buttons on the game screen.** While a battle waits for your choice, the box on the game screen has
   buttons for Attack, Switch, Catch, Item and Run, so you can steer a battle without hotkeys. (#225)
 - **Painted window tabs.** The painted window has Party, Bag, Storage, Collection, Tasks and Battle, plus an in-window
@@ -107,6 +109,8 @@ A Creature Log, daily tasks and daily events give you goals.
   its species. (#205)
 - **Hunter creatures.** Pyre foxes, kebbits, salamanders, moths, antelope, implings and other Hunter creatures with
   no combat level now turn wild and can be battled and caught; their level is their Hunter level. (#207)
+- **Sort and filter Storage.** Sort stored creatures by level, species, rarity, date caught or nickname, and filter
+  them by level, style, rarity, rating, gender, gilded or nickname, showing or hiding each. (#212)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

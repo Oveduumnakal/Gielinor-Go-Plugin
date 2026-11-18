@@ -306,7 +306,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Releasing creatures**
 
   Right-click a creature in Storage and choose **Release**, or press **Select** at the top of the Storage page, tick
-  as many creatures as you like and press **Release selected**. One confirm lists the names and the total XP. Your
+  as many creatures as you like and press **Release selected**. Filter first, then **Tick all shown**, to release a
+  whole set at once. One confirm lists the names and the total XP. Your
   lead creature gains creature XP for each one: 20 plus 4 for every level of the released creature, times 1 for a
   Common, 1.5 for an Uncommon, 2 for a Rare, 3 for an Epic and 4 for a Legendary. A Level 10 Common pays 60 XP. The
   XP counts like any other, so it can level the lead, teach it moves and evolve it. A release never pays jars or
@@ -566,7 +567,11 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Bag, Storage, Collection, Tasks and Battle**
 
   **Bag** holds your jars, healing items (hover for what each does) and the eggs you carry. **Storage** holds the
-  creatures you are not carrying. **Collection** is the Creature Log of every species you can meet in the game
+  creatures you are not carrying. On Storage, **Sort** orders the list by level, species, rarity, date caught or
+  nickname, and **Filter** shows only some creatures: pick a level, style, rarity, rating, gender, gilded or
+  nicknamed, then click its chip to flip between showing and hiding it. Your choice is kept until you restart
+  RuneLite. **Select** with **Tick all shown** ticks only what you can see, and hidden creatures are never released.
+  **Collection** is the Creature Log of every species you can meet in the game
   (1,139): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
   Click a species you have seen or caught for its examine text, evolution line (stages you have not met show as
   `???`), how many you have caught and whether you own a gilded one, and right-click it for **Open wiki**. **Tasks**
