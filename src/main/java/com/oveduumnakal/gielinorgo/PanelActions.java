@@ -152,6 +152,13 @@ interface PanelActions
 	 */
 	void resetProgress();
 
+	/**
+	 * Opens a species' page on the Old School RuneScape Wiki in the browser.
+	 *
+	 * @param species the species name
+	 */
+	void openWiki(String species);
+
 	/** Records that the player opened the change log, so the What's New badge goes away. */
 	void whatsNewSeen();
 }

@@ -77,6 +77,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.client.util.LinkBrowser;
 import net.runelite.client.util.Text;
 
 /**
@@ -2437,6 +2438,12 @@ public class GielinorGoPlugin extends Plugin
 	{
 		return new PanelActions()
 		{
+			@Override
+			public void openWiki(String species)
+			{
+				LinkBrowser.browse(WikiLinks.urlFor(species));
+			}
+
 			@Override
 			public void whatsNewSeen()
 			{
