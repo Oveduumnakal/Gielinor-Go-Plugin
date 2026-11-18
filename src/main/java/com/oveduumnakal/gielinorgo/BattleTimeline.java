@@ -25,6 +25,13 @@ final class BattleTimeline
 	/** Game ticks from one attack to the next, the same pace as the battle lines ({@link NoticeBoard#LINE_TICKS}). */
 	static final int BEAT_TICKS = NoticeBoard.LINE_TICKS;
 
+	/**
+	 * Most game ticks a beat waits for a melee attacker to get back on its spot before the next attack starts. The
+	 * walk back takes less than a beat, but game ticks do not always arrive 600 ms apart, so the gate stops a late
+	 * burst of them from starting the reply too early. It is short, so a stuck body cannot stall a battle.
+	 */
+	static final int MAX_HOLD_TICKS = 2;
+
 	/** Game ticks the lead stays down when it loses: about five seconds. */
 	static final int HOLD_TICKS = 8;
 
@@ -245,6 +252,8 @@ final class BattleTimeline
 	private int walked;
 	private int next;
 	private int held;
+	private int holdSpent;
+	private int holdTaken;
 	private int wait;
 	private int sinceFirst = -1;
 	private int faceOffs;
@@ -402,6 +411,19 @@ final class BattleTimeline
 	 */
 	Step tick(boolean arrived)
 	{
+		return tick(arrived, true);
+	}
+
+	/**
+	 * Moves the battle on by one game tick, and holds the next attack while a melee attacker is still on its way
+	 * back, for at most {@link #MAX_HOLD_TICKS} game ticks.
+	 *
+	 * @param arrived whether the lead has reached its place beside the other creature
+	 * @param settled whether neither creature is in the middle of a melee turn
+	 * @return what happens on this tick of the fight, or null when nothing does (still walking, held, or already down)
+	 */
+	Step tick(boolean arrived, boolean settled)
+	{
 		if (sinceFirst >= 0)
 			sinceFirst++;
 
@@ -431,6 +453,14 @@ final class BattleTimeline
 				return null;
 			}
 
+			if (!settled && holdSpent < MAX_HOLD_TICKS && attacks(steps.get(next)))
+			{
+				holdSpent++;
+				holdTaken++;
+				return null;
+			}
+
+			holdSpent = 0;
 			wait = BEAT_TICKS - 1;
 			Step step = steps.get(next++);
 			if (sinceFirst < 0)
@@ -449,6 +479,26 @@ final class BattleTimeline
 			phase = Phase.DONE;
 
 		return null;
+	}
+
+	private static boolean attacks(Step step)
+	{
+		Beat beat = step.beat();
+		return beat == Beat.LEAD_ATTACKS || beat == Beat.FOE_ATTACKS || beat == Beat.LEAD_SPECIAL
+			|| beat == Beat.FOE_SPECIAL;
+	}
+
+	/**
+	 * Tells how many game ticks the next attack was held since this was last called, so the battle lines can wait
+	 * the same time.
+	 *
+	 * @return game ticks, 0 for none
+	 */
+	int takeHeldTicks()
+	{
+		int taken = holdTaken;
+		holdTaken = 0;
+		return taken;
 	}
 
 	/**
