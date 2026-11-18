@@ -670,6 +670,9 @@ public class GielinorGoPlugin extends Plugin
 		}
 
 		trackerTick();
+		if (!director.active())
+			game.rescue();
+
 		boolean changed = game.takeDirty();
 		unsaved |= changed;
 		if (changed || ticks % PANEL_TICKS == 0)
@@ -2595,6 +2598,19 @@ public class GielinorGoPlugin extends Plugin
 			public void setLead(TradePick pick)
 			{
 				onGameThread(() -> game.setLead(pick));
+			}
+
+			@Override
+			public void reviveAtBank(TradePick pick)
+			{
+				onGameThread(() ->
+				{
+					if (battleOpen())
+						return;
+
+					lookForBank();
+					game.reviveAtBank(pick);
+				});
 			}
 
 			@Override

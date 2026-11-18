@@ -63,6 +63,9 @@ final class GoGame
 	/** The least share of full health a creature needs to take part in a battle of an Elite run. */
 	static final double ELITE_MIN_HEALTH = 0.01;
 
+	/** What the player is told when no creature of the team can fight because every one of them has fainted. */
+	static final String FAINTED_TEAM_TEXT = "Your team has fainted. Revive it at a bank";
+
 	/** Most evolutions one creature can go through in a single burst of XP. */
 	private static final int MAX_EVOLUTIONS_AT_ONCE = 5;
 
@@ -878,7 +881,7 @@ final class GoGame
 
 		if (mine.isEmpty())
 		{
-			tell(data.team.isEmpty() ? "Catch a creature first" : "Your team is too tired", Tone.BAD);
+			tell(noFighterText(), Tone.BAD);
 			return null;
 		}
 
@@ -888,11 +891,7 @@ final class GoGame
 
 		TeamBattleResult fought = BattleSim.teamFight(mine, theirs, random);
 		for (int i = 0; i < fighters.size(); i++)
-		{
-			Creature fighter = fighters.get(i);
-			fighter.hpFraction = mine.get(i).hpFraction();
-			fighter.hpStampMs = now;
-		}
+			writeBack(fighters.get(i), mine.get(i), now);
 
 		dirty = true;
 		List<BattleLine> lines = new ArrayList<>();
@@ -1156,7 +1155,8 @@ final class GoGame
 		List<Combatant> mine = restedTeam(clock.getAsLong(), fighters);
 		if (mine.isEmpty())
 		{
-			tell(data.team.size() > 1 ? "Your team is too tired" : nameOf(lead) + " is too tired", Tone.BAD);
+			tell(allFainted() ? FAINTED_TEAM_TEXT
+				: data.team.size() > 1 ? "Your team is too tired" : nameOf(lead) + " is too tired", Tone.BAD);
 			return null;
 		}
 
@@ -1194,7 +1194,15 @@ final class GoGame
 		}
 
 		long now = clock.getAsLong();
-		if (lead.hpFractionAt(now) < MIN_BATTLE_HP)
+		if (lead.fainted)
+		{
+			if (restedTeam(now, new ArrayList<>()).isEmpty())
+			{
+				tell(noFighterText(), Tone.BAD);
+				return null;
+			}
+		}
+		else if (lead.hpFractionAt(now) < MIN_BATTLE_HP)
 		{
 			tell(nameOf(lead) + " is too tired", Tone.BAD);
 			return null;
@@ -1234,7 +1242,7 @@ final class GoGame
 		List<Combatant> mine = restedTeam(clock.getAsLong(), fighters);
 		if (mine.isEmpty())
 		{
-			tell(data.team.isEmpty() ? "Catch a creature first" : "Your team is too tired", Tone.BAD);
+			tell(noFighterText(), Tone.BAD);
 			return null;
 		}
 
@@ -1371,10 +1379,37 @@ final class GoGame
 		if (lead == null)
 			return false;
 
+		if (steering && lead.fainted)
+			return species.find(lead.species) != null && !restedTeam(now, new ArrayList<>()).isEmpty();
+
 		if (steering)
 			return species.find(lead.species) != null && lead.hpFractionAt(now) >= MIN_BATTLE_HP;
 
 		return !restedTeam(now, new ArrayList<>()).isEmpty();
+	}
+
+	/** @return whether the team has creatures and every one of them has fainted */
+	private boolean allFainted()
+	{
+		if (data.team.isEmpty())
+			return false;
+
+		for (Creature creature : data.team)
+		{
+			if (!creature.fainted)
+				return false;
+		}
+
+		return true;
+	}
+
+	/** @return why no creature of the team can fight, in words the player reads */
+	private String noFighterText()
+	{
+		if (data.team.isEmpty())
+			return "Catch a creature first";
+
+		return allFainted() ? FAINTED_TEAM_TEXT : "Your team is too tired";
 	}
 
 	/**
@@ -1608,12 +1643,36 @@ final class GoGame
 			if (!session.changed(i))
 				continue;
 
-			Creature fighter = fighters.get(i);
-			fighter.hpFraction = session.fighter(i).hpFraction();
-			fighter.hpStampMs = now;
+			writeBack(fighters.get(i), session.fighter(i), now);
 			session.written(i);
 			dirty = true;
 		}
+	}
+
+	/**
+	 * Writes the health a creature ended a fight with to the saved creature. A creature that reached 0 health faints
+	 * and says so; one that is up again, through a Revive draught in the same battle, loses the flag. Nothing here
+	 * draws a random number, so a faint cannot move the battle stream.
+	 *
+	 * @param creature the saved creature
+	 * @param fought the fighter that stood for it
+	 * @param now the time, in milliseconds
+	 */
+	private void writeBack(Creature creature, Combatant fought, long now)
+	{
+		if (fought.fainted())
+		{
+			boolean already = creature.fainted;
+			creature.faint(now);
+			if (!already)
+				tell(nameOf(creature) + " fainted. Revive it at a bank", Tone.BAD);
+
+			return;
+		}
+
+		creature.fainted = false;
+		creature.hpFraction = fought.hpFraction();
+		creature.hpStampMs = now;
 	}
 
 	private void settle(BattleSession session, TurnResult.Status status)
@@ -3082,11 +3141,7 @@ final class GoGame
 		Champion foe = elite.stages().get(run.stage());
 		TeamBattleResult fought = run.fight(mine, random);
 		for (int i = 0; i < fighters.size(); i++)
-		{
-			Creature fighter = fighters.get(i);
-			fighter.hpFraction = mine.get(i).hpFraction();
-			fighter.hpStampMs = now;
-		}
+			writeBack(fighters.get(i), mine.get(i), now);
 
 		dirty = true;
 		List<BattleLine> lines = new ArrayList<>();
@@ -3591,17 +3646,114 @@ final class GoGame
 
 		long now = clock.getAsLong();
 		double health = creature.hpFractionAt(now);
-		if (!ItemRules.appliesOutsideBattle(type, health))
+		if (!ItemRules.appliesOutsideBattle(type, health, creature.fainted))
 		{
 			tell(refusal(creature, type), Tone.BAD);
 			return false;
 		}
 
+		boolean wasFainted = creature.fainted;
+		creature.fainted = false;
 		creature.hpFraction = ItemRules.healthAfter(type, health);
 		creature.hpStampMs = now;
 		data.addItems(type, -1);
 		dirty = true;
-		tell(nameOf(creature) + " is at " + Math.round(creature.hpFraction * 100) + "% health", Tone.GOOD);
+		if (wasFainted)
+			tell(nameOf(creature) + " was revived to " + Math.round(creature.hpFraction * 100) + "% health",
+				Tone.GOOD);
+		else
+			tell(nameOf(creature) + " is at " + Math.round(creature.hpFraction * 100) + "% health", Tone.GOOD);
+
+		return true;
+	}
+
+	/**
+	 * Revives a fainted creature for free. It needs the place to allow it, the same rule as changing the team (a
+	 * city or team town, near a bank, or with the bank open), and no Elite run open. The creature comes back at
+	 * {@link ReviveRules#BANK_TO} and rests from there. Nothing is spent.
+	 *
+	 * @param creature a team member or stored creature
+	 * @return true when the creature was revived; otherwise the reason is told to the player
+	 */
+	boolean reviveAtBank(Creature creature)
+	{
+		if (creature == null || !data.team.contains(creature) && !data.storage.contains(creature))
+			return false;
+
+		if (!creature.fainted)
+		{
+			tell(nameOf(creature) + " has not fainted", Tone.BAD);
+			return false;
+		}
+
+		if (eliteBusy())
+			return false;
+
+		if (!ReviveRules.mayReviveHere(inTeamArea(), bankNear, bankOpen))
+		{
+			tell(ReviveRules.placeRefusal(nameOf(creature)), Tone.BAD);
+			return false;
+		}
+
+		creature.revive(ReviveRules.BANK_TO, clock.getAsLong());
+		dirty = true;
+		tell(nameOf(creature) + " was revived", Tone.GOOD);
+		return true;
+	}
+
+	/**
+	 * Revives the fainted creature a panel picked for free, if it is still where the panel listed it.
+	 *
+	 * @param pick the creature as the panel showed it
+	 * @return true when the creature was revived
+	 */
+	boolean reviveAtBank(TradePick pick)
+	{
+		if (!stillThere(pick))
+			return false;
+
+		List<Creature> kept = pick.from() == Holding.TEAM ? data.team : data.storage;
+		return reviveAtBank(kept.get(pick.index()));
+	}
+
+	/**
+	 * Stands one creature up when the player has been left with nothing: every creature they own, in the team and in
+	 * storage, has fainted and the newest faint is {@link ReviveRules#RESCUE_MS} old. The first team creature, or the
+	 * first stored one, comes back at {@link ReviveRules#RESCUE_TO}. It does nothing while an Elite run is open. The
+	 * time is the wall clock, so a long logout counts.
+	 *
+	 * @return true when a creature was stood up
+	 */
+	boolean rescue()
+	{
+		if (eliteOpen())
+			return false;
+
+		long now = clock.getAsLong();
+		Creature first = null;
+		long latest = Long.MIN_VALUE;
+		boolean alive = false;
+		boolean any = false;
+		for (List<Creature> kept : Arrays.asList(data.team, data.storage))
+		{
+			for (Creature creature : kept)
+			{
+				any = true;
+				alive |= !creature.fainted;
+				if (creature.fainted)
+					latest = Math.max(latest, creature.hpStampMs);
+
+				if (first == null)
+					first = creature;
+			}
+		}
+
+		if (!ReviveRules.rescueDue(now, latest, alive, any))
+			return false;
+
+		first.revive(ReviveRules.RESCUE_TO, now);
+		dirty = true;
+		tell("A passing healer got " + nameOf(first) + " back on its feet", Tone.GOOD);
 		return true;
 	}
 
@@ -3614,6 +3766,9 @@ final class GoGame
 	 */
 	private String refusal(Creature creature, ItemType type)
 	{
+		if (creature.fainted && !type.revives())
+			return nameOf(creature) + " has fainted. Revive it first";
+
 		if (type.revives())
 			return nameOf(creature) + " does not need reviving";
 

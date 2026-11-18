@@ -1,6 +1,7 @@
 class Creature {
   bond: int
   caughtAtMs: long
+  fainted: boolean
   gender: Gender
   gilded: boolean
   hpFraction: double

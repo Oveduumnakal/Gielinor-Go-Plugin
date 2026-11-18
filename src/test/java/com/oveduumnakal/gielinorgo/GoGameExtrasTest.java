@@ -381,7 +381,7 @@ public class GoGameExtrasTest
 	}
 
 	@Test
-	public void losingToAChampionEarnsNothingAndTiresTheTeam()
+	public void losingToAChampionEarnsNothingAndFaintsTheTeam()
 	{
 		Species weak = CHICKEN;
 		game = new GoGame(new SpeciesTable(Arrays.asList(weak, DRAGON)), EvolutionTable.empty(),
@@ -400,8 +400,11 @@ public class GoGameExtrasTest
 		assertEquals(0, game.data().jarCount(JarType.IRON));
 		assertEquals(0.0, healthOf(0), 0);
 		assertEquals(0.0, healthOf(1), 0);
+		List<Creature> team = game.data().team;
+		assertTrue(team.get(0).fainted);
+		assertTrue(team.get(1).fainted);
 		assertNull("a team with no health cannot challenge", game.challenge("lumbridge"));
-		assertTrue(messages.contains("Your team is too tired"));
+		assertTrue(messages.contains(GoGame.FAINTED_TEAM_TEXT));
 	}
 
 	private Notice noticeOf(String text)

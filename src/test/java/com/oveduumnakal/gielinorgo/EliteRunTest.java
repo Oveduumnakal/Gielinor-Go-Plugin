@@ -224,7 +224,7 @@ public class EliteRunTest
 		assertEquals(0, game.data().eliteClears);
 		assertTrue(lost.lines().stream().anyMatch(line -> line.text().contains("The Elite challenge is over")));
 
-		lead().hpFraction = 1.0;
+		lead().revive(1.0, now);
 		TeamBattleResult again = game.eliteChallenge();
 
 		assertTrue(firstLine(again).startsWith("Elite challenge 1 of 5"));

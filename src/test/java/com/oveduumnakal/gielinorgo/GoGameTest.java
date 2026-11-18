@@ -350,7 +350,7 @@ public class GoGameTest
 	}
 
 	@Test
-	public void losingLeavesTheLeadTooTiredUntilItRests()
+	public void losingFaintsTheLeadAndItStaysDownUntilItIsRevived()
 	{
 		game.data().team.add(new Creature("chicken", 1, now));
 
@@ -359,10 +359,13 @@ public class GoGameTest
 		assertNotNull(result);
 		assertFalse(result.won());
 		assertEquals(0, game.data().battlesWon);
+		assertTrue(lead().fainted);
 		assertNull(game.battle(wild(CHICKEN, 1, 1)));
 
 		now += Creature.FULL_REST_MS;
 
+		assertNull("resting does not bring a fainted creature back", game.battle(wild(CHICKEN, 1, 1)));
+		assertTrue(game.reviveAtBank(lead()));
 		assertNotNull(game.battle(wild(CHICKEN, 1, 1)));
 	}
 
