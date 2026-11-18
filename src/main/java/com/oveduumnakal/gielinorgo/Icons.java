@@ -196,6 +196,58 @@ final class Icons
 	}
 
 	/**
+	 * Draws two crossed swords, each a blade, a cross guard and a short grip, in the current colour. Used on the
+	 * Battle bubble. Everything stays inside the square.
+	 *
+	 * @param g the graphics, with the colour set
+	 * @param x the left edge of the square
+	 * @param y the top edge
+	 * @param size the side of the square
+	 */
+	static void swords(Graphics2D g, int x, int y, int size)
+	{
+		Stroke saved = g.getStroke();
+		double s = size;
+		g.setStroke(new BasicStroke((float) Math.max(1.0, s / 8.0), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		g.draw(new Line2D.Double(x + s * 0.14, y + s * 0.14, x + s * 0.78, y + s * 0.78));
+		g.draw(new Line2D.Double(x + s * 0.86, y + s * 0.14, x + s * 0.22, y + s * 0.78));
+		g.draw(new Line2D.Double(x + s * 0.48, y + s * 0.76, x + s * 0.76, y + s * 0.48));
+		g.draw(new Line2D.Double(x + s * 0.52, y + s * 0.76, x + s * 0.24, y + s * 0.48));
+		g.draw(new Line2D.Double(x + s * 0.78, y + s * 0.78, x + s * 0.88, y + s * 0.88));
+		g.draw(new Line2D.Double(x + s * 0.22, y + s * 0.78, x + s * 0.12, y + s * 0.88));
+		g.setStroke(saved);
+	}
+
+	/**
+	 * Draws a lower-case i, a dot over a stem with a foot, in the current colour. Used on the Info bubble. Everything
+	 * stays inside the square.
+	 *
+	 * @param g the graphics, with the colour set
+	 * @param x the left edge of the square
+	 * @param y the top edge
+	 * @param size the side of the square
+	 */
+	static void info(Graphics2D g, int x, int y, int size)
+	{
+		double s = size;
+		double dot = s * 0.24;
+		g.fill(new Ellipse2D.Double(x + (s - dot) / 2.0, y + s * 0.06, dot, dot));
+		Path2D.Double stem = new Path2D.Double();
+		stem.moveTo(x + s * 0.3, y + s * 0.38);
+		stem.lineTo(x + s * 0.62, y + s * 0.38);
+		stem.lineTo(x + s * 0.62, y + s * 0.78);
+		stem.lineTo(x + s * 0.74, y + s * 0.78);
+		stem.lineTo(x + s * 0.74, y + s * 0.94);
+		stem.lineTo(x + s * 0.26, y + s * 0.94);
+		stem.lineTo(x + s * 0.26, y + s * 0.78);
+		stem.lineTo(x + s * 0.38, y + s * 0.78);
+		stem.lineTo(x + s * 0.38, y + s * 0.54);
+		stem.lineTo(x + s * 0.3, y + s * 0.54);
+		stem.closePath();
+		g.fill(stem);
+	}
+
+	/**
 	 * Draws an eye: an almond outline with a filled pupil.
 	 *
 	 * @param g the graphics, with the colour set

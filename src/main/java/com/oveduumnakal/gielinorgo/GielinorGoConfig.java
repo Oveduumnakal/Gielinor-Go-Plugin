@@ -356,24 +356,6 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
-	 * When a plain left click on a wild creature is ours.
-	 *
-	 * @return the choice, not while in combat by default
-	 */
-	@ConfigItem(
-		keyName = "leftClickWild",
-		name = "Left-click wild creatures",
-		description = "Always: a left click on a wild creature battles or catches it.\nNot while in combat: while you"
-			+ " fight a real monster the left click goes to the game,\nand Battle and Catch stay in the right-click"
-			+ " menu.\nNever: Battle and Catch are in the right-click menu only.",
-		position = 18
-	)
-	default LeftClickMode leftClickWild()
-	{
-		return LeftClickMode.OUT_OF_COMBAT;
-	}
-
-	/**
 	 * The version the change log was last opened for. Empty on a first install. Not shown in the settings.
 	 *
 	 * @return the version, or an empty text
@@ -551,10 +533,27 @@ public interface GielinorGoConfig extends Config
 		keyName = "wildTooltip",
 		name = "Wild creature tooltip",
 		description = "Shows a small tooltip with the name, level, style and Creature Log record when you hover a wild"
-			+ " creature.\nIt hides while a menu is open and during a battle.",
+			+ " creature.\nIt hides while a menu is open and during a battle, and while its bubbles show.",
 		position = 29
 	)
 	default boolean wildTooltip()
+	{
+		return true;
+	}
+
+	/**
+	 * Whether the pop-out Catch, Battle and Info bubbles show above a wild creature.
+	 *
+	 * @return true to show the bubbles
+	 */
+	@ConfigItem(
+		keyName = "wildBubbles",
+		name = "Wild creature bubbles",
+		description = "Shows Catch, Battle and Info bubbles above a wild creature when your mouse comes near it.\n"
+			+ "Off: use Battle and Catch in the creature's right-click menu instead.",
+		position = 30
+	)
+	default boolean wildBubbles()
 	{
 		return true;
 	}
@@ -593,24 +592,6 @@ public interface GielinorGoConfig extends Config
 	default boolean showTracker()
 	{
 		return true;
-	}
-
-	/**
-	 * Which menu a right click on a wild creature opens.
-	 *
-	 * @return the game's own menu by default
-	 */
-	@ConfigItem(
-		keyName = "wildMenu",
-		name = "Wild creature menu",
-		description = "Game: right-click a wild creature for the game's own menu.\nPainted: a menu in the window's"
-			+ " style with Battle and a Catch list of your jars.\nHold Shift while right-clicking to get the game's"
-			+ " menu (Walk here, Examine) either way.",
-		position = 30
-	)
-	default WildMenuStyle wildMenu()
-	{
-		return WildMenuStyle.GAME;
 	}
 
 	/**

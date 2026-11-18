@@ -30,7 +30,8 @@ final class WildOverlay extends Overlay
 	private static final Logger log = LoggerFactory.getLogger(WildOverlay.class);
 	private static final int OUTLINE_WIDTH = 2;
 	private static final int OUTLINE_FEATHER = 4;
-	private static final int TAG_HEIGHT_OFFSET = 40;
+	/** How far above the top of a body the tag sits, in local units. */
+	static final int TAG_HEIGHT_OFFSET = 40;
 	private static final int MARK_SIZE = 12;
 	private static final int MARK_GAP = 3;
 

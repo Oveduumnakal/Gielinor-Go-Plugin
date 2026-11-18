@@ -15,8 +15,9 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Wild creatures.** Monsters near you turn wild as their own smaller copies. Wild creatures never need a second
   player and do not appear in instances. (#1, #15, #50, #60)
 - **Catching.** Right-click a wild creature for Battle and a Catch list of your jars, best odds first, then throw one.
-  A knocked-out creature is twice as easy to catch. An optional painted menu, chosen with the **Wild creature
-  menu** setting, shows the same list in the window's style. (#17, #32, #51, #210)
+  A knocked-out creature is twice as easy to catch. (#17, #32, #51, #210)
+- **Wild creature bubbles.** Move the mouse near a wild creature and three bubbles pop out above it: throw the
+  selected jar, start a battle, or read a summary card. A plain left click now just walks. (#264)
 - **Spawn variety.** Featured species, night spawns and weekend events change what turns wild. (#27)
 
 ### Your team
@@ -53,10 +54,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
-- **Catch when nobody can fight.** With no team or a tired lead, a left click on a wild creature throws a jar.
-  (#82)
-- **Left-click setting.** Choose whether a left click on a wild creature is yours always, never, or only out of
-  combat. (#87)
+- **Catch when nobody can fight.** With no team or a tired lead you can still catch: use the jar bubble or Catch
+  in the right-click menu. (#82)
 - **Report a bug and Request a feature.** The Feedback button in the window opens GitHub with your text filled in.
   (#81)
 - **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature

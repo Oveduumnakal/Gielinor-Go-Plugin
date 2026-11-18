@@ -278,4 +278,45 @@ public class SummaryContentTest
 		assertTrue(tip, tip.contains("Brave"));
 		assertEquals("", content(plain()).statsTip());
 	}
+
+	@Test
+	public void chipsForPutsTheStyleFirstAndSkipsTheStyleTrait()
+	{
+		List<SummaryContent.Chip> chips = SummaryContent.chipsFor(CombatType.MAGIC,
+			Arrays.asList(Trait.UNHOLY, Trait.MAGIC, Trait.SLAYER));
+
+		assertEquals(3, chips.size());
+		assertEquals("Magic", chips.get(0).label());
+		assertTrue(chips.get(0).style());
+		assertEquals("Unholy", chips.get(1).label());
+		assertTrue(!chips.get(1).style());
+		assertEquals("Slayer", chips.get(2).label());
+	}
+
+	@Test
+	public void chipsForGivesOnlyTheStyleChipForNoTraits()
+	{
+		List<SummaryContent.Chip> chips = SummaryContent.chipsFor(CombatType.CRUSH, Collections.emptyList());
+
+		assertEquals(1, chips.size());
+		assertEquals("Crush", chips.get(0).label());
+	}
+
+	@Test
+	public void theSummaryChipsAreExactlyWhatChipsForGives()
+	{
+		CreatureView view = plain();
+		List<SummaryContent.Chip> expected = SummaryContent.chipsFor(view.type(), view.traits());
+
+		List<SummaryContent.Chip> chips = content(view).chips();
+
+		assertEquals(expected.size(), chips.size());
+		for (int i = 0; i < chips.size(); i++)
+		{
+			SummaryContent.Chip want = expected.get(i);
+			SummaryContent.Chip got = chips.get(i);
+			assertEquals(want.label(), got.label());
+			assertEquals(want.style(), got.style());
+		}
+	}
 }
