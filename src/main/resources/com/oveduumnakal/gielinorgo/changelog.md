@@ -119,5 +119,7 @@ A Creature Log, daily tasks and daily events give you goals.
   (#202, #203)
 - **Battle scenes.** A map load no longer forfeits a battle, and status tags sit on the right creature and clear
   when the status ends. (#133, #137, #138)
+- **Spell projectiles.** Bind, Hex, Flame Lash and Hellfire show their own bolt instead of the Fire Strike
+  bolt. (#197)
 - **World.** The follower and the arena foe stay on your side of walls, projectile colours no longer change other
   models, floating text stays on its tile, and a model loads once. (#134, #135, #140, #150, #151)
