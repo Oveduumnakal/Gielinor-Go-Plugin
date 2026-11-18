@@ -103,6 +103,8 @@ A Creature Log, daily tasks and daily events give you goals.
   them by level, style, rarity, rating, gender, gilded or nickname, showing or hiding each. (#212)
 - **Storage views.** Switch Storage between a list, a Box grid you can rearrange by dragging, and a list grouped
   by species. (#211)
+- **Details for stored creatures.** Storage creatures have the same Summary as your team, with the real stat numbers
+  and the day you caught them. (#215)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

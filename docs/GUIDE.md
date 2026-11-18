@@ -553,8 +553,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Party and Summary**
 
   Party lists your team of up to six as rows with portrait, nickname, gender, style, level, health and XP bars. A new
-  player sees **Choose your first creature** here. Left-click a row for its **Summary** (stats, nature, moves, bond,
-  evolution hint). Right-click a row, or press Enter on a highlighted one, for **Make lead**, **Move to storage**,
+  player sees **Choose your first creature** here. Left-click a row for its **Summary** (stats with their numbers,
+  nature, moves, bond, evolution hint, and the day you caught it). Right-click a row, or press Enter on a highlighted one, for **Make lead**, **Move to storage**,
   **Rename**, **Moves**, **Use item** and **Open wiki**. A small column on the right shows your eggs and top tasks.
 
 - **Bag, Storage, Collection, Tasks and Battle**
@@ -571,6 +571,9 @@ Every feature and every number, in detail. For the short version, see the [READM
   arrows move between cells, and **Move within box** in a creature's menu carries it: pick a place with the arrows,
   press Enter to put it there and Esc to cancel. **By species** puts a heading over each species with how many you
   have and the best level. **Select** works in every view, and in By species a click on a heading ticks the group.
+  In Storage, right-click a creature and choose **Summary** (or press Enter on it) for the same screen as your team's:
+  Up and Down move through the creatures you see, and the buttons along the foot rename it, show its moves, move it
+  to your team, release it (with the usual confirmation) or use an item.
   **Collection** is the Creature Log of every species you can meet in the game
   (1,096): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
   Click a species you have seen or caught for its examine text, evolution line (stages you have not met show as
