@@ -71,7 +71,7 @@
     {"id": "rapid_fire", "name": "Rapid fire", "style": "RANGED", "power": 1.55, "accuracy": 0.85},
     {"id": "piercing_bolt", "name": "Piercing bolt", "style": "RANGED", "power": 1.95, "accuracy": 0.75},
     {"id": "magic_bolt", "name": "Magic bolt", "style": "MAGIC", "power": 1.0, "accuracy": 1.0},
-    {"id": "hex", "name": "Hex", "style": "MAGIC", "power": 0.8, "accuracy": 1.0},
+    {"id": "hex", "name": "Hex", "style": "MAGIC", "power": 1.0, "accuracy": 1.0},
     {"id": "arcane_blast", "name": "Arcane blast", "style": "MAGIC", "power": 1.5, "accuracy": 0.9},
     {"id": "arcane_surge", "name": "Arcane surge", "style": "MAGIC", "power": 1.95, "accuracy": 0.8},
     {"id": "wind_strike", "name": "Wind strike", "style": "MAGIC", "power": 1.0, "accuracy": 1.0},
