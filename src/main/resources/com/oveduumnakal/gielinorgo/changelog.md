@@ -129,6 +129,8 @@ A Creature Log, daily tasks and daily events give you goals.
   (or with a Revive draught anywhere); it comes back at 50%. (#221)
 - **Stronger hatchlings.** Rarer eggs hatch at a higher level: Common 1, Uncommon 5, Rare 10, Epic 20 and Legendary
   30, boss eggs too. (#220)
+- **New jar pictures.** All 17 jars have new artwork wherever a jar is shown: the Bag, the throw, and the floating
+  lines. (#261)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
