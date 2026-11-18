@@ -37,6 +37,13 @@ public class RulesTest
 	}
 
 	@Test
+	public void aHunterCreatureIsCaughtByItsHunterLevel()
+	{
+		assertEquals(0.513, CatchRules.chance(JarType.BRONZE, 57, false), EPSILON);
+		assertEquals(0.465, CatchRules.chance(JarType.BRONZE, 69, false), EPSILON);
+	}
+
+	@Test
 	public void catchChanceMatchesThePlanTable()
 	{
 		assertEquals(0.95, CatchRules.chance(JarType.BRONZE, 2, false), EPSILON);
@@ -208,6 +215,54 @@ public class RulesTest
 		assertEquals(53, team.get(0).xp);
 		assertEquals(25, team.get(1).xp);
 		assertEquals(25, team.get(2).xp);
+	}
+
+	@Test
+	public void anEqualShareGivesTheLeadNothingExtra()
+	{
+		List<Creature> team = new ArrayList<>();
+		for (int i = 0; i < 3; i++)
+			team.add(new Creature("goblin", 1, 0));
+
+		XpRules.shareEqually(team, 99, new Random(1));
+
+		for (Creature creature : team)
+			assertEquals(33, creature.xp);
+	}
+
+	@Test
+	public void theEqualShareLeftoverGoesToMembersAtRandom()
+	{
+		int leadGot = 0;
+		int lastGot = 0;
+		Random seeds = new Random(1);
+		for (int trial = 0; trial < 600; trial++)
+		{
+			List<Creature> team = new ArrayList<>();
+			for (int i = 0; i < 3; i++)
+				team.add(new Creature("goblin", 1, 0));
+
+			XpRules.shareEqually(team, 100, new Random(seeds.nextLong()));
+
+			assertEquals(100, team.get(0).xp + team.get(1).xp + team.get(2).xp);
+			leadGot += team.get(0).xp == 34 ? 1 : 0;
+			lastGot += team.get(2).xp == 34 ? 1 : 0;
+		}
+
+		assertTrue("the lead gets the spare point about a third of the time: " + leadGot,
+			leadGot > 140 && leadGot < 260);
+		assertTrue("so does the last member: " + lastGot, lastGot > 140 && lastGot < 260);
+	}
+
+	@Test
+	public void anEqualShareToALoneCreatureIsAllOfIt()
+	{
+		List<Creature> team = new ArrayList<>();
+		team.add(new Creature("goblin", 1, 0));
+
+		XpRules.shareEqually(team, 77, new Random(1));
+
+		assertEquals(77, team.get(0).xp);
 	}
 
 	@Test

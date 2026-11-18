@@ -49,7 +49,9 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "wildChance",
 		name = "Wild creature rarity",
-		description = "A nearby monster turns wild one time in this many. Lower numbers mean more wild creatures.",
+		description = "A nearby Common monster turns wild one time in this many.\n"
+			+ "Stronger monsters are rarer: Legendary ones 20 times less often.\n"
+			+ "Lower numbers mean more wild creatures.",
 		position = 0
 	)
 	default int wildChance()
@@ -536,6 +538,94 @@ public interface GielinorGoConfig extends Config
 		position = 27
 	)
 	default boolean windowKeyHints()
+	{
+		return true;
+	}
+
+	/**
+	 * Whether hovering a wild creature shows a small tooltip about it.
+	 *
+	 * @return true to show the tooltip
+	 */
+	@ConfigItem(
+		keyName = "wildTooltip",
+		name = "Wild creature tooltip",
+		description = "Shows a small tooltip with the name, level, style and Creature Log record when you hover a wild"
+			+ " creature.\nIt hides while a menu is open and during a battle.",
+		position = 29
+	)
+	default boolean wildTooltip()
+	{
+		return true;
+	}
+
+	/**
+	 * Whether XP gained while the plugin was not watching trains the team at login.
+	 *
+	 * @return true to count XP gained while away
+	 */
+	@ConfigItem(
+		keyName = "offlineProgress",
+		name = "Count XP gained while away",
+		description = "Counts the XP you gained since the last time you played with this plugin,\n"
+			+ "for example on mobile, and trains your team with it when you log in.\n"
+			+ "No web request is made. The XP is read from the game when you log in.",
+		position = 32
+	)
+	default boolean offlineProgress()
+	{
+		return true;
+	}
+
+	/**
+	 * Whether the pinned tracker box shows on the game screen.
+	 *
+	 * @return true to show the tracker
+	 */
+	@ConfigItem(
+		keyName = "showTracker",
+		name = "Pinned tracker",
+		description = "Shows the tasks and eggs you pinned in a small box on the game screen.\n"
+			+ "Pin them with the pin button on the Tasks and Bag tabs.\n"
+			+ "Hold RuneLite's drag key to move it.",
+		position = 33
+	)
+	default boolean showTracker()
+	{
+		return true;
+	}
+
+	/**
+	 * Which menu a right click on a wild creature opens.
+	 *
+	 * @return the game's own menu by default
+	 */
+	@ConfigItem(
+		keyName = "wildMenu",
+		name = "Wild creature menu",
+		description = "Game: right-click a wild creature for the game's own menu.\nPainted: a menu in the window's"
+			+ " style with Battle and a Catch list of your jars.\nHold Shift while right-clicking to get the game's"
+			+ " menu (Walk here, Examine) either way.",
+		position = 30
+	)
+	default WildMenuStyle wildMenu()
+	{
+		return WildMenuStyle.GAME;
+	}
+
+	/**
+	 * Whether the lead creature wanders near the player when the player stands still.
+	 *
+	 * @return true to let the lead wander
+	 */
+	@ConfigItem(
+		keyName = "followerWander",
+		name = "Lead wanders when you stop",
+		description = "When you stand still, your lead creature wanders around within 3 tiles of you\n"
+			+ "instead of waiting one tile behind you. Only you can see it.",
+		position = 31
+	)
+	default boolean followerWander()
 	{
 		return true;
 	}

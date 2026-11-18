@@ -14,8 +14,9 @@ A Creature Log, daily tasks and daily events give you goals.
 
 - **Wild creatures.** Monsters near you turn wild as their own smaller copies. Wild creatures never need a second
   player and do not appear in instances. (#1, #15, #50, #60)
-- **Catching.** Right-click a wild creature to see your odds, then throw a jar. A knocked-out creature is twice as
-  easy to catch. (#17, #32, #51)
+- **Catching.** Right-click a wild creature for Battle and a Catch list of your jars, best odds first, then throw one.
+  A knocked-out creature is twice as easy to catch. An optional painted menu, chosen with the **Wild creature
+  menu** setting, shows the same list in the window's style. (#17, #32, #51, #210)
 - **Spawn variety.** Featured species, night spawns and weekend events change what turns wild. (#27)
 
 ### Your team
@@ -99,10 +100,26 @@ A Creature Log, daily tasks and daily events give you goals.
   change log and a Feedback menu. (#226)
 - **The side panel is gone.** The sidebar jar button and the jar on the game screen open the painted window, and
   there is no hidden old-panel setting any more. (#227)
+- **Longer walks.** A Bronze jar now takes 300 tiles, eggs take 1,000 to 4,000 tiles and the walking tasks ask for
+  twice as many tiles. Eggs you already carry keep their old target. (#206)
+- **Rarer finds.** Stronger monsters turn wild less often: Uncommon at 0.6 times the chance, Rare 0.35, Epic 0.15 and
+  Legendary 0.05. The Wild creature rarity setting stays the rate for Common ones. (#213)
+- **Seen and caught marks.** A mark beside each wild creature's name shows whether its species is new to you,
+  seen or already caught. (#209)
+- **Wild creature tooltip.** Hover a wild creature to see its name, level, style and whether you have seen or caught
+  its species. (#205)
+- **Hunter creatures.** Pyre foxes, kebbits, salamanders, moths, antelope, implings and other Hunter creatures with
+  no combat level now turn wild and can be battled and caught; their level is their Hunter level. (#207)
 - **Sort and filter Storage.** Sort stored creatures by level, species, rarity, date caught or nickname, and filter
   them by level, style, rarity, rating, gender, gilded or nickname, showing or hiding each. (#212)
+- **Wandering lead.** When you stand still your lead creature wanders around within 3 tiles of you, and walks back
+  to your trail when you set off. A setting turns it off. (#208)
+- **Pinned tracker.** Pin daily and weekly tasks and carried eggs to a small box on the game screen with live
+  progress. (#216)
 - **Storage views.** Switch Storage between a list, a Box grid you can rearrange by dragging, and a list grouped
   by species. (#211)
+- **XP while you are away.** XP you gain on mobile, in another client or with the plugin off trains your team the next
+  time you log in, with jars for the skills and for level-ups. (#219)
 - **Details for stored creatures.** Storage creatures have the same Summary as your team, with the real stat numbers
   and the day you caught them. (#215)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->

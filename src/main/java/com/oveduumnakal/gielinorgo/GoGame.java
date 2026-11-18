@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -36,7 +37,7 @@ final class GoGame
 	static final String TITLE_MASTER_COLLECTOR = "MASTER_COLLECTOR";
 
 	/** Tiles the player walks to find one Bronze jar. */
-	static final int TILES_PER_JAR = 150;
+	static final int TILES_PER_JAR = 300;
 
 	/** Bronze jars given for each OSRS level-up. */
 	static final int JARS_PER_LEVEL_UP = 3;
@@ -155,6 +156,7 @@ final class GoGame
 
 	private final TaskCalendar taskCalendar = new TaskCalendar();
 	private TaskBoard board;
+	private final List<String> pinNews = new ArrayList<>();
 	private Milestones milestoneTable = Milestones.NONE;
 	private boolean milestonesDue;
 	private boolean walking;
@@ -244,6 +246,7 @@ final class GoGame
 	void load(SaveData loaded)
 	{
 		data = loaded.sanitized();
+		pinNews.clear();
 		settleMoves();
 		log = null;
 		starters = null;
@@ -481,16 +484,133 @@ final class GoGame
 		if (gained > 0)
 			payTasks(startTasks().gainedXp(gained));
 
+		trainTeam(gained, false);
+	}
+
+	/**
+	 * Turns OSRS XP into creature XP and shares it across the team.
+	 *
+	 * @param gained OSRS XP gained
+	 * @param equally true to share equally with no extra for the lead, false for the usual lead share
+	 * @return the creature XP handed out, 0 when the team is empty or the XP did not make a whole point
+	 */
+	private long trainTeam(int gained, boolean equally)
+	{
 		if (gained <= 0 || data.team.isEmpty())
-			return;
+			return 0;
 
 		xpCarry += gained;
 		long creatureXp = xpCarry / XpRules.OSRS_XP_PER_CREATURE_XP;
 		if (creatureXp == 0)
-			return;
+			return 0;
 
 		xpCarry -= creatureXp * XpRules.OSRS_XP_PER_CREATURE_XP;
-		shareXp(creatureXp);
+		shareXp(creatureXp, equally);
+		return creatureXp;
+	}
+
+	/**
+	 * Credits XP gained while the plugin was not watching: it trains the team (shared equally, the lead gets no extra),
+	 * and pays specialty jars, healing items and Bronze jars for levels gained. It never pays tasks, days played or
+	 * walking rewards, and never reads the clock.
+	 *
+	 * @param result what the login's offline XP is worth
+	 */
+	void addOfflineXp(OfflineXp.Result result)
+	{
+		if (result.isEmpty())
+			return;
+
+		String capped = result.capped() ? " (capped)" : "";
+		long trained = (xpCarry + result.totalXp()) / XpRules.OSRS_XP_PER_CREATURE_XP;
+		boolean told = false;
+		if (trained > 0 && !data.team.isEmpty())
+		{
+			tell("Welcome back: your team trained +" + String.format(Locale.ROOT, "%,d", trained)
+				+ " XP while you were away" + capped, Tone.GOOD);
+			told = true;
+		}
+
+		trainTeam(result.totalXp(), true);
+		int jars = 0;
+		JarType pictured = null;
+		int most = 0;
+		for (Map.Entry<JarType, Integer> found : result.jars().entrySet())
+		{
+			data.addJars(found.getKey(), found.getValue());
+			jars += found.getValue();
+			if (found.getValue() > most)
+			{
+				most = found.getValue();
+				pictured = found.getKey();
+			}
+		}
+
+		int levelJars = result.levelUps() * JARS_PER_LEVEL_UP;
+		if (levelJars > 0)
+		{
+			data.addJars(JarType.BRONZE, levelJars);
+			jars += levelJars;
+			if (levelJars > most)
+				pictured = JarType.BRONZE;
+		}
+
+		int items = 0;
+		ItemType shown = null;
+		most = 0;
+		for (Map.Entry<ItemType, Integer> found : result.items().entrySet())
+		{
+			data.addItems(found.getKey(), found.getValue());
+			items += found.getValue();
+			if (found.getValue() > most)
+			{
+				most = found.getValue();
+				shown = found.getKey();
+			}
+		}
+
+		dirty = true;
+		if (jars > 0)
+		{
+			tell("Found " + (jars == 1 ? "a jar" : jars + " jars") + " while you were away" + (told ? "" : capped),
+				Tone.FIND, pictured);
+			told = true;
+		}
+
+		if (items > 0)
+			notices.accept(Notice.playerItem("Found " + (items == 1 ? "an item" : items + " items")
+				+ " while you were away" + (told ? "" : capped), Tone.FIND, shown));
+	}
+
+	/**
+	 * Writes the OSRS XP the client reported into the save's snapshot, for the next login to compare against.
+	 *
+	 * @param xp the current XP by {@code Skill} name; only values above zero are kept
+	 * @return true when the snapshot changed and the save needs writing
+	 */
+	boolean stampXp(Map<String, Integer> xp)
+	{
+		boolean changed = false;
+		for (Map.Entry<String, Integer> entry : xp.entrySet())
+		{
+			Integer value = entry.getValue();
+			if (value == null || value <= 0 || "OVERALL".equals(entry.getKey()))
+				continue;
+
+			Integer old = data.osrsXp.put(entry.getKey(), value);
+			changed |= !value.equals(old);
+		}
+
+		if (changed)
+			dirty = true;
+
+		return changed;
+	}
+
+	/** @return a copy of the OSRS XP snapshot the save holds, by {@code Skill} name */
+	Map<String, Integer> xpSnapshot()
+	{
+		return new HashMap<>(data.osrsXp);
 	}
 
 	/**
@@ -798,14 +918,29 @@ final class GoGame
 	 * Records that the player met a species in the wild.
 	 *
 	 * @param entry the wild creature that appeared
+	 * @return true when the species was new to the player, false when it was seen before
 	 */
-	void markSeen(WildEntry entry)
+	boolean markSeen(WildEntry entry)
 	{
 		if (!data.seen.add(entry.species().key()))
-			return;
+			return false;
 
 		log = null;
 		dirty = true;
+		return true;
+	}
+
+	/**
+	 * Works out what the Creature Log knows of a wild creature's species now. It reads the saved counts directly,
+	 * never the Log's entry list.
+	 *
+	 * @param entry the wild creature, whose {@link WildEntry#firstMeeting()} was set when it appeared
+	 * @return caught with the count, else new for a first meeting, else seen
+	 */
+	WildRecord recordOf(WildEntry entry)
+	{
+		Integer count = data.caught.get(entry.species().key());
+		return WildRecord.of(count == null ? 0 : count, entry.firstMeeting());
 	}
 
 	/**
@@ -827,6 +962,25 @@ final class GoGame
 		}
 
 		return null;
+	}
+
+	/**
+	 * Lists every jar the player has, for the wild creature menu. Read on the client thread, like
+	 * {@link #jarToThrow()}.
+	 *
+	 * @return each jar with a count above 0 and its count, in enum order
+	 */
+	Map<JarType, Integer> ownedJars()
+	{
+		Map<JarType, Integer> owned = new EnumMap<>(JarType.class);
+		for (JarType type : JarType.values())
+		{
+			int count = data.jarCount(type);
+			if (count > 0)
+				owned.put(type, count);
+		}
+
+		return owned;
 	}
 
 	/**
@@ -1938,6 +2092,199 @@ final class GoGame
 		return true;
 	}
 
+	/**
+	 * Pins a task to the on-screen tracker. A pin that is refused says why as floating text.
+	 *
+	 * @param slot the task's place: 0 to 2 for the day's tasks, 3 for the week's
+	 * @return true when the task is pinned now; false when the slot is not a task, the task is finished, or the
+	 *         tracker is full
+	 */
+	boolean pinTask(int slot)
+	{
+		if (slot < 0 || slot > TaskCalendar.DAILY_COUNT)
+			return false;
+
+		startTasks();
+		if (taskPinned(slot))
+			return true;
+
+		boolean finished = slot == TaskCalendar.DAILY_COUNT ? data.tasks.weeklyPaid : data.tasks.dailyPaid[slot];
+		String reason = PinRules.canPin(pinCount(), false, finished);
+		if (reason != null)
+		{
+			tell(reason, Tone.BAD);
+			return false;
+		}
+
+		setTaskPinned(slot, true);
+		return true;
+	}
+
+	/**
+	 * Takes a task off the on-screen tracker.
+	 *
+	 * @param slot the task's place: 0 to 2 for the day's tasks, 3 for the week's; any other place does nothing
+	 */
+	void unpinTask(int slot)
+	{
+		if (slot < 0 || slot > TaskCalendar.DAILY_COUNT)
+			return;
+
+		startTasks();
+		if (taskPinned(slot))
+			setTaskPinned(slot, false);
+	}
+
+	/**
+	 * Pins a carried egg to the on-screen tracker. A pin that is refused says why as floating text.
+	 *
+	 * @param egg the egg
+	 * @return true when the egg is pinned now; false when it is not carried or the tracker is full
+	 */
+	boolean pinEgg(Egg egg)
+	{
+		if (!data.eggs.contains(egg))
+			return false;
+
+		if (egg.pinned)
+			return true;
+
+		String reason = PinRules.canPin(pinCount(), false, false);
+		if (reason != null)
+		{
+			tell(reason, Tone.BAD);
+			return false;
+		}
+
+		egg.pinned = true;
+		dirty = true;
+		return true;
+	}
+
+	/**
+	 * Takes a carried egg off the on-screen tracker.
+	 *
+	 * @param egg the egg
+	 */
+	void unpinEgg(Egg egg)
+	{
+		if (egg.pinned)
+		{
+			egg.pinned = false;
+			dirty = true;
+		}
+	}
+
+	/**
+	 * Pins or unpins the egg a window picked, if it is still where the window listed it.
+	 *
+	 * @param pick the egg as the window showed it
+	 * @param pinned true to pin it, false to unpin it
+	 */
+	void pinEgg(TradePick pick, boolean pinned)
+	{
+		if (!pick.matches(snapshot()) || pick.index() >= data.eggs.size())
+		{
+			tell("That egg moved. Try again.", Tone.BAD);
+			return;
+		}
+
+		Egg egg = data.eggs.get(pick.index());
+		if (pinned)
+			pinEgg(egg);
+		else
+			unpinEgg(egg);
+	}
+
+	/** Takes everything off the on-screen tracker. */
+	void unpinAll()
+	{
+		startTasks();
+		for (int slot = 0; slot <= TaskCalendar.DAILY_COUNT; slot++)
+			unpinTask(slot);
+
+		for (Egg egg : data.eggs)
+			unpinEgg(egg);
+	}
+
+	/** @return how many tasks and eggs are pinned to the on-screen tracker */
+	int pinCount()
+	{
+		startTasks();
+		int count = 0;
+		for (int slot = 0; slot <= TaskCalendar.DAILY_COUNT; slot++)
+		{
+			if (taskPinned(slot))
+				count++;
+		}
+
+		for (Egg egg : data.eggs)
+		{
+			if (egg.pinned)
+				count++;
+		}
+
+		return count;
+	}
+
+	/**
+	 * Hands over the names of the pinned eggs that hatched since the last call, so the tracker can say so.
+	 *
+	 * @return the egg names, such as {@code Rare egg}; empty when none hatched
+	 */
+	List<String> takePinNews()
+	{
+		List<String> news = new ArrayList<>(pinNews);
+		pinNews.clear();
+		return news;
+	}
+
+	private boolean taskPinned(int slot)
+	{
+		return slot == TaskCalendar.DAILY_COUNT ? data.tasks.pinnedWeekly : data.tasks.pinnedDaily[slot];
+	}
+
+	private void setTaskPinned(int slot, boolean pinned)
+	{
+		if (slot == TaskCalendar.DAILY_COUNT)
+			data.tasks.pinnedWeekly = pinned;
+		else
+			data.tasks.pinnedDaily[slot] = pinned;
+
+		dirty = true;
+	}
+
+	/**
+	 * Builds what the on-screen tracker shows from the panel's own rows and eggs.
+	 *
+	 * @param tasks the Tasks view, whose rows are the day's three tasks and then the week's
+	 * @param eggs the egg views, in the order the player carries them
+	 * @return the pinned tasks and then the pinned eggs
+	 */
+	private static TrackerView trackerView(TaskView tasks, List<EggView> eggs)
+	{
+		List<TrackerView.Line> lines = new ArrayList<>();
+		List<TaskView.Row> rows = tasks.rows();
+		for (int slot = 0; slot < rows.size(); slot++)
+		{
+			TaskView.Row row = rows.get(slot);
+			if (row.pinned())
+				lines.add(new TrackerView.Line(TrackerView.Kind.TASK, TrackerView.taskId(slot), row.label(),
+					row.count(), row.fraction(), null, row.done()));
+		}
+
+		for (int place = 0; place < eggs.size(); place++)
+		{
+			EggView egg = eggs.get(place);
+			if (egg.pinned())
+				lines.add(new TrackerView.Line(TrackerView.Kind.EGG, TrackerView.eggId(place), egg.label(),
+					egg.tilesLeft() <= 0 ? "Ready" : egg.tilesLeft() + " steps", egg.progress(), egg.rarity(),
+					false));
+		}
+
+		return new TrackerView(lines);
+	}
+
 	/** @return the name of the species a boss egg holds, or null for an ordinary egg */
 	private String eggName(Egg egg)
 	{
@@ -1955,7 +2302,8 @@ final class GoGame
 
 		List<EggView> eggs = new ArrayList<>();
 		for (Egg egg : data.eggs)
-			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal, eggName(egg)));
+			eggs.add(new EggView(egg.rarityTier(), egg.tilesLeft, egg.tilesTotal, eggName(egg))
+				.withPinned(egg.pinned));
 
 		freezeTeam(now);
 		TaskView tasks = startTasks().view(now, bestUnlockedJar());
@@ -1966,7 +2314,8 @@ final class GoGame
 			.withResetSummary(resetSummary())
 			.withRival(rivalView())
 			.withStarters(starterOffer())
-			.withTitle(shownTitle(), titles());
+			.withTitle(shownTitle(), titles())
+			.withTracker(trackerView(tasks, eggs));
 	}
 
 	/** @return how many caught species count toward the Log: known ones that are not quest-only */
@@ -2058,6 +2407,9 @@ final class GoGame
 	{
 		if (!hasRoomForCreature())
 			return false;
+
+		if (egg.pinned)
+			pinNews.add(new EggView(egg.rarityTier(), 0, 0, eggName(egg)).label());
 
 		Species born = egg.species == null ? null : species.find(egg.species);
 		if (born == null)
@@ -3091,6 +3443,18 @@ final class GoGame
 
 	private void shareXp(long creatureXp)
 	{
+		shareXp(creatureXp, false);
+	}
+
+	/**
+	 * Shares creature XP across the team, applies each creature's bond bonus, and tells the player what grew, evolved
+	 * or learned.
+	 *
+	 * @param creatureXp creature XP to hand out
+	 * @param equally true to share equally with no extra for the lead
+	 */
+	private void shareXp(long creatureXp, boolean equally)
+	{
 		int[] before = new int[data.team.size()];
 		for (int i = 0; i < before.length; i++)
 			before[i] = data.team.get(i).level();
@@ -3099,7 +3463,11 @@ final class GoGame
 		for (int i = 0; i < before.length; i++)
 			xpBefore[i] = data.team.get(i).xp;
 
-		XpRules.share(data.team, creatureXp);
+		if (equally)
+			XpRules.shareEqually(data.team, creatureXp, random);
+		else
+			XpRules.share(data.team, creatureXp);
+
 		for (int i = 0; i < before.length; i++)
 		{
 			Creature member = data.team.get(i);

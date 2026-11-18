@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -67,6 +68,51 @@ public class DataTest
 		assertTrue(dragon.traits().contains(Trait.FIERY));
 		assertTrue(zulrah.traits().contains(Trait.POISONOUS));
 		assertEquals(EnumSet.of(Trait.CRUSH), table.find("Goblin").traits());
+	}
+
+	@Test
+	public void theBundledListHasTheHunterCreatures() throws IOException
+	{
+		SpeciesTable table = bundled();
+
+		Species fox = table.find("Pyre fox");
+		assertTrue(fox.hunter());
+		assertEquals(57, fox.level());
+		assertEquals(Rarity.UNCOMMON, fox.rarity());
+		assertEquals(13138, fox.ids()[0]);
+		assertEquals(1, fox.ids().length);
+		assertEquals(69, table.find("Dashing kebbit").level());
+		assertEquals(Rarity.RARE, table.find("Moonlight antelope").rarity());
+		assertEquals(17, table.find("Baby impling").level());
+		Species dragonImpling = table.find("Dragon impling");
+		assertTrue(dragonImpling.traits().contains(Trait.FIERY));
+		assertFalse(table.find("Fox").hunter());
+		assertFalse(table.find("Chinchompa").hunter());
+	}
+
+	@Test
+	public void everyHunterCreatureCanTurnWildAndOwnsItsIds() throws IOException
+	{
+		Map<Integer, String> owners = new HashMap<>();
+		int hunters = 0;
+		for (Species species : bundled().all())
+		{
+			for (int id : species.ids())
+			{
+				String other = owners.put(id, species.name());
+				assertNull(id + " belongs to both " + other + " and " + species.name(), other);
+			}
+
+			if (!species.hunter())
+				continue;
+
+			hunters++;
+			assertTrue(species.name() + " has no Hunter level", species.level() >= 1);
+			assertTrue(species.name() + " has no NPC id", species.ids().length >= 1);
+			assertFalse(species.name() + " is quest-only", species.questOnly());
+		}
+
+		assertEquals(43, hunters);
 	}
 
 	@Test
@@ -232,6 +278,52 @@ public class DataTest
 		SaveData loaded = new GoPersistence(store, gson).load();
 
 		assertTrue(loaded.milestones.isEmpty());
+	}
+
+	@Test
+	public void anOldSaveLoadsWithNoXpSnapshot()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"team\":[{\"species\":\"goblin\",\"xp\":5}]}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+
+		assertTrue(loaded.osrsXp.isEmpty());
+	}
+
+	@Test
+	public void theXpSnapshotSurvivesARoundTrip()
+	{
+		MapStore store = new MapStore();
+		GoPersistence persistence = new GoPersistence(store, gson);
+		SaveData data = new SaveData();
+		data.osrsXp.put("MINING", 123_456);
+
+		persistence.save(data);
+
+		assertEquals(Integer.valueOf(123_456), persistence.load().osrsXp.get("MINING"));
+	}
+
+	@Test
+	public void negativeAndNullSnapshotEntriesAreDropped()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"osrsXp\":{\"MINING\":-4,\"FISHING\":null,"
+			+ "\"OVERALL\":500,\"ATTACK\":77}}");
+
+		SaveData loaded = new GoPersistence(store, gson).load();
+
+		assertEquals(1, loaded.osrsXp.size());
+		assertEquals(Integer.valueOf(77), loaded.osrsXp.get("ATTACK"));
+	}
+
+	@Test
+	public void aNullSnapshotLoadsAsEmpty()
+	{
+		MapStore store = new MapStore();
+		store.set(GoPersistence.KEY_SAVE, "{\"version\":1,\"osrsXp\":null}");
+
+		assertTrue(new GoPersistence(store, gson).load().osrsXp.isEmpty());
 	}
 
 	@Test

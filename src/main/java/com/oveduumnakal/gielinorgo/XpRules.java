@@ -4,7 +4,10 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /** Level curves and XP sharing for creatures and for the trainer. Pure maths, no game state. */
 final class XpRules
@@ -108,6 +111,30 @@ final class XpRules
 
 		Creature lead = team.get(0);
 		lead.xp = capped(lead.xp + each + leftover);
+	}
+
+	/**
+	 * Shares creature XP equally across a team, with no extra share for the lead. What does not divide evenly goes one
+	 * point at a time to members picked at random, so no position is favoured.
+	 *
+	 * @param team the team
+	 * @param amount creature XP to hand out
+	 * @param random picks who gets the leftover points
+	 */
+	static void shareEqually(List<Creature> team, long amount, Random random)
+	{
+		if (team.isEmpty() || amount <= 0)
+			return;
+
+		long each = amount / team.size();
+		int leftover = (int) (amount - each * team.size());
+		for (Creature creature : team)
+			creature.xp = capped(creature.xp + each);
+
+		List<Creature> order = new ArrayList<>(team);
+		Collections.shuffle(order, random);
+		for (int i = 0; i < leftover; i++)
+			order.get(i).xp = capped(order.get(i).xp + 1);
 	}
 
 	/**

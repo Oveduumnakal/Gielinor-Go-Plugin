@@ -184,6 +184,16 @@ public class BossEggTest
 	}
 
 	@Test
+	public void anEggFromBeforeTheLongerWalksKeepsItsValues()
+	{
+		String json = "{\"version\":1,\"eggs\":[{\"rarity\":\"COMMON\",\"tilesLeft\":120,\"tilesTotal\":500}]}";
+		SaveData old = new Gson().fromJson(json, SaveData.class).sanitized();
+
+		assertEquals(120, old.eggs.get(0).tilesLeft);
+		assertEquals(500, old.eggs.get(0).tilesTotal);
+	}
+
+	@Test
 	public void theSaveKeepsTheSpeciesAndTheBossKills()
 	{
 		Gson gson = new Gson();

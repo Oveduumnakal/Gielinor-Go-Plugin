@@ -35,6 +35,7 @@ final class PanelState
 	private MilestoneView milestones = MilestoneView.NONE;
 	private EliteView elite = EliteView.NONE;
 	private RivalView rival = RivalView.NONE;
+	private TrackerView tracker = TrackerView.NONE;
 	private String shownTitle;
 	private List<String> titles = Collections.emptyList();
 	private String resetSummary = "";
@@ -139,6 +140,7 @@ final class PanelState
 		copy.resetSummary = resetSummary;
 		copy.starters = starters;
 		copy.rival = rival;
+		copy.tracker = tracker;
 		return copy.withGoals(milestones, elite).withTitle(shownTitle, titles);
 	}
 
@@ -323,6 +325,24 @@ final class PanelState
 		this.shownTitle = shown;
 		this.titles = Collections.unmodifiableList(new ArrayList<>(earned));
 		return this;
+	}
+
+	/**
+	 * Adds what the on-screen tracker shows, to a state that is still being built.
+	 *
+	 * @param pinned the pinned tasks and eggs
+	 * @return this snapshot
+	 */
+	PanelState withTracker(TrackerView pinned)
+	{
+		this.tracker = pinned;
+		return this;
+	}
+
+	/** @return the pinned tasks and eggs the on-screen tracker shows; also tells the pages how many pins are used */
+	TrackerView tracker()
+	{
+		return tracker;
 	}
 
 	/** @return the title the header shows, a {@code GoGame.TITLE_} constant, or null when none is earned */
