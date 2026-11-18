@@ -140,7 +140,7 @@ public class BossEggTest
 	}
 
 	@Test
-	public void aBossEggHatchesIntoThatSpeciesAtLevelOne()
+	public void aBossEggHatchesIntoThatSpeciesAtTheLevelOfItsTier()
 	{
 		game.bossKilled("Vorkath");
 		Egg carried = game.data().eggs.get(0);
@@ -152,7 +152,8 @@ public class BossEggTest
 		assertEquals(1, game.data().team.size());
 		Creature born = game.data().team.get(0);
 		assertEquals("vorkath", born.species);
-		assertEquals(1, born.level());
+		assertEquals("Vorkath is Legendary", Rarity.LEGENDARY, VORKATH.rarity());
+		assertEquals(30, born.level());
 		assertEquals(1, (int) game.data().caught.get("vorkath"));
 	}
 

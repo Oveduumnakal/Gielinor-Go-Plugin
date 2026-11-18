@@ -139,12 +139,12 @@ public class SkillingTableTest
 	}
 
 	@Test
-	public void anExclusiveSpeciesComesOnlyForItsSkillAndLevelAtItsOdds()
+	public void anExclusiveSpeciesComesOnlyForItsSkillAndLevelAtItsOddsTimesItsTierFactor()
 	{
 		Species troll = species.find("River troll");
 		Random random = new Random(5);
 		int trolls = 0;
-		for (int i = 0; i < 20_000; i++)
+		for (int i = 0; i < 100_000; i++)
 		{
 			assertFalse(table.pick("MINING", 99, random) == troll);
 			assertFalse(table.pick("FISHING", 39, random) == troll);
@@ -152,8 +152,98 @@ public class SkillingTableTest
 				trolls++;
 		}
 
-		assertTrue("about one in 20, got " + trolls, trolls > 800 && trolls < 1_200);
+		assertEquals(Rarity.EPIC, troll.rarity());
+		assertTrue("about one in 133 (1 in 20 times 0.15), got " + trolls, trolls > 650 && trolls < 850);
 		assertEquals("FISHING", table.skillOf(troll));
+	}
+
+	@Test
+	public void everyExclusiveSpeciesIsStillReachableAtItsSkillLevel()
+	{
+		String[][] exclusives = {{"FISHING", "River troll"}, {"MINING", "Rock Golem"}, {"WOODCUTTING", "Tree spirit"}};
+		for (String[] each : exclusives)
+		{
+			Species wanted = species.find(each[1]);
+			Random random = new Random(11);
+			int seen = 0;
+			for (int i = 0; i < 100_000; i++)
+			{
+				if (table.pick(each[0], 99, random) == wanted)
+					seen++;
+			}
+
+			assertTrue(each[1] + " was never met, got " + seen, seen > 0);
+		}
+	}
+
+	@Test
+	public void aWeightIsTheLevelWeightTimesTheTierFactor()
+	{
+		for (Species each : species.catchable())
+		{
+			double expected = (SkillingTable.WEIGHT_BASE + 30) * each.rarity().wildFactor();
+
+			assertEquals(each.name(), expected, SkillingTable.weight(each, 30), 1e-9);
+		}
+
+		Species common = firstOf(Rarity.COMMON);
+		Species legendary = firstOf(Rarity.LEGENDARY);
+		assertEquals(40.0, SkillingTable.weight(common, 30), 1e-9);
+		assertEquals(2.0, SkillingTable.weight(legendary, 30), 1e-9);
+	}
+
+	private Species firstOf(Rarity rarity)
+	{
+		for (Species each : species.catchable())
+		{
+			if (each.rarity() == rarity)
+				return each;
+		}
+
+		throw new AssertionError("no species of " + rarity);
+	}
+
+	@Test
+	public void twoSpeciesOfTheSameLevelAreMetInTheRatioOfTheirTierFactors()
+	{
+		Species common = firstOf(Rarity.COMMON);
+		Species rare = firstOf(Rarity.RARE);
+		String json = "{\"skills\":{\"FISHING\":{\"message\":\"x\",\"species\":["
+			+ "{\"species\":\"" + common.name() + "\",\"minLevel\":1},"
+			+ "{\"species\":\"" + rare.name() + "\",\"minLevel\":1}]}}}";
+		SkillingTable pair = SkillingTable.load(gson, new StringReader(json), species, animations);
+		Random random = new Random(21);
+		int rares = 0;
+		int samples = 100_000;
+		for (int i = 0; i < samples; i++)
+		{
+			if (pair.pick("FISHING", 1, random) == rare)
+				rares++;
+		}
+
+		double expected = Rarity.RARE.wildFactor() / (Rarity.RARE.wildFactor() + Rarity.COMMON.wildFactor());
+		assertEquals(expected, rares / (double) samples, 0.01);
+	}
+
+	@Test
+	public void theRareShareOfMiningAtLevel99DropsToAboutFortyTwoPercent()
+	{
+		Random random = new Random(31);
+		int samples = 100_000;
+		int rares = 0;
+		int epics = 0;
+		for (int i = 0; i < samples; i++)
+		{
+			Species pick = table.pick("MINING", 99, random);
+			if (pick.rarity() == Rarity.RARE)
+				rares++;
+			else if (pick.rarity() == Rarity.EPIC)
+				epics++;
+		}
+
+		double rare = rares / (double) samples;
+		assertTrue("Rare share was " + rare, rare > 0.40 && rare < 0.44);
+		assertTrue("the Rock Golem is still met, got " + epics, epics > 0 && epics < samples / 100);
 	}
 
 	@Test

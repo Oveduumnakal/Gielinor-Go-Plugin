@@ -104,6 +104,9 @@ A Creature Log, daily tasks and daily events give you goals.
   twice as many tiles. Eggs you already carry keep their old target. (#206)
 - **Rarer finds.** Stronger monsters turn wild less often: Uncommon at 0.6 times the chance, Rare 0.35, Epic 0.15 and
   Legendary 0.05. The Wild creature rarity setting stays the rate for Common ones. (#213)
+- **Rarer skilling finds.** Creatures that come while you train a skill now follow the same tier factors, so
+  Rare ones come about a third less often at level 99 and the Epic River troll, Rock Golem and Tree spirit about one
+  encounter in 133. (#220)
 - **Seen and caught marks.** A mark beside each wild creature's name shows whether its species is new to you,
   seen or already caught. (#209)
 - **Wild creature tooltip.** Hover a wild creature to see its name, level, style and whether you have seen or caught
@@ -124,6 +127,8 @@ A Creature Log, daily tasks and daily events give you goals.
   and the day you caught them. (#215)
 - **Fainting.** A creature that reaches 0 health faints and stays down until you revive it in a city or at a bank
   (or with a Revive draught anywhere); it comes back at 50%. (#221)
+- **Stronger hatchlings.** Rarer eggs hatch at a higher level: Common 1, Uncommon 5, Rare 10, Epic 20 and Legendary
+  30, boss eggs too. (#220)
 - **Battle balance.** Wild creatures now appear within one level of their usual level, Hex hits as hard as a Magic
   bolt, and Rare Magic creatures are a little tougher so no Rare style is left behind. Friend battles need the same
   version on both sides. (#220)
