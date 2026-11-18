@@ -18,10 +18,10 @@ import java.awt.geom.RoundRectangle2D;
 
 /**
  * The small pictures of the painted window, drawn in code so they recolour with the theme and need no image file: the
- * gender signs, one mark for each combat style, the seen and caught marks, a heart, a star, the lead arrow and an egg. Each draws in the colour
- * the caller set on the graphics, inside the square whose top-left corner and side it is given, and leaves the
- * graphics' stroke as it found it. Gender and style are told apart by shape, never by colour alone. Holds no
- * RuneLite types.
+ * gender signs, one mark for each combat style, the seen and caught marks, a heart, a star, the lead arrow and an
+ * egg. Each draws in the colour the caller set on the graphics, inside the square whose top-left corner and side it
+ * is given, and leaves the graphics' stroke as it found it. Gender and style are told apart by shape, never by
+ * colour alone. Holds no RuneLite types.
  */
 final class Icons
 {
