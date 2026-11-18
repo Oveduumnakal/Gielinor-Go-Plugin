@@ -67,33 +67,6 @@ final class ItemsRow extends JPanel
 	 */
 	static String tooltip(ItemType type, int count)
 	{
-		return "<html>" + type.label() + "  x" + count + "<br>" + effect(type) + "<br>" + found(type) + "</html>";
-	}
-
-	private static String effect(ItemType type)
-	{
-		if (type.revives())
-			return "Lifts a creature that is too tired to battle to " + Math.round(ItemRules.REVIVE_TO * 100)
-				+ "% health";
-
-		if (type.cures())
-			return "Cures poison, venom and burn in battle";
-
-		return "Restores " + Math.round(type.heal() * 100) + "% health";
-	}
-
-	private static String found(ItemType type)
-	{
-		switch (type)
-		{
-			case SMALL_SALVE:
-				return "Found training Herblore and Cooking, and after battles";
-			case LARGE_SALVE:
-				return "Found after battles and beating a City Champion";
-			case REVIVE:
-				return "Found after battles and beating a City Champion";
-			default:
-				return "Found training Herblore";
-		}
+		return "<html>" + BagText.itemTip(type, count).replace("\n", "<br>") + "</html>";
 	}
 }

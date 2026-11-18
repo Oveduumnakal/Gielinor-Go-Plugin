@@ -69,6 +69,12 @@ final class WindowPages implements WindowShell.PageActions
 	private final PartyMotion motion;
 	private final PartyPainter party;
 	private final SummaryPainter summary;
+	private final BagPainter bag;
+	private final TasksPage tasks;
+	private final CollectionPage collection;
+	private final StoragePage storage;
+	private final StoragePageFlow storageFlow;
+	private final BattlePage battle;
 	private WindowStyle style;
 	private MotionMode mode = MotionMode.FULL;
 	private WindowTab tab = WindowTab.PARTY;
@@ -97,6 +103,12 @@ final class WindowPages implements WindowShell.PageActions
 		this.motion = new PartyMotion(shell.animations());
 		this.party = new PartyPainter(pictures, motion, sink);
 		this.summary = new SummaryPainter(pictures, sink);
+		this.bag = new BagPainter(sink);
+		this.tasks = new TasksPage(sink);
+		this.collection = new CollectionPage(sink);
+		this.storage = new StoragePage(pictures, sink);
+		this.storageFlow = new StoragePageFlow(storage, actions, new StorageHost());
+		this.battle = new BattlePage(shell, actions, clock, sink);
 	}
 
 	/**
@@ -151,6 +163,30 @@ final class WindowPages implements WindowShell.PageActions
 		return state;
 	}
 
+	/** @return the Tasks page, whose milestone list the tests drive */
+	TasksPage tasksPage()
+	{
+		return tasks;
+	}
+
+	/** @return the Collection page, whose species list the tests drive */
+	CollectionPage collectionPage()
+	{
+		return collection;
+	}
+
+	/** @return the Storage page, whose list and ticks the tests drive */
+	StoragePage storagePage()
+	{
+		return storage;
+	}
+
+	/** @return the Battle page, whose scrolling column the tests drive */
+	BattlePage battlePage()
+	{
+		return battle;
+	}
+
 	/** @return the Party page's motion, for tests */
 	PartyMotion motion()
 	{
@@ -174,6 +210,7 @@ final class WindowPages implements WindowShell.PageActions
 	public void closed()
 	{
 		motion.reset();
+		storage.reset();
 		state.back();
 		enter = false;
 		tab = WindowTab.PARTY;
@@ -187,6 +224,40 @@ final class WindowPages implements WindowShell.PageActions
 
 		tab = current;
 		PanelState panel = loaded();
+		if (current == WindowTab.BAG && panel != null && style != null)
+		{
+			state.back();
+			return bag.hits(bagLayout(body, panel), panel);
+		}
+
+		if (current == WindowTab.TASKS && panel != null && style != null)
+		{
+			state.back();
+			tasks.layout(body, style, panel);
+			return tasks.hits(panel);
+		}
+
+		if (current == WindowTab.COLLECTION && panel != null && style != null)
+		{
+			state.back();
+			collection.layout(body, style, panel);
+			return collection.hits();
+		}
+
+		if (current == WindowTab.STORAGE && panel != null && style != null)
+		{
+			state.back();
+			storage.layout(body, style, panel.storage());
+			return storage.hits(panel.storage(), WindowShell.PAGE_ORDER);
+		}
+
+		if (current == WindowTab.BATTLE && panel != null && style != null)
+		{
+			state.back();
+			battle.layout(body, style, shell.snapshot());
+			return battle.hits();
+		}
+
 		if (current != WindowTab.PARTY || panel == null || style == null)
 		{
 			state.back();
@@ -329,6 +400,40 @@ final class WindowPages implements WindowShell.PageActions
 	public boolean paint(Graphics2D g, WindowTab current, PageContext ctx)
 	{
 		PanelState panel = ctx.snapshot.state();
+		if (current == WindowTab.BAG && panel != null)
+		{
+			bag.paint(g, ctx, bagLayout(ctx.body, ctx.style, panel), panel);
+			return true;
+		}
+
+		if (current == WindowTab.TASKS && panel != null)
+		{
+			tasks.layout(ctx.body, ctx.style, panel);
+			tasks.paint(g, ctx, panel);
+			return true;
+		}
+
+		if (current == WindowTab.COLLECTION && panel != null)
+		{
+			collection.layout(ctx.body, ctx.style, panel);
+			collection.paint(g, ctx, panel);
+			return true;
+		}
+
+		if (current == WindowTab.STORAGE && panel != null)
+		{
+			storage.layout(ctx.body, ctx.style, panel.storage());
+			storage.paint(g, ctx, panel.storage());
+			return true;
+		}
+
+		if (current == WindowTab.BATTLE && panel != null)
+		{
+			battle.layout(ctx.body, ctx.style, ctx.snapshot);
+			battle.paint(g, ctx);
+			return true;
+		}
+
 		if (current != WindowTab.PARTY || panel == null)
 			return false;
 
@@ -425,6 +530,27 @@ final class WindowPages implements WindowShell.PageActions
 			return;
 
 		String id = hit.id();
+		if (id.startsWith(CollectionPage.PREFIX))
+		{
+			collection.press(id);
+			return;
+		}
+
+		if (tab == WindowTab.BATTLE)
+		{
+			battle.press(hit, panel, shell.snapshot().friends());
+			return;
+		}
+
+		if (pressBag(id, panel))
+			return;
+
+		if (tab == WindowTab.STORAGE)
+		{
+			storageFlow.press(id);
+			return;
+		}
+
 		int place = rowIndex(id);
 		if (place >= 0)
 		{
@@ -461,6 +587,36 @@ final class WindowPages implements WindowShell.PageActions
 
 				break;
 		}
+	}
+
+	private BagLayout bagLayout(Rectangle body, PanelState panel)
+	{
+		return bagLayout(body, style, panel);
+	}
+
+	private static BagLayout bagLayout(Rectangle body, WindowStyle st, PanelState panel)
+	{
+		int jars = BagText.jarsShown(panel).size();
+		return BagLayout.of(body, st.metrics(), st.scale(), jars, panel.eggs().size());
+	}
+
+	private boolean pressBag(String id, PanelState panel)
+	{
+		if (BagPainter.ID_TITLE.equals(id))
+		{
+			List<String> titles = panel.titles();
+			if (titles.size() > 1)
+				actions.pickTitle(titles.get((titles.indexOf(panel.shownTitle()) + 1) % titles.size()));
+
+			return true;
+		}
+
+		int place = BagPainter.jarPlace(id);
+		List<JarType> jars = BagText.jarsShown(panel);
+		if (place >= 0 && place < jars.size())
+			actions.selectJar(jars.get(place));
+
+		return place >= 0;
 	}
 
 	private void openSummary(int place, PanelState panel, long now)
@@ -519,6 +675,18 @@ final class WindowPages implements WindowShell.PageActions
 		if (panel == null)
 			return;
 
+		if (hit.id().startsWith(CollectionPage.PREFIX))
+		{
+			collectionMenu(hit, x, y, keyboard);
+			return;
+		}
+
+		if (tab == WindowTab.STORAGE)
+		{
+			storageFlow.menu(hit.id(), x, y, keyboard);
+			return;
+		}
+
 		int place = ID_SUMMARY_MENU.equals(hit.id()) ? state.index() : rowIndex(hit.id());
 		if (place < 0 || place >= panel.team().size())
 			return;
@@ -532,10 +700,61 @@ final class WindowPages implements WindowShell.PageActions
 		shell.openMenu(items, x, y, keyboard, clock.getAsLong());
 	}
 
+	private void collectionMenu(Hit hit, int x, int y, boolean keyboard)
+	{
+		LogEntry entry = collection.entryOf(hit.id());
+		if (entry == null)
+			return;
+
+		List<ContextMenu.Item> items = CollectionPage.menuItems(entry, actions::openWiki);
+		if (!items.isEmpty())
+			shell.openMenu(items, x, y, keyboard, clock.getAsLong());
+	}
+
 	@Override
 	public void wheel(int x, int y, int rotation)
 	{
-		return;
+		if (tab == WindowTab.TASKS)
+			tasks.wheel(x, y, rotation);
+		else if (tab == WindowTab.COLLECTION)
+			collection.wheel(x, y, rotation);
+		else if (tab == WindowTab.STORAGE)
+			storage.wheel(x, y, rotation);
+
+		if (tab == WindowTab.BATTLE)
+			battle.wheel(x, y, rotation);
+	}
+
+	@Override
+	public boolean pointerPressed(int x, int y)
+	{
+		return tab == WindowTab.TASKS && tasks.pressed(x, y)
+			|| tab == WindowTab.COLLECTION && collection.pressed(x, y)
+			|| tab == WindowTab.STORAGE && storage.pressed(x, y)
+			|| tab == WindowTab.BATTLE && battle.pressed(x, y);
+	}
+
+	@Override
+	public void pointerDragged(int x, int y)
+	{
+		if (tab == WindowTab.TASKS)
+			tasks.dragged(x, y);
+		else if (tab == WindowTab.COLLECTION)
+			collection.dragged(x, y);
+		else if (tab == WindowTab.STORAGE)
+			storage.dragged(x, y);
+
+		if (tab == WindowTab.BATTLE)
+			battle.dragged(x, y);
+	}
+
+	@Override
+	public boolean pointerReleased(int x, int y)
+	{
+		return tab == WindowTab.TASKS && tasks.released()
+			|| tab == WindowTab.COLLECTION && collection.released()
+			|| tab == WindowTab.STORAGE && storage.released()
+			|| tab == WindowTab.BATTLE && battle.released();
 	}
 
 	@Override
@@ -555,6 +774,12 @@ final class WindowPages implements WindowShell.PageActions
 	public boolean key(int keyCode, int modifiers, long nowMs)
 	{
 		PanelState panel = loaded();
+		if (panel != null && tab == WindowTab.COLLECTION)
+			return collectionKey(keyCode);
+
+		if (panel != null && tab == WindowTab.BATTLE)
+			return battle.key(keyCode);
+
 		if (panel == null || tab != WindowTab.PARTY || state.page() != PageState.Page.SUMMARY)
 			return false;
 
@@ -575,6 +800,26 @@ final class WindowPages implements WindowShell.PageActions
 			default:
 				return false;
 		}
+	}
+
+	private boolean collectionKey(int keyCode)
+	{
+		boolean activate = keyCode == KeyEvent.VK_ENTER || keyCode == KeyEvent.VK_SPACE;
+		if (!activate)
+			return collection.key(keyCode);
+
+		Hit highlighted = shell.focus().highlighted();
+		if (highlighted != null && highlighted.kind() == Hit.Kind.BUTTON)
+			return false;
+
+		Rectangle row = collection.chosenRowBounds();
+		LogEntry entry = collection.selectedEntry();
+		if (row == null || entry == null || !CollectionFilter.known(entry))
+			return false;
+
+		List<ContextMenu.Item> items = CollectionPage.menuItems(entry, actions::openWiki);
+		shell.openMenu(items, row.x + row.width / 2, row.y + row.height / 2, true, clock.getAsLong());
+		return true;
 	}
 
 	private boolean openSummaryMenu()
@@ -710,6 +955,42 @@ final class WindowPages implements WindowShell.PageActions
 		finally
 		{
 			g.dispose();
+		}
+	}
+
+	/** What the Storage page asks of the window around it. */
+	private final class StorageHost implements StoragePageFlow.Host
+	{
+		@Override
+		public void menu(List<ContextMenu.Item> items, int x, int y, boolean keyboard)
+		{
+			shell.openMenu(items, x, y, keyboard, clock.getAsLong());
+		}
+
+		@Override
+		public void modal(Modal dialog, TextBox box)
+		{
+			shell.openModal(dialog, box, clock.getAsLong());
+		}
+
+		@Override
+		public String takeDraft()
+		{
+			return shell.takeDraft();
+		}
+
+		@Override
+		public List<CreatureView> storage()
+		{
+			PanelState panel = loaded();
+			return panel == null ? Collections.emptyList() : panel.storage();
+		}
+
+		@Override
+		public Map<ItemType, Integer> items()
+		{
+			PanelState panel = loaded();
+			return panel == null ? Collections.emptyMap() : panel.items();
 		}
 	}
 

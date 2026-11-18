@@ -49,6 +49,12 @@ final class WindowShell
 	/** The id of the window size button's hit. */
 	static final String ID_SIZE = "btn:size";
 
+	/** The id of the Change log button's hit. */
+	static final String ID_CHANGELOG = "btn:changelog";
+
+	/** The id of the Feedback button's hit. */
+	static final String ID_FEEDBACK = "btn:feedback";
+
 	/** The first focus order a page's hits may use; the tabs and the Close button come before it. */
 	static final int PAGE_ORDER = 10;
 
@@ -95,6 +101,7 @@ final class WindowShell
 	private String shakeId = "";
 	private long shakeMs;
 	private Modal modal;
+	private ChangelogPage changelog;
 	private TextBox field;
 	private String draft = "";
 	private int seenDoneTasks;
@@ -132,6 +139,28 @@ final class WindowShell
 		 * @param message what to say
 		 */
 		void notice(NoticeMessage message);
+
+		/** @return whether the Change log button reads What's New and stands out, until the player opens it */
+		default boolean whatsNew()
+		{
+			return false;
+		}
+
+		/** Records that the player opened the change log, so the What's New mark goes away. */
+		default void whatsNewSeen()
+		{
+			return;
+		}
+
+		/**
+		 * Opens an address in the player's browser.
+		 *
+		 * @param url the address
+		 */
+		default void openLink(String url)
+		{
+			return;
+		}
 	}
 
 	/** What the pages do for the shell, set by the page code that arrives with the Party and Storage pages. */
@@ -211,6 +240,41 @@ final class WindowShell
 		 * @param rotation the wheel's clicks
 		 */
 		void wheel(int x, int y, int rotation);
+
+		/**
+		 * A button went down on the page with no menu or dialog open, so a scroll list can take the press.
+		 *
+		 * @param x the pointer's x in window pixels
+		 * @param y the pointer's y in window pixels
+		 * @return whether the press landed on a list's scroll bar, so it is not a click on what lies under it
+		 */
+		default boolean pointerPressed(int x, int y)
+		{
+			return false;
+		}
+
+		/**
+		 * The pointer moved with a button down that went down on the page.
+		 *
+		 * @param x the pointer's x in window pixels
+		 * @param y the pointer's y in window pixels
+		 */
+		default void pointerDragged(int x, int y)
+		{
+			return;
+		}
+
+		/**
+		 * The button that went down on the page came up.
+		 *
+		 * @param x the pointer's x in window pixels
+		 * @param y the pointer's y in window pixels
+		 * @return whether the press became a scroll, so the release is not a click
+		 */
+		default boolean pointerReleased(int x, int y)
+		{
+			return false;
+		}
 
 		/** @return how many pages deep the window is, 0 on a tab's own page */
 		int depth();
@@ -331,6 +395,12 @@ final class WindowShell
 		return tab;
 	}
 
+	/** @return the change log page while it is open, else null */
+	ChangelogPage changelogPage()
+	{
+		return changelog;
+	}
+
 	/** @return the key focus and the shared highlight */
 	WindowFocus focus()
 	{
@@ -427,6 +497,7 @@ final class WindowShell
 
 		modal = null;
 		field = null;
+		changelog = null;
 		tooltip.clear();
 		pressedId = null;
 		focus.focus(false);
@@ -647,6 +718,12 @@ final class WindowShell
 			return;
 		}
 
+		if (changelog != null ? changelog.pressed(x, y) : pages.pointerPressed(x, y))
+		{
+			pressedId = null;
+			return;
+		}
+
 		Hit hit = hitAt(x, y);
 		pressedId = hit != null && hit.enabled() ? hit.id() : null;
 	}
@@ -673,6 +750,9 @@ final class WindowShell
 			return;
 		}
 
+		if (changelog != null ? changelog.released(x, y, host::openLink) : pages.pointerReleased(x, y))
+			return;
+
 		Hit hit = hitAt(x, y);
 		if (hit == null)
 			return;
@@ -696,11 +776,19 @@ final class WindowShell
 	 * The pointer moved with a button down that went down inside the window.
 	 *
 	 * @param x the pointer's x in window pixels
+	 * @param y the pointer's y in window pixels
 	 */
-	void onDragged(int x)
+	void onDragged(int x, int y)
 	{
-		if (open && modalOpen())
+		if (!open)
+			return;
+
+		if (modalOpen())
 			modal.onMouseDragged(x);
+		else if (!menu.isOpen() && changelog != null)
+			changelog.dragged(x, y);
+		else if (!menu.isOpen())
+			pages.pointerDragged(x, y);
 	}
 
 	/**
@@ -712,7 +800,9 @@ final class WindowShell
 	 */
 	void onWheel(int x, int y, int rotation)
 	{
-		if (open && !modalOpen() && !menu.isOpen())
+		if (open && !modalOpen() && !menu.isOpen() && changelog != null)
+			changelog.wheel(x, y, rotation);
+		else if (open && !modalOpen() && !menu.isOpen())
 			pages.wheel(x, y, rotation);
 	}
 
@@ -854,7 +944,11 @@ final class WindowShell
 		g.translate(0, lift);
 		PageContext ctx = new PageContext(st, mode, nowMs, shown, body, focus.highlight(), focus.focused(),
 			pressedId);
-		if (!pages.paint(g, page, ctx))
+		if (changelog != null)
+		{
+			changelog.paint(g, ctx);
+		}
+		else if (!pages.paint(g, page, ctx))
 		{
 			g.setTransform(savedTransform);
 			layers.draw(g, body.x, body.y + lift, "page:" + page.name(), body.width, body.height, layout.scale,
@@ -909,12 +1003,24 @@ final class WindowShell
 		footerButton(g, layout.reset, ID_RESET, "Reset window");
 		footerButton(g, layout.theme, ID_THEME, host.theme().toString());
 		footerButton(g, layout.size, ID_SIZE, host.sizeLabel());
+		footerButton(g, layout.changelog, ID_CHANGELOG, changelogLabel(), host.whatsNew());
+		footerButton(g, layout.feedback, ID_FEEDBACK, "Feedback");
+	}
+
+	private String changelogLabel()
+	{
+		return host.whatsNew() ? "What's New" : "Change log";
 	}
 
 	private void footerButton(Graphics2D g, Rectangle box, String id, String label)
 	{
+		footerButton(g, box, id, label, false);
+	}
+
+	private void footerButton(Graphics2D g, Rectangle box, String id, String label, boolean primary)
+	{
 		Rectangle2D shape = rect(box);
-		style.button(g, shape, label, false, false, hoverOf(id), pressOf(id));
+		style.button(g, shape, label, primary, false, hoverOf(id), pressOf(id));
 		ringIf(g, id, Slant.shape(shape, style.metrics().chipSlant));
 	}
 
@@ -951,12 +1057,16 @@ final class WindowShell
 		}
 
 		list.add(new Hit(ID_CLOSE, Hit.Kind.BUTTON, layout.close, CLOSE_ORDER, true, "Close the window (Esc)"));
-		list.addAll(pages.hits(tab, layout.body));
+		list.addAll(changelog != null ? changelog.hits(style, layout.body) : pages.hits(tab, layout.body));
 		list.add(new Hit(ID_RESET, Hit.Kind.BUTTON, layout.reset, FOOTER_ORDER, true,
 			"Put the window back to its normal size and place"));
 		list.add(new Hit(ID_THEME, Hit.Kind.BUTTON, layout.theme, FOOTER_ORDER + 1, true,
 			"Switch between the two window styles"));
 		list.add(new Hit(ID_SIZE, Hit.Kind.BUTTON, layout.size, FOOTER_ORDER + 2, true, "Change the window size"));
+		list.add(new Hit(ID_CHANGELOG, Hit.Kind.BUTTON, layout.changelog, FOOTER_ORDER + 3, true,
+			host.whatsNew() ? "See what changed in this version" : "Read the change log"));
+		list.add(new Hit(ID_FEEDBACK, Hit.Kind.BUTTON, layout.feedback, FOOTER_ORDER + 4, true,
+			"Report a bug or request a feature"));
 		hits = Collections.unmodifiableList(list);
 		focus.setHits(hits);
 	}
@@ -991,6 +1101,7 @@ final class WindowShell
 
 	private void selectTab(WindowTab next, long nowMs)
 	{
+		changelog = null;
 		if (next == tab)
 			return;
 
@@ -1027,13 +1138,18 @@ final class WindowShell
 
 	private void back(boolean closes, long nowMs)
 	{
-		switch (WindowFocus.back(menu.isOpen(), pages.depth(), closes))
+		int depth = pages.depth() + (changelog != null ? 1 : 0);
+		switch (WindowFocus.back(menu.isOpen(), depth, closes))
 		{
 			case MENU:
 				menu.close();
 				break;
 			case PAGE:
-				pages.back();
+				if (changelog != null)
+					changelog = null;
+				else
+					pages.back();
+
 				break;
 			case CLOSE:
 				close(nowMs, ShellMotion.Phase.CLOSE);
@@ -1066,10 +1182,27 @@ final class WindowShell
 			case ID_SIZE:
 				host.nextSize();
 				break;
+			case ID_CHANGELOG:
+				host.whatsNewSeen();
+				changelog = new ChangelogPage(Changelog.load());
+				break;
+			case ID_FEEDBACK:
+				openFeedback(nowMs);
+				break;
+			case ChangelogPage.ID_BACK:
+				changelog = null;
+				break;
 			default:
 				pages.press(hit);
 				break;
 		}
+	}
+
+	private void openFeedback(long nowMs)
+	{
+		String version = Changelog.load().currentVersion();
+		Rectangle b = layout.feedback;
+		openMenu(FeedbackLinks.menu(host::openLink, version), b.x + b.width, b.y, focus.keyboardLed(), nowMs);
 	}
 
 	private void lockedClick(Hit hit, long nowMs)

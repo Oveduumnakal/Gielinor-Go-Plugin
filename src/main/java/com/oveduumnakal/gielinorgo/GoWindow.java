@@ -18,6 +18,7 @@ import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.util.LinkBrowser;
 
 /**
  * The painted window as a RuneLite overlay: movable and resizable through RuneLite's own overlay mechanics (hold the
@@ -42,6 +43,7 @@ final class GoWindow extends Overlay
 	private final IntSupplier canvasWidth;
 	private final IntSupplier canvasHeight;
 	private final WindowShell shell;
+	private final String version = Changelog.load().currentVersion();
 	private volatile WindowView view = WindowView.CLOSED;
 	private Dimension lastSize;
 	private double fraction = -1;
@@ -132,6 +134,28 @@ final class GoWindow extends Overlay
 			{
 				Rectangle b = getBounds();
 				notice.show(message, b.x + b.width / 2, b.y + b.height / 2);
+			}
+
+			@Override
+			public boolean whatsNew()
+			{
+				return WhatsNew.shouldShow(config.lastSeenVersion(), version, config.whatsNewDismissed());
+			}
+
+			@Override
+			public void whatsNewSeen()
+			{
+				if (version == null)
+					return;
+
+				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.LAST_SEEN_VERSION, version);
+				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.WHATS_NEW_DISMISSED, true);
+			}
+
+			@Override
+			public void openLink(String url)
+			{
+				LinkBrowser.browse(url);
 			}
 		});
 		setPosition(OverlayPosition.DETACHED);

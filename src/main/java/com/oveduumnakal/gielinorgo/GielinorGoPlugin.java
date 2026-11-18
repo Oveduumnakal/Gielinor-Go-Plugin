@@ -77,6 +77,7 @@ import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
 import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.ImageUtil;
+import net.runelite.client.util.LinkBrowser;
 import net.runelite.client.util.Text;
 
 /**
@@ -2438,6 +2439,12 @@ public class GielinorGoPlugin extends Plugin
 		return new PanelActions()
 		{
 			@Override
+			public void openWiki(String species)
+			{
+				LinkBrowser.browse(WikiLinks.urlFor(species));
+			}
+
+			@Override
 			public void whatsNewSeen()
 			{
 				String current = Changelog.load().currentVersion();
@@ -2765,7 +2772,7 @@ public class GielinorGoPlugin extends Plugin
 			@Override
 			public void dragged(int x, int y)
 			{
-				clientThread.invoke(() -> window.shell().onDragged(x));
+				clientThread.invoke(() -> window.shell().onDragged(x, y));
 			}
 
 			@Override
@@ -2966,7 +2973,7 @@ public class GielinorGoPlugin extends Plugin
 
 		windowVersion++;
 		boolean storage = WindowRules.storageEnabled(game.inTeamArea(), game.nearBank());
-		WindowSnapshot snapshot = WindowSnapshot.of(windowVersion, state, storage);
+		WindowSnapshot snapshot = WindowSnapshot.of(windowVersion, state, storage).withFriends(friendsState());
 		window.shell().publish(snapshot);
 		if (!snapshot.firstRun())
 		{
