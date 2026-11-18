@@ -112,7 +112,8 @@ final class CatchRules
 	}
 
 	/**
-	 * Level a wild creature appears at. Stronger monsters appear at higher levels, with a little spread.
+	 * Level a wild creature appears at. Stronger monsters appear at higher levels, with a spread of one level
+	 * either way.
 	 *
 	 * @param combatLevel the monster's combat level
 	 * @param random the source of the spread
@@ -121,7 +122,7 @@ final class CatchRules
 	static int wildLevel(int combatLevel, Random random)
 	{
 		int base = (int) Math.round(Math.sqrt(Math.max(1, combatLevel)) * 3);
-		int spread = random.nextInt(5) - 2;
+		int spread = random.nextInt(3) - 1;
 		return Math.max(1, Math.min(XpRules.MAX_LEVEL, base + spread));
 	}
 
