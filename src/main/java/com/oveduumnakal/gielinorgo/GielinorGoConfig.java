@@ -49,7 +49,9 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "wildChance",
 		name = "Wild creature rarity",
-		description = "A nearby monster turns wild one time in this many. Lower numbers mean more wild creatures.",
+		description = "A nearby Common monster turns wild one time in this many.\n"
+			+ "Stronger monsters are rarer: Legendary ones 20 times less often.\n"
+			+ "Lower numbers mean more wild creatures.",
 		position = 0
 	)
 	default int wildChance()
