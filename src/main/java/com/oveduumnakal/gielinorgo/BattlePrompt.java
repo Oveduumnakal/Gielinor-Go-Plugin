@@ -24,21 +24,47 @@ final class BattlePrompt
 	static List<String> lines(BattleView view, String hotkeys)
 	{
 		List<String> lines = new ArrayList<>();
-		String time = " · " + view.secondsLeft() + "s";
-		if (view.waitingForFriend())
-			lines.add("Waiting for " + view.friendName() + "...");
-		else
-			lines.add(view.forcedSwitch() ? "Pick your next creature" + time : "Your turn" + time);
-
-		lines.add(view.mineName() + " Lv " + view.mineLevel() + BattleView.tagText(view.mineStatus()) + " "
-			+ percent(view.mineHp()));
-		String owner = view.friendName() == null ? "" : view.friendName() + "'s ";
-		lines.add(owner + view.foeName() + " Lv " + view.foeLevel() + BattleView.tagText(view.foeStatus()) + " "
-			+ percent(view.foeHp()));
+		lines.add(title(view));
+		lines.add(mineLine(view) + " " + percent(view.mineHp()));
+		lines.add(foeLine(view) + " " + percent(view.foeHp()));
 		if (!hotkeys.isEmpty())
 			lines.add(hotkeys);
 
 		return lines;
+	}
+
+	/**
+	 * Words the title: whose turn it is and the time left.
+	 *
+	 * @param view the battle that waits
+	 * @return {@code Your turn · 7s}, {@code Pick your next creature · 7s} or {@code Waiting for <name>...}
+	 */
+	static String title(BattleView view)
+	{
+		String time = " \u00b7 " + view.secondsLeft() + "s";
+		if (view.waitingForFriend())
+			return "Waiting for " + view.friendName() + "...";
+
+		return view.forcedSwitch() ? "Pick your next creature" + time : "Your turn" + time;
+	}
+
+	/**
+	 * @param view the battle that waits
+	 * @return the player's creature with its level and any status, such as {@code Imp Lv 9}
+	 */
+	static String mineLine(BattleView view)
+	{
+		return view.mineName() + " Lv " + view.mineLevel() + BattleView.tagText(view.mineStatus());
+	}
+
+	/**
+	 * @param view the battle that waits
+	 * @return the opposing creature with its owner when it is a friend's, its level and any status
+	 */
+	static String foeLine(BattleView view)
+	{
+		String owner = view.friendName() == null ? "" : view.friendName() + "'s ";
+		return owner + view.foeName() + " Lv " + view.foeLevel() + BattleView.tagText(view.foeStatus());
 	}
 
 	/**
