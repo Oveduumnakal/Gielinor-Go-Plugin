@@ -61,7 +61,7 @@ public class PartyLayoutTest
 	}
 
 	@Test
-	public void aRowIsTallEnoughForALineOfTextAndTwoBarsAtFixedModeSize()
+	public void aRowIsTallEnoughForALineOfTextAndTwoBarsSideBySideAtFixedModeSize()
 	{
 		PartyLayout layout = layout(765, 503, false);
 		PartyLayout.Parts parts = layout.parts(layout.rows[0]);
@@ -70,7 +70,7 @@ public class PartyLayoutTest
 		assertTrue(parts.name.height >= 16);
 		assertTrue(parts.hp.height >= 3);
 		assertTrue(parts.xp.height >= 2);
-		assertTrue(parts.hp.y + parts.hp.height <= parts.xp.y);
+		assertTrue(parts.hpText.x + parts.hpText.width <= parts.xp.x);
 	}
 
 	@Test
@@ -127,6 +127,9 @@ public class PartyLayoutTest
 				assertFalse(where, p.gender.intersects(p.style));
 				assertFalse(where, p.style.intersects(p.level));
 				assertFalse(where, p.hp.intersects(p.hpText));
+				assertFalse(where, p.hpText.intersects(p.xp));
+				assertTrue(where, p.hp.x < p.xp.x);
+				assertTrue(where, p.xp.y < p.hp.y + p.hp.height && p.hp.y < p.xp.y + p.xp.height);
 				assertTrue(where, p.name.contains(p.tags));
 			}
 		}

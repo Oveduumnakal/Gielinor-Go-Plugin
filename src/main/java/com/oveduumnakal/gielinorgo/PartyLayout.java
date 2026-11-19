@@ -147,7 +147,7 @@ final class PartyLayout
 		return new Parts(row, metrics);
 	}
 
-	/** Where the parts of one row sit: portrait, name, icons, level, health and experience bars. */
+	/** Where the parts of one row sit: portrait, name, icons, level, health and experience bars side by side. */
 	static final class Parts
 	{
 		/** The padding inside the row, in pixels. */
@@ -177,7 +177,7 @@ final class PartyLayout
 		/** The health percentage text, at the right of the health bar. */
 		final Rectangle hpText;
 
-		/** The experience bar. */
+		/** The experience bar, beside the health bar in the right half of the row. */
 		final Rectangle xp;
 
 		Parts(Rectangle row, WindowStyle.Metrics m)
@@ -189,7 +189,7 @@ final class PartyLayout
 			int right = row.x + row.width - m.slant - pad;
 			int hpH = Math.max(3, m.bar * 3 / 4);
 			int xpH = Math.max(2, m.bar * 2 / 5);
-			int barsTop = row.y + row.height - pad - xpH - Math.max(1, pad / 2) - hpH;
+			int barsTop = row.y + row.height - pad - hpH;
 			int topH = Math.max(1, barsTop - row.y - pad / 2);
 			int icon = Math.max(8, Math.min(topH, m.text));
 			int iconY = row.y + pad / 2 + Math.max(0, (topH - icon) / 2);
@@ -201,11 +201,13 @@ final class PartyLayout
 			int tagW = Math.max(0, Math.min(name.width * 2 / 5, m.slant * 6));
 			tags = new Rectangle(name.x + name.width - tagW, name.y, tagW, topH);
 			int pctW = Math.max(m.slant * 4, 1);
-			hp = new Rectangle(left, barsTop, Math.max(1, right - left - pctW - pad), hpH);
-			int textTop = barsTop - Math.max(1, pad / 2);
-			int textH = Math.max(hpH + pad, row.y + row.height - textTop);
+			int half = Math.max(1, (right - left - pad) / 2);
+			hp = new Rectangle(left, barsTop, Math.max(1, half - pctW - pad), hpH);
+			int textH = Math.max(hpH + pad, m.text);
+			int textTop = Math.max(row.y, Math.min(barsTop + hpH / 2 - textH / 2, row.y + row.height - textH));
 			hpText = new Rectangle(hp.x + hp.width + pad, textTop, pctW, textH);
-			xp = new Rectangle(left, barsTop + hpH + Math.max(1, pad / 2), hp.width, xpH);
+			int xpX = left + half + pad;
+			xp = new Rectangle(xpX, barsTop + (hpH - xpH) / 2, Math.max(1, right - xpX), xpH);
 		}
 	}
 }
