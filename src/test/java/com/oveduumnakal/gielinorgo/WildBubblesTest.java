@@ -376,18 +376,18 @@ public class WildBubblesTest
 	}
 
 	@Test
-	public void theClusterOpensAfterTheJarIsHoveredForNineHundredMilliseconds()
+	public void theClusterOpensAfterTheJarIsHoveredForFourHundredFiftyMilliseconds()
 	{
 		long t = open();
 		double x = arc.x(0);
 		double y = arc.y(0);
 
 		tick(true, x, y, t);
-		tick(true, x, y, t + 899);
+		tick(true, x, y, t + 449);
 
 		assertFalse(bubbles.clusterOpen());
 
-		tick(true, x, y, t + 900);
+		tick(true, x, y, t + 450);
 
 		assertTrue(bubbles.clusterOpen());
 	}
@@ -400,7 +400,7 @@ public class WildBubblesTest
 		tick(true, arc.x(0), arc.y(0), t);
 		tick(true, 400, 320, t + 500);
 		tick(true, arc.x(0), arc.y(0), t + 600);
-		tick(true, arc.x(0), arc.y(0), t + 1400);
+		tick(true, arc.x(0), arc.y(0), t + 1049);
 
 		assertFalse(bubbles.clusterOpen());
 	}
@@ -493,11 +493,11 @@ public class WildBubblesTest
 
 		tick(true, 400, 320, later + 3100);
 		tick(true, x, y, later + 3200);
-		tick(true, x, y, later + 4099);
+		tick(true, x, y, later + 3649);
 
 		assertFalse(bubbles.clusterOpen());
 
-		tick(true, x, y, later + 4100);
+		tick(true, x, y, later + 3650);
 
 		assertTrue(bubbles.clusterOpen());
 	}
@@ -746,6 +746,198 @@ public class WildBubblesTest
 	}
 
 	@Test
+	public void leavingTheRangeClosesTheClusterFirstAndTheMainBubblesAfterItHasLanded()
+	{
+		long t = open();
+		bubbles.press(generation(t), BubbleKind.JAR, null, 3, t);
+		long u = t + 800;
+
+		tick(false, FAR_X, FAR_Y, u + 50);
+		tick(false, FAR_X, FAR_Y, u + 349);
+
+		assertTrue(bubbles.clusterOpen());
+		assertTrue(bubbles.showing(ID));
+
+		tick(false, FAR_X, FAR_Y, u + 350);
+
+		assertFalse(bubbles.clusterOpen());
+		assertTrue(bubbles.showing(ID));
+
+		tick(false, FAR_X, FAR_Y, u + 400);
+		tick(false, FAR_X, FAR_Y, u + 600);
+
+		assertTrue("the main bubbles wait for the jars", bubbles.showing(ID));
+
+		tick(false, FAR_X, FAR_Y, u + 700);
+
+		assertFalse(bubbles.showing(ID));
+	}
+
+	@Test
+	public void returningWhileTheClusterGoesBackKeepsTheMainBubbles()
+	{
+		long t = open();
+		bubbles.press(generation(t), BubbleKind.JAR, null, 3, t);
+		long u = t + 800;
+		tick(false, FAR_X, FAR_Y, u);
+		tick(false, FAR_X, FAR_Y, u + 350);
+		tick(false, FAR_X, FAR_Y, u + 400);
+
+		tick(true, 400, 320, u + 450);
+		tick(true, 400, 320, u + 1500);
+
+		assertTrue(bubbles.showing(ID));
+		assertFalse(bubbles.clusterOpen());
+	}
+
+	@Test
+	public void theMainBubblesGoBackAfterTheGraceTimeAloneWhenNoClusterIsOpen()
+	{
+		long t = open();
+
+		tick(false, FAR_X, FAR_Y, t);
+		tick(false, FAR_X, FAR_Y, t + 350);
+
+		assertFalse(bubbles.showing(ID));
+	}
+
+	private static final BubbleAnchors MOVED = new BubbleAnchors(460, 320, 460, 260);
+
+	private BubbleFrame movedFrame(long now)
+	{
+		return bubbles.frame(id -> id == ID ? MOVED : null, VIEW, new Dimension(190, 140), now, MotionMode.FULL);
+	}
+
+	private void movedTick(boolean near, double px, double py, long now)
+	{
+		tick(offer(), MOVED, near, px, py, now, Collections.emptyList());
+	}
+
+	@Test
+	public void theBubblesStayWhereTheyAreWhileThePointerIsOnOneAndTheCreatureMoves()
+	{
+		long t = open();
+		double x = arc.x(0);
+		double y = arc.y(0);
+		tick(true, x, y, t);
+
+		movedTick(true, x, y, t + 100);
+		movedTick(true, x, y, t + 3000);
+
+		assertEquals(x, disc(movedFrame(t + 3000), BubbleKind.JAR).x(), 1e-6);
+		assertEquals(arc.x(1), disc(movedFrame(t + 3000), BubbleKind.BATTLE).x(), 1e-6);
+		assertEquals(arc.x(2), disc(movedFrame(t + 3000), BubbleKind.INFO).x(), 1e-6);
+	}
+
+	@Test
+	public void theBubblesGlideToTheCreatureOneSecondAfterThePointerLeavesEveryBubble()
+	{
+		long t = open();
+		tick(true, arc.x(0), arc.y(0), t);
+		movedTick(true, arc.x(0), arc.y(0), t + 100);
+		double moved = BubbleLayout.main(MOVED, VIEW).x(0);
+
+		movedTick(true, 400, 320, t + 200);
+		movedTick(true, 400, 320, t + 1199);
+
+		assertEquals(arc.x(0), disc(movedFrame(t + 1199), BubbleKind.JAR).x(), 1e-6);
+
+		movedTick(true, 400, 320, t + 1200);
+		movedTick(true, 400, 320, t + 1400);
+		double mid = disc(movedFrame(t + 1400), BubbleKind.JAR).x();
+
+		assertTrue("gliding " + mid, mid > arc.x(0) + 1 && mid < moved - 1);
+
+		movedTick(true, 400, 320, t + 1700);
+
+		assertEquals(moved, disc(movedFrame(t + 1700), BubbleKind.JAR).x(), 1e-6);
+		assertTrue(bubbles.showing(ID));
+	}
+
+	@Test
+	public void theBubblesFollowTheCreatureAtOnceWhenThePointerIsOnNoBubble()
+	{
+		long t = open();
+		double moved = BubbleLayout.main(MOVED, VIEW).x(0);
+
+		movedTick(true, 400, 320, t + 100);
+
+		assertEquals(moved, disc(movedFrame(t + 100), BubbleKind.JAR).x(), 1e-6);
+	}
+
+	@Test
+	public void theBubblesGoBackInsteadOfGlidingWhenTheCreatureHasLeftTheRange()
+	{
+		long t = open();
+		tick(true, arc.x(0), arc.y(0), t);
+		movedTick(true, arc.x(0), arc.y(0), t + 100);
+
+		movedTick(false, 400, 290, t + 200);
+		movedTick(false, 400, 290, t + 1199);
+
+		assertTrue(bubbles.showing(ID));
+
+		movedTick(false, 400, 290, t + 1200);
+
+		assertFalse(bubbles.showing(ID));
+	}
+
+	@Test
+	public void returningToABubbleWhileTheyGlideHoldsThemWhereTheyAre()
+	{
+		long t = open();
+		tick(true, arc.x(0), arc.y(0), t);
+		movedTick(true, arc.x(0), arc.y(0), t + 100);
+		movedTick(true, 400, 320, t + 200);
+		movedTick(true, 400, 320, t + 1200);
+		movedTick(true, 400, 320, t + 1400);
+		BubbleFrame.Disc mid = disc(movedFrame(t + 1400), BubbleKind.JAR);
+
+		movedTick(true, mid.x(), mid.y(), t + 1400);
+		movedTick(true, mid.x(), mid.y(), t + 3000);
+
+		assertEquals(mid.x(), disc(movedFrame(t + 3000), BubbleKind.JAR).x(), 1e-6);
+	}
+
+	private BubbleHits.Hit hitOn(long now, BubbleKind kind)
+	{
+		BubbleFrame shown = frame(now);
+		BubbleFrame.Disc d = disc(shown, kind);
+		return shown.hits().at(d.x(), d.y());
+	}
+
+	@Test
+	public void theTooltipsNameWhatEachBubbleDoes()
+	{
+		long t = open();
+
+		assertEquals("Bronze jar\n50% catch chance", bubbles.tip(hitOn(t, BubbleKind.JAR)));
+		assertEquals("Start combat", bubbles.tip(hitOn(t, BubbleKind.BATTLE)));
+		assertEquals("Information", bubbles.tip(hitOn(t, BubbleKind.INFO)));
+		assertNull(bubbles.tip(null));
+	}
+
+	@Test
+	public void aClusterJarsTooltipHasItsOwnChanceAndTheInfoTooltipYieldsToTheCard()
+	{
+		long t = open();
+		bubbles.press(generation(t), BubbleKind.JAR, null, 3, t);
+		long u = t + 800;
+		BubbleFrame.Disc slot = clusterDisc(frame(u), JarType.IRON);
+
+		BubbleHits hits = frame(u).hits();
+
+		assertEquals("Iron jar\n60% catch chance", bubbles.tip(hits.at(slot.x(), slot.y())));
+
+		bubbles.pressedOutside(generation(u), u);
+		long v = u + 800;
+		BubbleHits.Hit info = hitOn(v, BubbleKind.INFO);
+		bubbles.press(generation(v), BubbleKind.INFO, null, 1, v);
+
+		assertNull(bubbles.tip(info));
+	}
+
+	@Test
 	public void theClusterHoldsTheSelectedJarFirstThenTheSuggestedOnesThenTheRest()
 	{
 		long t = open();
@@ -899,7 +1091,7 @@ public class WildBubblesTest
 	{
 		assertEquals(2, WildBubbles.NEAR_TILES);
 		assertEquals(350, WildBubbles.GRACE_MS);
-		assertEquals(900, WildBubbles.CLUSTER_HOVER_MS);
+		assertEquals(450, WildBubbles.CLUSTER_HOVER_MS);
 		assertEquals(150, WildBubbles.CARD_HOVER_MS);
 		assertEquals(2, WildBubbles.HIT_SLOP);
 		assertEquals(0.5, WildBubbles.CLICKABLE_AT, 0.0);

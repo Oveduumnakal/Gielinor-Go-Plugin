@@ -225,6 +225,9 @@ public class WindowFooterTest
 
 			g.dispose();
 			assertEquals(layout.feedback.y, layout.changelog.y);
+			assertEquals(layout.window.height - layout.px(WindowLayout.MARGIN),
+				layout.changelog.y + layout.changelog.height);
+			assertTrue(layout.changelog.height < layout.px(WindowLayout.BUTTON_UNITS));
 			assertEquals(layout.window.width - layout.px(WindowLayout.MARGIN),
 				layout.feedback.x + layout.feedback.width);
 		}

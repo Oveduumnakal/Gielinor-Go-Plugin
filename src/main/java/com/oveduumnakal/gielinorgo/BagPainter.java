@@ -186,7 +186,8 @@ final class BagPainter
 		st.xpBar(g, rect(layout.trainerBar), state.trainerProgress());
 		text.draw(g, "Next jar " + state.stepProgress() + " / " + GoGame.TILES_PER_JAR, layout.stepsLine, small,
 			ThemeColor.SUBTEXT, PageText.Align.LEFT);
-		st.xpBar(g, rect(layout.stepsBar), state.stepProgress() / (double) GoGame.TILES_PER_JAR);
+		st.bar(g, rect(layout.stepsBar), state.stepProgress() / (double) GoGame.TILES_PER_JAR, ThemeColor.JAR_FILL,
+			ThemeColor.XP_TRACK);
 	}
 
 	private void jars(Graphics2D g, PageContext ctx, PageText text, BagLayout layout, PanelState state, Font regular)

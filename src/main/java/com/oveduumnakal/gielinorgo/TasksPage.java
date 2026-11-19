@@ -39,6 +39,7 @@ final class TasksPage
 	private Rectangle right = new Rectangle();
 	private Rectangle[] taskRows = new Rectangle[0];
 	private Rectangle[] headings = new Rectangle[0];
+	private Rectangle divider = new Rectangle();
 	private Rectangle streak = new Rectangle();
 	private Rectangle nextLine = new Rectangle();
 	private Rectangle nextBar = new Rectangle();
@@ -52,6 +53,12 @@ final class TasksPage
 	TasksPage(PageText.Sink sink)
 	{
 		this.sink = sink;
+	}
+
+	/** @return the line between the Daily and the Weekly tasks, empty when there is no weekly task */
+	Rectangle divider()
+	{
+		return divider;
 	}
 
 	/** @return the milestone list, whose offset and bar the tests drive */
@@ -82,11 +89,13 @@ final class TasksPage
 		headings = new Rectangle[] {new Rectangle(left.x + pad, y, left.width - 2 * pad, heading), new Rectangle()};
 		y += heading;
 		taskRows = new Rectangle[rows.size()];
+		divider = new Rectangle();
 		for (int i = 0; i < rows.size(); i++)
 		{
 			boolean weekly = i == rows.size() - 1 && rows.size() > TaskCalendar.DAILY_COUNT;
 			if (weekly)
 			{
+				divider = new Rectangle(left.x + pad, y + gap / 2, left.width - 2 * pad, Math.max(1, m.border));
 				y += gap;
 				headings[1] = new Rectangle(left.x + pad, y, left.width - 2 * pad, heading);
 				y += heading;
@@ -192,6 +201,12 @@ final class TasksPage
 		else
 			text.draw(g, "Tasks · resets in " + TaskView.duration(tasks.millisToReset()), headings[0], small,
 				ThemeColor.SUBTEXT, PageText.Align.LEFT);
+
+		if (divider.width > 0)
+		{
+			g.setColor(st.color(ThemeColor.ROW_BORDER));
+			g.fill(rect(divider));
+		}
 
 		if (headings[1].width > 0)
 			text.draw(g, "Weekly · resets in " + TaskView.duration(tasks.millisToWeeklyReset()), headings[1],

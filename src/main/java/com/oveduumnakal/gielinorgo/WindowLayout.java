@@ -43,6 +43,9 @@ final class WindowLayout
 	/** The gap between footer buttons, in layout units. */
 	static final double BUTTON_GAP_UNITS = 8;
 
+	/** The height of the Change log and Feedback buttons, which are smaller than the others, in layout units. */
+	static final double SMALL_BUTTON_UNITS = 28;
+
 	/** The width of the Change log button, in layout units. */
 	static final double CHANGELOG_UNITS = 134;
 
@@ -112,8 +115,10 @@ final class WindowLayout
 		edge = Math.max(EDGE_MIN_PX, px(MARGIN / 2));
 		int gripSide = Math.max(GRIP_MIN_PX, px(MARGIN));
 		grip = new Rectangle(width - gripSide, height - gripSide, gripSide, gripSide);
-		feedback = new Rectangle(width - m - px(FEEDBACK_UNITS), buttonsTop, px(FEEDBACK_UNITS), buttonH);
-		changelog = new Rectangle(feedback.x - gap - px(CHANGELOG_UNITS), buttonsTop, px(CHANGELOG_UNITS), buttonH);
+		int smallH = px(SMALL_BUTTON_UNITS);
+		int smallTop = buttonsTop + buttonH - smallH;
+		feedback = new Rectangle(width - m - px(FEEDBACK_UNITS), smallTop, px(FEEDBACK_UNITS), smallH);
+		changelog = new Rectangle(feedback.x - gap - px(CHANGELOG_UNITS), smallTop, px(CHANGELOG_UNITS), smallH);
 	}
 
 	/** Which part of the window a press resizes. */

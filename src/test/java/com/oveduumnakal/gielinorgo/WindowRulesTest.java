@@ -15,6 +15,15 @@ import static org.junit.Assert.assertTrue;
 public class WindowRulesTest
 {
 	@Test
+	public void aBattleIsOnWhenAnySceneOrDirectorIsOn()
+	{
+		assertFalse(WindowRules.battleOn(false, false, false));
+		assertTrue(WindowRules.battleOn(true, false, false));
+		assertTrue(WindowRules.battleOn(false, true, false));
+		assertTrue(WindowRules.battleOn(false, false, true));
+	}
+
+	@Test
 	public void opensOnlyWhenLoadedAndNothingIsFighting()
 	{
 		assertTrue(WindowRules.mayOpen(false, false, true));
@@ -74,5 +83,20 @@ public class WindowRulesTest
 			boolean bank = (bits & 2) != 0;
 			assertEquals(TeamSwapRule.allowed(city, bank, false), WindowRules.storageEnabled(city, bank));
 		}
+	}
+
+	@Test
+	public void aDeferredResultWaitsForTheSceneAndTheLines()
+	{
+		assertFalse(WindowRules.deferredDue(10, 300, true, true));
+		assertFalse(WindowRules.deferredDue(10, 300, false, false));
+		assertTrue(WindowRules.deferredDue(10, 300, false, true));
+	}
+
+	@Test
+	public void aDeferredResultIsWrittenAfterTheLimitEvenIfTheSceneNeverEnds()
+	{
+		assertFalse(WindowRules.deferredDue(300, 300, true, false));
+		assertTrue(WindowRules.deferredDue(301, 300, true, false));
 	}
 }

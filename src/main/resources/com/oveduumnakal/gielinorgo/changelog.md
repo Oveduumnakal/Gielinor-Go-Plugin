@@ -70,6 +70,21 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Sharper icons and bubbles.** Text and icons stay crisp at any window size or UI scale. The wild creature
   bubbles became rings with a clear middle, the Battle bubble shows the game's Combat tab icon, and the jars you own
   open as an even honeycomb with easier-to-read counts. (#266)
+- **Daily and Weekly apart.** A line now separates the Daily tasks from the Weekly one on the Tasks page. (#288)
+- **A better pin.** The pin button on tasks and eggs is now a drawn push pin: tilted and outlined when free, upright
+  and filled when pinned. (#287)
+- **Smaller Change log and Feedback.** The two buttons are shorter and sit in their own section at the right end
+  of the bottom row. (#289)
+- **Clearer Bag bars.** The Trainer level bar and the Next jar bar now use clearly different colours, easy to tell
+  apart even for colour-blind players. (#290)
+- **Faster jar list.** The jar bubble opens its list after half a second of hovering, twice as fast as before.
+  (#301)
+- **Two-step close.** When the mouse leaves a wild creature, the jar list folds away first and the three bubbles
+  follow. (#300)
+- **Steady bubbles.** The bubbles stay put while your mouse is on one, even if the creature walks, and glide back
+  to it a second after you move off. (#293)
+- **Bubble tooltips.** The jar bubbles show the jar and its catch chance, Battle says Start combat and Info says
+  Information. (#292)
 - **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
   beside you, and three species are only met this way. (#90)
 - **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final
@@ -147,6 +162,16 @@ A Creature Log, daily tasks and daily events give you goals.
   style. (#258)
 - **New jar pictures.** All 17 jars have new artwork wherever a jar is shown: the Bag, the throw, and the floating
   lines. (#261)
+- **Window closes for a battle.** Starting any battle now closes the Gielinor Go window at once, so the battle is
+  in view and no "in battle" message is left on screen. (#296)
+- **Battle result at the end.** A battle that plays itself now pays its XP and rewards, and faints a creature, only
+  after the last beat has shown, and the window stays shut until then. (#295)
+- **One cast per Magic attack.** A Magic attack now shows one cast and one projectile, even when the same beat is
+  played again. (#297)
+- **Random events.** A random event NPC no longer counts as a fight, so the window stays open. (#291)
+- **Reviving.** Fainted creatures now stand up by themselves at 50% when you reach a bank or a city, and a fainted
+  creature moved into Storage is revived. (#298)
+- **Movesets list.** A new page in the docs lists every creature and every move it can learn. (#299)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

@@ -42,6 +42,7 @@ public enum WindowTheme
 		.put(ThemeColor.HP_DANGER, 0xE64646)
 		.put(ThemeColor.HP_TRACK, 0x101010)
 		.put(ThemeColor.XP_FILL, 0xDC8A00)
+		.put(ThemeColor.JAR_FILL, 0x7FD3F0)
 		.put(ThemeColor.XP_TRACK, 0x101010)
 		.put(ThemeColor.ACCENT, 0xDC8A00)
 		.put(ThemeColor.PANEL_BOX, 0x262626)
