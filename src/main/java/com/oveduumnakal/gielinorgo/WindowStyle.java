@@ -15,6 +15,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.Objects;
@@ -187,6 +188,17 @@ final class WindowStyle
 	}
 
 	/**
+	 * Gives the outline a {@link #panel} of this box has, to cut something to the panel's rounded corners.
+	 *
+	 * @param box the section bounds
+	 * @return the rounded outline
+	 */
+	Shape panelShape(Rectangle2D box)
+	{
+		return round(box, metrics.corner);
+	}
+
+	/**
 	 * Paints a boxed section of a page.
 	 *
 	 * @param g the graphics
@@ -235,6 +247,25 @@ final class WindowStyle
 	}
 
 	/**
+	 * Paints the resize grip: three short diagonal lines in the bottom-right corner of the window.
+	 *
+	 * @param g the graphics
+	 * @param box the grip's square, in the window's corner
+	 * @param active how much the grip is being dragged, from 0 to 1
+	 */
+	void grip(Graphics2D g, Rectangle2D box, double active)
+	{
+		Color base = color(ThemeColor.SUBTEXT);
+		g.setColor(WindowTheme.mix(base, color(ThemeColor.ACCENT), active));
+		g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
+		double step = box.getWidth() / 4.0;
+		double right = box.getMaxX() - metrics.border;
+		double bottom = box.getMaxY() - metrics.border;
+		for (int i = 1; i <= 3; i++)
+			g.draw(new Line2D.Double(right - i * step, bottom, right, bottom - i * step));
+	}
+
+	/**
 	 * Lays the hover light and the press dark over a shape.
 	 *
 	 * @param g the graphics
@@ -265,7 +296,19 @@ final class WindowStyle
 	 */
 	void focusRing(Graphics2D g, Shape shape)
 	{
-		g.setColor(color(ThemeColor.FOCUS_RING));
+		focusRing(g, shape, ThemeColor.FOCUS_RING);
+	}
+
+	/**
+	 * Draws a ring around what has keyboard focus, in a colour of the caller's choice.
+	 *
+	 * @param g the graphics
+	 * @param shape the outline to ring
+	 * @param ring the colour name of the ring
+	 */
+	void focusRing(Graphics2D g, Shape shape, ThemeColor ring)
+	{
+		g.setColor(color(ring));
 		g.setStroke(new BasicStroke(Math.max(2f, metrics.border)));
 		g.draw(shape);
 	}
@@ -596,6 +639,9 @@ final class WindowStyle
 		/** The padding at each end of a chip's text, in pixels. */
 		final int chipPad;
 
+		/** The pixel size of small print, a sharp whole multiple of the native font size; icons match it. */
+		final int text;
+
 		Metrics(double scale)
 		{
 			slant = round(SLANT_UNITS, scale);
@@ -612,6 +658,7 @@ final class WindowStyle
 			tabSlant = round(SLANT_UNITS / 2, scale);
 			chipSlant = round(CHIP_UNITS / 3, scale);
 			chipPad = round(10, scale);
+			text = WindowFonts.pixelSize(WindowFonts.SMALL_UNITS, scale);
 		}
 
 		private static int round(double units, double scale)
@@ -629,14 +676,14 @@ final class WindowStyle
 			return slant == m.slant && row == m.row && tab == m.tab && bar == m.bar && chipHeight == m.chipHeight
 				&& pad == m.pad && corner == m.corner && border == m.border && shadow == m.shadow
 				&& nudge == m.nudge && barSlant == m.barSlant && tabSlant == m.tabSlant
-				&& chipSlant == m.chipSlant && chipPad == m.chipPad;
+				&& chipSlant == m.chipSlant && chipPad == m.chipPad && text == m.text;
 		}
 
 		@Override
 		public int hashCode()
 		{
 			return Objects.hash(slant, row, tab, bar, chipHeight, pad, corner, border, shadow, nudge, barSlant,
-				tabSlant, chipSlant, chipPad);
+				tabSlant, chipSlant, chipPad, text);
 		}
 	}
 }

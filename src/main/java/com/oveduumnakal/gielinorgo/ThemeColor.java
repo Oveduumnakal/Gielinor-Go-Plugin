@@ -130,6 +130,9 @@ enum ThemeColor
 	/** The ring around what has keyboard focus. */
 	FOCUS_RING,
 
+	/** The ring that follows the keyboard highlight on the Party page, apart from the lead and selected colours. */
+	PARTY_HIGHLIGHT,
+
 	/** The field of a text box. */
 	INPUT,
 

@@ -31,6 +31,7 @@ final class WindowInput implements MouseListener, MouseWheelListener
 	private final Sink sink;
 	private boolean windowDown;
 	private boolean toggleDown;
+	private boolean resetDown;
 	private boolean inside;
 
 	/** Where the events go: the game thread side of the window. Called on the UI thread, which queues each one. */
@@ -89,6 +90,16 @@ final class WindowInput implements MouseListener, MouseWheelListener
 
 		/** The toggle's icon was clicked. */
 		void toggleClicked();
+
+		/**
+		 * Alt and a right click landed on the window, which asks for its size and place to be reset.
+		 *
+		 * @return true when this sink takes the request, so the click is consumed
+		 */
+		default boolean resetRequested()
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -110,12 +121,19 @@ final class WindowInput implements MouseListener, MouseWheelListener
 	@Override
 	public MouseEvent mousePressed(MouseEvent event)
 	{
-		if (drag.heldIn(event))
-			return event;
-
 		WindowView v = view.get();
 		int x = event.getX();
 		int y = event.getY();
+		if (isReset(event) && v.covers(x, y) && sink.resetRequested())
+		{
+			resetDown = true;
+			event.consume();
+			return event;
+		}
+
+		if (drag.heldIn(event))
+			return event;
+
 		if (v.covers(x, y))
 		{
 			windowDown = true;
@@ -141,6 +159,12 @@ final class WindowInput implements MouseListener, MouseWheelListener
 	public MouseEvent mouseReleased(MouseEvent event)
 	{
 		boolean consumed = false;
+		if (resetDown)
+		{
+			resetDown = false;
+			consumed = true;
+		}
+
 		if (windowDown)
 		{
 			windowDown = false;
@@ -167,8 +191,8 @@ final class WindowInput implements MouseListener, MouseWheelListener
 	@Override
 	public MouseEvent mouseClicked(MouseEvent event)
 	{
-		if (!drag.heldIn(event) && (view.get().covers(event.getX(), event.getY())
-			|| overToggle(event.getX(), event.getY())))
+		if (isReset(event) && view.get().covers(event.getX(), event.getY()) || !drag.heldIn(event)
+			&& (view.get().covers(event.getX(), event.getY()) || overToggle(event.getX(), event.getY())))
 			event.consume();
 
 		return event;
@@ -231,6 +255,11 @@ final class WindowInput implements MouseListener, MouseWheelListener
 		event.consume();
 		sink.wheel(v.localX(event.getX()), v.localY(event.getY()), event.getWheelRotation());
 		return event;
+	}
+
+	private static boolean isReset(MouseEvent event)
+	{
+		return event.getButton() == MouseEvent.BUTTON3 && event.isAltDown();
 	}
 
 	private boolean overToggle(int x, int y)

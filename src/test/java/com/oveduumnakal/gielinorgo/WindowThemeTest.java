@@ -48,6 +48,19 @@ public class WindowThemeTest
 	}
 
 	@Test
+	public void thePartyHighlightDiffersFromTheSelectionAndTheLeadColours()
+	{
+		for (WindowTheme theme : WindowTheme.values())
+		{
+			int ring = theme.color(ThemeColor.PARTY_HIGHLIGHT).getRGB() & 0xFFFFFF;
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.SELECTION).getRGB() & 0xFFFFFF, ring);
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.FOCUS_RING).getRGB() & 0xFFFFFF, ring);
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.LEAD_ROW).getRGB() & 0xFFFFFF, ring);
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.LEAD_BORDER).getRGB() & 0xFFFFFF, ring);
+		}
+	}
+
+	@Test
 	public void theJarBarAndTheTrainerBarDifferInHueAndLightness()
 	{
 		for (WindowTheme theme : WindowTheme.values())
@@ -66,15 +79,10 @@ public class WindowThemeTest
 	}
 
 	@Test
-	public void thereAreTwoStylesThatDiffer()
+	public void theOnlyStyleIsRuneLiteDark()
 	{
-		assertEquals(2, WindowTheme.values().length);
-		assertEquals("Dark glass", WindowTheme.DARK_GLASS.toString());
+		assertEquals(1, WindowTheme.values().length);
 		assertEquals("RuneLite dark", WindowTheme.RUNELITE_DARK.toString());
-		assertNotEquals(WindowTheme.DARK_GLASS.color(ThemeColor.LEAD_ROW),
-			WindowTheme.RUNELITE_DARK.color(ThemeColor.LEAD_ROW));
-		assertSame(WindowTheme.RUNELITE_DARK, WindowTheme.DARK_GLASS.next());
-		assertSame(WindowTheme.DARK_GLASS, WindowTheme.RUNELITE_DARK.next());
 	}
 
 	@Test
@@ -128,7 +136,7 @@ public class WindowThemeTest
 	{
 		for (double scale : new double[] {0.6667, 0.67, 1.0, 1.5, 2.0})
 		{
-			WindowStyle dark = WindowStyle.of(WindowTheme.DARK_GLASS, scale);
+			WindowStyle dark = WindowStyle.of(WindowTheme.RUNELITE_DARK, scale);
 			WindowStyle lite = WindowStyle.of(WindowTheme.RUNELITE_DARK, scale);
 			assertEquals("scale " + scale, dark.metrics(), lite.metrics());
 			assertEquals(dark.px(40), lite.px(40));

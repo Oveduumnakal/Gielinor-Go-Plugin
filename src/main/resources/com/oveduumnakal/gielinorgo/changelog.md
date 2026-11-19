@@ -42,6 +42,9 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Daily and weekly tasks.** Three tasks a day and one a week, paid when you finish them. (#28)
 - **City Champions and the Elite challenge.** Eight champions, eight sigils and the Grand Champion title.
   (#1, #26, #72)
+- **Champion card edge.** The colored stripe on a champion card now follows the card's rounded corners. (#279)
+- **Sigil badges.** Champion cards and the champions heading now show a shield badge, plain for a sigil and filled
+  with a star for a gold sigil. (#280)
 
 ### Friends
 
@@ -54,6 +57,15 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **Party backs out of Summary.** Clicking the Party tab while a creature's Summary is open takes you back to the
+  Party list. (#282)
+- **Resize the window by dragging.** Drag the grip in the window's bottom-right corner, or its right or bottom edge.
+  The window starts Small, and Alt + right-click brings it back to Small. The Size button is gone. (#271)
+- **Reset with Alt + right-click.** Hold Alt and right-click the window to put it back to its normal size and place.
+  The Reset window button is gone. (#269)
+- **One window look.** The window now uses only the RuneLite dark style; the style setting and the footer style
+  button are gone. (#270)
+- **Header underline fits.** The line under the active tab now ends where the slanted tab ends. (#272)
 - **Catch when nobody can fight.** With no team or a tired lead you can still catch: use the jar bubble or Catch
   in the right-click menu. (#82)
 - **Report a bug and Request a feature.** The Feedback button in the window opens GitHub with your text filled in.
@@ -63,6 +75,13 @@ A Creature Log, daily tasks and daily events give you goals.
   open as an even honeycomb with easier-to-read counts. (#266)
 - **A more natural follower.** Your lead keeps a small gap, lags a step or two behind while you walk, then
   catches up, instead of hugging your heels. It still keeps up through teleports and map loads. (#302)
+- **One size on the Party view.** The gender and style icons now match the size of the text beside them. (#273)
+- **HP and XP side by side.** A Party row shows the health bar and the experience bar next to each other. (#274)
+- **Party highlight.** The ring that follows your keyboard on the Party page has its own colour and now sits right
+  on the row instead of beside it. (#277)
+- **Stab icon.** The dagger now points up and is as big as the other combat style icons. (#283)
+- **Gender icon size.** The gender sign is now the same size as the combat style icon beside it. (#285)
+- **Blue and pink gender signs.** The male sign is blue and the female sign is pink. (#284)
 - **Daily and Weekly apart.** A line now separates the Daily tasks from the Weekly one on the Tasks page. (#288)
 - **A better pin.** The pin button on tasks and eggs is now a drawn push pin: tilted and outlined when free, upright
   and filled when pinned. (#287)

@@ -46,7 +46,7 @@ public class WindowFitTest
 	@Test
 	public void fixedModeDefaultIsAboutFiveThirtyFiveWideAndNeverAboveTheCanvas()
 	{
-		Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, 765, 503);
+		Dimension size = WindowFit.sizeFor(WindowSizePreset.MEDIUM.fraction(), 765, 503);
 		assertTrue("width " + size.width, size.width >= 533 && size.width <= 537);
 		assertTrue(size.width <= 765 && size.height <= 503);
 		assertTrue(WindowFit.scale(size.width, size.height) >= WindowFit.MIN_SCALE);
@@ -163,7 +163,7 @@ public class WindowFitTest
 	public void resetIsTheDefaultSizeCentred()
 	{
 		Rectangle r = WindowFit.reset(1920, 1080);
-		assertEquals(WindowFit.preset(WindowSizePreset.MEDIUM, 1920, 1080), r);
+		assertEquals(WindowFit.preset(WindowSizePreset.SMALL, 1920, 1080), r);
 		assertEquals((1920 - r.width) / 2, r.x);
 		assertEquals((1080 - r.height) / 2, r.y);
 		assertEquals(new Point(100, 50), WindowFit.centered(new Dimension(100, 50), 300, 150));

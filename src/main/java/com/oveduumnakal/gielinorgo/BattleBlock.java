@@ -30,6 +30,19 @@ final class BattleBlock
 		CARD
 	}
 
+	/** Which sigil badge a block shows. */
+	enum Sigil
+	{
+		/** No badge. */
+		NONE,
+
+		/** The plain sigil of a beaten champion. */
+		NORMAL,
+
+		/** The gold sigil of a rematch win. */
+		GOLD
+	}
+
 	/** One button on a card. */
 	static final class Btn
 	{
@@ -154,9 +167,16 @@ final class BattleBlock
 	private final String tip;
 	private final String id;
 	private final List<Item> items;
+	private final Sigil sigil;
 
 	private BattleBlock(Kind kind, String text, String status, ThemeColor statusColor, ThemeColor stripe, String tip,
 		String id, List<Item> items)
+	{
+		this(kind, text, status, statusColor, stripe, tip, id, items, Sigil.NONE);
+	}
+
+	private BattleBlock(Kind kind, String text, String status, ThemeColor statusColor, ThemeColor stripe, String tip,
+		String id, List<Item> items, Sigil sigil)
 	{
 		this.kind = kind;
 		this.text = text;
@@ -166,6 +186,22 @@ final class BattleBlock
 		this.tip = tip;
 		this.id = id;
 		this.items = Collections.unmodifiableList(new ArrayList<>(items));
+		this.sigil = sigil;
+	}
+
+	/**
+	 * @param badge the sigil badge to show beside the block's words
+	 * @return a copy of this block that shows the badge
+	 */
+	BattleBlock withSigil(Sigil badge)
+	{
+		return new BattleBlock(kind, text, status, statusColor, stripe, tip, id, items, badge);
+	}
+
+	/** @return the sigil badge the block shows, or {@link Sigil#NONE} */
+	Sigil sigil()
+	{
+		return sigil;
 	}
 
 	/**
