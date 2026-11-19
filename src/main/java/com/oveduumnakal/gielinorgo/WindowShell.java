@@ -64,6 +64,9 @@ final class WindowShell
 	/** The hint line while a text box has the keys. */
 	static final String HINT_FIELD = "Type   Enter Save   Esc Cancel";
 
+	/** The hint line while the Collection search box has the keys. */
+	static final String HINT_SEARCH = "Type   Enter Done   Esc Clear";
+
 	/** The hint line while the window has no focus. */
 	static final String HINT_UNFOCUSED = "Click the window to use keys";
 
@@ -327,6 +330,34 @@ final class WindowShell
 		{
 			return false;
 		}
+
+		/** @return whether a text box on the page has the keys, so typing goes to it */
+		default boolean fieldFocused()
+		{
+			return false;
+		}
+
+		/**
+		 * Hands a typed character to the page's text box, when no menu or dialog is open.
+		 *
+		 * @param c the character
+		 * @param modifiers the modifiers
+		 * @param nowMs the time in milliseconds
+		 */
+		default void typed(char c, int modifiers, long nowMs)
+		{
+			return;
+		}
+
+		/**
+		 * Takes the keys away from the page's text box, which keeps its text.
+		 *
+		 * @param nowMs the time in milliseconds
+		 */
+		default void blur(long nowMs)
+		{
+			return;
+		}
 	}
 
 	/**
@@ -547,7 +578,11 @@ final class WindowShell
 			return field.focused() ? WindowKeyRules.KeyMode.FIELD : WindowKeyRules.KeyMode.NONE;
 		}
 
-		return menu.isOpen() ? WindowKeyRules.KeyMode.MENU : WindowKeyRules.KeyMode.WINDOW;
+		if (menu.isOpen())
+			return WindowKeyRules.KeyMode.MENU;
+
+		return changelog == null && pages.fieldFocused() ? WindowKeyRules.KeyMode.FIELD
+			: WindowKeyRules.KeyMode.WINDOW;
 	}
 
 	/**
@@ -637,6 +672,8 @@ final class WindowShell
 	{
 		if (open && modalOpen())
 			modal.onKeyTyped(c, modifiers, nowMs);
+		else if (open && !menu.isOpen() && changelog == null)
+			pages.typed(c, modifiers, nowMs);
 	}
 
 	/**
@@ -852,6 +889,8 @@ final class WindowShell
 		focus.focus(false);
 		if (field != null)
 			field.focus(false, nowMs);
+
+		pages.blur(nowMs);
 	}
 
 	/**
@@ -1069,7 +1108,7 @@ final class WindowShell
 		switch (keyMode())
 		{
 			case FIELD:
-				return HINT_FIELD;
+				return modalOpen() ? HINT_FIELD : HINT_SEARCH;
 			case MODAL:
 				return HINT_MODAL;
 			case MENU:

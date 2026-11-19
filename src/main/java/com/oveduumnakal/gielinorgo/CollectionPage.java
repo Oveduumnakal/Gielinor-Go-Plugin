@@ -11,6 +11,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,10 +22,11 @@ import java.util.function.Consumer;
 
 /**
  * The Collection page: the Creature Log. The left panel holds the record (caught, seen), the next log reward and
- * today's spawns; the right panel holds the filter button, the species list in a {@link ScrollList} and a strip with
- * the chosen species' details. Only the rows in view are painted, the filtered list is rebuilt only when the log, the
- * filter or the day's picks change, and unseen species show as ??? with no menu. The list scrolls with the wheel, the
- * bar and the keys. Holds no RuneLite types; the wiki is opened through a callback.
+ * today's spawns; the right panel holds the filter button, a search box that narrows the list by name, the species
+ * list in a {@link ScrollList} and a strip with the chosen species' details. Only the rows in view are painted, the
+ * filtered list is rebuilt only when the log, the filter, the search text or the day's picks change, and unseen
+ * species show as ??? with no menu. The list scrolls with the wheel, the bar and the keys. Holds no RuneLite types;
+ * the wiki is opened through a callback.
  */
 final class CollectionPage
 {
@@ -33,6 +35,12 @@ final class CollectionPage
 
 	/** The id of the filter button. */
 	static final String ID_FILTER = PREFIX + "filter";
+
+	/** The id of the search box. */
+	static final String ID_SEARCH = PREFIX + "search";
+
+	/** The most characters the search box holds. */
+	static final int SEARCH_LENGTH = 24;
 
 	/** The id of the details strip. */
 	static final String ID_DETAIL = PREFIX + "detail";
@@ -54,9 +62,12 @@ final class CollectionPage
 	private final PageText.Sink sink;
 	private final ScrollList list = new ScrollList();
 	private final List<LogEntry> shown = new ArrayList<>();
+	private final TextBox search = new TextBox(SEARCH_LENGTH, text -> text, TextBox.system());
 	private CollectionFilter filter = CollectionFilter.ALL;
 	private List<LogEntry> source;
 	private CollectionFilter filtered;
+	private String searched = "";
+	private long now;
 	private Set<String> featured = Collections.emptySet();
 	private String selectedKey;
 	private int selected = -1;
@@ -71,6 +82,7 @@ final class CollectionPage
 	private Rectangle night = new Rectangle();
 	private Rectangle filterButton = new Rectangle();
 	private Rectangle count = new Rectangle();
+	private Rectangle searchBox = new Rectangle();
 	private Rectangle detail = new Rectangle();
 
 	/**
@@ -81,6 +93,60 @@ final class CollectionPage
 	CollectionPage(PageText.Sink sink)
 	{
 		this.sink = sink;
+		search.placeholder("Search species");
+		search.onSubmit(text -> search.focus(false, now));
+		search.onCancel(() ->
+		{
+			search.setText("");
+			search.focus(false, now);
+		});
+	}
+
+	/** @return the search box, whose text narrows the list by species name */
+	TextBox searchBox()
+	{
+		return search;
+	}
+
+	/** @return whether the search box has the keys, so typing goes to it and not to the window */
+	boolean searchFocused()
+	{
+		return search.focused();
+	}
+
+	/**
+	 * Takes the keys away from the search box. Its text stays.
+	 *
+	 * @param nowMs the time in milliseconds
+	 */
+	void blurSearch(long nowMs)
+	{
+		search.focus(false, nowMs);
+	}
+
+	/**
+	 * Gives a key to the search box.
+	 *
+	 * @param keyCode the key
+	 * @param modifiers the modifiers
+	 * @param nowMs the time in milliseconds
+	 * @return whether the box used it
+	 */
+	boolean searchKey(int keyCode, int modifiers, long nowMs)
+	{
+		return search.onKeyPressed(keyCode, modifiers, nowMs);
+	}
+
+	/**
+	 * Gives a typed character to the search box.
+	 *
+	 * @param c the character
+	 * @param modifiers the modifiers
+	 * @param nowMs the time in milliseconds
+	 */
+	void searchTyped(char c, int modifiers, long nowMs)
+	{
+		search.onKeyTyped(c, modifiers, nowMs);
 	}
 
 	/** @return the species list, whose offset and bar the tests drive */
@@ -158,7 +224,9 @@ final class CollectionPage
 		int buttonW = Math.min(w, Math.max(w / 2, style.px(120)));
 		filterButton = new Rectangle(x, y, buttonW, line);
 		count = new Rectangle(x + buttonW + pad, y, Math.max(0, w - buttonW - pad), line);
-		int top = y + line + gap / 2;
+		int searchY = y + line + gap / 2;
+		searchBox = new Rectangle(x, searchY, w, line);
+		int top = searchY + line + gap / 2;
 		int bottom = right.y + right.height - pad / 2;
 		int rowH = style.px(ROW_UNITS);
 		int detailH = pad + 3 * line;
@@ -220,9 +288,14 @@ final class CollectionPage
 	private void sync(PanelState panel)
 	{
 		Set<String> keys = panel.today().featuredKeys();
-		if (panel.log() == source && filter == filtered && keys.equals(featured))
+		String typed = search.text().trim();
+		if (panel.log() == source && filter == filtered && keys.equals(featured) && typed.equals(searched))
 			return;
 
+		if (!typed.equals(searched))
+			list.setOffset(0);
+
+		searched = typed;
 		source = panel.log();
 		filtered = filter;
 		featured = keys;
@@ -230,7 +303,7 @@ final class CollectionPage
 		selected = -1;
 		for (LogEntry entry : source)
 		{
-			if (filter.matches(entry, featured))
+			if (filter.matches(entry, featured) && CollectionFilter.matchesText(entry, searched))
 				shown.add(entry);
 		}
 
@@ -248,7 +321,7 @@ final class CollectionPage
 	}
 
 	/**
-	 * Lists the page's hits: the filter button, every visible species row and the detail strip.
+	 * Lists the page's hits: the filter button, the search box, every visible species row and the detail strip.
 	 *
 	 * @return the hits
 	 */
@@ -259,6 +332,8 @@ final class CollectionPage
 		String next = after.label().toLowerCase(Locale.ROOT);
 		hits.add(new Hit(ID_FILTER, Hit.Kind.BUTTON, filterButton, WindowShell.PAGE_ORDER, true,
 			"Show " + next + " species"));
+		hits.add(new Hit(ID_SEARCH, Hit.Kind.BUTTON, searchBox, WindowShell.PAGE_ORDER, true,
+			"Search species by name"));
 		int last = Math.min(list.lastVisible(), shown.size() - 1);
 		for (int i = list.firstVisible(); i <= last; i++)
 		{
@@ -341,6 +416,12 @@ final class CollectionPage
 		{
 			filter = filter.next();
 			list.setOffset(0);
+			return;
+		}
+
+		if (ID_SEARCH.equals(id))
+		{
+			search.focus(true, now);
 			return;
 		}
 
@@ -444,6 +525,7 @@ final class CollectionPage
 	void paint(Graphics2D g, PageContext ctx, PanelState panel)
 	{
 		WindowStyle st = ctx.style;
+		now = ctx.now;
 		PageText text = new PageText(st, sink);
 		Font regular = st.font(WindowFonts.Face.REGULAR, WindowFonts.BODY_UNITS);
 		Font small = st.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
@@ -451,6 +533,7 @@ final class CollectionPage
 		st.panel(g, rect(right));
 		paintLeft(g, st, text, panel, regular, small);
 		paintFilter(g, ctx, text, small);
+		paintSearch(g, ctx);
 		list.paint(g, st, (gr, index, box) -> row(gr, ctx, text, index, box, small));
 		LogEntry entry = selectedEntry();
 		if (!detail.isEmpty() && entry != null)
@@ -520,6 +603,13 @@ final class CollectionPage
 			filterButton.width - 2 * pad, filterButton.height), small, ThemeColor.ROW_TEXT, PageText.Align.CENTER);
 		text.draw(g, Milestones.count(shown.size()) + " species", count, small, ThemeColor.SUBTEXT,
 			PageText.Align.RIGHT);
+	}
+
+	private void paintSearch(Graphics2D g, PageContext ctx)
+	{
+		search.paint(g, ctx.style, searchBox, ctx.mode, ctx.now);
+		if (!search.focused() && ctx.focused && ID_SEARCH.equals(ctx.highlight))
+			ctx.style.focusRing(g, rect(searchBox));
 	}
 
 	private void row(Graphics2D g, PageContext ctx, PageText text, int index, Rectangle box, Font small)
@@ -596,10 +686,13 @@ final class CollectionPage
 	/**
 	 * @param x the pointer's x in window pixels
 	 * @param y the pointer's y in window pixels
-	 * @return whether the press landed on the list's scroll bar
+	 * @return whether the press landed on the search box or the list's scroll bar
 	 */
 	boolean pressed(int x, int y)
 	{
+		if (search.onMousePressed(x, y, MouseEvent.BUTTON1, 0, now))
+			return true;
+
 		boolean onBar = list.scrollable() && list.trackBounds().contains(x, y);
 		boolean took = list.onPress(x, y);
 		return onBar && took;
@@ -611,12 +704,14 @@ final class CollectionPage
 	 */
 	void dragged(int x, int y)
 	{
+		search.onMouseDragged(x);
 		list.onDrag(x, y);
 	}
 
 	/** @return whether the press became a scroll, so the release is not a click */
 	boolean released()
 	{
+		search.onMouseReleased();
 		return list.onRelease();
 	}
 
