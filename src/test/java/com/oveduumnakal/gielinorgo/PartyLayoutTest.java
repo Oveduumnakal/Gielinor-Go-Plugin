@@ -73,6 +73,32 @@ public class PartyLayoutTest
 		assertTrue(parts.hpText.x + parts.hpText.width <= parts.xp.x);
 	}
 
+	/**
+	 * The Pin Party to UI button sits inside the right column at every size, below the tasks and above the banner, and
+	 * touches neither.
+	 */
+	@Test
+	public void thePinButtonFitsTheRightColumnBelowTheTasksAtEverySize()
+	{
+		for (int[] canvas : CANVASES)
+		{
+			for (boolean banner : new boolean[] {false, true})
+			{
+				PartyLayout layout = layout(canvas[0], canvas[1], banner);
+				String where = canvas[0] + "x" + canvas[1] + " banner=" + banner;
+
+				assertTrue(where, layout.pinButton.height > 0);
+				assertTrue(where, layout.pinButton.width > 0);
+				assertTrue(where, layout.main.getMaxX() <= layout.pinButton.x);
+				assertFalse(where, layout.pinButton.intersects(layout.tasks));
+				assertFalse(where, layout.pinButton.intersects(layout.eggs));
+				assertTrue(where, layout.pinButton.y >= layout.tasks.y + layout.tasks.height);
+				if (banner)
+					assertFalse(where, layout.pinButton.intersects(layout.banner));
+			}
+		}
+	}
+
 	@Test
 	public void theRightColumnSitsBesideTheRowsAndHoldsTheEggsAndTheTasks()
 	{

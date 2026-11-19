@@ -329,6 +329,8 @@ final class WindowPages implements WindowShell.PageActions
 		}
 
 		order = Math.max(order, WindowShell.PAGE_ORDER + PartyLayout.SLOTS);
+		hits.add(new Hit(ID_PIN_PARTY, Hit.Kind.BUTTON, layout.pinButton, order++, true,
+			"Show your team in a box on the game screen. Press again to hide it."));
 		if (showBanner(panel))
 		{
 			hits.add(new Hit(ID_RESET_PROGRESS, Hit.Kind.BUTTON, layout.resetButton, order++, true,
@@ -337,8 +339,6 @@ final class WindowPages implements WindowShell.PageActions
 				"Hide this until the window is opened again"));
 		}
 
-		hits.add(new Hit(ID_PIN_PARTY, Hit.Kind.BUTTON, layout.pinButton, order + 2, true,
-			"Show your team in a box on the game screen. Press again to hide it."));
 		hits.add(new Hit("area:eggs", Hit.Kind.AREA, layout.eggs, -1, true, eggsTip(panel.eggs())));
 		hits.add(new Hit("area:tasks", Hit.Kind.AREA, layout.tasks, -1, true, tasksTip(panel.tasks())));
 	}

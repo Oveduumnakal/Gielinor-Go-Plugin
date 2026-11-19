@@ -3308,7 +3308,7 @@ public class GielinorGoPlugin extends Plugin
 	/** Creates the pinned party box and registers it. It takes no mouse input, so every click goes to the game. */
 	private void startPartyBox()
 	{
-		partyBoxOverlay = new PartyBoxOverlay(windowPortraits, config::windowStyle, config::windowFraction,
+		partyBoxOverlay = new PartyBoxOverlay(windowPortraits, this::windowStyle, config::windowFraction,
 			client::getCanvasWidth, client::getCanvasHeight, config::pinParty, director::active, () -> loaded,
 			System::currentTimeMillis);
 		overlayManager.add(partyBoxOverlay);
