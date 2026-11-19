@@ -347,6 +347,16 @@ final class GoGame
 		return true;
 	}
 
+	private String nextFormOf(String speciesKey)
+	{
+		EvolutionTable.Step step = evolutions.next(speciesKey);
+		Species grown = step == null ? null : species.find(step.to());
+		if (grown == null)
+			return null;
+
+		return knownSpecies(grown) ? grown.name() : SummaryContent.UNKNOWN_FORM;
+	}
+
 	private String growsInto(String speciesKey)
 	{
 		List<String> steps = new ArrayList<>();
@@ -4110,7 +4120,8 @@ final class GoGame
 				.withGender(creature.gender())
 				.withCaught(creature.caughtAtMs)
 				.withFainted(creature.fainted)
-				.withDetails(examine.textFor(creature.species), found == null ? null : growsInto(found.key()));
+				.withDetails(examine.textFor(creature.species), found == null ? null : growsInto(found.key()))
+				.withNextForm(found == null ? null : nextFormOf(found.key()));
 			views.add(found == null ? view : withStats(view, found, creature));
 		}
 

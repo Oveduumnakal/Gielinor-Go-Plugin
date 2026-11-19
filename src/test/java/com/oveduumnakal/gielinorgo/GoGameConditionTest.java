@@ -155,4 +155,36 @@ public class GoGameConditionTest
 
 		assertEquals("zombie", stored.species);
 	}
+
+	private String nextForm()
+	{
+		List<CreatureView> team = game.snapshot().team();
+		return team.get(0).nextForm();
+	}
+
+	@Test
+	public void theNextFormShowsQuestionMarksUntilItIsSeenOrCaught()
+	{
+		game.data().team.add(new Creature("imp", 5, 1_000L));
+		game.data().seen.clear();
+
+		assertEquals(SummaryContent.UNKNOWN_FORM, nextForm());
+
+		game.data().seen.add("lesser demon");
+
+		assertEquals("Lesser demon", nextForm());
+
+		game.data().seen.clear();
+		game.data().caught.put("lesser demon", 1);
+
+		assertEquals("Lesser demon", nextForm());
+	}
+
+	@Test
+	public void aSpeciesThatDoesNotEvolveHasNoNextForm()
+	{
+		game.data().team.add(new Creature("dire bat", 5, 1_000L));
+
+		assertNull(nextForm());
+	}
 }
