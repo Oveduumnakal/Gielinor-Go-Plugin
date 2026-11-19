@@ -922,7 +922,8 @@ final class WindowShell
 		double barX = animations.value(TAB_BAR, nowMs, active.x);
 		int barH = Math.max(2, style.px(3));
 		g.setColor(style.color(ThemeColor.ACCENT));
-		g.fillRect((int) Math.round(barX), active.y + active.height + barH / 2, active.width, barH);
+		int barW = active.width - (int) Math.min(style.metrics().tabSlant, active.width / 2.0);
+		g.fillRect((int) Math.round(barX), active.y + active.height + barH / 2, barW, barH);
 		Rectangle2D close = rect(layout.close);
 		style.button(g, close, "Close", false, false, hoverOf(ID_CLOSE), pressOf(ID_CLOSE));
 		ringIf(g, ID_CLOSE, Slant.shape(close, style.metrics().chipSlant));

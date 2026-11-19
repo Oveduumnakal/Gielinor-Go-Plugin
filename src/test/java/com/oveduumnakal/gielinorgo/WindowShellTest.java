@@ -639,6 +639,20 @@ public class WindowShellTest
 	}
 
 	@Test
+	public void theTabUnderlineEndsWhereTheSlantedTabEnds()
+	{
+		openPainted(true);
+		WindowLayout lay = WindowLayout.of(W, H);
+		WindowStyle st = WindowStyle.of(theme, lay.scale);
+		Rectangle active = lay.tabs[shell.tab().ordinal()];
+		int y = active.y + active.height + Math.max(2, st.px(3)) / 2 + 1;
+		int accent = theme.color(ThemeColor.ACCENT).getRGB();
+
+		assertEquals(accent, image.getRGB(active.x + active.width - st.metrics().tabSlant - 3, y));
+		assertNotEquals(accent, image.getRGB(active.x + active.width - 2, y));
+	}
+
+	@Test
 	public void fullMotionSlidesTheTabBarAndOffDoesNot()
 	{
 		motion = MotionMode.FULL;
