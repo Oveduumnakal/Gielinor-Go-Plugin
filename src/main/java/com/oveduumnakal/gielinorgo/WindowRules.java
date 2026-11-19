@@ -16,6 +16,34 @@ final class WindowRules
 	}
 
 	/**
+	 * Tells whether a Gielinor Go battle is on: a battle that waits for choices, or a scene that is still being acted
+	 * out, such as a battle that plays itself.
+	 *
+	 * @param directed whether a battle that the player steers is on
+	 * @param wildScene whether a battle against a wild creature is being acted out
+	 * @param arenaScene whether a team battle is being acted out
+	 * @return true when any of them is on
+	 */
+	static boolean battleOn(boolean directed, boolean wildScene, boolean arenaScene)
+	{
+		return directed || wildScene || arenaScene;
+	}
+
+	/**
+	 * Tells whether the result of a battle that played itself is to be written now.
+	 *
+	 * @param age game ticks the result has waited
+	 * @param limit game ticks after which it is written whatever the scene does
+	 * @param sceneOn whether a battle scene is still acted out
+	 * @param linesShown whether every line of the battle has been shown
+	 * @return true once the scene and the lines are done, or the wait has passed the limit
+	 */
+	static boolean deferredDue(int age, int limit, boolean sceneOn, boolean linesShown)
+	{
+		return age > limit || !sceneOn && linesShown;
+	}
+
+	/**
 	 * Decides whether the window may be open.
 	 *
 	 * @param realCombat whether the player is fighting a real monster, or did within the last few seconds
