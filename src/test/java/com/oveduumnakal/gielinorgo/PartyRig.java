@@ -120,19 +120,13 @@ final class PartyRig
 			}
 
 			@Override
-			public String sizeLabel()
-			{
-				return "Size: Medium";
-			}
-
-			@Override
 			public void resetWindow()
 			{
 				return;
 			}
 
 			@Override
-			public void nextSize()
+			public void resizeWindow(int width)
 			{
 				return;
 			}

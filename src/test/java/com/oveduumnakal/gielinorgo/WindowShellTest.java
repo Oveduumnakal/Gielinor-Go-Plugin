@@ -69,21 +69,15 @@ public class WindowShellTest
 		}
 
 		@Override
-		public String sizeLabel()
-		{
-			return "Size: Medium";
-		}
-
-		@Override
 		public void resetWindow()
 		{
 			calls.add("reset");
 		}
 
 		@Override
-		public void nextSize()
+		public void resizeWindow(int width)
 		{
-			calls.add("size");
+			calls.add("resize " + width);
 		}
 
 		@Override
@@ -231,7 +225,7 @@ public class WindowShellTest
 			ids.add(hit.id());
 
 		assertEquals(Arrays.asList("tab:PARTY", "tab:BAG", "tab:STORAGE", "tab:COLLECTION", "tab:TASKS", "tab:BATTLE",
-			"btn:close", "btn:size", "btn:changelog", "btn:feedback"), ids);
+			"btn:close", "btn:changelog", "btn:feedback"), ids);
 		for (Hit hit : shell.hits())
 			assertTrue(hit.id(), new Rectangle(0, 0, W, H).contains(hit.bounds()));
 	}
@@ -328,23 +322,18 @@ public class WindowShellTest
 	}
 
 	@Test
-	public void upAndDownWalkTheButtonsAndEnterPressesTheHighlightedOne()
+	public void upAndDownWalkTheButtons()
 	{
 		openPainted(true);
 
 		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:close", shell.focus().highlight());
 		key(KeyEvent.VK_DOWN);
-		assertEquals("btn:size", shell.focus().highlight());
-		key(KeyEvent.VK_ENTER);
-		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:changelog", shell.focus().highlight());
 		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:feedback", shell.focus().highlight());
 		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:close", shell.focus().highlight());
-
-		assertEquals(List.of("size"), calls);
 	}
 
 	@Test
@@ -352,10 +341,46 @@ public class WindowShellTest
 	{
 		openPainted(true);
 
-		click("btn:size");
 		shell.onResetRequested();
 
-		assertEquals(List.of("size", "reset"), calls);
+		assertEquals(List.of("reset"), calls);
+	}
+
+	@Test
+	public void draggingTheCornerGripOrAnEdgeAsksTheHostForAWidth()
+	{
+		openPainted(true);
+		WindowLayout lay = WindowLayout.of(W, H);
+		shell.onPressed(W - 3, H - 3, MouseEvent.BUTTON1, 0, now);
+		shell.onDragged(W + 40, H - 3);
+		shell.onDragged(W - 100, H + 200);
+		shell.onReleased(W - 100, H + 200, MouseEvent.BUTTON1, now);
+		shell.onDragged(W + 90, H + 90);
+
+		assertEquals(List.of("resize " + (W + 40), "resize " + Math.round((H + 200) * 800.0 / 520)), calls);
+		calls.clear();
+		shell.onPressed(W - 1, H / 2, MouseEvent.BUTTON1, 0, now);
+		shell.onDragged(W - 30, 10);
+		shell.onReleased(W - 30, 10, MouseEvent.BUTTON1, now);
+		shell.onPressed(W / 2, H - 1, MouseEvent.BUTTON1, 0, now);
+		shell.onDragged(10, 260);
+		shell.onReleased(10, 260, MouseEvent.BUTTON1, now);
+
+		assertEquals(List.of("resize " + (W - 30), "resize " + Math.round(260 * 800.0 / 520)), calls);
+		assertTrue(lay.grip.contains(W - 3, H - 3));
+	}
+
+	@Test
+	public void aRightClickOnTheGripDoesNotResizeAndThePageStillTakesClicksAwayFromTheEdge()
+	{
+		openPainted(true);
+		shell.onPressed(W - 3, H - 3, MouseEvent.BUTTON3, 0, now);
+		shell.onDragged(W + 40, H + 40);
+		shell.onReleased(W + 40, H + 40, MouseEvent.BUTTON3, now);
+		click("btn:changelog");
+
+		assertEquals(Collections.emptyList(), calls);
+		assertTrue(shell.hits().stream().anyMatch(hit -> hit.id().equals("btn:changelog")));
 	}
 
 	@Test
@@ -448,7 +473,7 @@ public class WindowShellTest
 		assertEquals("row:1", shell.focus().highlight());
 
 		key(KeyEvent.VK_DOWN);
-		assertEquals("btn:size", shell.focus().highlight());
+		assertEquals("btn:changelog", shell.focus().highlight());
 		key(KeyEvent.VK_UP);
 		assertEquals("row:1", shell.focus().highlight());
 
@@ -605,9 +630,9 @@ public class WindowShellTest
 	public void leavingTheWindowClearsAHoverButNotAKeyHighlight()
 	{
 		openPainted(true);
-		Rectangle b = hit("btn:size").bounds();
-		shell.onMoved(b.x + 3, b.y + 3, now);
-		assertEquals("btn:size", shell.focus().highlight());
+		Rectangle b = hit("btn:changelog").bounds();
+		shell.onMoved(b.x + 20, b.y + b.height / 2, now);
+		assertEquals("btn:changelog", shell.focus().highlight());
 		shell.onLeft();
 		assertNull(shell.focus().highlight());
 

@@ -65,19 +65,13 @@ public class WindowFooterTest
 		}
 
 		@Override
-		public String sizeLabel()
-		{
-			return "Size: Medium";
-		}
-
-		@Override
 		public void resetWindow()
 		{
 			return;
 		}
 
 		@Override
-		public void nextSize()
+		public void resizeWindow(int width)
 		{
 			return;
 		}
@@ -184,15 +178,35 @@ public class WindowFooterTest
 	}
 
 	@Test
+	public void theResizeZonesAreTheCornerGripAndTheRightAndBottomEdgesAtEverySize()
+	{
+		for (int[] size : SIZES)
+		{
+			WindowLayout layout = WindowLayout.of(size[0], size[1]);
+			int w = size[0];
+			int h = size[1];
+			String where = w + "x" + h;
+
+			assertTrue(where, layout.window.contains(layout.grip));
+			assertTrue(where, layout.grip.width >= WindowLayout.GRIP_MIN_PX);
+			assertEquals(where, WindowLayout.ResizeZone.CORNER, layout.resizeZoneAt(w - 1, h - 1));
+			assertEquals(where, WindowLayout.ResizeZone.RIGHT, layout.resizeZoneAt(w - 1, h / 2));
+			assertEquals(where, WindowLayout.ResizeZone.BOTTOM, layout.resizeZoneAt(w / 2, h - 1));
+			assertEquals(where, WindowLayout.ResizeZone.NONE, layout.resizeZoneAt(w / 2, h / 2));
+			assertEquals(where, WindowLayout.ResizeZone.NONE, layout.resizeZoneAt(w, h / 2));
+			assertFalse(where, layout.grip.intersects(layout.changelog));
+		}
+	}
+
+	@Test
 	public void theFooterFitsEveryWindowScaleWithoutOverlapOrCutText()
 	{
 		for (int[] size : SIZES)
 		{
 			WindowLayout layout = WindowLayout.of(size[0], size[1]);
 			WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, layout.scale);
-			List<Rectangle> boxes = Arrays.asList(layout.size, layout.changelog,
-				layout.feedback);
-			List<String> labels = Arrays.asList("Size: Fit canvas", "What's New", "Feedback");
+			List<Rectangle> boxes = Arrays.asList(layout.changelog, layout.feedback);
+			List<String> labels = Arrays.asList("What's New", "Feedback");
 			BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = image.createGraphics();
 			for (int i = 0; i < boxes.size(); i++)
@@ -210,7 +224,7 @@ public class WindowFooterTest
 			}
 
 			g.dispose();
-			assertEquals(layout.size.y, layout.changelog.y);
+			assertEquals(layout.feedback.y, layout.changelog.y);
 			assertEquals(layout.window.width - layout.px(WindowLayout.MARGIN),
 				layout.feedback.x + layout.feedback.width);
 		}

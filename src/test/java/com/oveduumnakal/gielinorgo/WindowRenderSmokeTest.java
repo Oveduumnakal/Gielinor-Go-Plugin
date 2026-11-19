@@ -60,19 +60,13 @@ public class WindowRenderSmokeTest
 		}
 
 		@Override
-		public String sizeLabel()
-		{
-			return "Size: Fit canvas";
-		}
-
-		@Override
 		public void resetWindow()
 		{
 			return;
 		}
 
 		@Override
-		public void nextSize()
+		public void resizeWindow(int width)
 		{
 			return;
 		}
@@ -144,7 +138,7 @@ public class WindowRenderSmokeTest
 	@Test
 	public void fixedModeGivesAWindowAboutFiveHundredAndThirtyFivePixelsWide()
 	{
-		Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, 765, 503);
+		Dimension size = WindowFit.sizeFor(WindowSizePreset.MEDIUM.fraction(), 765, 503);
 
 		assertEquals(536, size.width, 1);
 		assertEquals(348, size.height, 2);
@@ -202,19 +196,13 @@ public class WindowRenderSmokeTest
 			}
 
 			@Override
-			public String sizeLabel()
-			{
-				return "Size: Medium";
-			}
-
-			@Override
 			public void resetWindow()
 			{
 				return;
 			}
 
 			@Override
-			public void nextSize()
+			public void resizeWindow(int width)
 			{
 				return;
 			}
@@ -246,10 +234,6 @@ public class WindowRenderSmokeTest
 
 				int chip = 2 * style.metrics().chipSlant;
 				assertTrue(where + " close", textFits(style, "Close", layout.close.width - chip));
-				for (WindowSizePreset preset : WindowSizePreset.values())
-					assertTrue(where + " size " + preset, textFits(style, "Size: " + preset,
-						layout.size.width - chip));
-
 				assertTrue(where + " change log", textFits(style, "What's New", layout.changelog.width - chip));
 				assertTrue(where + " feedback", textFits(style, "Feedback", layout.feedback.width - chip));
 				for (String hint : Arrays.asList(WindowShell.HINT_WINDOW, WindowShell.HINT_MENU,
@@ -281,8 +265,7 @@ public class WindowRenderSmokeTest
 			Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, canvas[0], canvas[1]);
 			WindowLayout layout = WindowLayout.of(size.width, size.height);
 			List<Rectangle> parts = new ArrayList<>(Arrays.asList(layout.tabs));
-			parts.addAll(Arrays.asList(layout.close, layout.body, layout.hints,
-				layout.size));
+			parts.addAll(Arrays.asList(layout.close, layout.body, layout.hints, layout.grip));
 
 			for (Rectangle part : parts)
 				assertTrue(canvas[0] + " " + part, layout.window.contains(part));

@@ -54,6 +54,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **Resize the window by dragging.** Drag the grip in the window's bottom-right corner, or its right or bottom edge.
+  The window starts Small, and Alt + right-click brings it back to Small. The Size button is gone. (#271)
 - **Reset with Alt + right-click.** Hold Alt and right-click the window to put it back to its normal size and place.
   The Reset window button is gone. (#269)
 - **One window look.** The window now uses only the RuneLite dark style; the style setting and the footer style

@@ -519,7 +519,7 @@ public class PartyRenderSmokeTest
 	public void theRightColumnDrawsTheEggsAndTheFirstThreeTasks()
 	{
 		PartyRig rig = rig(WindowTheme.RUNELITE_DARK, MotionMode.OFF, new int[] {1024, 768},
-			WindowFit.DEFAULT_FRACTION);
+			WindowSizePreset.MEDIUM.fraction());
 		rig.publish(richState(6), true);
 		rig.open();
 		rig.drawn.clear();

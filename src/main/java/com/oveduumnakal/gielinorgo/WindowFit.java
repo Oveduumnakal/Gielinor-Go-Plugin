@@ -25,7 +25,7 @@ final class WindowFit
 	static final int DESIGN_H = 520;
 
 	/** The share of the canvas width the window takes until the player changes it. */
-	static final double DEFAULT_FRACTION = 0.70;
+	static final double DEFAULT_FRACTION = 0.50;
 
 	/** The smallest share the stored fraction can hold. */
 	static final double MIN_FRACTION = 0.05;
@@ -149,7 +149,7 @@ final class WindowFit
 	}
 
 	/**
-	 * Gives the window Alt and a right click on the window restore: the default fraction, centred.
+	 * Gives the size and place that Alt + right-click on the window restores: the default fraction, centred.
 	 *
 	 * @param canvasW the canvas width in pixels
 	 * @param canvasH the canvas height in pixels
@@ -157,7 +157,7 @@ final class WindowFit
 	 */
 	static Rectangle reset(int canvasW, int canvasH)
 	{
-		return preset(WindowSizePreset.MEDIUM, canvasW, canvasH);
+		return preset(WindowSizePreset.SMALL, canvasW, canvasH);
 	}
 
 	/**

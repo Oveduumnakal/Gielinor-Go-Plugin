@@ -439,18 +439,18 @@ public interface GielinorGoConfig extends Config
 	/**
 	 * The size of the painted window, as a share of the game screen's width.
 	 *
-	 * @return the size preset, medium by default
+	 * @return the size preset, small by default
 	 */
 	@ConfigItem(
 		keyName = GielinorGoConfig.WINDOW_SIZE,
 		name = "Window size",
-		description = "Sets the painted window to a size and centres it.\nYou can also hold RuneLite's drag key"
-			+ " (Alt unless you changed it)\nand drag the window's edge, or Alt + right-click the window to reset it.",
+		description = "Sets the painted window to a size and centres it.\nYou can also drag the window's edge or"
+			+ " its bottom-right corner,\nor Alt + right-click the window to reset it.",
 		position = 23
 	)
 	default WindowSizePreset windowSize()
 	{
-		return WindowSizePreset.MEDIUM;
+		return WindowSizePreset.SMALL;
 	}
 
 	/**
