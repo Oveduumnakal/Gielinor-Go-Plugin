@@ -6,6 +6,7 @@ package com.oveduumnakal.gielinorgo;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -192,6 +193,23 @@ public class TasksPageTest
 		assertEquals("Pin to the tracker", rig.hit("tasks:pin:0").tip());
 		assertTrue(rig.hit("tasks:pin:0").enabled());
 		assertEquals("Pin to the tracker", rig.hit("tasks:pin:3").tip());
+	}
+
+	@Test
+	public void aPinnedPinLooksClearlyDifferentFromAnUnpinnedOne()
+	{
+		PartyRig off = page(state(5), 765, 497);
+		PartyRig on = page(pinned(state(5), 0), 765, 497);
+		Rectangle box = off.hit("tasks:pin:0").bounds();
+		BufferedImage before = off.paint();
+		BufferedImage after = on.paint();
+		int differing = 0;
+		for (int x = box.x; x < box.x + box.width; x++)
+			for (int y = box.y; y < box.y + box.height; y++)
+				if (before.getRGB(x, y) != after.getRGB(x, y))
+					differing++;
+
+		assertTrue("pixels differing: " + differing, differing > box.width * box.height / 8);
 	}
 
 	@Test
