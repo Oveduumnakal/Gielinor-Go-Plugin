@@ -615,8 +615,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Click the Gielinor Go jar in RuneLite's sidebar, or the jar button at the top left of the game screen, to open and
   close the window. It has six tabs: **Party**, **Bag**, **Storage**, **Collection**, **Tasks** and **Battle**, and a
-  footer with the change log, the Feedback menu, the window size button and **Reset window**. Nothing is
-  shown before your save has loaded; the jar says "Still loading your save." instead.
+  footer with the change log, the Feedback menu and the window size button. Alt + right-click on the window puts it
+  back to its normal size and place. Nothing is shown before your save has loaded; the jar says "Still loading your save." instead.
 
 - **Party and Summary**
 
@@ -674,8 +674,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   On a Steam Deck in KDE desktop mode, Alt+drag moves the whole RuneLite window instead. To change that, either set
   another key in RuneLite's own settings (Configuration, RuneLite, **Drag hotkey**; Shift or Ctrl work), or change
   KDE's shortcut under System Settings, Window Management, Window Behavior, **Modifier key** for the window
-  actions. Or skip dragging: pick a size with **Window size** in the settings, or use the **Reset window** and
-  size buttons at the foot of the window.
+  actions. Or skip dragging: pick a size with **Window size** in the settings, or Alt + right-click the window to reset
+  it, or use the size button at the foot of the window.
 
 - **Keyboard and controller**
 

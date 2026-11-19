@@ -3362,6 +3362,13 @@ public class GielinorGoPlugin extends Plugin
 			{
 				clientThread.invoke(GielinorGoPlugin.this::toggleWindow);
 			}
+
+			@Override
+			public boolean resetRequested()
+			{
+				clientThread.invoke(() -> window.shell().onResetRequested());
+				return true;
+			}
 		};
 	}
 

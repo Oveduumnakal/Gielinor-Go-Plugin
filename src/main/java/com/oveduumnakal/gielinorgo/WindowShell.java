@@ -27,7 +27,7 @@ import java.util.List;
  * The state, input handling and painting of the painted window's shell, with no RuneLite types so it paints into a
  * {@code BufferedImage} in a test. It owns whether the window is open, the active tab, the hover, the key focus and
  * the {@link Animations} table, and lays out the six tab headers, the Close button, a placeholder page per tab and the
- * footer (Reset window, the style button, the size button and the key hints). The pages themselves come later and plug
+ * footer (the size button, the change log, Feedback and the key hints). The pages themselves come later and plug
  * in through {@link PageActions}. The game thread owns it: painting reads one immutable {@link WindowSnapshot}, and
  * the mouse and key events arrive here already carried over from the UI thread. Hit rectangles are the final ones;
  * only a sliding row refuses clicks, and no page has one yet.
@@ -39,9 +39,6 @@ final class WindowShell
 {
 	/** The id of the Close button's hit. */
 	static final String ID_CLOSE = "btn:close";
-
-	/** The id of the Reset window button's hit. */
-	static final String ID_RESET = "btn:reset";
 
 	/** The id of the window size button's hit. */
 	static final String ID_SIZE = "btn:size";
@@ -722,6 +719,12 @@ final class WindowShell
 		pressedId = hit != null && hit.enabled() ? hit.id() : null;
 	}
 
+	/** Alt and a right click on the window asks for it to go back to its normal size and place. */
+	void onResetRequested()
+	{
+		host.resetWindow();
+	}
+
 	/**
 	 * A button that went down inside the window came up. A left click on a hit presses it; a right click on a row
 	 * opens its menu; a click on a disabled tab shakes it and says why.
@@ -995,7 +998,6 @@ final class WindowShell
 		String hint = WindowStyle.ellipsize(hintText(), fm, layout.hints.width);
 		int baseline = layout.hints.y + (layout.hints.height + fm.getAscent() - fm.getDescent()) / 2;
 		style.text(g, hint, layout.hints.x, baseline, small, ThemeColor.SUBTEXT);
-		footerButton(g, layout.reset, ID_RESET, "Reset window");
 		footerButton(g, layout.size, ID_SIZE, host.sizeLabel());
 		footerButton(g, layout.changelog, ID_CHANGELOG, changelogLabel(), host.whatsNew());
 		footerButton(g, layout.feedback, ID_FEEDBACK, "Feedback");
@@ -1052,12 +1054,10 @@ final class WindowShell
 
 		list.add(new Hit(ID_CLOSE, Hit.Kind.BUTTON, layout.close, CLOSE_ORDER, true, "Close the window (Esc)"));
 		list.addAll(changelog != null ? changelog.hits(style, layout.body) : pages.hits(tab, layout.body));
-		list.add(new Hit(ID_RESET, Hit.Kind.BUTTON, layout.reset, FOOTER_ORDER, true,
-			"Put the window back to its normal size and place"));
-		list.add(new Hit(ID_SIZE, Hit.Kind.BUTTON, layout.size, FOOTER_ORDER + 1, true, "Change the window size"));
-		list.add(new Hit(ID_CHANGELOG, Hit.Kind.BUTTON, layout.changelog, FOOTER_ORDER + 2, true,
+		list.add(new Hit(ID_SIZE, Hit.Kind.BUTTON, layout.size, FOOTER_ORDER, true, "Change the window size"));
+		list.add(new Hit(ID_CHANGELOG, Hit.Kind.BUTTON, layout.changelog, FOOTER_ORDER + 1, true,
 			host.whatsNew() ? "See what changed in this version" : "Read the change log"));
-		list.add(new Hit(ID_FEEDBACK, Hit.Kind.BUTTON, layout.feedback, FOOTER_ORDER + 3, true,
+		list.add(new Hit(ID_FEEDBACK, Hit.Kind.BUTTON, layout.feedback, FOOTER_ORDER + 2, true,
 			"Report a bug or request a feature"));
 		hits = Collections.unmodifiableList(list);
 		focus.setHits(hits);
@@ -1164,9 +1164,6 @@ final class WindowShell
 		{
 			case ID_CLOSE:
 				close(nowMs, ShellMotion.Phase.CLOSE);
-				break;
-			case ID_RESET:
-				host.resetWindow();
 				break;
 			case ID_SIZE:
 				host.nextSize();

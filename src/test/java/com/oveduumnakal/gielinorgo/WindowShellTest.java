@@ -231,7 +231,7 @@ public class WindowShellTest
 			ids.add(hit.id());
 
 		assertEquals(Arrays.asList("tab:PARTY", "tab:BAG", "tab:STORAGE", "tab:COLLECTION", "tab:TASKS", "tab:BATTLE",
-			"btn:close", "btn:reset", "btn:size", "btn:changelog", "btn:feedback"), ids);
+			"btn:close", "btn:size", "btn:changelog", "btn:feedback"), ids);
 		for (Hit hit : shell.hits())
 			assertTrue(hit.id(), new Rectangle(0, 0, W, H).contains(hit.bounds()));
 	}
@@ -335,10 +335,8 @@ public class WindowShellTest
 		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:close", shell.focus().highlight());
 		key(KeyEvent.VK_DOWN);
-		assertEquals("btn:reset", shell.focus().highlight());
+		assertEquals("btn:size", shell.focus().highlight());
 		key(KeyEvent.VK_ENTER);
-		key(KeyEvent.VK_DOWN);
-		key(KeyEvent.VK_SPACE);
 		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:changelog", shell.focus().highlight());
 		key(KeyEvent.VK_DOWN);
@@ -346,7 +344,7 @@ public class WindowShellTest
 		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:close", shell.focus().highlight());
 
-		assertEquals(List.of("reset", "size"), calls);
+		assertEquals(List.of("size"), calls);
 	}
 
 	@Test
@@ -354,10 +352,10 @@ public class WindowShellTest
 	{
 		openPainted(true);
 
-		click("btn:reset");
 		click("btn:size");
+		shell.onResetRequested();
 
-		assertEquals(List.of("reset", "size"), calls);
+		assertEquals(List.of("size", "reset"), calls);
 	}
 
 	@Test
@@ -450,7 +448,7 @@ public class WindowShellTest
 		assertEquals("row:1", shell.focus().highlight());
 
 		key(KeyEvent.VK_DOWN);
-		assertEquals("btn:reset", shell.focus().highlight());
+		assertEquals("btn:size", shell.focus().highlight());
 		key(KeyEvent.VK_UP);
 		assertEquals("row:1", shell.focus().highlight());
 
@@ -607,9 +605,9 @@ public class WindowShellTest
 	public void leavingTheWindowClearsAHoverButNotAKeyHighlight()
 	{
 		openPainted(true);
-		Rectangle b = hit("btn:reset").bounds();
+		Rectangle b = hit("btn:size").bounds();
 		shell.onMoved(b.x + 3, b.y + 3, now);
-		assertEquals("btn:reset", shell.focus().highlight());
+		assertEquals("btn:size", shell.focus().highlight());
 		shell.onLeft();
 		assertNull(shell.focus().highlight());
 

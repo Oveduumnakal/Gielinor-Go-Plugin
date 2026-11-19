@@ -149,7 +149,7 @@ final class WindowFit
 	}
 
 	/**
-	 * Gives the window the "Reset window" button restores: the default fraction, centred.
+	 * Gives the window Alt and a right click on the window restore: the default fraction, centred.
 	 *
 	 * @param canvasW the canvas width in pixels
 	 * @param canvasH the canvas height in pixels

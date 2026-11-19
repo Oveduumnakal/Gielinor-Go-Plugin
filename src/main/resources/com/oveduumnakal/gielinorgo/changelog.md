@@ -54,6 +54,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **Reset with Alt + right-click.** Hold Alt and right-click the window to put it back to its normal size and place.
+  The Reset window button is gone. (#269)
 - **One window look.** The window now uses only the RuneLite dark style; the style setting and the footer style
   button are gone. (#270)
 - **Header underline fits.** The line under the active tab now ends where the slanted tab ends. (#272)

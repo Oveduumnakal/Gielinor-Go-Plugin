@@ -8,7 +8,7 @@ import java.awt.Rectangle;
 
 /**
  * Where everything of the painted window's shell sits, worked out from the window's size alone: the header with its six
- * tabs and the Close button, the page area, the hint line and the footer buttons (Reset window, the size
+ * tabs and the Close button, the page area, the hint line and the footer buttons (the size
  * button on the left, Change log and Feedback on the right). Every length is a number of layout units in the 800 x
  * 520 design space times the one window scale, so nothing is positioned in raw pixels and both themes get the same
  * boxes. The page area takes whatever room the other parts leave, so a window a pixel off the design shape has no
@@ -43,9 +43,6 @@ final class WindowLayout
 	/** The gap between footer buttons, in layout units. */
 	static final double BUTTON_GAP_UNITS = 8;
 
-	/** The width of the Reset window button, in layout units. */
-	static final double RESET_UNITS = 152;
-
 	/** The width of the window size button, in layout units. */
 	static final double SIZE_UNITS = 176;
 
@@ -75,9 +72,6 @@ final class WindowLayout
 
 	/** The hint line under the page. */
 	final Rectangle hints;
-
-	/** The Reset window button. */
-	final Rectangle reset;
 
 	/** The window size button. */
 	final Rectangle size;
@@ -109,8 +103,7 @@ final class WindowLayout
 		hints = new Rectangle(m, hintsTop, width - 2 * m, hintH);
 		body = new Rectangle(m, headerH + m / 2, width - 2 * m, Math.max(0, hintsTop - headerH - m));
 		int gap = px(BUTTON_GAP_UNITS);
-		reset = new Rectangle(m, buttonsTop, px(RESET_UNITS), buttonH);
-		size = new Rectangle(reset.x + reset.width + gap, buttonsTop, px(SIZE_UNITS), buttonH);
+		size = new Rectangle(m, buttonsTop, px(SIZE_UNITS), buttonH);
 		feedback = new Rectangle(width - m - px(FEEDBACK_UNITS), buttonsTop, px(FEEDBACK_UNITS), buttonH);
 		changelog = new Rectangle(feedback.x - gap - px(CHANGELOG_UNITS), buttonsTop, px(CHANGELOG_UNITS), buttonH);
 	}

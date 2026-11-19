@@ -190,9 +190,9 @@ public class WindowFooterTest
 		{
 			WindowLayout layout = WindowLayout.of(size[0], size[1]);
 			WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, layout.scale);
-			List<Rectangle> boxes = Arrays.asList(layout.reset, layout.size, layout.changelog,
+			List<Rectangle> boxes = Arrays.asList(layout.size, layout.changelog,
 				layout.feedback);
-			List<String> labels = Arrays.asList("Reset window", "Size: Fit canvas", "What's New", "Feedback");
+			List<String> labels = Arrays.asList("Size: Fit canvas", "What's New", "Feedback");
 			BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = image.createGraphics();
 			for (int i = 0; i < boxes.size(); i++)
@@ -210,7 +210,7 @@ public class WindowFooterTest
 			}
 
 			g.dispose();
-			assertEquals(layout.reset.y, layout.changelog.y);
+			assertEquals(layout.size.y, layout.changelog.y);
 			assertEquals(layout.window.width - layout.px(WindowLayout.MARGIN),
 				layout.feedback.x + layout.feedback.width);
 		}

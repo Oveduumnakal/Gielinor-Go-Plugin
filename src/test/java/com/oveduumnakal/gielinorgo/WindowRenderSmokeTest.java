@@ -246,7 +246,6 @@ public class WindowRenderSmokeTest
 
 				int chip = 2 * style.metrics().chipSlant;
 				assertTrue(where + " close", textFits(style, "Close", layout.close.width - chip));
-				assertTrue(where + " reset", textFits(style, "Reset window", layout.reset.width - chip));
 				for (WindowSizePreset preset : WindowSizePreset.values())
 					assertTrue(where + " size " + preset, textFits(style, "Size: " + preset,
 						layout.size.width - chip));
@@ -282,7 +281,7 @@ public class WindowRenderSmokeTest
 			Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, canvas[0], canvas[1]);
 			WindowLayout layout = WindowLayout.of(size.width, size.height);
 			List<Rectangle> parts = new ArrayList<>(Arrays.asList(layout.tabs));
-			parts.addAll(Arrays.asList(layout.close, layout.body, layout.hints, layout.reset,
+			parts.addAll(Arrays.asList(layout.close, layout.body, layout.hints,
 				layout.size));
 
 			for (Rectangle part : parts)

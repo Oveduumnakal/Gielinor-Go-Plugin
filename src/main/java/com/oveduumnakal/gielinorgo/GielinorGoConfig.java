@@ -445,7 +445,7 @@ public interface GielinorGoConfig extends Config
 		keyName = GielinorGoConfig.WINDOW_SIZE,
 		name = "Window size",
 		description = "Sets the painted window to a size and centres it.\nYou can also hold RuneLite's drag key"
-			+ " (Alt unless you changed it)\nand drag the window's edge, or use the window's Reset window button.",
+			+ " (Alt unless you changed it)\nand drag the window's edge, or Alt + right-click the window to reset it.",
 		position = 23
 	)
 	default WindowSizePreset windowSize()
