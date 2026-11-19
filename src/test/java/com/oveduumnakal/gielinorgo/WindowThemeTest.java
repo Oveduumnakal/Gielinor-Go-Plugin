@@ -48,6 +48,19 @@ public class WindowThemeTest
 	}
 
 	@Test
+	public void thePartyHighlightDiffersFromTheSelectionAndTheLeadColours()
+	{
+		for (WindowTheme theme : WindowTheme.values())
+		{
+			int ring = theme.color(ThemeColor.PARTY_HIGHLIGHT).getRGB() & 0xFFFFFF;
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.SELECTION).getRGB() & 0xFFFFFF, ring);
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.FOCUS_RING).getRGB() & 0xFFFFFF, ring);
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.LEAD_ROW).getRGB() & 0xFFFFFF, ring);
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.LEAD_BORDER).getRGB() & 0xFFFFFF, ring);
+		}
+	}
+
+	@Test
 	public void theJarBarAndTheTrainerBarDifferInHueAndLightness()
 	{
 		for (WindowTheme theme : WindowTheme.values())

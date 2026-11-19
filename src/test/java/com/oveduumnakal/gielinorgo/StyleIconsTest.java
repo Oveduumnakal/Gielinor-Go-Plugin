@@ -123,4 +123,34 @@ public class StyleIconsTest
 		for (CombatType style : styles())
 			assertTrue(style.name(), StyleIcons.class.getResource(StyleIcons.resourceName(style)) != null);
 	}
+
+	@Test
+	public void everyStyleFillsTheSquareHeightAndTheStabDaggerStandsUp()
+	{
+		for (CombatType style : styles())
+		{
+			BufferedImage image = paint(style, Color.WHITE, 128, 0, 128);
+			int top = 128;
+			int bottom = -1;
+			int left = 128;
+			int right = -1;
+			for (int x = 0; x < 128; x++)
+			{
+				for (int y = 0; y < 128; y++)
+				{
+					if ((image.getRGB(x, y) >>> 24) > 64)
+					{
+						top = Math.min(top, y);
+						bottom = Math.max(bottom, y);
+						left = Math.min(left, x);
+						right = Math.max(right, x);
+					}
+				}
+			}
+
+			assertTrue(style.name(), bottom - top >= 100);
+			if (style == CombatType.STAB)
+				assertTrue("stab is taller than wide", bottom - top > 2 * (right - left));
+		}
+	}
 }

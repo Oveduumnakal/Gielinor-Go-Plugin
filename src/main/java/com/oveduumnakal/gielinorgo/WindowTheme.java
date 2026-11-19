@@ -59,6 +59,7 @@ public enum WindowTheme
 		.put(ThemeColor.PRESS_SHADE, 0x000000, 60)
 		.put(ThemeColor.SHADOW, 0x000000, 90)
 		.put(ThemeColor.FOCUS_RING, 0xFFB000)
+		.put(ThemeColor.PARTY_HIGHLIGHT, 0x4FC3F7)
 		.put(ThemeColor.INPUT, 0x141414)
 		.put(ThemeColor.SELECTION, 0xDC8A00, 110)
 		.put(ThemeColor.SCRIM, 0x000000, 150)

@@ -2,7 +2,7 @@
 """Cuts scripts/style-icons-source.png (five combat style icons in a grid) into one square PNG per style.
 
 Grid: top row Ranged, Magic, Stab; bottom row Slash, Crush. Each icon is cropped to what is painted in its cell,
-centred in a transparent square with a small margin and scaled to 128 x 128. Offline and repeatable:
+centred in a transparent square with a small margin and scaled to 128 x 128. The Stab dagger is drawn lying down in the source, so it is turned to point up. Offline and repeatable:
     python3 scripts/cut-style-icons.py
 Needs Pillow and numpy.
 """
@@ -27,9 +27,14 @@ CELLS = {
     "crush": (460, 650, 900, 1150),
 }
 
+# Degrees counter-clockwise to turn a cell's picture so every weapon points up, like the others.
+TURNS = {"stab": 90}
 
-def cut(image, box):
+
+def cut(image, box, turn=0):
     cell = image.crop(box)
+    if turn:
+        cell = cell.rotate(turn, expand=True)
     alpha = np.array(cell.getchannel("A"))
     ys, xs = np.where(alpha > ALPHA_FLOOR)
     cell = cell.crop((xs.min(), ys.min(), xs.max() + 1, ys.max() + 1))
@@ -46,7 +51,7 @@ def main():
     image = Image.open(SOURCE).convert("RGBA")
     os.makedirs(OUT, exist_ok=True)
     for name, box in CELLS.items():
-        icon = cut(image, box)
+        icon = cut(image, box, TURNS.get(name, 0))
         icon.save(os.path.join(OUT, name + ".png"), optimize=True)
         print(name, icon.size)
 
