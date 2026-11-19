@@ -141,6 +141,7 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Random events.** A random event NPC no longer counts as a fight, so the window stays open. (#291)
 - **Reviving.** Fainted creatures now stand up by themselves at 50% when you reach a bank or a city, and a fainted
   creature moved into Storage is revived. (#298)
+- **Movesets list.** A new page in the docs lists every creature and every move it can learn. (#299)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
