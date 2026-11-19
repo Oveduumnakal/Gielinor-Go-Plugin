@@ -376,18 +376,18 @@ public class WildBubblesTest
 	}
 
 	@Test
-	public void theClusterOpensAfterTheJarIsHoveredForNineHundredMilliseconds()
+	public void theClusterOpensAfterTheJarIsHoveredForFourHundredFiftyMilliseconds()
 	{
 		long t = open();
 		double x = arc.x(0);
 		double y = arc.y(0);
 
 		tick(true, x, y, t);
-		tick(true, x, y, t + 899);
+		tick(true, x, y, t + 449);
 
 		assertFalse(bubbles.clusterOpen());
 
-		tick(true, x, y, t + 900);
+		tick(true, x, y, t + 450);
 
 		assertTrue(bubbles.clusterOpen());
 	}
@@ -400,7 +400,7 @@ public class WildBubblesTest
 		tick(true, arc.x(0), arc.y(0), t);
 		tick(true, 400, 320, t + 500);
 		tick(true, arc.x(0), arc.y(0), t + 600);
-		tick(true, arc.x(0), arc.y(0), t + 1400);
+		tick(true, arc.x(0), arc.y(0), t + 1049);
 
 		assertFalse(bubbles.clusterOpen());
 	}
@@ -493,11 +493,11 @@ public class WildBubblesTest
 
 		tick(true, 400, 320, later + 3100);
 		tick(true, x, y, later + 3200);
-		tick(true, x, y, later + 4099);
+		tick(true, x, y, later + 3649);
 
 		assertFalse(bubbles.clusterOpen());
 
-		tick(true, x, y, later + 4100);
+		tick(true, x, y, later + 3650);
 
 		assertTrue(bubbles.clusterOpen());
 	}
@@ -899,7 +899,7 @@ public class WildBubblesTest
 	{
 		assertEquals(2, WildBubbles.NEAR_TILES);
 		assertEquals(350, WildBubbles.GRACE_MS);
-		assertEquals(900, WildBubbles.CLUSTER_HOVER_MS);
+		assertEquals(450, WildBubbles.CLUSTER_HOVER_MS);
 		assertEquals(150, WildBubbles.CARD_HOVER_MS);
 		assertEquals(2, WildBubbles.HIT_SLOP);
 		assertEquals(0.5, WildBubbles.CLICKABLE_AT, 0.0);

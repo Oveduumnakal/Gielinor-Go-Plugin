@@ -35,7 +35,7 @@ final class WildBubbles
 	static final long GRACE_MS = 350;
 
 	/** How long the pointer rests on the Catch bubble before the cluster opens. */
-	static final long CLUSTER_HOVER_MS = 900;
+	static final long CLUSTER_HOVER_MS = 450;
 
 	/** How long the pointer may stay outside the cluster before it closes. */
 	static final long CLUSTER_GRACE_MS = 300;
