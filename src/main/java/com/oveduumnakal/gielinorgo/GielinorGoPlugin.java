@@ -74,8 +74,6 @@ import net.runelite.client.party.events.UserJoin;
 import net.runelite.client.party.events.UserPart;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.ui.ClientToolbar;
-import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
@@ -156,9 +154,6 @@ public class GielinorGoPlugin extends Plugin
 
 	@Inject
 	private OverlayManager overlayManager;
-
-	@Inject
-	private ClientToolbar clientToolbar;
 
 	@Inject
 	private ModelOutlineRenderer outlineRenderer;
@@ -250,7 +245,6 @@ public class GielinorGoPlugin extends Plugin
 	private boolean helloDue;
 	private boolean helloAsksBack;
 	private int lastHelloTick;
-	private NavigationButton navButton;
 	private GoWindow window;
 	private WindowToggle windowToggle;
 	private PortraitCache windowPortraits;
@@ -329,14 +323,6 @@ public class GielinorGoPlugin extends Plugin
 			config::itemKey, () -> choiceOpen, this::hotkeyPressed);
 		keyManager.registerKeyListener(hotkeys);
 		detectVersionChange();
-		BufferedImage icon = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
-		navButton = NavigationButton.builder()
-			.tooltip("Gielinor Go")
-			.icon(icon)
-			.priority(7)
-			.onClick(() -> clientThread.invoke(this::toggleWindow))
-			.build();
-		clientToolbar.addNavigation(navButton);
 		startWindow();
 		startControls();
 		startTracker();
@@ -385,7 +371,6 @@ public class GielinorGoPlugin extends Plugin
 		overlayManager.remove(followerTag);
 		leadTag = null;
 		noticeBoard.clear();
-		clientToolbar.removeNavigation(navButton);
 		portraits.clear();
 		tracker.clear();
 		candidates.clear();

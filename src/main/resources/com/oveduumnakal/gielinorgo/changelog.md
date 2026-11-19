@@ -57,6 +57,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **No sidebar jar.** The jar button in RuneLite's sidebar is gone; the jar on the game screen still opens the
+  window. (#267)
 - **Search the Collection.** Type part of a name in the search box above the list to find a creature. It works
   with the Show filter, and creatures you have not met stay hidden. (#278)
 - **Green checkmark for caught.** A creature you have caught before now shows a green checkmark instead of a
@@ -144,8 +146,8 @@ A Creature Log, daily tasks and daily events give you goals.
   buttons for Attack, Switch, Catch, Item and Run, so you can steer a battle without hotkeys. (#225)
 - **Painted window tabs.** The painted window has Party, Bag, Storage, Collection, Tasks and Battle, plus an in-window
   change log and a Feedback menu. (#226)
-- **The side panel is gone.** The sidebar jar button and the jar on the game screen open the painted window, and
-  there is no hidden old-panel setting any more. (#227)
+- **The side panel is gone.** The jar on the game screen opens the painted window, and there is no hidden
+  old-panel setting any more. (#227)
 - **Longer walks.** A Bronze jar now takes 300 tiles, eggs take 1,000 to 4,000 tiles and the walking tasks ask for
   twice as many tiles. Eggs you already carry keep their old target. (#206)
 - **Rarer finds.** Stronger monsters turn wild less often: Uncommon at 0.6 times the chance, Rare 0.35, Epic 0.15 and
