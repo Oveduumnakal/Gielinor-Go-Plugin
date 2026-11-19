@@ -28,6 +28,7 @@ final class BattleSession
 	private final Map<ItemType, Integer> friendItems = new EnumMap<>(ItemType.class);
 	private int eliteNumber;
 	private boolean rematch;
+	private boolean deferred;
 	private List<BattleLine> verdict = Collections.emptyList();
 
 	/**
@@ -130,6 +131,30 @@ final class BattleSession
 	{
 		this.rematch = true;
 		return this;
+	}
+
+	/**
+	 * Marks the battle as played ahead of the screen: its turns are worked out, but the health, the result and the
+	 * rewards are written to the save only when {@link GoGame#finishDeferred} is called.
+	 *
+	 * @return this session
+	 */
+	BattleSession deferred()
+	{
+		this.deferred = true;
+		return this;
+	}
+
+	/** @return whether the result of the battle still waits to be written to the save */
+	boolean isDeferred()
+	{
+		return deferred;
+	}
+
+	/** Notes that the result of a deferred battle was written to the save. */
+	void settled()
+	{
+		this.deferred = false;
 	}
 
 	/** @return whether the battle is a rematch with a City Champion */

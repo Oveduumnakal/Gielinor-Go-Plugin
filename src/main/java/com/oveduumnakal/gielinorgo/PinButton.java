@@ -9,9 +9,11 @@ import java.awt.Composite;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Ellipse2D;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.RoundRectangle2D;
 
 /**
  * The pin button on a task row and on an egg row: where it sits, how it is drawn, its hit and its words. The square
@@ -31,6 +33,7 @@ final class PinButton
 
 	private static final double GAP_UNITS = 6;
 	private static final double DIM = 0.4;
+	private static final double UNPINNED_TILT = 40;
 
 	private PinButton()
 	{
@@ -99,8 +102,8 @@ final class PinButton
 	}
 
 	/**
-	 * Paints the button: a row-coloured square with a tack, filled in the accent colour when pinned and outlined when
-	 * not, dim when it cannot be pressed.
+	 * Paints the button: a row-coloured square with a push pin: filled in the accent colour and upright when pinned,
+	 * outlined and tilted when not, dim when it cannot be pressed.
 	 *
 	 * @param g the graphics
 	 * @param ctx what the frame needs
@@ -124,24 +127,33 @@ final class PinButton
 	private static void tack(Graphics2D g, WindowStyle st, Rectangle box, boolean pinned)
 	{
 		double s = box.width;
-		double cx = box.x + s / 2;
-		double head = s * 0.36;
-		double top = box.y + s * 0.18;
-		Ellipse2D knob = new Ellipse2D.Double(cx - head / 2, top, head, head);
-		double plateY = top + head + s * 0.04;
-		Line2D plate = new Line2D.Double(cx - s * 0.2, plateY, cx + s * 0.2, plateY);
-		Line2D needle = new Line2D.Double(cx, plateY, cx, box.y + s * 0.84);
-		ThemeColor ink = pinned ? ThemeColor.ACCENT : ThemeColor.SUBTEXT;
-		g.setColor(st.color(ink));
-		g.setStroke(new BasicStroke(Math.max(1.5f, (float) (s * 0.09)), BasicStroke.CAP_ROUND,
+		AffineTransform saved = g.getTransform();
+		g.translate(box.x, box.y);
+		g.scale(s, s);
+		if (!pinned)
+			g.rotate(Math.toRadians(UNPINNED_TILT), 0.5, 0.5);
+
+		Path2D head = new Path2D.Double();
+		head.append(new RoundRectangle2D.Double(0.35, 0.1, 0.3, 0.3, 0.1, 0.1), false);
+		Path2D flange = new Path2D.Double();
+		flange.append(new RoundRectangle2D.Double(0.22, 0.4, 0.56, 0.12, 0.06, 0.06), false);
+		Line2D needle = new Line2D.Double(0.5, 0.52, 0.5, 0.9);
+		g.setColor(st.color(pinned ? ThemeColor.ACCENT : ThemeColor.SUBTEXT));
+		g.setStroke(new BasicStroke(Math.max(1.5f / (float) s, 0.09f), BasicStroke.CAP_ROUND,
 			BasicStroke.JOIN_ROUND));
 		if (pinned)
-			g.fill(knob);
+		{
+			g.fill(head);
+			g.fill(flange);
+		}
 		else
-			g.draw(knob);
+		{
+			g.draw(head);
+			g.draw(flange);
+		}
 
-		g.draw(plate);
 		g.draw(needle);
+		g.setTransform(saved);
 	}
 
 	private static int side(WindowStyle style, int line)

@@ -4,6 +4,8 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +88,35 @@ final class DuelActing
 		}
 	}
 
+	/** The one flying object of a duel: an arrow, a bolt or a breath. A turn launches it once. */
+	interface Shot
+	{
+		/**
+		 * Gets a flight ready.
+		 *
+		 * @param flight which look
+		 * @param route the way it flies
+		 * @param casterScale how large the caster is drawn compared with the real monster
+		 * @return false when the look has no model, so this attack shows no projectile
+		 */
+		boolean launch(ProjectileLook flight, ProjectilePath route, double casterScale);
+
+		/**
+		 * Puts the projectile where it is at a moment of the turn.
+		 *
+		 * @param age client ticks since the turn began
+		 * @param view the top level world view
+		 * @param plane the plane of the battle
+		 */
+		void place(int age, WorldView view, int plane);
+
+		/** Takes the projectile out of the scene. */
+		void hide();
+
+		/** Takes the projectile out of the scene for good. */
+		void remove();
+	}
+
 	/** Makes the lead creature's side of a duel from the follower. */
 	private static final class LeadSide implements Side
 	{
@@ -156,7 +187,9 @@ final class DuelActing
 	private final Side lead;
 	private final Side foe;
 	private double gap = TurnMotion.GAP_TILES;
-	private BattleProjectile projectile;
+	private final Supplier<Shot> shots;
+	private Shot projectile;
+	private BattleTimeline.Step lastAttack;
 	private int turnAge = TurnMotion.TURN_TICKS;
 	private boolean impactPending;
 	private boolean impactMissed;
@@ -178,6 +211,23 @@ final class DuelActing
 		this.projectileModels = projectileModels;
 		this.lead = lead;
 		this.foe = foe;
+		this.shots = () -> new BattleProjectile(this.client, this.projectileModels);
+	}
+
+	/**
+	 * Creates the helper with its own source of projectiles, so a test can count the casts.
+	 *
+	 * @param shots makes the projectile, once, the first time a turn needs one
+	 * @param lead the lead creature's side
+	 * @param foe the other creature's side
+	 */
+	DuelActing(Supplier<Shot> shots, Side lead, Side foe)
+	{
+		this.client = null;
+		this.projectileModels = null;
+		this.lead = lead;
+		this.foe = foe;
+		this.shots = shots;
 	}
 
 	/**
@@ -219,6 +269,18 @@ final class DuelActing
 	 */
 	void play(BattleTimeline.Step step, boolean leadLost)
 	{
+		if (isAttack(step))
+		{
+			if (step == lastAttack)
+				return;
+
+			lastAttack = step;
+		}
+		else
+		{
+			lastAttack = null;
+		}
+
 		landBlow();
 		switch (step.beat())
 		{
@@ -280,6 +342,17 @@ final class DuelActing
 			leadTag = null;
 			foeTag = null;
 		}
+	}
+
+	/**
+	 * @param step a beat
+	 * @return whether it is an attack, which starts a cast or a shot and so must start only once
+	 */
+	private static boolean isAttack(BattleTimeline.Step step)
+	{
+		BattleTimeline.Beat beat = step.beat();
+		return beat == BattleTimeline.Beat.LEAD_ATTACKS || beat == BattleTimeline.Beat.FOE_ATTACKS
+			|| beat == BattleTimeline.Beat.LEAD_SPECIAL || beat == BattleTimeline.Beat.FOE_SPECIAL;
 	}
 
 	/**
@@ -396,7 +469,7 @@ final class DuelActing
 			ProjectilePath route = new ProjectilePath(from.x(), from.y(), from.height() * SHOT_HEIGHT, from.groundZ(),
 				to.x(), to.y(), to.height() * SHOT_HEIGHT, to.groundZ());
 			if (projectile == null)
-				projectile = new BattleProjectile(client, projectileModels);
+				projectile = shots.get();
 
 			projectile.launch(step.look(), route, from.drawScale());
 		}
@@ -476,13 +549,14 @@ final class DuelActing
 		foeTag = null;
 		impactPending = false;
 		turnAge = TurnMotion.TURN_TICKS;
+		lastAttack = null;
 		dropProjectile();
 	}
 
 	/** Takes the projectile away for good: after a failure, it is not tried again in this scene. */
 	private void dropProjectile()
 	{
-		BattleProjectile gone = projectile;
+		Shot gone = projectile;
 		projectile = null;
 		if (gone == null)
 			return;
