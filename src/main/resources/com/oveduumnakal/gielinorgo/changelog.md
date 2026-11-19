@@ -142,6 +142,8 @@ A Creature Log, daily tasks and daily events give you goals.
   in view and no "in battle" message is left on screen. (#296)
 - **Battle result at the end.** A battle that plays itself now pays its XP and rewards, and faints a creature, only
   after the last beat has shown, and the window stays shut until then. (#295)
+- **One cast per Magic attack.** A Magic attack now shows one cast and one projectile, even when the same beat is
+  played again. (#297)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

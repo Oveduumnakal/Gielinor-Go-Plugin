@@ -19,7 +19,7 @@ import net.runelite.api.coords.LocalPoint;
  * plugins that react to projectiles do not see it, and it is drawn on the player's own screen only. Its looks come
  * from {@link ProjectileLook}. Every method must be called on the game thread.
  */
-final class BattleProjectile extends RuneLiteObject
+final class BattleProjectile extends RuneLiteObject implements DuelActing.Shot
 {
 	/** Scene units in one tile. */
 	private static final int TILE = 128;
@@ -56,7 +56,8 @@ final class BattleProjectile extends RuneLiteObject
 	 * @param casterScale how large the caster is drawn compared with the real monster, where 1.0 is as modelled
 	 * @return false when the look has no model, so this attack shows no projectile
 	 */
-	boolean launch(ProjectileLook flight, ProjectilePath route, double casterScale)
+	@Override
+	public boolean launch(ProjectileLook flight, ProjectilePath route, double casterScale)
 	{
 		int drawn = flight.sizeFor(casterScale);
 		Model model = models.modelOf(flight, drawn);
@@ -82,7 +83,8 @@ final class BattleProjectile extends RuneLiteObject
 	 * @param view the top level world view
 	 * @param plane the plane of the battle
 	 */
-	void place(int age, WorldView view, int plane)
+	@Override
+	public void place(int age, WorldView view, int plane)
 	{
 		if (path == null || !ProjectilePath.visible(age))
 		{
@@ -114,14 +116,16 @@ final class BattleProjectile extends RuneLiteObject
 	}
 
 	/** Takes the projectile out of the scene. Safe to call at any time. */
-	void hide()
+	@Override
+	public void hide()
 	{
 		if (isActive())
 			setActive(false);
 	}
 
 	/** Takes the projectile out of the scene for good and forgets its flight. */
-	void remove()
+	@Override
+	public void remove()
 	{
 		hide();
 		path = null;
