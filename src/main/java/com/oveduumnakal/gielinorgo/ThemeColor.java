@@ -79,6 +79,9 @@ enum ThemeColor
 	/** An experience bar. */
 	XP_FILL,
 
+	/** The Bag's next-jar bar, a different hue and lightness from the experience bar beside it. */
+	JAR_FILL,
+
 	/** The empty part of an experience bar. */
 	XP_TRACK,
 
@@ -126,6 +129,9 @@ enum ThemeColor
 
 	/** The ring around what has keyboard focus. */
 	FOCUS_RING,
+
+	/** The ring that follows the keyboard highlight on the Party page, apart from the lead and selected colours. */
+	PARTY_HIGHLIGHT,
 
 	/** The field of a text box. */
 	INPUT,

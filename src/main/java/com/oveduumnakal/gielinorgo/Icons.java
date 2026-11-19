@@ -30,8 +30,12 @@ final class Icons
 	{
 	}
 
+	/** The share of its square the gender sign's ink covers, the same as the style pictures' (113 of 128 pixels). */
+	static final double GENDER_FILL = 0.88;
+
 	/**
-	 * Draws the sign of a gender: a ring with an arrow for male, a ring with a cross under it for female.
+	 * Draws the sign of a gender: a ring with an arrow for male, a ring with a cross under it for female. Its ink,
+	 * round line ends included, covers {@link #GENDER_FILL} of the square, so it looks as big as a style picture.
 	 *
 	 * @param g the graphics, with the colour set
 	 * @param gender the gender
@@ -40,6 +44,12 @@ final class Icons
 	 * @param size the side of the square
 	 */
 	static void gender(Graphics2D g, Gender gender, double x, double y, double size)
+	{
+		double inset = size * (1.0 - GENDER_FILL) / 2.0;
+		glyph(g, gender, x + inset, y + inset, size * GENDER_FILL);
+	}
+
+	private static void glyph(Graphics2D g, Gender gender, double x, double y, double size)
 	{
 		Stroke saved = g.getStroke();
 		g.setStroke(new BasicStroke((float) Math.max(1.0, size / 8.0), BasicStroke.CAP_ROUND,

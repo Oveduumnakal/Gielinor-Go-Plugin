@@ -48,6 +48,37 @@ public class WindowThemeTest
 	}
 
 	@Test
+	public void thePartyHighlightDiffersFromTheSelectionAndTheLeadColours()
+	{
+		for (WindowTheme theme : WindowTheme.values())
+		{
+			int ring = theme.color(ThemeColor.PARTY_HIGHLIGHT).getRGB() & 0xFFFFFF;
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.SELECTION).getRGB() & 0xFFFFFF, ring);
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.FOCUS_RING).getRGB() & 0xFFFFFF, ring);
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.LEAD_ROW).getRGB() & 0xFFFFFF, ring);
+			assertNotEquals(theme.toString(), theme.color(ThemeColor.LEAD_BORDER).getRGB() & 0xFFFFFF, ring);
+		}
+	}
+
+	@Test
+	public void theJarBarAndTheTrainerBarDifferInHueAndLightness()
+	{
+		for (WindowTheme theme : WindowTheme.values())
+		{
+			Color jar = theme.color(ThemeColor.JAR_FILL);
+			Color xp = theme.color(ThemeColor.XP_FILL);
+			float[] a = Color.RGBtoHSB(jar.getRed(), jar.getGreen(), jar.getBlue(), null);
+			float[] b = Color.RGBtoHSB(xp.getRed(), xp.getGreen(), xp.getBlue(), null);
+			float hue = Math.abs(a[0] - b[0]);
+			assertTrue(theme + " hue " + hue, Math.min(hue, 1 - hue) >= 0.15);
+			double lighter = Math.max(WindowTheme.contrast(jar, xp), WindowTheme.contrast(xp, jar));
+			assertTrue(theme + " lightness " + lighter, lighter >= 1.3);
+			Color track = WindowTheme.over(theme.color(ThemeColor.XP_TRACK), Color.BLACK);
+			assertTrue(theme + " on track", WindowTheme.contrast(jar, track) >= 3.0);
+		}
+	}
+
+	@Test
 	public void thereAreTwoStylesThatDiffer()
 	{
 		assertEquals(2, WindowTheme.values().length);

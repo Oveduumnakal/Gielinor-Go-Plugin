@@ -218,7 +218,11 @@ public class WindowFooterTest
 			}
 
 			g.dispose();
-			assertEquals(layout.reset.y, layout.changelog.y);
+			assertEquals(layout.reset.y + layout.reset.height, layout.changelog.y + layout.changelog.height);
+			assertTrue(layout.changelog.height < layout.reset.height);
+			assertTrue(layout.feedback.height < layout.reset.height);
+			assertTrue(layout.moreDivider.x + layout.moreDivider.width <= layout.changelog.x);
+			assertFalse(layout.moreDivider.intersects(layout.size));
 			assertEquals(layout.window.width - layout.px(WindowLayout.MARGIN),
 				layout.feedback.x + layout.feedback.width);
 		}

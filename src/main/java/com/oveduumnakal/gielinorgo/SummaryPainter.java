@@ -112,12 +112,14 @@ final class SummaryPainter
 
 		int icon = sm.getHeight();
 		int gx = id.x;
-		g.setColor(st.color(ThemeColor.TEXT));
 		if (content.gender() != null)
 		{
+			g.setColor(GenderColors.of(content.gender(), false));
 			Icons.gender(g, content.gender(), gx, top, icon);
 			gx += icon + st.metrics().pad / 2;
 		}
+
+		g.setColor(st.color(ThemeColor.TEXT));
 
 		Rectangle levelBox = new Rectangle(gx, top, Math.max(0, id.x + id.width - gx), icon);
 		text.draw(g, content.level(), levelBox, small, ThemeColor.TEXT, PageText.Align.LEFT);
