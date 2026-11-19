@@ -27,7 +27,7 @@ import java.util.List;
  * The state, input handling and painting of the painted window's shell, with no RuneLite types so it paints into a
  * {@code BufferedImage} in a test. It owns whether the window is open, the active tab, the hover, the key focus and
  * the {@link Animations} table, and lays out the six tab headers, the Close button, a placeholder page per tab and the
- * footer (the key hints). The pages themselves come later and plug
+ * page area. The pages themselves come later and plug
  * in through {@link PageActions}. The game thread owns it: painting reads one immutable {@link WindowSnapshot}, and
  * the mouse and key events arrive here already carried over from the UI thread. Hit rectangles are the final ones;
  * only a sliding row refuses clicks, and no page has one yet.
@@ -42,24 +42,6 @@ final class WindowShell
 
 	/** The first focus order a page's hits may use; the tabs and the Close button come before it. */
 	static final int PAGE_ORDER = 10;
-
-	/** The hint line while the window has focus and nothing is open over it. */
-	static final String HINT_WINDOW = "Left/Right Tabs   Up/Down Select   Enter Press   Esc Back";
-
-	/** The hint line while a menu is open. */
-	static final String HINT_MENU = "Up/Down Move   Enter Choose   Esc Close";
-
-	/** The hint line while a dialog is open. */
-	static final String HINT_MODAL = "Left/Right Pick   Enter Confirm   Esc Cancel";
-
-	/** The hint line while a text box has the keys. */
-	static final String HINT_FIELD = "Type   Enter Save   Esc Cancel";
-
-	/** The hint line while the Collection search box has the keys. */
-	static final String HINT_SEARCH = "Type   Enter Done   Esc Clear";
-
-	/** The hint line while the window has no focus. */
-	static final String HINT_UNFOCUSED = "Click the window to use keys";
 
 	private static final int CLOSE_ORDER = 6;
 	private static final String TAB_BAR = "tabBar";
@@ -100,9 +82,6 @@ final class WindowShell
 
 		/** @return how much the window moves */
 		MotionMode motion();
-
-		/** @return whether the footer shows key hints */
-		boolean keyHints();
 
 		/** @return whether the window's keyboard is on */
 		boolean keyboard();
@@ -989,7 +968,6 @@ final class WindowShell
 		});
 		paintTabs(g, shown, mode, nowMs);
 		paintPage(g, shown, mode, nowMs);
-		paintFooter(g);
 		style.grip(g, rect(layout.grip), resizing != WindowLayout.ResizeZone.NONE ? 1.0 : 0.0);
 	}
 
@@ -1081,36 +1059,6 @@ final class WindowShell
 				return "Tasks done today: " + shown.doneTasks() + ".";
 			default:
 				return "";
-		}
-	}
-
-	private void paintFooter(Graphics2D g)
-	{
-		Font small = style.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
-		FontMetrics fm = g.getFontMetrics(small);
-		String hint = WindowStyle.ellipsize(hintText(), fm, layout.hints.width);
-		int baseline = layout.hints.y + (layout.hints.height + fm.getAscent() - fm.getDescent()) / 2;
-		style.text(g, hint, layout.hints.x, baseline, small, ThemeColor.SUBTEXT);
-	}
-
-	private String hintText()
-	{
-		if (!host.keyHints() || !host.keyboard())
-			return "";
-
-		if (!focus.focused())
-			return HINT_UNFOCUSED;
-
-		switch (keyMode())
-		{
-			case FIELD:
-				return modalOpen() ? HINT_FIELD : HINT_SEARCH;
-			case MODAL:
-				return HINT_MODAL;
-			case MENU:
-				return HINT_MENU;
-			default:
-				return HINT_WINDOW;
 		}
 	}
 

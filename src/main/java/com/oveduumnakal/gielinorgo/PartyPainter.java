@@ -42,7 +42,7 @@ final class PartyPainter
 	static final String OPEN_STORAGE = "Open Storage";
 
 	/** The label of the button that pins the party to the game screen. */
-	static final String PIN_PARTY = "Pin Party to UI";
+	static final String PIN_PARTY = "Pin Party";
 
 	/** The label of the button that opens the menu with Change log, Feedback and Start over. */
 	static final String MORE = "More";

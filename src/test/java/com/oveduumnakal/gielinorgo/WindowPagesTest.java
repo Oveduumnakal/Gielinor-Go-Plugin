@@ -493,17 +493,32 @@ public class WindowPagesTest
 	}
 
 	@Test
-	public void theMoreMenuStartOverAsksAgainAndNoKeepsTheSave()
+	public void theMoreMenuControlsItemOpensADialogThatListsTheKeys()
 	{
 		rig.publish(PartyRig.state(PartyRig.team(2)).withResetSummary("2 creatures"), true);
 		rig.open();
 
 		chooseMoreItem(2);
 		assertEquals(WindowKeyRules.KeyMode.MODAL, rig.shell.keyMode());
+		assertTrue(WindowPages.CONTROLS_TEXT.contains("Esc"));
+		rig.key(KeyEvent.VK_ENTER);
+
+		assertEquals(WindowKeyRules.KeyMode.WINDOW, rig.shell.keyMode());
+		assertTrue(rig.calls.isEmpty());
+	}
+
+	@Test
+	public void theMoreMenuStartOverAsksAgainAndNoKeepsTheSave()
+	{
+		rig.publish(PartyRig.state(PartyRig.team(2)).withResetSummary("2 creatures"), true);
+		rig.open();
+
+		chooseMoreItem(3);
+		assertEquals(WindowKeyRules.KeyMode.MODAL, rig.shell.keyMode());
 		rig.key(KeyEvent.VK_ENTER);
 		assertTrue(rig.calls.isEmpty());
 
-		chooseMoreItem(2);
+		chooseMoreItem(3);
 		rig.key(KeyEvent.VK_RIGHT);
 		rig.key(KeyEvent.VK_ENTER);
 		assertEquals(Collections.singletonList("resetProgress"), rig.calls);

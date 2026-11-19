@@ -53,12 +53,6 @@ public class WindowFooterTest
 		}
 
 		@Override
-		public boolean keyHints()
-		{
-			return true;
-		}
-
-		@Override
 		public boolean keyboard()
 		{
 			return true;
@@ -198,18 +192,17 @@ public class WindowFooterTest
 	}
 
 	@Test
-	public void theHintLineSitsAtTheFootOfEveryWindowSizeAndTheBodyStaysAboveIt()
+	public void thePageAreaLeavesTheSameMarginAtTheBottomAsOnTheLeftAndRightAtEverySize()
 	{
 		for (int[] size : SIZES)
 		{
 			WindowLayout layout = WindowLayout.of(size[0], size[1]);
 			String where = size[0] + "x" + size[1];
+			int margin = layout.px(WindowLayout.MARGIN);
 
-			assertTrue(where, layout.window.contains(layout.hints));
-			assertFalse(where, layout.body.intersects(layout.hints));
-			assertFalse(where, layout.hints.intersects(layout.grip));
-			int bottom = layout.window.height - layout.px(WindowLayout.MARGIN);
-			assertTrue(where, layout.hints.y + layout.hints.height <= bottom);
+			assertEquals(where, margin, layout.body.x);
+			assertEquals(where, margin, layout.window.width - layout.body.x - layout.body.width);
+			assertEquals(where, margin, layout.window.height - layout.body.y - layout.body.height);
 		}
 	}
 

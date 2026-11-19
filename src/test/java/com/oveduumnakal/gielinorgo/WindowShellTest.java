@@ -57,12 +57,6 @@ public class WindowShellTest
 		}
 
 		@Override
-		public boolean keyHints()
-		{
-			return hints;
-		}
-
-		@Override
 		public boolean keyboard()
 		{
 			return keyboard;

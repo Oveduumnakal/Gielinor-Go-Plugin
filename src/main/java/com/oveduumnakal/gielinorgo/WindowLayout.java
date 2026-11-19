@@ -8,7 +8,7 @@ import java.awt.Rectangle;
 
 /**
  * Where everything of the painted window's shell sits, worked out from the window's size alone: the header with its six
- * tabs and the Close button, the page area, the hint line
+ * tabs and the Close button, the page area
  * and the resize grip in the bottom-right corner. Every length is a number of layout units in the 800 x 520 design
  * space times the one window scale, so nothing is positioned in raw pixels except the least sizes of the resize
  * zones. The page area takes whatever room the other parts leave, so a window a pixel off the design shape has no
@@ -34,9 +34,6 @@ final class WindowLayout
 	/** The width of the Close button, in layout units. */
 	static final double CLOSE_UNITS = 78;
 
-	/** The height of the hint line, in layout units. */
-	static final double HINT_UNITS = 28;
-
 	/** The least width of the resize strip along an edge, in pixels, however small the window. */
 	static final int EDGE_MIN_PX = 4;
 
@@ -61,9 +58,6 @@ final class WindowLayout
 	/** The page area. */
 	final Rectangle body;
 
-	/** The hint line under the page. */
-	final Rectangle hints;
-
 	/** The grip in the bottom-right corner that resizes the window. */
 	final Rectangle grip;
 
@@ -84,12 +78,10 @@ final class WindowLayout
 			tabs[i] = new Rectangle(m + i * (tabW + px(TAB_GAP_UNITS)), px(TAB_TOP_UNITS), tabW, tabH);
 
 		close = new Rectangle(width - m - px(CLOSE_UNITS), px(TAB_TOP_UNITS), px(CLOSE_UNITS), tabH);
-		int hintH = px(HINT_UNITS);
-		int gripSide = Math.max(GRIP_MIN_PX, px(MARGIN));
-		int hintsTop = height - Math.max(m, gripSide) - hintH;
-		hints = new Rectangle(m, hintsTop, width - 2 * m, hintH);
-		body = new Rectangle(m, headerH + m / 2, width - 2 * m, Math.max(0, hintsTop - headerH - m));
+		int bodyTop = headerH + m / 2;
+		body = new Rectangle(m, bodyTop, width - 2 * m, Math.max(0, height - m - bodyTop));
 		edge = Math.max(EDGE_MIN_PX, px(MARGIN / 2));
+		int gripSide = Math.max(GRIP_MIN_PX, px(MARGIN));
 		grip = new Rectangle(width - gripSide, height - gripSide, gripSide, gripSide);
 	}
 

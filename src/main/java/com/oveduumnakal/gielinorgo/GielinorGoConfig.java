@@ -492,22 +492,6 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
-	 * Whether the painted window's footer shows which keys do what.
-	 *
-	 * @return true to show key hints
-	 */
-	@ConfigItem(
-		keyName = "windowKeyHints",
-		name = "Show key hints",
-		description = "Shows a line of key hints at the foot of the painted window.",
-		position = 27
-	)
-	default boolean windowKeyHints()
-	{
-		return true;
-	}
-
-	/**
 	 * Whether hovering a wild creature shows a small tooltip about it.
 	 *
 	 * @return true to show the tooltip

@@ -48,12 +48,6 @@ public class WindowRenderSmokeTest
 		}
 
 		@Override
-		public boolean keyHints()
-		{
-			return true;
-		}
-
-		@Override
 		public boolean keyboard()
 		{
 			return true;
@@ -184,12 +178,6 @@ public class WindowRenderSmokeTest
 			}
 
 			@Override
-			public boolean keyHints()
-			{
-				return true;
-			}
-
-			@Override
 			public boolean keyboard()
 			{
 				return true;
@@ -234,10 +222,6 @@ public class WindowRenderSmokeTest
 
 				int chip = 2 * style.metrics().chipSlant;
 				assertTrue(where + " close", textFits(style, "Close", layout.close.width - chip));
-				for (String hint : Arrays.asList(WindowShell.HINT_WINDOW, WindowShell.HINT_MENU,
-					WindowShell.HINT_MODAL, WindowShell.HINT_FIELD, WindowShell.HINT_SEARCH,
-					WindowShell.HINT_UNFOCUSED))
-					assertTrue(where + " hint " + hint, small.stringWidth(hint) <= layout.hints.width);
 			}
 	}
 
@@ -264,10 +248,12 @@ public class WindowRenderSmokeTest
 			Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, canvas[0], canvas[1]);
 			WindowLayout layout = WindowLayout.of(size.width, size.height);
 			List<Rectangle> parts = new ArrayList<>(Arrays.asList(layout.tabs));
-			parts.addAll(Arrays.asList(layout.close, layout.body, layout.hints, layout.grip));
+			parts.addAll(Arrays.asList(layout.close, layout.body));
 
 			for (Rectangle part : parts)
 				assertTrue(canvas[0] + " " + part, layout.window.contains(part));
+
+			assertTrue(canvas[0] + " grip", layout.window.contains(layout.grip));
 
 			for (int i = 0; i < parts.size(); i++)
 				for (int j = i + 1; j < parts.size(); j++)

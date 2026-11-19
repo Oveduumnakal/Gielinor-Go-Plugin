@@ -57,9 +57,11 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
-- **More menu on the Party page.** The "Start over?" box and the footer's Change log and Feedback buttons are
-  gone. A More button next to Pin Party to UI opens a menu with Change log, Feedback and Start over. Hover
-  Feedback to open its list to the right. Start over still asks first. (#289)
+- **More menu on the Party page.** The "Start over?" box, the footer's Change log and Feedback buttons and the
+  key hint line at the bottom of the window are gone, and the page area now fills the window with the same margin
+  all round. A More button next to Pin Party opens a menu with Change log, Feedback, Controls (the keys) and
+  Start over. Hover Feedback to open its list to the right. Start over still asks first. The Show key hints setting
+  is gone. (#289)
 - **No sidebar jar.** The jar button in RuneLite's sidebar is gone; the jar on the game screen still opens the
   window. (#267)
 - **Search the Collection.** Type part of a name in the search box above the list to find a creature. It works
@@ -84,7 +86,7 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Sharper icons and bubbles.** Text and icons stay crisp at any window size or UI scale. The wild creature
   bubbles became rings with a clear middle, the Battle bubble shows the game's Combat tab icon, and the jars you own
   open as an even honeycomb with easier-to-read counts. (#266)
-- **Pin Party to UI.** A button on the Party page, and a setting, show your team
+- **Pin Party.** A button on the Party page, and a setting, show your team
   (portraits, names, levels and health) in a box on the game screen. (#268)
 - **A more natural follower.** Your lead keeps a small gap, lags a step or two behind while you walk, then
   catches up, instead of hugging your heels. It still keeps up through teleports and map loads. (#302)

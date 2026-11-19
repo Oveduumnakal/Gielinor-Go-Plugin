@@ -58,6 +58,21 @@ final class WindowPages implements WindowShell.PageActions
 	/** The More menu's item whose submenu lists the two feedback forms. */
 	static final String MORE_FEEDBACK = "Feedback";
 
+	/** The More menu's item that lists the keys. */
+	static final String MORE_CONTROLS = "Controls";
+
+	/** The title of the Controls dialog. */
+	static final String CONTROLS_TITLE = "Controls";
+
+	/** The Controls dialog's text: which keys do what. */
+	static final String CONTROLS_TEXT = "Left/Right: switch tab\nUp/Down: select\nEnter: press\nEsc: go back or close\n"
+		+ "In a menu: Up/Down move, Enter choose, Esc close\n"
+		+ "In a dialog: Left/Right pick, Enter confirm, Esc cancel\n"
+		+ "In a text box: type, Enter save, Esc cancel";
+
+	/** The Controls dialog's only button. */
+	static final String CONTROLS_CLOSE = "Close";
+
 	/** The More menu's item that starts the reset. */
 	static final String MORE_RESET = "Start over";
 
@@ -823,12 +838,23 @@ final class WindowPages implements WindowShell.PageActions
 		List<ContextMenu.Item> items = new ArrayList<>();
 		items.add(ContextMenu.Item.of(shell.whatsNew() ? MORE_WHATS_NEW : MORE_CHANGELOG, shell::openChangelog));
 		items.add(ContextMenu.Item.submenu(MORE_FEEDBACK, shell.feedbackItems()));
+		items.add(ContextMenu.Item.of(MORE_CONTROLS, () -> showControls(clock.getAsLong())));
 		if (panel.resetSummary().isEmpty())
 			items.add(ContextMenu.Item.disabled(MORE_RESET, MORE_NOTHING));
 		else
 			items.add(ContextMenu.Item.of(MORE_RESET, () -> confirmReset(panel, clock.getAsLong())));
 
 		shell.openMenu(items, x, y, keyboard, clock.getAsLong());
+	}
+
+	private void showControls(long now)
+	{
+		Modal list = new Modal(CONTROLS_TITLE, CONTROLS_TEXT, Collections.singletonList(CONTROLS_CLOSE), 0, choice ->
+		{
+		}, () ->
+		{
+		});
+		shell.openModal(list, null, now);
 	}
 
 	private void confirmReset(PanelState panel, long now)
