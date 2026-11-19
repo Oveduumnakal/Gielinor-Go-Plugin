@@ -57,6 +57,12 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **Search the Collection.** Type part of a name in the search box above the list to find a creature. It works
+  with the Show filter, and creatures you have not met stay hidden. (#278)
+- **Green checkmark for caught.** A creature you have caught before now shows a green checkmark instead of a
+  green jar, on its name tag and its info card. (#276)
+- **No rarity bar.** The coloured bar on the edge of creature portraits is gone; the rarity is still named in
+  the text. (#275)
 - **Party backs out of Summary.** Clicking the Party tab while a creature's Summary is open takes you back to the
   Party list. (#282)
 - **Resize the window by dragging.** Drag the grip in the window's bottom-right corner, or its right or bottom edge.
@@ -75,6 +81,8 @@ A Creature Log, daily tasks and daily events give you goals.
   open as an even honeycomb with easier-to-read counts. (#266)
 - **Pin Party to UI.** A button on the Party page, and a setting, show your team
   (portraits, names, levels and health) in a box on the game screen. (#268)
+- **A more natural follower.** Your lead keeps a small gap, lags a step or two behind while you walk, then
+  catches up, instead of hugging your heels. It still keeps up through teleports and map loads. (#302)
 - **One size on the Party view.** The gender and style icons now match the size of the text beside them. (#273)
 - **HP and XP side by side.** A Party row shows the health bar and the experience bar next to each other. (#274)
 - **Party highlight.** The ring that follows your keyboard on the Party page has its own colour and now sits right

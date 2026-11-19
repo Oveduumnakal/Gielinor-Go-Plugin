@@ -229,6 +229,7 @@ final class WindowPages implements WindowShell.PageActions
 		storedShown = null;
 		enter = false;
 		tab = WindowTab.PARTY;
+		collection.blurSearch(0);
 	}
 
 	@Override
@@ -236,6 +237,9 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		if (current != tab && current == WindowTab.PARTY)
 			enter = true;
+
+		if (current != tab)
+			collection.blurSearch(clock.getAsLong());
 
 		tab = current;
 		if (current != WindowTab.STORAGE)
@@ -954,6 +958,9 @@ final class WindowPages implements WindowShell.PageActions
 	public boolean key(int keyCode, int modifiers, long nowMs)
 	{
 		PanelState panel = loaded();
+		if (panel != null && tab == WindowTab.COLLECTION && collection.searchFocused())
+			return collection.searchKey(keyCode, modifiers, nowMs);
+
 		if (panel != null && tab == WindowTab.COLLECTION)
 			return collectionKey(keyCode);
 
@@ -970,6 +977,25 @@ final class WindowPages implements WindowShell.PageActions
 			return false;
 
 		return summaryKey(keyCode, nowMs, false, panel.team());
+	}
+
+	@Override
+	public boolean fieldFocused()
+	{
+		return tab == WindowTab.COLLECTION && collection.searchFocused();
+	}
+
+	@Override
+	public void typed(char c, int modifiers, long nowMs)
+	{
+		if (tab == WindowTab.COLLECTION)
+			collection.searchTyped(c, modifiers, nowMs);
+	}
+
+	@Override
+	public void blur(long nowMs)
+	{
+		collection.blurSearch(nowMs);
 	}
 
 	private boolean summaryKey(int keyCode, long nowMs, boolean stored, List<CreatureView> list)

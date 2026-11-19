@@ -182,7 +182,7 @@ final class Icons
 
 	/**
 	 * Draws the mark that tells what the Creature Log knows of a wild creature's species: a filled star for new, an
-	 * eye for seen and a jar for caught.
+	 * eye for seen and a checkmark for caught.
 	 *
 	 * @param g the graphics, with the colour set
 	 * @param kind which mark
@@ -201,9 +201,30 @@ final class Icons
 				eye(g, x, y, size);
 				break;
 			default:
-				jar(g, x, y, size);
+				check(g, x, y, size);
 				break;
 		}
+	}
+
+	/**
+	 * Draws a checkmark: a short stroke down to the corner and a long one up to the right.
+	 *
+	 * @param g the graphics, with the colour set
+	 * @param x the left edge of the square
+	 * @param y the top edge
+	 * @param size the side of the square
+	 */
+	static void check(Graphics2D g, double x, double y, double size)
+	{
+		Stroke saved = g.getStroke();
+		g.setStroke(new BasicStroke((float) Math.max(1.5, size / 5.0), BasicStroke.CAP_ROUND,
+			BasicStroke.JOIN_ROUND));
+		Path2D.Double tick = new Path2D.Double();
+		tick.moveTo(x + size * 0.14, y + size * 0.54);
+		tick.lineTo(x + size * 0.38, y + size * 0.78);
+		tick.lineTo(x + size * 0.86, y + size * 0.22);
+		g.draw(tick);
+		g.setStroke(saved);
 	}
 
 	/**

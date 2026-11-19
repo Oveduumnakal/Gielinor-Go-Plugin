@@ -11,10 +11,10 @@ import java.util.Locale;
 
 /**
  * Everything one creature row of the painted window shows, worked out once from a {@link CreatureView}: the name, the
- * state, the badges, the stripe and frame, the tooltip. The Party row and the Summary header both read it, so each
+ * state, the badges, the frame, the tooltip. The Party row and the Summary header both read it, so each
  * badge is defined in one place. Every badge the side panel's {@code CreatureCard} shows is carried: the lead, a move
  * waiting to be learned, the species waiting to evolve and the rating; the painted window adds Resting, Fainted,
- * the rarity stripe and the gilded frame. Colour is never the only signal: each state also has its own word, and the
+ * the gilded frame. Colour is never the only signal: each state also has its own word, and the
  * gender its own icon. Immutable, and holds no RuneLite types, so it is tested without a window.
  */
 final class RowModel
@@ -261,7 +261,7 @@ final class RowModel
 		return view.gilded();
 	}
 
-	/** @return the species' rarity, whose colour is the stripe on the portrait's edge */
+	/** @return the species' rarity, which the portrait no longer shows as a stripe */
 	Rarity rarity()
 	{
 		return view.rarity();

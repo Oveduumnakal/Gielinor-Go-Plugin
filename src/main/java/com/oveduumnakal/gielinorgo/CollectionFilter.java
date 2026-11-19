@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.Locale;
 import java.util.Set;
 
 /** Which species the Collection page's list shows. Holds no RuneLite types. */
@@ -77,5 +78,22 @@ enum CollectionFilter
 			default:
 				return true;
 		}
+	}
+
+	/**
+	 * Tests one species against the words typed in the search box. A species the player has not met shows as ???, so
+	 * its real name never matches, or a search would give it away.
+	 *
+	 * @param entry the species
+	 * @param query the typed text; blank matches every species
+	 * @return whether the species' name contains the text, ignoring case and the spaces around it
+	 */
+	static boolean matchesText(LogEntry entry, String query)
+	{
+		String wanted = query == null ? "" : query.trim();
+		if (wanted.isEmpty())
+			return true;
+
+		return known(entry) && entry.name().toLowerCase(Locale.ROOT).contains(wanted.toLowerCase(Locale.ROOT));
 	}
 }
