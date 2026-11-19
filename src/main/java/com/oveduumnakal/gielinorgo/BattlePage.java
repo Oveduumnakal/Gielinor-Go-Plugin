@@ -204,6 +204,7 @@ final class BattlePage
 			if (block.kind() == BattleBlock.Kind.HEADING)
 			{
 				text.draw(g, block.text(), onScreen(one.title), small, ThemeColor.SUBTEXT, PageText.Align.LEFT);
+				badge(g, st, block, onScreen(one.badge));
 			}
 			else if (block.kind() == BattleBlock.Kind.NOTE)
 			{
@@ -217,6 +218,17 @@ final class BattlePage
 
 		g.setClip(saved);
 		list.paintBar(g, st);
+	}
+
+	private static void badge(Graphics2D g, WindowStyle st, BattleBlock block, Rectangle at)
+	{
+		if (block.sigil() == BattleBlock.Sigil.NONE || at.isEmpty())
+			return;
+
+		boolean gold = block.sigil() == BattleBlock.Sigil.GOLD;
+		g.setColor(st.color(gold ? ThemeColor.GOLD : ThemeColor.ACCENT));
+		int side = Math.min(at.width, at.height);
+		Icons.sigil(g, gold, at.x + (at.width - side) / 2.0, at.y + (at.height - side) / 2.0, side);
 	}
 
 	private void card(Graphics2D g, PageContext ctx, PageText text, BattleLayout.Placed one, Font[] fonts)
@@ -237,6 +249,7 @@ final class BattlePage
 			text.draw(g, block.text(), title, fonts[0], ThemeColor.TEXT, PageText.Align.LEFT);
 			text.draw(g, block.status(), onScreen(one.status), fonts[2], block.statusColor(),
 				PageText.Align.RIGHT);
+			badge(g, st, block, onScreen(one.badge));
 		}
 
 		for (int i = 0; i < block.items().size(); i++)

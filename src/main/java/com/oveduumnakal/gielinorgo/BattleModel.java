@@ -97,7 +97,7 @@ final class BattleModel
 
 	private static void champions(List<BattleBlock> blocks, List<ChampionView> champions)
 	{
-		blocks.add(BattleBlock.heading(championsHeading(champions)));
+		blocks.add(BattleBlock.heading(championsHeading(champions)).withSigil(BattleBlock.Sigil.NORMAL));
 		if (champions.isEmpty())
 			blocks.add(BattleBlock.note(EMPTY_TEXT));
 
@@ -135,8 +135,10 @@ final class BattleModel
 			tip = "Go to " + view.city() + " to challenge its champion";
 		}
 
+		BattleBlock.Sigil sigil = view.gold() ? BattleBlock.Sigil.GOLD
+			: view.beaten() ? BattleBlock.Sigil.NORMAL : BattleBlock.Sigil.NONE;
 		return BattleBlock.card(CARD_PREFIX + "champion:" + view.id(), view.city(), status, statusColor, stripe, tip,
-			items);
+			items).withSigil(sigil);
 	}
 
 	private static void elite(List<BattleBlock> blocks, EliteView view)
