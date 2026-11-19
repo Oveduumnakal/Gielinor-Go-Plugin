@@ -10,6 +10,7 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
+import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
@@ -296,6 +297,42 @@ final class Icons
 		g.fill(new Rectangle2D.Double(x + size * 0.32, y + size * 0.2, size * 0.36, size * 0.14));
 		g.fill(new RoundRectangle2D.Double(x + size * 0.1, y + size * 0.32, size * 0.8, size * 0.64, size * 0.3,
 			size * 0.3));
+	}
+
+	/**
+	 * Draws a sigil badge, a shield. The plain sigil is the shield's outline with a small ring in it; the gold sigil is
+	 * the whole shield filled with a star cut out of it, so the two differ by shape and not by colour alone.
+	 *
+	 * @param g the graphics, with the colour set
+	 * @param gold whether this is the gold sigil
+	 * @param x the left edge of the square
+	 * @param y the top edge
+	 * @param size the side of the square
+	 */
+	static void sigil(Graphics2D g, boolean gold, double x, double y, double size)
+	{
+		Path2D.Double shield = new Path2D.Double();
+		shield.moveTo(x + size * 0.12, y + size * 0.08);
+		shield.lineTo(x + size * 0.88, y + size * 0.08);
+		shield.lineTo(x + size * 0.88, y + size * 0.52);
+		shield.quadTo(x + size * 0.88, y + size * 0.82, x + size * 0.5, y + size * 0.96);
+		shield.quadTo(x + size * 0.12, y + size * 0.82, x + size * 0.12, y + size * 0.52);
+		shield.closePath();
+		if (gold)
+		{
+			Area face = new Area(shield);
+			face.subtract(new Area(star(x + size * 0.5, y + size * 0.5, size * 0.28)));
+			g.fill(face);
+			return;
+		}
+
+		Stroke saved = g.getStroke();
+		g.setStroke(new BasicStroke((float) Math.max(1.0, size / 9.0), BasicStroke.CAP_ROUND,
+			BasicStroke.JOIN_ROUND));
+		g.draw(shield);
+		g.setStroke(saved);
+		double ring = size * 0.24;
+		g.fill(new Ellipse2D.Double(x + (size - ring) / 2.0, y + size * 0.36, ring, ring));
 	}
 
 	/**

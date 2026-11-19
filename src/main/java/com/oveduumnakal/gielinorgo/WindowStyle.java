@@ -188,6 +188,17 @@ final class WindowStyle
 	}
 
 	/**
+	 * Gives the outline a {@link #panel} of this box has, to cut something to the panel's rounded corners.
+	 *
+	 * @param box the section bounds
+	 * @return the rounded outline
+	 */
+	Shape panelShape(Rectangle2D box)
+	{
+		return round(box, metrics.corner);
+	}
+
+	/**
 	 * Paints a boxed section of a page.
 	 *
 	 * @param g the graphics
