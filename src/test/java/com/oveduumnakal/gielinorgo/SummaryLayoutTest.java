@@ -10,6 +10,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /** Checks the Summary layout's action buttons: the team and the Storage sets take the same rectangles. */
 public class SummaryLayoutTest
@@ -48,5 +50,66 @@ public class SummaryLayoutTest
 		assertEquals(team.moves, stored.moves);
 		assertEquals(team.left, stored.left);
 		assertArrayEquals(SummaryLayout.STORED_BUTTONS, stored.labels());
+	}
+
+	private static SummaryLayout at(double scale, int width, int height)
+	{
+		WindowStyle style = WidgetKit.style(scale);
+		int line = (int) Math.round(24 * scale * 1.25);
+		int small = (int) Math.round(20 * scale * 1.25);
+		return SummaryLayout.of(new Rectangle(8, 40, width, height), style.metrics(), line, small);
+	}
+
+	@Test
+	public void theTwoColumnsHoldTheirBoxesAtSeveralSizes()
+	{
+		int[][] sizes = {{380, 210, 50}, {560, 300, 75}, {760, 400, 100}, {1100, 600, 150}, {1500, 800, 200}};
+		for (int[] size : sizes)
+		{
+			SummaryLayout l = at(size[2] / 100.0, size[0], size[1]);
+			Rectangle body = new Rectangle(8, 40, size[0], size[1]);
+			String where = size[0] + "x" + size[1];
+
+			assertTrue(where, l.left.x + l.left.width < l.right.x);
+			for (Rectangle r : new Rectangle[] {l.header, l.chips, l.portrait, l.stats, l.nature, l.bond, l.moves})
+				assertTrue(where + " " + r, body.contains(r) && r.width > 0 && r.height > 0);
+
+			assertTrue(where, l.left.contains(l.header) && l.left.contains(l.chips) && l.left.contains(l.portrait));
+			assertTrue(where, l.right.contains(l.stats) && l.right.contains(l.nature) && l.right.contains(l.moves));
+			assertFalse(where, l.stats.intersects(l.nature));
+			assertFalse(where, l.stats.intersects(l.moves));
+			assertFalse(where, l.nature.intersects(l.bond));
+			assertFalse(where, l.bond.intersects(l.moves));
+			assertFalse(where, l.header.intersects(l.chips));
+			assertFalse(where, l.chips.intersects(l.portrait));
+			assertTrue(where, l.nature.x >= l.stats.x + l.stats.width);
+			assertTrue(where, l.nature.y == l.stats.y);
+			assertTrue(where, l.bond.y > l.nature.y && l.bond.x == l.nature.x);
+			assertTrue(where, l.moves.y >= l.stats.y + l.stats.height);
+			if (l.description.height > 0)
+			{
+				assertTrue(where, l.left.contains(l.description));
+				assertFalse(where, l.portrait.intersects(l.description));
+				assertTrue(where, l.description.y >= l.portrait.y + l.portrait.height);
+			}
+		}
+	}
+
+	@Test
+	public void aBiggerWindowGivesTheDescriptionRoomAndTheStatRowsStayInsideTheBox()
+	{
+		SummaryLayout big = at(1.5, 1100, 600);
+
+		assertTrue(big.description.height > 0);
+		for (int i = 0; i < SummaryLayout.BAR_ROWS; i++)
+		{
+			assertTrue(big.stats.contains(big.statRow(i)));
+			assertTrue(big.descriptionText().height > 0);
+		}
+
+		for (int i = 0; i < SummaryContent.MAX_MOVES; i++)
+			assertTrue(big.moves.contains(big.movePill(i)));
+
+		assertTrue(big.description.contains(big.growsLine()));
 	}
 }

@@ -367,8 +367,9 @@ public class PartyRenderSmokeTest
 					for (PartyRig.Drawn d : rig.drawn)
 						texts.add(d.text);
 
-					for (String must : new String[] {"Bob", "Man", "Lv 39", "Health", "Attack", "Defence", "Speed",
-						"Nature: Steady", "Slash", "Bash", "Spark", "New move: Spark"})
+					for (String must : new String[] {"Bob", "Man", "LV. 39", "Stats", "HP", "XP", "Attack",
+						"Def", "Speed", "Nature", "Steady", "Description", "Moves", "Slash", "Bash", "Spark",
+						"New move: Spark"})
 					{
 						if (!texts.contains(must))
 							problems.append(where).append(" missing '").append(must).append("' in ").append(texts)
@@ -439,8 +440,8 @@ public class PartyRenderSmokeTest
 				int small = WidgetKit.metrics(style, WindowFonts.Face.SMALL).getHeight();
 				SummaryLayout layout = SummaryLayout.of(window.body, style.metrics(), line, small);
 				String where = size.width + "x" + size.height;
-				List<Rectangle> parts = new ArrayList<>(Arrays.asList(layout.left, layout.stats, layout.nature,
-					layout.moves, layout.bond));
+				List<Rectangle> parts = new ArrayList<>(Arrays.asList(layout.header, layout.chips,
+					layout.portrait, layout.stats, layout.nature, layout.moves, layout.bond));
 				if (layout.description.height > 0)
 					parts.add(layout.description);
 
@@ -454,8 +455,9 @@ public class PartyRenderSmokeTest
 							parts.get(i).intersects(parts.get(j)));
 
 				assertTrue(where, layout.left.contains(layout.portrait));
-				assertTrue(where, layout.left.contains(layout.identity));
-				assertFalse(where, layout.portrait.intersects(layout.identity));
+				assertTrue(where, layout.left.contains(layout.header));
+				assertTrue(where, layout.left.contains(layout.chips));
+				assertTrue(where, layout.right.contains(layout.moves));
 			}
 	}
 

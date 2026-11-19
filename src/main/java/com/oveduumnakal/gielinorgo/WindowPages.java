@@ -390,6 +390,9 @@ final class WindowPages implements WindowShell.PageActions
 
 		if (!content.statsTip().isEmpty())
 			hits.add(new Hit(SummaryPainter.ID_STATS, Hit.Kind.AREA, layout.stats, -1, true, content.statsTip()));
+
+		if (layout.bond.height > 0)
+			hits.add(new Hit(SummaryPainter.ID_BOND, Hit.Kind.AREA, layout.bond, -1, true, content.bondText()));
 	}
 
 	private static String movesTip(CreatureView view)

@@ -621,8 +621,9 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Party and Summary**
 
   Party lists your team of up to six as rows with portrait, nickname, gender, style, level, health and XP bars. A new
-  player sees **Choose your first creature** here. Left-click a row for its **Summary** (stats with their numbers,
-  nature, moves, bond, evolution hint, and the day you caught it). Right-click a row, or press Enter on a highlighted one, for **Make lead**, **Move to storage**,
+  player sees **Choose your first creature** here. Left-click a row for its **Summary** (left: style badge, name,
+  gender and level, chips, picture, description and **Grows into...** with the next form, shown as `???` until you have
+  seen or caught it; right: stat bars with their numbers, nature, bond hearts and moves). Right-click a row, or press Enter on a highlighted one, for **Make lead**, **Move to storage**,
   **Rename**, **Moves**, **Use item** and **Open wiki**, and **Revive** for a fainted creature, whose row is grey with a **Fainted** tag.
   A small column on the right shows your eggs and top tasks.
 

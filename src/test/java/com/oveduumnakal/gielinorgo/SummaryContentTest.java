@@ -176,13 +176,77 @@ public class SummaryContentTest
 	}
 
 	@Test
-	public void theEvolutionHintIsWhatItWaitsForThenWhatItGrowsInto()
+	public void theGrowsIntoLineNamesOnlyTheNextFormAndHidesAFormNotSeenOrCaught()
 	{
-		assertEquals("Grows into Lesser demon (20)", content(plain()).evolution());
-		assertEquals("Evolves at night", content(view("A", StatRolls.AVERAGE, Collections.emptyList(),
-			Collections.emptyList(), 0, "Evolves at night")).evolution());
+		CreatureView known = plain().withNextForm("Lesser demon");
+		CreatureView hidden = plain().withNextForm(SummaryContent.UNKNOWN_FORM);
+
+		assertEquals("Grows into... Lesser demon", content(known).evolution());
+		assertEquals("Grows into... ???", content(hidden).evolution());
+		assertEquals("???", SummaryContent.UNKNOWN_FORM);
+		assertEquals(SummaryContent.DOES_NOT_EVOLVE, content(plain()).evolution());
 		assertEquals(SummaryContent.DOES_NOT_EVOLVE, content(new CreatureView("Imp", 1, 0, 1.0, Rarity.COMMON,
 			CombatType.MAGIC, false, null)).evolution());
+	}
+
+	@Test
+	public void whatAnEvolutionWaitsForIsKeptApart()
+	{
+		assertEquals("Evolves at night", content(view("A", StatRolls.AVERAGE, Collections.emptyList(),
+			Collections.emptyList(), 0, "Evolves at night")).evolvesWhen());
+		assertNull(content(plain()).evolvesWhen());
+	}
+
+	@Test
+	public void theHeaderHasTheStyleAndTheLevelBadge()
+	{
+		SummaryContent c = content(plain());
+
+		assertEquals("LV. 14", c.levelBadge());
+		assertEquals(CombatType.MAGIC, c.style());
+	}
+
+	@Test
+	public void theChipRowIsTheStyleThenTheRatingThenTheTraits()
+	{
+		SummaryContent c = content(plain());
+
+		List<SummaryContent.Chip> row = c.chipRow();
+
+		assertEquals(CombatType.MAGIC.label(), row.get(0).label());
+		assertTrue(row.get(0).style());
+		assertEquals(c.rating(), row.get(1).label());
+		assertEquals(c.chips().size() + 1, row.size());
+	}
+
+	@Test
+	public void theFiveBarsAreHealthExperienceAttackDefenceSpeed()
+	{
+		List<SummaryContent.BarLine> bars = content(plain()).bars();
+
+		assertEquals(SummaryLayout.BAR_ROWS, bars.size());
+		List<String> labels = new ArrayList<>();
+		for (SummaryContent.BarLine bar : bars)
+			labels.add(bar.label());
+
+		assertEquals(Arrays.asList("HP", "XP", "Attack", "Def", "Speed"), labels);
+		assertEquals("25%", bars.get(1).valueText());
+		assertEquals(0.25, bars.get(1).fraction(), 1e-9);
+	}
+
+	@Test
+	public void theNatureHasANameAndOneLinePerEffect()
+	{
+		SummaryContent c = content(plain());
+
+		assertEquals("Brave", c.natureName());
+		assertEquals(2, c.natureLines().size());
+		List<String> lines = c.natureLines();
+
+		assertTrue(lines.get(0).startsWith("+"));
+		assertTrue(lines.get(1).startsWith("-"));
+		assertEquals(Collections.singletonList("no effect"), content(view("A", StatRolls.AVERAGE,
+			Collections.emptyList(), Collections.emptyList(), 0, null)).natureLines());
 	}
 
 	@Test

@@ -30,6 +30,7 @@ final class CreatureView
 	private Gender gender;
 	private String examine;
 	private String growsInto;
+	private String nextForm;
 	private boolean fainted;
 	private long caughtAtMs;
 	private int[] stats;
@@ -179,6 +180,20 @@ final class CreatureView
 	}
 
 	/**
+	 * Attaches the next form the species grows into, for the Summary's "Grows into..." line.
+	 *
+	 * @param name the next form's name, or {@link SummaryContent#UNKNOWN_FORM} when the player has neither seen nor
+	 *        caught it, or null when the species does not evolve
+	 * @return a copy of this view with the next form
+	 */
+	CreatureView withNextForm(String name)
+	{
+		CreatureView copy = withSpecies(species);
+		copy.nextForm = name;
+		return copy;
+	}
+
+	/**
 	 * Marks the creature as fainted, as {@link Creature#fainted} says; the window dresses a fainted row.
 	 *
 	 * @param down whether the creature is fainted
@@ -227,6 +242,7 @@ final class CreatureView
 		copy.gender = gender;
 		copy.examine = examine;
 		copy.growsInto = growsInto;
+		copy.nextForm = nextForm;
 		copy.fainted = fainted;
 		return copy;
 	}
@@ -262,6 +278,12 @@ final class CreatureView
 	String growsInto()
 	{
 		return growsInto;
+	}
+
+	/** @return the next form's name or {@code ???}, or null when the species does not evolve or the view lacks it */
+	String nextForm()
+	{
+		return nextForm;
 	}
 
 	/** @return whether the creature has fainted */
@@ -426,6 +448,7 @@ final class CreatureView
 			&& moves.equals(that.moves)
 			&& pending.equals(that.pending)
 			&& Objects.equals(evolvesWhen, that.evolvesWhen)
+			&& Objects.equals(nextForm, that.nextForm)
 			&& caughtAtMs == that.caughtAtMs
 			&& rolls.equals(that.rolls);
 	}
@@ -450,6 +473,7 @@ final class CreatureView
 			&& moves.equals(that.moves)
 			&& pending.equals(that.pending)
 			&& Objects.equals(evolvesWhen, that.evolvesWhen)
+			&& Objects.equals(nextForm, that.nextForm)
 			&& caughtAtMs == that.caughtAtMs
 			&& rolls.equals(that.rolls);
 	}

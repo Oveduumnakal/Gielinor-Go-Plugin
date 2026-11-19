@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -15,11 +16,12 @@ import java.util.Locale;
 
 /**
  * Everything the Summary page says about one creature, worded once and kept apart from the painting so it is tested
- * without a window. Left side: the nickname as the title with the species under it, the gender, the level, and the
- * style and trait chips. Right side: the four stats from {@link StatRolls} with the rating, the Nature box
- * ({@link Temperament#label()} and {@link Temperament#effect()}), the examine text, the moves (at most four, in two
- * columns), the bond hearts and the evolution hint. A creature whose species is not in the list still has a Summary;
- * its missing parts read as plain words. Immutable. Holds no RuneLite types.
+ * without a window. Left side: the nickname with the style badge, the gender and {@code LV. n} for the header pill,
+ * the chips (style, rating, traits), the examine text and the {@code Grows into...} line, which names only the next
+ * form and reads {@code ???} until the player has seen or caught it. Right side: the five bars (health, experience,
+ * attack, defence, speed), the nature with its effects, the bond hearts and the moves (at most four, in two columns).
+ * A creature whose species is not in the list still has a Summary; its missing parts read as plain words.
+ * Immutable. Holds no RuneLite types.
  */
 final class SummaryContent
 {
@@ -32,8 +34,16 @@ final class SummaryContent
 	/** The words of the evolution hint of a creature that does not evolve. */
 	static final String DOES_NOT_EVOLVE = "Does not evolve";
 
+	/** The words shown for the next form when the player has neither seen nor caught it. */
+	static final String UNKNOWN_FORM = "???";
+
+	/** The lead-in of the evolution line. */
+	static final String GROWS_INTO = "Grows into... ";
+
 	/** The most moves a creature knows. */
 	static final int MAX_MOVES = 4;
+
+	private static final String[] BAR_LABELS = {"HP", "Attack", "Def", "Speed"};
 
 	private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
 
@@ -119,6 +129,39 @@ final class SummaryContent
 		double fraction()
 		{
 			return (roll - StatRolls.MIN) / (double) (StatRolls.MAX - StatRolls.MIN);
+		}
+	}
+
+	/** One line of the Stats box: a name, the number beside it and a bar. */
+	static final class BarLine
+	{
+		private final String label;
+		private final String valueText;
+		private final double fraction;
+
+		BarLine(String label, String valueText, double fraction)
+		{
+			this.label = label;
+			this.valueText = valueText;
+			this.fraction = fraction;
+		}
+
+		/** @return the short name, such as {@code HP} or {@code Def} */
+		String label()
+		{
+			return label;
+		}
+
+		/** @return the number shown at the bar's end */
+		String valueText()
+		{
+			return valueText;
+		}
+
+		/** @return how full the bar is, from 0 to 1 */
+		double fraction()
+		{
+			return fraction;
 		}
 	}
 
@@ -334,6 +377,28 @@ final class SummaryContent
 		return stats;
 	}
 
+	/**
+	 * Gives the lines of the Stats box in the order health, experience, attack, defence, speed. A stat's bar is its
+	 * roll; the experience bar is the progress to the next level.
+	 *
+	 * @return {@link SummaryLayout#BAR_ROWS} lines
+	 */
+	List<BarLine> bars()
+	{
+		List<BarLine> out = new ArrayList<>();
+		int percent = (int) Math.round(row.view().xpProgress() * 100);
+		for (int i = 0; i < stats.size(); i++)
+		{
+			StatLine line = stats.get(i);
+			String value = line.valueText().isEmpty() ? line.rollText() : line.valueText();
+			out.add(new BarLine(BAR_LABELS[i], value, line.fraction()));
+			if (i == 0)
+				out.add(new BarLine("XP", percent + "%", row.view().xpProgress()));
+		}
+
+		return out;
+	}
+
 	/** @return the one-word rating of the rolls, such as {@code Strong} */
 	String rating()
 	{
@@ -386,18 +451,63 @@ final class SummaryContent
 	}
 
 	/**
-	 * Gives the evolution hint.
+	 * Gives the evolution line of the Description box: only the next form, never the whole chain.
 	 *
-	 * @return what it waits for when it has the level but not the condition, else what it grows into, else
-	 *         {@link #DOES_NOT_EVOLVE}
+	 * @return {@code Grows into... Cougar}, {@code Grows into... ???} when the player has neither seen nor caught that
+	 *         form, or {@link #DOES_NOT_EVOLVE}
 	 */
 	String evolution()
 	{
-		CreatureView view = row.view();
-		if (view.evolvesWhen() != null)
-			return view.evolvesWhen();
+		String next = row.view().nextForm();
+		return next == null ? DOES_NOT_EVOLVE : GROWS_INTO + next;
+	}
 
-		return view.growsInto() == null ? DOES_NOT_EVOLVE : view.growsInto();
+	/** @return what the creature waits for when it has the level but not the condition, or null */
+	String evolvesWhen()
+	{
+		return row.view().evolvesWhen();
+	}
+
+	/** @return the level for the header pill, such as {@code LV. 14} */
+	String levelBadge()
+	{
+		return "LV. " + row.view().level();
+	}
+
+	/** @return the combat style, whose icon fills the round badge and whose name is the first chip */
+	CombatType style()
+	{
+		return row.view().type();
+	}
+
+	/**
+	 * Lists the chips under the header: the style, then the stat rating, then each trait the species has besides the
+	 * one its style implies.
+	 *
+	 * @return the chips, the style chip first
+	 */
+	List<Chip> chipRow()
+	{
+		List<Chip> out = new ArrayList<>();
+		out.add(chips.get(0));
+		out.add(new Chip(rating(), false));
+		out.addAll(chips.subList(1, chips.size()));
+		return out;
+	}
+
+	/** @return the heading of the Nature box */
+	String natureName()
+	{
+		return row.view().temperamentLabel();
+	}
+
+	/**
+	 * @return the nature's effects, one line each, such as {@code +10% Attack} then {@code -10% Defence}; the single
+	 *         line {@code no effect} for a steady nature
+	 */
+	List<String> natureLines()
+	{
+		return Arrays.asList(natureEffect().split(", "));
 	}
 
 	/**
