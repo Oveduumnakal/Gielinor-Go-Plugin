@@ -74,6 +74,7 @@ import net.runelite.client.party.events.UserJoin;
 import net.runelite.client.party.events.UserPart;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.DrawManager;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.ui.overlay.outline.ModelOutlineRenderer;
 import net.runelite.client.ui.overlay.tooltip.TooltipManager;
@@ -181,6 +182,9 @@ public class GielinorGoPlugin extends Plugin
 
 	@Inject
 	private WSClient wsClient;
+
+	@Inject
+	private DrawManager drawManager;
 
 	private final Random random = new Random();
 	private final CombatWatch combatWatch = new CombatWatch();
@@ -1028,7 +1032,8 @@ public class GielinorGoPlugin extends Plugin
 	{
 		bubblesFailed = false;
 		bubbles = new WildBubbles();
-		bubbleOverlay = new WildBubbleOverlay(client, bodies, bubbles, new BubblePainter(() -> combatSprite),
+		bubbleOverlay = new WildBubbleOverlay(client, bodies, bubbles, new BubblePainter(() -> combatSprite,
+			FrameBackdrop.create(client, drawManager)),
 			this::windowStyle, config::windowAnimations, config::windowFraction, () -> loaded && bubblesOn(),
 			System::currentTimeMillis, this::bubblesBroke);
 		bubbleInput = new BubbleInput(bubbleOverlay::hits, dragKey, bubbleSink());
