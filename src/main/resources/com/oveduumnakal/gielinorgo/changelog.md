@@ -54,6 +54,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **No rarity bar.** The coloured bar on the edge of creature portraits is gone; the rarity is still named in
+  the text. (#275)
 - **Catch when nobody can fight.** With no team or a tired lead you can still catch: use the jar bubble or Catch
   in the right-click menu. (#82)
 - **Report a bug and Request a feature.** The Feedback button in the window opens GitHub with your text filled in.
