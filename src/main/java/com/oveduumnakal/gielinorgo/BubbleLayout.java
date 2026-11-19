@@ -34,17 +34,15 @@ final class BubbleLayout
 	/** How far inside the viewport everything is kept. */
 	static final int EDGE_INSET = 4;
 
-	/** The radius of a jar in the cluster. */
-	static final int CLUSTER_RADIUS = 12;
+	/** The radius of a jar in the cluster: the same as a main bubble. */
+	static final int CLUSTER_RADIUS = MAIN_RADIUS;
 
-	/** The distance between neighbouring jars in the cluster, {@code 2 * CLUSTER_RADIUS + 4}. */
-	static final int CLUSTER_SPACING = 28;
+	/** The distance between neighbouring jar centres in the cluster: the same as between the main bubbles. */
+	static final double CLUSTER_SPACING = Math.hypot(ARC_RADIUS * Math.sin(Math.toRadians(ARC_STEP_DEG)),
+		ARC_RADIUS * (1.0 - Math.cos(Math.toRadians(ARC_STEP_DEG))));
 
 	/** How many slots the cluster pattern has; there are 17 jar types. */
 	static final int CLUSTER_SLOTS = 19;
-
-	/** The gap between the Catch bubble and the cluster. */
-	static final int CLUSTER_GAP = 6;
 
 	/** The least clear space between a cluster jar and a main bubble. */
 	static final int CLUSTER_CLEARANCE = 2;
@@ -61,14 +59,8 @@ final class BubbleLayout
 	/** How much of the way up the fallback ellipse is, against its width. */
 	static final double REACH_SQUASH = 0.6;
 
-	private static final double[][] CLUSTER_DIRECTIONS = {
-		{-0.7071067811865476, -0.7071067811865476},
-		{-1.0, 0.0},
-		{-0.7071067811865476, 0.7071067811865476},
-		{0.0, -1.0},
-		{0.7071067811865476, -0.7071067811865476},
-		{1.0, 0.0}
-	};
+	/** How many candidate slots the honeycomb offers, so a blocked slot can be skipped and the next one used. */
+	private static final int CLUSTER_CANDIDATES = 48;
 
 	/** The three main bubbles at rest: index 0 Catch (left), 1 Battle (middle), 2 Info (right). Immutable. */
 	static final class Arc
@@ -131,39 +123,30 @@ final class BubbleLayout
 	{
 		private final double centreX;
 		private final double centreY;
-		private final int direction;
 		private final List<Point2D.Double> slots;
 		private final Rectangle2D bounds;
 
-		private ClusterPlan(double centreX, double centreY, int direction, List<Point2D.Double> slots,
-			Rectangle2D bounds)
+		private ClusterPlan(double centreX, double centreY, List<Point2D.Double> slots, Rectangle2D bounds)
 		{
 			this.centreX = centreX;
 			this.centreY = centreY;
-			this.direction = direction;
 			this.slots = Collections.unmodifiableList(slots);
 			this.bounds = bounds;
 		}
 
-		/** @return the x of the middle of the pattern */
+		/** @return the x of the middle of the pattern, which is the jar bubble's own x */
 		double centreX()
 		{
 			return centreX;
 		}
 
-		/** @return the y of the middle of the pattern */
+		/** @return the y of the middle of the pattern, which is the jar bubble's own y */
 		double centreY()
 		{
 			return centreY;
 		}
 
-		/** @return which of the six directions it took, from 0, or -1 when none fitted and it was pushed in */
-		int direction()
-		{
-			return direction;
-		}
-
-		/** @return the centres of the slots, in fill order: the middle first, then the first ring, then the second */
+		/** @return the centres of the slots, in fill order: the one nearest the jar bubble first, then outward */
 		List<Point2D.Double> slots()
 		{
 			return slots;
@@ -325,163 +308,120 @@ final class BubbleLayout
 	}
 
 	/**
-	 * Gives the offsets of the cluster's slots from its middle, in fill order: the middle, then six at one spacing
-	 * starting at the top and going clockwise, then twelve at the second ring, alternating corners and edge middles.
+	 * Gives the offsets of the cluster's slots from the jar bubble, in fill order. The slots are the points of a
+	 * honeycomb with one spacing between neighbouring centres, which is the gap the main bubbles have, kept to the left
+	 * of the bubble. They are ordered by distance from the bubble, then by nearness to the bubble's own row, then upper
+	 * before lower: 9 o'clock first, then the two beside it at 11 and 7, and so on outward. Each slot touches an
+	 * earlier one or the bubble.
 	 *
-	 * @param count how many slots, at most {@link #CLUSTER_SLOTS}; fewer than 0 counts as 0
+	 * @param count how many slots, at most {@link #CLUSTER_CANDIDATES}; fewer than 0 counts as 0
 	 * @return the offsets, as new points
 	 */
 	static List<Point2D.Double> clusterOffsets(int count)
 	{
-		double d = CLUSTER_SPACING;
+		double s = CLUSTER_SPACING;
 		List<Point2D.Double> all = new ArrayList<>();
-		all.add(new Point2D.Double(0, 0));
-		for (int k = 0; k < 6; k++)
+		for (int row = -8; row <= 8; row++)
 		{
-			double angle = Math.toRadians(-90 + 60 * k);
-			all.add(new Point2D.Double(d * Math.cos(angle), d * Math.sin(angle)));
-		}
-
-		for (int k = 0; k < 12; k++)
-		{
-			double angle = Math.toRadians(-90 + 30 * k);
-			double far = k % 2 == 0 ? 2 * d : Math.sqrt(3.0) * d;
-			all.add(new Point2D.Double(far * Math.cos(angle), far * Math.sin(angle)));
-		}
-
-		return new ArrayList<>(all.subList(0, Math.max(0, Math.min(count, all.size()))));
-	}
-
-	/**
-	 * @param count how many slots are used
-	 * @return how far the cluster reaches from its middle to the edge of its farthest jar
-	 */
-	static double clusterExtent(int count)
-	{
-		double ring = count <= 1 ? 0 : count <= 7 ? CLUSTER_SPACING : 2.0 * CLUSTER_SPACING;
-		return CLUSTER_RADIUS + ring;
-	}
-
-	/**
-	 * Gives each slot its place from the left, for the stagger of the pop.
-	 *
-	 * @param slots the slot centres
-	 * @return for each slot how many slots are further left; ties go to the higher one
-	 */
-	static int[] xRanks(List<Point2D.Double> slots)
-	{
-		int[] ranks = new int[slots.size()];
-		for (int i = 0; i < ranks.length; i++)
-		{
-			for (int j = 0; j < ranks.length; j++)
+			for (int col = -10; col <= 2; col++)
 			{
-				Point2D.Double a = slots.get(i);
-				Point2D.Double b = slots.get(j);
-				int order = Double.compare(Math.round(b.x * 1000), Math.round(a.x * 1000));
-				if (order < 0 || (order == 0 && b.y < a.y))
-					ranks[i]++;
+				double x = col * s + row * s / 2.0;
+				double y = row * s * Math.sqrt(3.0) / 2.0;
+				if (x <= -s / 2.0 + 1e-6 && Math.hypot(x, y) >= s - 1e-6)
+					all.add(new Point2D.Double(x, y));
 			}
 		}
 
-		return ranks;
+		all.sort((a, b) ->
+		{
+			int far = Long.compare(Math.round(Math.hypot(a.x, a.y) * 1000), Math.round(Math.hypot(b.x, b.y) * 1000));
+			int level = Double.compare(Math.round(Math.abs(a.y) * 1000), Math.round(Math.abs(b.y) * 1000));
+			return far != 0 ? far : level != 0 ? level : Double.compare(a.y, b.y);
+		});
+		return new ArrayList<>(all.subList(0, Math.max(0, Math.min(count, Math.min(CLUSTER_CANDIDATES, all.size())))));
 	}
 
 	/**
-	 * Places the cluster beside the Catch bubble. It tries up-left, left, down-left, up, up-right and right, the
-	 * remembered one first, and takes the first where every jar is inside the inset viewport, clears every main bubble
-	 * and misses every blocker. When none fits it slides the up-left layout into the viewport and may overlap.
+	 * Places the cluster to the left of the Catch bubble. It walks the honeycomb slots in fill order and takes each
+	 * one whose jar is inside the inset viewport, clears every main bubble and misses every blocker, until it has
+	 * enough. A slot that does not fit is skipped, so the next one takes its place. When too few slots fit, the skipped
+	 * ones are used in their fill order, slid into the viewport, and may overlap.
 	 *
 	 * @param jarX the Catch bubble's resting x
 	 * @param jarY the Catch bubble's resting y
-	 * @param jarRadius the Catch bubble's radius
 	 * @param count how many jars the cluster holds, 1 to {@link #CLUSTER_SLOTS}
-	 * @param remembered the direction used last, or -1 for none; it is kept while it still fits
 	 * @param mains the centres of the three main bubbles
 	 * @param mainReach how far a main bubble reaches, hover growth included
 	 * @param viewport the viewport
 	 * @param blockers rectangles the cluster must not touch
 	 * @return the plan
 	 */
-	static ClusterPlan cluster(double jarX, double jarY, double jarRadius, int count, int remembered,
-		List<Point2D.Double> mains, double mainReach, Rectangle viewport, List<Rectangle> blockers)
+	static ClusterPlan cluster(double jarX, double jarY, int count, List<Point2D.Double> mains, double mainReach,
+		Rectangle viewport, List<Rectangle> blockers)
 	{
-		List<Point2D.Double> offsets = clusterOffsets(count);
-		double distance = jarRadius + CLUSTER_GAP + clusterExtent(count);
+		int wanted = Math.max(0, Math.min(count, CLUSTER_SLOTS));
 		Rectangle2D.Double area = inset(viewport);
-		if (remembered >= 0 && remembered < CLUSTER_DIRECTIONS.length)
+		List<Point2D.Double> fitting = new ArrayList<>();
+		List<Point2D.Double> skipped = new ArrayList<>();
+		for (Point2D.Double offset : clusterOffsets(CLUSTER_CANDIDATES))
 		{
-			ClusterPlan kept = tryDirection(remembered, jarX, jarY, distance, offsets, mains, mainReach, area,
-				blockers);
-			if (kept != null)
-				return kept;
+			Point2D.Double slot = new Point2D.Double(jarX + offset.x, jarY + offset.y);
+			if (fitting.size() < wanted && slotFits(slot, mains, mainReach, area, blockers))
+				fitting.add(slot);
+			else
+				skipped.add(slot);
 		}
 
-		for (int dir = 0; dir < CLUSTER_DIRECTIONS.length; dir++)
+		List<Point2D.Double> slots = new ArrayList<>(fitting);
+		for (Point2D.Double slot : skipped)
 		{
-			ClusterPlan plan = tryDirection(dir, jarX, jarY, distance, offsets, mains, mainReach, area, blockers);
-			if (plan != null)
-				return plan;
+			if (slots.size() >= wanted)
+				break;
+
+			double rs = CLUSTER_RADIUS;
+			slots.add(new Point2D.Double(Math.max(area.getX() + rs, Math.min(slot.x, area.getMaxX() - rs)),
+				Math.max(area.getY() + rs, Math.min(slot.y, area.getMaxY() - rs))));
 		}
 
-		double cx = jarX + CLUSTER_DIRECTIONS[0][0] * distance;
-		double cy = jarY + CLUSTER_DIRECTIONS[0][1] * distance;
-		Rectangle2D box = discBounds(cx, cy, offsets);
-		double[] shift = shiftInto(box, area);
-		return build(cx + shift[0], cy + shift[1], -1, offsets);
+		return new ClusterPlan(jarX, jarY, slots, discBounds(slots));
 	}
 
-	private static ClusterPlan tryDirection(int dir, double jarX, double jarY, double distance,
-		List<Point2D.Double> offsets, List<Point2D.Double> mains, double mainReach, Rectangle2D area,
-		List<Rectangle> blockers)
+	private static boolean slotFits(Point2D.Double slot, List<Point2D.Double> mains, double mainReach,
+		Rectangle2D area, List<Rectangle> blockers)
 	{
-		double cx = jarX + CLUSTER_DIRECTIONS[dir][0] * distance;
-		double cy = jarY + CLUSTER_DIRECTIONS[dir][1] * distance;
 		double rs = CLUSTER_RADIUS;
+		if (slot.x - rs < area.getX() || slot.x + rs > area.getMaxX() || slot.y - rs < area.getY()
+			|| slot.y + rs > area.getMaxY())
+			return false;
+
 		double apart = rs + mainReach + CLUSTER_CLEARANCE;
-		for (Point2D.Double offset : offsets)
+		for (Point2D.Double main : mains)
 		{
-			double sx = cx + offset.x;
-			double sy = cy + offset.y;
-			if (sx - rs < area.getX() || sx + rs > area.getMaxX() || sy - rs < area.getY() || sy + rs > area.getMaxY())
-				return null;
-
-			for (Point2D.Double main : mains)
-			{
-				if (Math.hypot(sx - main.x, sy - main.y) < apart)
-					return null;
-			}
-
-			Rectangle2D disc = new Rectangle2D.Double(sx - rs, sy - rs, 2 * rs, 2 * rs);
-			for (Rectangle blocker : blockers)
-			{
-				if (disc.intersects(blocker))
-					return null;
-			}
+			if (Math.hypot(slot.x - main.x, slot.y - main.y) < apart)
+				return false;
 		}
 
-		return build(cx, cy, dir, offsets);
+		Rectangle2D disc = new Rectangle2D.Double(slot.x - rs, slot.y - rs, 2 * rs, 2 * rs);
+		for (Rectangle blocker : blockers)
+		{
+			if (disc.intersects(blocker))
+				return false;
+		}
+
+		return true;
 	}
 
-	private static Rectangle2D discBounds(double cx, double cy, List<Point2D.Double> offsets)
+	private static Rectangle2D discBounds(List<Point2D.Double> slots)
 	{
 		double rs = CLUSTER_RADIUS;
 		Rectangle2D bounds = null;
-		for (Point2D.Double offset : offsets)
+		for (Point2D.Double slot : slots)
 		{
-			Rectangle2D disc = new Rectangle2D.Double(cx + offset.x - rs, cy + offset.y - rs, 2 * rs, 2 * rs);
+			Rectangle2D disc = new Rectangle2D.Double(slot.x - rs, slot.y - rs, 2 * rs, 2 * rs);
 			bounds = bounds == null ? disc : bounds.createUnion(disc);
 		}
 
-		return bounds;
-	}
-
-	private static ClusterPlan build(double cx, double cy, int dir, List<Point2D.Double> offsets)
-	{
-		List<Point2D.Double> slots = new ArrayList<>();
-		for (Point2D.Double offset : offsets)
-			slots.add(new Point2D.Double(cx + offset.x, cy + offset.y));
-
-		return new ClusterPlan(cx, cy, dir, slots, discBounds(cx, cy, offsets));
+		return bounds == null ? new Rectangle2D.Double() : bounds;
 	}
 
 	/**

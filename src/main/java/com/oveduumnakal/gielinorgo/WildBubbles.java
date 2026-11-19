@@ -183,7 +183,6 @@ final class WildBubbles
 		private ClusterState cluster = ClusterState.CLOSED;
 		private Tween[] slots = new Tween[0];
 		private int[] ranks = new int[0];
-		private int clusterDir = -1;
 		private long jarHoverSince = -1;
 		private boolean armed = true;
 		private long clusterOutsideSince = -1;
@@ -666,7 +665,6 @@ final class WildBubbles
 		{
 			g.cluster = ClusterState.CLOSED;
 			g.slots = new Tween[0];
-			g.clusterDir = -1;
 		}
 	}
 
@@ -740,9 +738,8 @@ final class WildBubbles
 			for (int i = 0; i < 3; i++)
 				mains.add(arc.rest(i));
 
-			cluster = BubbleLayout.cluster(arc.x(0), arc.y(0), arc.radius(), choices.size(), g.clusterDir, mains,
+			cluster = BubbleLayout.cluster(arc.x(0), arc.y(0), choices.size(), mains,
 				arc.radius() * BubbleLayout.GROUP_GROWTH, area, blockers);
-			g.clusterDir = cluster.direction();
 		}
 
 		BubbleLayout.CardPlan card = null;
@@ -1017,7 +1014,10 @@ final class WildBubbles
 		g.clusterOutsideSince = -1;
 		g.jarHoverSince = -1;
 		BubbleLayout.ClusterPlan plan = geom(g, g.anchors, now).cluster;
-		g.ranks = BubbleLayout.xRanks(plan.slots());
+		g.ranks = new int[plan.slots().size()];
+		for (int j = 0; j < g.ranks.length; j++)
+			g.ranks[j] = j;
+
 		for (int j = 0; j < g.slots.length; j++)
 		{
 			double from = before.length == g.slots.length ? BubbleMotion.clamp(before[j].value(now)) : 0.0;

@@ -4,6 +4,7 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
 import java.util.Locale;
@@ -20,7 +21,7 @@ import net.runelite.client.util.ImageUtil;
  */
 final class ItemIcons
 {
-	/** The side of the shown picture in pixels; the files are 32 pixels and are scaled down to this. */
+	/** The side the picture is drawn at, in layout pixels. The file is bigger and is scaled to the real pixels. */
 	static final int ICON_SIZE = 16;
 
 	private static final Logger log = LoggerFactory.getLogger(ItemIcons.class);
@@ -48,7 +49,7 @@ final class ItemIcons
 	}
 
 	/**
-	 * Loads and shrinks one picture.
+	 * Loads one picture at its full size.
 	 *
 	 * @param type the item
 	 */
@@ -57,8 +58,7 @@ final class ItemIcons
 		try
 		{
 			BufferedImage full = ImageUtil.loadImageResource(ItemIcons.class, resourceName(type));
-			BufferedImage small = ImageUtil.resizeImage(full, ICON_SIZE, ICON_SIZE);
-			IMAGES.put(type, small);
+			IMAGES.put(type, full);
 		}
 		catch (RuntimeException e)
 		{
@@ -67,13 +67,33 @@ final class ItemIcons
 	}
 
 	/**
-	 * Finds an item's picture for drawing on the game screen.
+	 * Finds a item's full-size picture.
 	 *
 	 * @param type the item, or null
-	 * @return the 16 pixel picture, or null when there is none
+	 * @return the picture as it is in the file, or null when there is none
 	 */
-	static BufferedImage image(ItemType type)
+	static BufferedImage source(ItemType type)
 	{
 		return type == null ? null : IMAGES.get(type);
+	}
+
+	/**
+	 * Draws a item's picture sharply into a square, at the real pixel size the square covers.
+	 *
+	 * @param g the graphics
+	 * @param type the item, or null
+	 * @param x the left edge of the square
+	 * @param y the top edge
+	 * @param size the side of the square
+	 * @return false when there is no picture, so nothing was drawn
+	 */
+	static boolean draw(Graphics2D g, ItemType type, double x, double y, double size)
+	{
+		BufferedImage image = source(type);
+		if (image == null)
+			return false;
+
+		CrispImages.draw(g, image, x, y, size);
+		return true;
 	}
 }

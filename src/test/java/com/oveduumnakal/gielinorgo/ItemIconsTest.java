@@ -54,16 +54,16 @@ public class ItemIconsTest
 	}
 
 	@Test
-	public void theShownPictureIs16PixelsAndAMissingItemGivesNull()
+	public void theSourceKeepsTheFullFileSizeAndAMissingItemGivesNull()
 	{
 		for (ItemType type : ItemType.values())
 		{
-			assertNotNull(type.name(), ItemIcons.image(type));
-			assertEquals(ItemIcons.ICON_SIZE, ItemIcons.image(type).getWidth());
-			assertEquals(ItemIcons.ICON_SIZE, ItemIcons.image(type).getHeight());
+			assertNotNull(type.name(), ItemIcons.source(type));
+			assertEquals(SIDE, ItemIcons.source(type).getWidth());
+			assertEquals(SIDE, ItemIcons.source(type).getHeight());
 		}
 
-		assertNull(ItemIcons.image(null));
+		assertNull(ItemIcons.source(null));
 	}
 
 	private static BufferedImage read(ItemType type) throws IOException

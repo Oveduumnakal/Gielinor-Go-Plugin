@@ -178,11 +178,7 @@ final class WindowToggle extends Overlay
 		g.setStroke(new BasicStroke(2f));
 		g.draw(box);
 		BufferedImage picture = off ? greyIcon : icon;
-		if (picture != null)
-		{
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-			g.drawImage(picture, (SIZE - ICON_PX) / 2, (SIZE - ICON_PX) / 2, ICON_PX, ICON_PX, null);
-		}
+		CrispImages.draw(g, picture, (SIZE - ICON_PX) / 2.0, (SIZE - ICON_PX) / 2.0, ICON_PX);
 	}
 
 	private void paintDot(Graphics2D g, WindowTheme look, MotionMode mode, long nowMs)

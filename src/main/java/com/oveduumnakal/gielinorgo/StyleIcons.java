@@ -7,7 +7,6 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -93,9 +92,7 @@ final class StyleIcons
 
 		try
 		{
-			AffineTransform transform = g.getTransform();
-			double scale = Math.max(1.0, Math.hypot(transform.getScaleX(), transform.getShearY()));
-			int pixels = Math.max(1, (int) Math.round(size * scale));
+			int pixels = Math.max(1, (int) Math.round(size * CrispImages.deviceScale(g)));
 			BufferedImage image = picture(style, source, pixels, g.getColor());
 			Object hint = g.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
 			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -137,22 +134,7 @@ final class StyleIcons
 	 */
 	static BufferedImage scaled(BufferedImage source, int pixels)
 	{
-		BufferedImage current = source;
-		while (current.getWidth() / 2 >= pixels && current.getWidth() / 2 >= 2)
-			current = resize(current, current.getWidth() / 2);
-
-		return current.getWidth() == pixels ? current : resize(current, pixels);
-	}
-
-	private static BufferedImage resize(BufferedImage source, int pixels)
-	{
-		BufferedImage out = new BufferedImage(pixels, pixels, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = out.createGraphics();
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		g.drawImage(source, 0, 0, pixels, pixels, null);
-		g.dispose();
-		return out;
+		return CrispImages.scaled(source, pixels);
 	}
 
 	/**
