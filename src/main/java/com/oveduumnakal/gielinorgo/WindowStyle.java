@@ -265,7 +265,19 @@ final class WindowStyle
 	 */
 	void focusRing(Graphics2D g, Shape shape)
 	{
-		g.setColor(color(ThemeColor.FOCUS_RING));
+		focusRing(g, shape, ThemeColor.FOCUS_RING);
+	}
+
+	/**
+	 * Draws a ring around what has keyboard focus, in a colour of the caller's choice.
+	 *
+	 * @param g the graphics
+	 * @param shape the outline to ring
+	 * @param ring the colour name of the ring
+	 */
+	void focusRing(Graphics2D g, Shape shape, ThemeColor ring)
+	{
+		g.setColor(color(ring));
 		g.setStroke(new BasicStroke(Math.max(2f, metrics.border)));
 		g.draw(shape);
 	}

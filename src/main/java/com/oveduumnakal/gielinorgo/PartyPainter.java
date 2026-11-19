@@ -118,7 +118,10 @@ final class PartyPainter
 			int step = layout.rows[1].y - layout.rows[0].y;
 			double y = layout.rows[0].y + at * step;
 			Rectangle row = layout.rows[Math.max(0, Math.min(PartyLayout.SLOTS - 1, whole))];
-			st.focusRing(g, Slant.shape(new Rectangle2D.Double(row.x, y, row.width, row.height), st.metrics().slant));
+			int near = Math.max(0, Math.min(PartyLayout.SLOTS - 1, (int) Math.round(at)));
+			double x = row.x + motion.nudge(near, ctx.now) * st.metrics().nudge;
+			st.focusRing(g, Slant.shape(new Rectangle2D.Double(x, y, row.width, row.height), st.metrics().slant),
+				ThemeColor.PARTY_HIGHLIGHT);
 		}
 
 		lead(g, ctx, layout);

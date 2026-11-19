@@ -63,6 +63,8 @@ A Creature Log, daily tasks and daily events give you goals.
   open as an even honeycomb with easier-to-read counts. (#266)
 - **One size on the Party view.** The gender and style icons now match the size of the text beside them. (#273)
 - **HP and XP side by side.** A Party row shows the health bar and the experience bar next to each other. (#274)
+- **Party highlight.** The ring that follows your keyboard on the Party page has its own colour and now sits right
+  on the row instead of beside it. (#277)
 - **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
   beside you, and three species are only met this way. (#90)
 - **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final
