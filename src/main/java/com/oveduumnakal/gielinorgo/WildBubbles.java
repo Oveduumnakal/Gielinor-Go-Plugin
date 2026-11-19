@@ -554,6 +554,42 @@ final class WildBubbles
 		return current != null && current.card != CardState.NONE;
 	}
 
+	/**
+	 * Gives the words of the tooltip for a bubble under the pointer: the jar bubbles name the jar and its catch chance
+	 * on this creature, Battle says it starts combat and Info says it shows information. The Info bubble has none
+	 * while its card shows, so the two never fight over the same spot.
+	 *
+	 * @param hit what is under the pointer, from the published {@link BubbleHits}; may be null
+	 * @return the tooltip words, or null when there is nothing to say
+	 */
+	String tip(BubbleHits.Hit hit)
+	{
+		Group g = current;
+		if (hit == null || g == null || g.offer == null || paused || g.phase == Phase.CLOSING)
+			return null;
+
+		if (hit.kind() == BubbleKind.BATTLE)
+			return "Start combat";
+
+		if (hit.kind() == BubbleKind.INFO)
+			return g.card == CardState.NONE ? "Information" : null;
+
+		JarType jar = hit.kind() == BubbleKind.JAR ? g.offer.jar() : hit.jar();
+		if (hit.kind() != BubbleKind.JAR && hit.kind() != BubbleKind.CLUSTER_JAR)
+			return null;
+
+		if (jar == null)
+			return "No jar to throw";
+
+		for (JarSuggest.JarChoice choice : g.offer.owned())
+		{
+			if (choice.jar() == jar)
+				return jar.label() + " jar\n" + choice.pct() + "% catch chance";
+		}
+
+		return jar.label() + " jar";
+	}
+
 	/** @return the words of the current creature's card for the painter to measure, or null when there is none */
 	WildCardContent cardContent()
 	{

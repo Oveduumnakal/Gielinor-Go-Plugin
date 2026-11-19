@@ -899,6 +899,44 @@ public class WildBubblesTest
 		assertEquals(mid.x(), disc(movedFrame(t + 3000), BubbleKind.JAR).x(), 1e-6);
 	}
 
+	private BubbleHits.Hit hitOn(long now, BubbleKind kind)
+	{
+		BubbleFrame shown = frame(now);
+		BubbleFrame.Disc d = disc(shown, kind);
+		return shown.hits().at(d.x(), d.y());
+	}
+
+	@Test
+	public void theTooltipsNameWhatEachBubbleDoes()
+	{
+		long t = open();
+
+		assertEquals("Bronze jar\n50% catch chance", bubbles.tip(hitOn(t, BubbleKind.JAR)));
+		assertEquals("Start combat", bubbles.tip(hitOn(t, BubbleKind.BATTLE)));
+		assertEquals("Information", bubbles.tip(hitOn(t, BubbleKind.INFO)));
+		assertNull(bubbles.tip(null));
+	}
+
+	@Test
+	public void aClusterJarsTooltipHasItsOwnChanceAndTheInfoTooltipYieldsToTheCard()
+	{
+		long t = open();
+		bubbles.press(generation(t), BubbleKind.JAR, null, 3, t);
+		long u = t + 800;
+		BubbleFrame.Disc slot = clusterDisc(frame(u), JarType.IRON);
+
+		BubbleHits hits = frame(u).hits();
+
+		assertEquals("Iron jar\n60% catch chance", bubbles.tip(hits.at(slot.x(), slot.y())));
+
+		bubbles.pressedOutside(generation(u), u);
+		long v = u + 800;
+		BubbleHits.Hit info = hitOn(v, BubbleKind.INFO);
+		bubbles.press(generation(v), BubbleKind.INFO, null, 1, v);
+
+		assertNull(bubbles.tip(info));
+	}
+
 	@Test
 	public void theClusterHoldsTheSelectedJarFirstThenTheSuggestedOnesThenTheRest()
 	{
