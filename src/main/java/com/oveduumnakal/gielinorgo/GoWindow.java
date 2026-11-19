@@ -79,7 +79,7 @@ final class GoWindow extends Overlay
 			@Override
 			public WindowTheme theme()
 			{
-				return config.windowStyle();
+				return WindowTheme.RUNELITE_DARK;
 			}
 
 			@Override
@@ -112,13 +112,6 @@ final class GoWindow extends Overlay
 				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.WINDOW_SIZE,
 					WindowSizePreset.MEDIUM);
 				applyFraction(WindowFit.DEFAULT_FRACTION);
-			}
-
-			@Override
-			public void flipTheme()
-			{
-				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.WINDOW_STYLE,
-					config.windowStyle().next());
 			}
 
 			@Override

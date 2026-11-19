@@ -43,9 +43,6 @@ final class WindowShell
 	/** The id of the Reset window button's hit. */
 	static final String ID_RESET = "btn:reset";
 
-	/** The id of the style button's hit. */
-	static final String ID_THEME = "btn:theme";
-
 	/** The id of the window size button's hit. */
 	static final String ID_SIZE = "btn:size";
 
@@ -126,9 +123,6 @@ final class WindowShell
 
 		/** Puts the window back to its default size and place. */
 		void resetWindow();
-
-		/** Switches to the other style and saves the choice. */
-		void flipTheme();
 
 		/** Moves on to the next window size preset. */
 		void nextSize();
@@ -1002,7 +996,6 @@ final class WindowShell
 		int baseline = layout.hints.y + (layout.hints.height + fm.getAscent() - fm.getDescent()) / 2;
 		style.text(g, hint, layout.hints.x, baseline, small, ThemeColor.SUBTEXT);
 		footerButton(g, layout.reset, ID_RESET, "Reset window");
-		footerButton(g, layout.theme, ID_THEME, host.theme().toString());
 		footerButton(g, layout.size, ID_SIZE, host.sizeLabel());
 		footerButton(g, layout.changelog, ID_CHANGELOG, changelogLabel(), host.whatsNew());
 		footerButton(g, layout.feedback, ID_FEEDBACK, "Feedback");
@@ -1061,12 +1054,10 @@ final class WindowShell
 		list.addAll(changelog != null ? changelog.hits(style, layout.body) : pages.hits(tab, layout.body));
 		list.add(new Hit(ID_RESET, Hit.Kind.BUTTON, layout.reset, FOOTER_ORDER, true,
 			"Put the window back to its normal size and place"));
-		list.add(new Hit(ID_THEME, Hit.Kind.BUTTON, layout.theme, FOOTER_ORDER + 1, true,
-			"Switch between the two window styles"));
-		list.add(new Hit(ID_SIZE, Hit.Kind.BUTTON, layout.size, FOOTER_ORDER + 2, true, "Change the window size"));
-		list.add(new Hit(ID_CHANGELOG, Hit.Kind.BUTTON, layout.changelog, FOOTER_ORDER + 3, true,
+		list.add(new Hit(ID_SIZE, Hit.Kind.BUTTON, layout.size, FOOTER_ORDER + 1, true, "Change the window size"));
+		list.add(new Hit(ID_CHANGELOG, Hit.Kind.BUTTON, layout.changelog, FOOTER_ORDER + 2, true,
 			host.whatsNew() ? "See what changed in this version" : "Read the change log"));
-		list.add(new Hit(ID_FEEDBACK, Hit.Kind.BUTTON, layout.feedback, FOOTER_ORDER + 4, true,
+		list.add(new Hit(ID_FEEDBACK, Hit.Kind.BUTTON, layout.feedback, FOOTER_ORDER + 3, true,
 			"Report a bug or request a feature"));
 		hits = Collections.unmodifiableList(list);
 		focus.setHits(hits);
@@ -1176,9 +1167,6 @@ final class WindowShell
 				break;
 			case ID_RESET:
 				host.resetWindow();
-				break;
-			case ID_THEME:
-				host.flipTheme();
 				break;
 			case ID_SIZE:
 				host.nextSize();

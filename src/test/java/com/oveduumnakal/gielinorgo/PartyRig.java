@@ -42,7 +42,7 @@ final class PartyRig
 	MotionMode motion = MotionMode.OFF;
 
 	/** The theme the shell reports. */
-	WindowTheme theme = WindowTheme.DARK_GLASS;
+	WindowTheme theme = WindowTheme.RUNELITE_DARK;
 
 	/** The time the shell is driven at. */
 	long now = 1_000L;
@@ -127,12 +127,6 @@ final class PartyRig
 
 			@Override
 			public void resetWindow()
-			{
-				return;
-			}
-
-			@Override
-			public void flipTheme()
 			{
 				return;
 			}

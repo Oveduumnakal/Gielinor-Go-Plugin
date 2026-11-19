@@ -43,7 +43,7 @@ public class WindowFooterTest
 		@Override
 		public WindowTheme theme()
 		{
-			return WindowTheme.DARK_GLASS;
+			return WindowTheme.RUNELITE_DARK;
 		}
 
 		@Override
@@ -72,12 +72,6 @@ public class WindowFooterTest
 
 		@Override
 		public void resetWindow()
-		{
-			return;
-		}
-
-		@Override
-		public void flipTheme()
 		{
 			return;
 		}
@@ -195,12 +189,10 @@ public class WindowFooterTest
 		for (int[] size : SIZES)
 		{
 			WindowLayout layout = WindowLayout.of(size[0], size[1]);
-			WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, layout.scale);
-			List<Rectangle> boxes = Arrays.asList(layout.reset, layout.theme, layout.size, layout.changelog,
+			WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, layout.scale);
+			List<Rectangle> boxes = Arrays.asList(layout.reset, layout.size, layout.changelog,
 				layout.feedback);
-			String theme = WindowTheme.RUNELITE_DARK.toString();
-			List<String> labels = Arrays.asList("Reset window", theme, "Size: Fit canvas", "What's New",
-				"Feedback");
+			List<String> labels = Arrays.asList("Reset window", "Size: Fit canvas", "What's New", "Feedback");
 			BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = image.createGraphics();
 			for (int i = 0; i < boxes.size(); i++)

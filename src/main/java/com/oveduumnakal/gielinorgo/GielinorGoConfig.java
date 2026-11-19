@@ -34,9 +34,6 @@ public interface GielinorGoConfig extends Config
 	/** Key of the painted window's size preset. */
 	String WINDOW_SIZE = "windowSize";
 
-	/** Key of the painted window's style. */
-	String WINDOW_STYLE = "windowStyle";
-
 	/** Key of the hidden item that stores the painted window's width as a share of the canvas width. */
 	String WINDOW_FRACTION = "windowFraction";
 
@@ -454,23 +451,6 @@ public interface GielinorGoConfig extends Config
 	default WindowSizePreset windowSize()
 	{
 		return WindowSizePreset.MEDIUM;
-	}
-
-	/**
-	 * The look of the painted window.
-	 *
-	 * @return the style, dark glass by default
-	 */
-	@ConfigItem(
-		keyName = GielinorGoConfig.WINDOW_STYLE,
-		name = "Window style",
-		description = "Dark glass is blue-purple with a light lead row.\nRuneLite dark is grey and orange."
-			+ " The window's style button changes this too.",
-		position = 24
-	)
-	default WindowTheme windowStyle()
-	{
-		return WindowTheme.DARK_GLASS;
 	}
 
 	/**

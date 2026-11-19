@@ -35,7 +35,7 @@ public class WindowShellTest
 
 	private final List<String> calls = new ArrayList<>();
 	private final BufferedImage image = new BufferedImage(W, H, BufferedImage.TYPE_INT_ARGB);
-	private WindowTheme theme = WindowTheme.DARK_GLASS;
+	private WindowTheme theme = WindowTheme.RUNELITE_DARK;
 	private MotionMode motion = MotionMode.OFF;
 	private boolean hints = true;
 	private boolean keyboard = true;
@@ -78,12 +78,6 @@ public class WindowShellTest
 		public void resetWindow()
 		{
 			calls.add("reset");
-		}
-
-		@Override
-		public void flipTheme()
-		{
-			calls.add("flip");
 		}
 
 		@Override
@@ -237,7 +231,7 @@ public class WindowShellTest
 			ids.add(hit.id());
 
 		assertEquals(Arrays.asList("tab:PARTY", "tab:BAG", "tab:STORAGE", "tab:COLLECTION", "tab:TASKS", "tab:BATTLE",
-			"btn:close", "btn:reset", "btn:theme", "btn:size", "btn:changelog", "btn:feedback"), ids);
+			"btn:close", "btn:reset", "btn:size", "btn:changelog", "btn:feedback"), ids);
 		for (Hit hit : shell.hits())
 			assertTrue(hit.id(), new Rectangle(0, 0, W, H).contains(hit.bounds()));
 	}
@@ -346,15 +340,13 @@ public class WindowShellTest
 		key(KeyEvent.VK_DOWN);
 		key(KeyEvent.VK_SPACE);
 		key(KeyEvent.VK_DOWN);
-		key(KeyEvent.VK_ENTER);
-		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:changelog", shell.focus().highlight());
 		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:feedback", shell.focus().highlight());
 		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:close", shell.focus().highlight());
 
-		assertEquals(List.of("reset", "flip", "size"), calls);
+		assertEquals(List.of("reset", "size"), calls);
 	}
 
 	@Test
@@ -363,10 +355,9 @@ public class WindowShellTest
 		openPainted(true);
 
 		click("btn:reset");
-		click("btn:theme");
 		click("btn:size");
 
-		assertEquals(List.of("reset", "flip", "size"), calls);
+		assertEquals(List.of("reset", "size"), calls);
 	}
 
 	@Test
@@ -625,17 +616,6 @@ public class WindowShellTest
 		key(KeyEvent.VK_DOWN);
 		shell.onLeft();
 		assertEquals("btn:close", shell.focus().highlight());
-	}
-
-	@Test
-	public void theStyleSwitchesOnTheNextPaint()
-	{
-		openPainted(true);
-		int dark = image.getRGB(W / 2, 3);
-		theme = WindowTheme.RUNELITE_DARK;
-		paint();
-
-		assertNotEquals(dark, image.getRGB(W / 2, 3));
 	}
 
 	@Test

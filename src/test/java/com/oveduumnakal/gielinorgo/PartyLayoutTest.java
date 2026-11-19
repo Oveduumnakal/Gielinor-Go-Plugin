@@ -26,7 +26,7 @@ public class PartyLayoutTest
 	{
 		Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, cw, ch);
 		WindowLayout window = WindowLayout.of(size.width, size.height);
-		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, window.scale);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, window.scale);
 		return PartyLayout.of(window.body, style.metrics(), window.scale, banner);
 	}
 
@@ -170,8 +170,8 @@ public class PartyLayoutTest
 	{
 		Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, 765, 503);
 		WindowLayout window = WindowLayout.of(size.width, size.height);
-		PartyLayout glass = PartyLayout.of(window.body, WindowStyle.of(WindowTheme.DARK_GLASS, window.scale).metrics(),
-			window.scale, true);
+		PartyLayout glass = PartyLayout.of(window.body, WindowStyle.of(WindowTheme.RUNELITE_DARK, window.scale)
+			.metrics(), window.scale, true);
 		PartyLayout dark = PartyLayout.of(window.body, WindowStyle.of(WindowTheme.RUNELITE_DARK, window.scale)
 			.metrics(), window.scale, true);
 
