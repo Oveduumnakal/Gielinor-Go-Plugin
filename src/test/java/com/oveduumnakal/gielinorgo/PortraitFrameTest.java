@@ -46,9 +46,7 @@ public class PortraitFrameTest
 		for (int y = 10; y < 50; y++)
 		{
 			for (int x = 10; x < 16; x++)
-			{
 				assertEquals(common.getRGB(x, y), legendary.getRGB(x, y));
-			}
 		}
 	}
 }
