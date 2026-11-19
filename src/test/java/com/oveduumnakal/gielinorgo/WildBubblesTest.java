@@ -746,6 +746,62 @@ public class WildBubblesTest
 	}
 
 	@Test
+	public void leavingTheRangeClosesTheClusterFirstAndTheMainBubblesAfterItHasLanded()
+	{
+		long t = open();
+		bubbles.press(generation(t), BubbleKind.JAR, null, 3, t);
+		long u = t + 800;
+
+		tick(false, FAR_X, FAR_Y, u + 50);
+		tick(false, FAR_X, FAR_Y, u + 349);
+
+		assertTrue(bubbles.clusterOpen());
+		assertTrue(bubbles.showing(ID));
+
+		tick(false, FAR_X, FAR_Y, u + 350);
+
+		assertFalse(bubbles.clusterOpen());
+		assertTrue(bubbles.showing(ID));
+
+		tick(false, FAR_X, FAR_Y, u + 400);
+		tick(false, FAR_X, FAR_Y, u + 600);
+
+		assertTrue("the main bubbles wait for the jars", bubbles.showing(ID));
+
+		tick(false, FAR_X, FAR_Y, u + 700);
+
+		assertFalse(bubbles.showing(ID));
+	}
+
+	@Test
+	public void returningWhileTheClusterGoesBackKeepsTheMainBubbles()
+	{
+		long t = open();
+		bubbles.press(generation(t), BubbleKind.JAR, null, 3, t);
+		long u = t + 800;
+		tick(false, FAR_X, FAR_Y, u);
+		tick(false, FAR_X, FAR_Y, u + 350);
+		tick(false, FAR_X, FAR_Y, u + 400);
+
+		tick(true, 400, 320, u + 450);
+		tick(true, 400, 320, u + 1500);
+
+		assertTrue(bubbles.showing(ID));
+		assertFalse(bubbles.clusterOpen());
+	}
+
+	@Test
+	public void theMainBubblesGoBackAfterTheGraceTimeAloneWhenNoClusterIsOpen()
+	{
+		long t = open();
+
+		tick(false, FAR_X, FAR_Y, t);
+		tick(false, FAR_X, FAR_Y, t + 350);
+
+		assertFalse(bubbles.showing(ID));
+	}
+
+	@Test
 	public void theClusterHoldsTheSelectedJarFirstThenTheSuggestedOnesThenTheRest()
 	{
 		long t = open();

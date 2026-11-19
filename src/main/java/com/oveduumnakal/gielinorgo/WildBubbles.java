@@ -31,7 +31,10 @@ final class WildBubbles
 	/** How many tiles beyond the creature's body still count as near; the glue reads it. */
 	static final int NEAR_TILES = 2;
 
-	/** How long the pointer may stay outside before the group goes back, in milliseconds. */
+	/**
+	 * How long the pointer may stay outside before the group goes back, in milliseconds. An open jar cluster goes
+	 * back first and the main bubbles follow once it has landed on the Catch bubble.
+	 */
 	static final long GRACE_MS = 350;
 
 	/** How long the pointer rests on the Catch bubble before the cluster opens. */
@@ -344,6 +347,13 @@ final class WildBubbles
 
 		if (!inside && now - g.outsideSince >= GRACE_MS)
 		{
+			if (g.cluster != ClusterState.CLOSED)
+			{
+				closeCluster(g, now, false);
+				refresh(g, anchors, now);
+				return;
+			}
+
 			close(g, now);
 			refresh(g, anchors, now);
 			return;
