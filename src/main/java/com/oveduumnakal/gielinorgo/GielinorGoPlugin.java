@@ -2049,13 +2049,14 @@ public class GielinorGoPlugin extends Plugin
 				return;
 			}
 
-			boolean fighting = player.getInteracting() instanceof NPC;
+			boolean fighting = player.getInteracting() instanceof NPC
+				&& !RandomEvents.isRandomEvent(player.getInteracting().getName());
 			for (NPC npc : view.npcs())
 			{
 				if (fighting)
 					break;
 
-				fighting = npc.getInteracting() == player;
+				fighting = npc.getInteracting() == player && !RandomEvents.isRandomEvent(npc.getName());
 			}
 
 			if (fighting)
