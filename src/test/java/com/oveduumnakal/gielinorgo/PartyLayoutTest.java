@@ -180,4 +180,24 @@ public class PartyLayoutTest
 		assertEquals(glass.parts(glass.rows[0]).hp,
 			dark.parts(dark.rows[0]).hp);
 	}
+
+	@Test
+	public void theIconsAreTheSizeOfTheSmallText()
+	{
+		for (int[] canvas : CANVASES)
+		{
+			PartyLayout layout = layout(canvas[0], canvas[1], false);
+			PartyLayout.Parts p = layout.parts(layout.rows[0]);
+			String where = canvas[0] + "x" + canvas[1];
+
+			assertEquals(where, p.gender.width, p.style.width);
+			assertEquals(where, p.gender.height, p.style.height);
+			Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, canvas[0], canvas[1]);
+			double scale = WindowLayout.of(size.width, size.height).scale;
+			WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, scale);
+			int text = style.metrics().text;
+			assertEquals(where, WindowFonts.pixelSize(WindowFonts.SMALL_UNITS, scale), text);
+			assertTrue(where, p.gender.width == text || p.gender.width == p.name.height);
+		}
+	}
 }

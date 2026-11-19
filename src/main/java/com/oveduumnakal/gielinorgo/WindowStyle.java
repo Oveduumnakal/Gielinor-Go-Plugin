@@ -596,6 +596,9 @@ final class WindowStyle
 		/** The padding at each end of a chip's text, in pixels. */
 		final int chipPad;
 
+		/** The pixel size of small print, a sharp whole multiple of the native font size; icons match it. */
+		final int text;
+
 		Metrics(double scale)
 		{
 			slant = round(SLANT_UNITS, scale);
@@ -612,6 +615,7 @@ final class WindowStyle
 			tabSlant = round(SLANT_UNITS / 2, scale);
 			chipSlant = round(CHIP_UNITS / 3, scale);
 			chipPad = round(10, scale);
+			text = WindowFonts.pixelSize(WindowFonts.SMALL_UNITS, scale);
 		}
 
 		private static int round(double units, double scale)
@@ -629,14 +633,14 @@ final class WindowStyle
 			return slant == m.slant && row == m.row && tab == m.tab && bar == m.bar && chipHeight == m.chipHeight
 				&& pad == m.pad && corner == m.corner && border == m.border && shadow == m.shadow
 				&& nudge == m.nudge && barSlant == m.barSlant && tabSlant == m.tabSlant
-				&& chipSlant == m.chipSlant && chipPad == m.chipPad;
+				&& chipSlant == m.chipSlant && chipPad == m.chipPad && text == m.text;
 		}
 
 		@Override
 		public int hashCode()
 		{
 			return Objects.hash(slant, row, tab, bar, chipHeight, pad, corner, border, shadow, nudge, barSlant,
-				tabSlant, chipSlant, chipPad);
+				tabSlant, chipSlant, chipPad, text);
 		}
 	}
 }

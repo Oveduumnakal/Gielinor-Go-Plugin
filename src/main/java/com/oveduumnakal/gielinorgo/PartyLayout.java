@@ -191,7 +191,7 @@ final class PartyLayout
 			int xpH = Math.max(2, m.bar * 2 / 5);
 			int barsTop = row.y + row.height - pad - xpH - Math.max(1, pad / 2) - hpH;
 			int topH = Math.max(1, barsTop - row.y - pad / 2);
-			int icon = Math.max(8, Math.min(topH, row.height * 2 / 5));
+			int icon = Math.max(8, Math.min(topH, m.text));
 			int iconY = row.y + pad / 2 + Math.max(0, (topH - icon) / 2);
 			int levelW = Math.max(icon * 2, m.slant * 5);
 			level = new Rectangle(right - levelW, row.y + pad / 2, levelW, topH);

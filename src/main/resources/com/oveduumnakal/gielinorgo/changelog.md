@@ -61,6 +61,7 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Sharper icons and bubbles.** Text and icons stay crisp at any window size or UI scale. The wild creature
   bubbles became rings with a clear middle, the Battle bubble shows the game's Combat tab icon, and the jars you own
   open as an even honeycomb with easier-to-read counts. (#266)
+- **One size on the Party view.** The gender and style icons now match the size of the text beside them. (#273)
 - **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
   beside you, and three species are only met this way. (#90)
 - **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final
