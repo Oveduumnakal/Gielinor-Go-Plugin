@@ -54,6 +54,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **Party backs out of Summary.** Clicking the Party tab while a creature's Summary is open takes you back to the
+  Party list. (#282)
 - **Resize the window by dragging.** Drag the grip in the window's bottom-right corner, or its right or bottom edge.
   The window starts Small, and Alt + right-click brings it back to Small. The Size button is gone. (#271)
 - **Reset with Alt + right-click.** Hold Alt and right-click the window to put it back to its normal size and place.

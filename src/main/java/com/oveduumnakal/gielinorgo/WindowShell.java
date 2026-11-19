@@ -1194,6 +1194,9 @@ final class WindowShell
 		if (chosen != null)
 		{
 			selectTab(chosen, nowMs);
+			if (chosen == WindowTab.PARTY && pages.depth() > 0)
+				pages.back();
+
 			return;
 		}
 

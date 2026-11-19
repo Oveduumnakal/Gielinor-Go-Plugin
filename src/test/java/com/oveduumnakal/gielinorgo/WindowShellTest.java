@@ -384,6 +384,33 @@ public class WindowShellTest
 	}
 
 	@Test
+	public void clickingThePartyTabOnASummaryBacksOutToThePartyList()
+	{
+		withPages();
+		openPainted(true);
+		depth = 1;
+		click("tab:PARTY");
+
+		assertEquals(WindowTab.PARTY, shell.tab());
+		assertEquals(List.of("back"), calls);
+		click("tab:PARTY");
+
+		assertEquals("only one level is backed out of", List.of("back"), calls);
+	}
+
+	@Test
+	public void clickingAnotherTabAwayFromASummaryDoesNotBackOut()
+	{
+		withPages();
+		openPainted(true);
+		depth = 1;
+		click("tab:BAG");
+
+		assertEquals(WindowTab.BAG, shell.tab());
+		assertEquals(Collections.emptyList(), calls);
+	}
+
+	@Test
 	public void clickingCloseClosesTheWindow()
 	{
 		openPainted(true);
