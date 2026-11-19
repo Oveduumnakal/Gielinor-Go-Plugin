@@ -27,7 +27,7 @@ Then replace this comment with:
 ## Getting started
 
 1. Open the **Plugin Hub** in RuneLite, search for **Gielinor Go** and click **Install**.
-2. Click the Gielinor Go icon in the sidebar (or the jar on the game screen) to open the window. You start with 10
+2. Click the jar on the game screen to open the window. You start with 10
    Bronze jars. On the Party tab, pick your first creature: an Imp, a Gnome Archer or a Wizard.
 3. Walk near monsters until one turns wild: a smaller, outlined copy with a level tag appears beside it.
 4. Move the mouse close to the copy: three bubbles pop out above it. Click the left bubble to throw your selected

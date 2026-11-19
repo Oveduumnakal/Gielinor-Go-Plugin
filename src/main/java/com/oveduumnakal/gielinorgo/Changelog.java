@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 final class Changelog
 {
 	/**
-	 * Resource path of the bundled change log, relative to this class's package like {@code panel_icon.png}, so
+	 * Resource path of the bundled change log, relative to this class's package like {@code panel_icon_large.png}, so
 	 * another plugin's change log can never be found in its place.
 	 */
 	static final String RESOURCE = "changelog.md";
