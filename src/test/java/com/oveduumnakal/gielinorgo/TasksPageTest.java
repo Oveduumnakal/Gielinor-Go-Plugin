@@ -64,6 +64,21 @@ public class TasksPageTest
 	}
 
 	@Test
+	public void aLineSeparatesTheDailyTasksFromTheWeeklyOne()
+	{
+		TasksPage tasks = new TasksPage(null);
+		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
+		PanelState panel = state(5);
+		tasks.layout(new Rectangle(0, 0, 700, 400), style, panel);
+		Rectangle line = tasks.divider();
+		assertTrue(line.width > 0 && line.height > 0);
+		PartyRig rig = page(panel, 765, 497);
+		Rectangle weekly = rig.hit("tasks:row:3").bounds();
+		Rectangle lastDaily = rig.hit("tasks:row:2").bounds();
+		assertTrue(lastDaily.y + lastDaily.height <= weekly.y);
+	}
+
+	@Test
 	public void theHeadingsCountDownToTheResets()
 	{
 		PartyRig rig = page(state(5), 765, 497);
