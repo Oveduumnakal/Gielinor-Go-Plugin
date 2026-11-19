@@ -61,6 +61,13 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Sharper icons and bubbles.** Text and icons stay crisp at any window size or UI scale. The wild creature
   bubbles became rings with a clear middle, the Battle bubble shows the game's Combat tab icon, and the jars you own
   open as an even honeycomb with easier-to-read counts. (#266)
+- **Daily and Weekly apart.** A line now separates the Daily tasks from the Weekly one on the Tasks page. (#288)
+- **A better pin.** The pin button on tasks and eggs is now a drawn push pin: tilted and outlined when free, upright
+  and filled when pinned. (#287)
+- **Smaller Change log and Feedback.** The two buttons are shorter and sit in their own section at the right end
+  of the bottom row. (#289)
+- **Clearer Bag bars.** The Trainer level bar and the Next jar bar now use clearly different colours, easy to tell
+  apart even for colour-blind players. (#290)
 - **Faster jar list.** The jar bubble opens its list after half a second of hovering, twice as fast as before.
   (#301)
 - **Two-step close.** When the mouse leaves a wild creature, the jar list folds away first and the three bubbles

@@ -52,6 +52,9 @@ final class WindowLayout
 	/** The width of the window size button, in layout units. */
 	static final double SIZE_UNITS = 176;
 
+	/** The height of the Change log and Feedback buttons, which are smaller than the others, in layout units. */
+	static final double SMALL_BUTTON_UNITS = 28;
+
 	/** The width of the Change log button, in layout units. */
 	static final double CHANGELOG_UNITS = 134;
 
@@ -94,6 +97,9 @@ final class WindowLayout
 	/** The Feedback button, at the right edge of the footer. */
 	final Rectangle feedback;
 
+	/** The thin vertical line that sets the Change log and Feedback buttons apart as their own section. */
+	final Rectangle moreDivider;
+
 	private WindowLayout(int width, int height)
 	{
 		scale = WindowFit.scale(width, height);
@@ -118,8 +124,11 @@ final class WindowLayout
 		reset = new Rectangle(m, buttonsTop, px(RESET_UNITS), buttonH);
 		theme = new Rectangle(reset.x + reset.width + gap, buttonsTop, px(THEME_UNITS), buttonH);
 		size = new Rectangle(theme.x + theme.width + gap, buttonsTop, px(SIZE_UNITS), buttonH);
-		feedback = new Rectangle(width - m - px(FEEDBACK_UNITS), buttonsTop, px(FEEDBACK_UNITS), buttonH);
-		changelog = new Rectangle(feedback.x - gap - px(CHANGELOG_UNITS), buttonsTop, px(CHANGELOG_UNITS), buttonH);
+		int smallH = px(SMALL_BUTTON_UNITS);
+		int smallTop = buttonsTop + buttonH - smallH;
+		feedback = new Rectangle(width - m - px(FEEDBACK_UNITS), smallTop, px(FEEDBACK_UNITS), smallH);
+		changelog = new Rectangle(feedback.x - gap - px(CHANGELOG_UNITS), smallTop, px(CHANGELOG_UNITS), smallH);
+		moreDivider = new Rectangle(changelog.x - 2 * gap, buttonsTop, Math.max(1, px(1)), buttonH);
 	}
 
 	/**
