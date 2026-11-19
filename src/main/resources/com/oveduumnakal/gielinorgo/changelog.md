@@ -54,6 +54,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **Green checkmark for caught.** A creature you have caught before now shows a green checkmark instead of a
+  green jar, on its name tag and its info card. (#276)
 - **No rarity bar.** The coloured bar on the edge of creature portraits is gone; the rarity is still named in
   the text. (#275)
 - **Catch when nobody can fight.** With no team or a tired lead you can still catch: use the jar bubble or Catch
