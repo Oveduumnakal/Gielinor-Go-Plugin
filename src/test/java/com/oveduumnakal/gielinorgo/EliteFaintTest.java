@@ -119,6 +119,27 @@ public class EliteFaintTest
 	}
 
 	@Test
+	public void theAutomaticReviveWaitsWhileARunIsOpenAndWorksAfterwards()
+	{
+		Creature brute = new Creature("brute", 60, now);
+		Creature other = new Creature("mite", 5, now);
+		game.data().team.add(brute);
+		game.data().team.add(other);
+		game.setBankNear(true);
+		fightOut(game, game.eliteSteered());
+		assertTrue(game.eliteOpen());
+		other.faint(now);
+
+		assertFalse(game.reviveHere());
+		assertTrue(other.fainted);
+
+		game.eliteForfeit();
+
+		assertTrue(game.reviveHere());
+		assertFalse(other.fainted);
+	}
+
+	@Test
 	public void aReviveDraughtStillWorksDuringARun()
 	{
 		Creature brute = new Creature("brute", 60, now);

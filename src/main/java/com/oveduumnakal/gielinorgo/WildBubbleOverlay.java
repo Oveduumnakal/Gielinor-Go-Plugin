@@ -49,6 +49,7 @@ final class WildBubbleOverlay extends Overlay
 	private final BooleanSupplier live;
 	private final LongSupplier clock;
 	private final Consumer<Throwable> onFailure;
+	private final Tooltip tooltip = new Tooltip();
 	private volatile BubbleHits hits = BubbleHits.EMPTY;
 
 	/**
@@ -108,12 +109,29 @@ final class WildBubbleOverlay extends Overlay
 		return WindowStyle.of(theme.get(), scale);
 	}
 
+	private void paintTip(Graphics2D graphics, WindowStyle style, long now)
+	{
+		net.runelite.api.Point mouse = client.getMouseCanvasPosition();
+		BubbleHits.Hit hit = mouse == null ? null : hits.at(mouse.getX(), mouse.getY());
+		String text = model.tip(hit);
+		if (hit == null || text == null)
+		{
+			tooltip.clear();
+			return;
+		}
+
+		tooltip.hover(hit.kind() + ":" + hit.jar(), text, mouse.getX(), mouse.getY(), now);
+		WindowStyle.prepare(graphics);
+		tooltip.paint(graphics, style, new Rectangle(0, 0, client.getCanvasWidth(), client.getCanvasHeight()), now);
+	}
+
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
 		if (!live.getAsBoolean())
 		{
 			hits = BubbleHits.EMPTY;
+			tooltip.clear();
 			return null;
 		}
 
@@ -136,6 +154,7 @@ final class WildBubbleOverlay extends Overlay
 			BubbleFrame frame = model.frame(bodies::anchorsOf, viewport, cardSize, now, motion.get());
 			painter.paint(graphics, frame, style, now);
 			hits = frame.hits();
+			paintTip(graphics, style, now);
 		}
 		catch (RuntimeException | AssertionError e)
 		{
