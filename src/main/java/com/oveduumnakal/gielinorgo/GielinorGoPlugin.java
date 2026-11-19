@@ -124,6 +124,9 @@ public class GielinorGoPlugin extends Plugin
 	/** Most battle log lines played back on screen. */
 	private static final int BATTLE_LINES = 6;
 
+	/** Game ticks after which a deferred result is written even if its scene never ended: about three minutes. */
+	private static final int PENDING_MAX_TICKS = 300;
+
 	/** Game ticks between two hellos to the party, so a burst of people joining is answered once. */
 	private static final int HELLO_TICKS = 5;
 
@@ -215,6 +218,9 @@ public class GielinorGoPlugin extends Plugin
 
 	/** The battle that plays itself, worked out ahead, whose result is written once its last beat has shown. */
 	private BattleSession pendingBattle;
+
+	/** Game ticks the deferred battle has waited for its scene to end. */
+	private int pendingAge;
 	private FloatingTextOverlay floatingText;
 	private FollowerTagOverlay followerTag;
 	/** The lead creature's nickname for the overlay, kept up to date on the game thread. Null for none. */
@@ -432,6 +438,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		clientThread.invoke(() ->
 		{
+			settlePending();
 			saveNow();
 			loadSave();
 		});
@@ -2301,6 +2308,7 @@ public class GielinorGoPlugin extends Plugin
 		heldNotices = new ArrayList<>();
 		BattleResult result = game.battleDeferred(entry);
 		pendingBattle = result == null ? null : result.pending();
+		pendingAge = 0;
 		List<BattleLine> lines = result == null ? null : result.playbackSummary(BATTLE_LINES);
 		boolean staged = false;
 		if (result != null && config.battleAnimations() && !arena.active() && !stage.active())
@@ -2376,7 +2384,11 @@ public class GielinorGoPlugin extends Plugin
 		if (noticeBoard.holding() && (stage.linesDue() || (!stage.active() && !arena.active())))
 			noticeBoard.release();
 
-		if (pendingBattle != null && !stage.active() && !arena.active() && noticeBoard.idle())
+		if (pendingBattle != null)
+			pendingAge++;
+
+		if (pendingBattle != null && (pendingAge > PENDING_MAX_TICKS
+			|| !stage.active() && !arena.active() && noticeBoard.idle()))
 		{
 			heldNotices = new ArrayList<>();
 			settlePending();
