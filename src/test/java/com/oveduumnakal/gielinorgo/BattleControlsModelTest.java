@@ -22,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 public class BattleControlsModelTest
 {
 	private static final Species GOBLIN = new Species("Goblin", 13, CombatType.STAB);
-	private static final WindowStyle STYLE = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
+	private static final WindowStyle STYLE = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
 
 	private final List<BattleChoice> chosen = new ArrayList<>();
 	private final BattleControlsModel model = new BattleControlsModel(chosen::add);
@@ -348,7 +348,7 @@ public class BattleControlsModelTest
 		BattleView many = viewWithMoves(TestMoves.BITE, TestMoves.DRAGONFIRE);
 		for (double scale : new double[] {WindowFit.MIN_SCALE, 1.0, 1.5, 2.0})
 		{
-			WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, scale);
+			WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, scale);
 			for (String open : new String[] {"", BattleControlsModel.ID_ATTACK, BattleControlsModel.ID_SWITCH})
 			{
 				BattleControlsModel m = new BattleControlsModel(chosen::add);

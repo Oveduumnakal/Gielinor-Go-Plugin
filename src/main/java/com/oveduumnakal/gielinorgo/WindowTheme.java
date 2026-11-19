@@ -10,63 +10,13 @@ import java.util.Map;
 
 /**
  * The look of the painted window: one value per {@link ThemeColor}, and nothing else. Shapes, sizes, fonts and hit
- * areas do not depend on the theme, so both styles lay out the same. This is the only class that writes colour
- * literals; the paint code reads {@link #color}. Adding a third style is one more constant that fills every name,
+ * areas do not depend on the theme, so any style lays out the same. This is the only class that writes colour
+ * literals; the paint code reads {@link #color}. Adding a style is one more constant that fills every name,
  * and {@code WindowThemeTest} checks that it did and that its text is readable. It also holds the colour maths the
  * paint code needs (mixing, alpha and contrast). Holds no RuneLite types.
  */
 public enum WindowTheme
 {
-	/** Blue-purple glass with a light lead row. The default. */
-	DARK_GLASS("Dark glass", new Palette()
-		.put(ThemeColor.WINDOW, 0x1A1832, 238)
-		.put(ThemeColor.FRAME, 0x7864C8)
-		.put(ThemeColor.HEADER, 0x28244A)
-		.put(ThemeColor.TAB, 0x302C56)
-		.put(ThemeColor.TAB_ACTIVE, 0x5C4CB0)
-		.put(ThemeColor.TAB_DISABLED, 0x222036)
-		.put(ThemeColor.TAB_TEXT, 0xDAD6F5)
-		.put(ThemeColor.TAB_ACTIVE_TEXT, 0xFFFFFF)
-		.put(ThemeColor.TAB_DISABLED_TEXT, 0x7C7898)
-		.put(ThemeColor.ROW, 0x2C2850)
-		.put(ThemeColor.ROW_BORDER, 0x564C96)
-		.put(ThemeColor.ROW_TEXT, 0xF0EEFF)
-		.put(ThemeColor.LEAD_ROW, 0xE2DEFF)
-		.put(ThemeColor.LEAD_BORDER, 0xFFFFFF)
-		.put(ThemeColor.LEAD_TEXT, 0x1E1A3C)
-		.put(ThemeColor.PORTRAIT_BACKDROP, 0x1C1A34)
-		.put(ThemeColor.TEXT, 0xECEAFA)
-		.put(ThemeColor.SUBTEXT, 0xB8B4E0)
-		.put(ThemeColor.HP_FILL, 0x50C878)
-		.put(ThemeColor.HP_WARNING, 0xE6BE3C)
-		.put(ThemeColor.HP_DANGER, 0xE64646)
-		.put(ThemeColor.HP_TRACK, 0x14122A)
-		.put(ThemeColor.XP_FILL, 0x5AA0F0)
-		.put(ThemeColor.JAR_FILL, 0xF2C14E)
-		.put(ThemeColor.XP_TRACK, 0x14122A)
-		.put(ThemeColor.ACCENT, 0xA082FF)
-		.put(ThemeColor.PANEL_BOX, 0x24203F)
-		.put(ThemeColor.PANEL_BORDER, 0x504890)
-		.put(ThemeColor.TOOLTIP, 0x12102A, 245)
-		.put(ThemeColor.TOOLTIP_TEXT, 0xF0EEFF)
-		.put(ThemeColor.NOTICE, 0x14122A, 235)
-		.put(ThemeColor.NOTICE_TEXT, 0xFFFFFF)
-		.put(ThemeColor.CHIP, 0x40387A)
-		.put(ThemeColor.CHIP_TEXT, 0xEAE8FF)
-		.put(ThemeColor.CHIP_ACCENT, 0x6A4AE0)
-		.put(ThemeColor.CHIP_ACCENT_TEXT, 0xFFFFFF)
-		.put(ThemeColor.HOVER_SHADE, 0xFFFFFF, 28)
-		.put(ThemeColor.PRESS_SHADE, 0x000000, 60)
-		.put(ThemeColor.SHADOW, 0x000000, 90)
-		.put(ThemeColor.FOCUS_RING, 0xFFD84A)
-		.put(ThemeColor.PARTY_HIGHLIGHT, 0x4FE3F0)
-		.put(ThemeColor.INPUT, 0x14122A)
-		.put(ThemeColor.SELECTION, 0xA082FF, 110)
-		.put(ThemeColor.SCRIM, 0x000000, 150)
-		.put(ThemeColor.SCROLL_TRACK, 0x14122A, 160)
-		.put(ThemeColor.SCROLL_THUMB, 0x7864C8)
-		.put(ThemeColor.GOLD, 0xFFD84A)),
-
 	/** RuneLite's own grey and orange, with an amber lead row. */
 	RUNELITE_DARK("RuneLite dark", new Palette()
 		.put(ThemeColor.WINDOW, 0x1E1E1E, 240)
@@ -133,13 +83,6 @@ public enum WindowTheme
 	Color color(ThemeColor name)
 	{
 		return colors.get(name);
-	}
-
-	/** @return the other style, so a footer button can flip between the two */
-	WindowTheme next()
-	{
-		WindowTheme[] all = values();
-		return all[(ordinal() + 1) % all.length];
 	}
 
 	@Override

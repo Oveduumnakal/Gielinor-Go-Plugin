@@ -19,9 +19,9 @@ import java.util.WeakHashMap;
 
 /**
  * Paints a creature's portrait the way the Party row and the Summary page both show it: on a backdrop, in a slanted
- * clip, with the rarity stripe along its left edge, a gold frame and a light sweep when the creature is gilded, washed
- * out while it rests or has fainted, bobbing a little while idle, and fading in when its picture arrives. A creature
- * whose picture has not arrived (or never will) shows its backdrop alone. Holds no RuneLite types.
+ * clip, a gold frame and a light sweep when the creature is gilded, washed out while it rests or has fainted,
+ * bobbing a little while idle, and fading in when its picture arrives. A creature whose picture has not arrived (or
+ * never will) shows its backdrop alone. Holds no RuneLite types.
  */
 final class PortraitFrame
 {
@@ -68,16 +68,6 @@ final class PortraitFrame
 			g.setComposite(saved);
 		}
 
-		g.setColor(rarity(row.rarity()));
-		double stripe = Math.max(2.0, style.px(STRIPE_UNITS));
-		double lean = Math.min(skew, box.getWidth() / 2.0);
-		Path2D.Double edge = new Path2D.Double();
-		edge.moveTo(box.getX() + lean, box.getY());
-		edge.lineTo(box.getX() + lean + stripe, box.getY());
-		edge.lineTo(box.getX() + stripe, box.getMaxY());
-		edge.lineTo(box.getX(), box.getMaxY());
-		edge.closePath();
-		g.fill(edge);
 		if (row.gilded() && mode.loops())
 			sweep(g, style, box, now);
 

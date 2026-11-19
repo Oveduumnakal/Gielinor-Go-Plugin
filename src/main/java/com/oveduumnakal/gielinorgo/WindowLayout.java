@@ -8,10 +8,10 @@ import java.awt.Rectangle;
 
 /**
  * Where everything of the painted window's shell sits, worked out from the window's size alone: the header with its six
- * tabs and the Close button, the page area, the hint line and the footer buttons (Reset window, the style and size
- * buttons on the left, Change log and Feedback on the right). Every length is a number of layout units in the 800 x
- * 520 design space times the one window scale, so nothing is positioned in raw pixels and both themes get the same
- * boxes. The page area takes whatever room the other parts leave, so a window a pixel off the design shape has no
+ * tabs and the Close button, the page area, the hint line, the footer buttons (Change log and Feedback on the right)
+ * and the resize grip in the bottom-right corner. Every length is a number of layout units in the 800 x 520 design
+ * space times the one window scale, so nothing is positioned in raw pixels except the least sizes of the resize
+ * zones. The page area takes whatever room the other parts leave, so a window a pixel off the design shape has no
  * gap. Coordinates are window pixels. Holds no RuneLite types.
  */
 final class WindowLayout
@@ -43,15 +43,6 @@ final class WindowLayout
 	/** The gap between footer buttons, in layout units. */
 	static final double BUTTON_GAP_UNITS = 8;
 
-	/** The width of the Reset window button, in layout units. */
-	static final double RESET_UNITS = 152;
-
-	/** The width of the style button, in layout units. */
-	static final double THEME_UNITS = 156;
-
-	/** The width of the window size button, in layout units. */
-	static final double SIZE_UNITS = 176;
-
 	/** The height of the Change log and Feedback buttons, which are smaller than the others, in layout units. */
 	static final double SMALL_BUTTON_UNITS = 28;
 
@@ -60,6 +51,12 @@ final class WindowLayout
 
 	/** The width of the Feedback button, in layout units. */
 	static final double FEEDBACK_UNITS = 112;
+
+	/** The least width of the resize strip along an edge, in pixels, however small the window. */
+	static final int EDGE_MIN_PX = 4;
+
+	/** The least side of the corner grip, in pixels. */
+	static final int GRIP_MIN_PX = 12;
 
 	/** The window scale everything is drawn at. */
 	final double scale;
@@ -82,23 +79,17 @@ final class WindowLayout
 	/** The hint line under the page. */
 	final Rectangle hints;
 
-	/** The Reset window button. */
-	final Rectangle reset;
+	/** The grip in the bottom-right corner that resizes the window. */
+	final Rectangle grip;
 
-	/** The style button. */
-	final Rectangle theme;
-
-	/** The window size button. */
-	final Rectangle size;
+	/** The width of the strip along the right and bottom edges that resizes the window, in pixels. */
+	final int edge;
 
 	/** The Change log button, at the right end of the footer. */
 	final Rectangle changelog;
 
 	/** The Feedback button, at the right edge of the footer. */
 	final Rectangle feedback;
-
-	/** The thin vertical line that sets the Change log and Feedback buttons apart as their own section. */
-	final Rectangle moreDivider;
 
 	private WindowLayout(int width, int height)
 	{
@@ -121,14 +112,50 @@ final class WindowLayout
 		hints = new Rectangle(m, hintsTop, width - 2 * m, hintH);
 		body = new Rectangle(m, headerH + m / 2, width - 2 * m, Math.max(0, hintsTop - headerH - m));
 		int gap = px(BUTTON_GAP_UNITS);
-		reset = new Rectangle(m, buttonsTop, px(RESET_UNITS), buttonH);
-		theme = new Rectangle(reset.x + reset.width + gap, buttonsTop, px(THEME_UNITS), buttonH);
-		size = new Rectangle(theme.x + theme.width + gap, buttonsTop, px(SIZE_UNITS), buttonH);
+		edge = Math.max(EDGE_MIN_PX, px(MARGIN / 2));
+		int gripSide = Math.max(GRIP_MIN_PX, px(MARGIN));
+		grip = new Rectangle(width - gripSide, height - gripSide, gripSide, gripSide);
 		int smallH = px(SMALL_BUTTON_UNITS);
 		int smallTop = buttonsTop + buttonH - smallH;
 		feedback = new Rectangle(width - m - px(FEEDBACK_UNITS), smallTop, px(FEEDBACK_UNITS), smallH);
 		changelog = new Rectangle(feedback.x - gap - px(CHANGELOG_UNITS), smallTop, px(CHANGELOG_UNITS), smallH);
-		moreDivider = new Rectangle(changelog.x - 2 * gap, buttonsTop, Math.max(1, px(1)), buttonH);
+	}
+
+	/** Which part of the window a press resizes. */
+	enum ResizeZone
+	{
+		/** Not a resize press. */
+		NONE,
+
+		/** The right edge, which sets the width. */
+		RIGHT,
+
+		/** The bottom edge, which sets the height. */
+		BOTTOM,
+
+		/** The corner grip, which sets the width and the height together. */
+		CORNER
+	}
+
+	/**
+	 * Tells which resize zone a point is in. The corner grip wins where it meets an edge strip.
+	 *
+	 * @param x the point's x in window pixels
+	 * @param y the point's y in window pixels
+	 * @return the zone, or {@link ResizeZone#NONE} when the point is not on the window's right or bottom edge
+	 */
+	ResizeZone resizeZoneAt(int x, int y)
+	{
+		if (!window.contains(x, y))
+			return ResizeZone.NONE;
+
+		if (grip.contains(x, y))
+			return ResizeZone.CORNER;
+
+		if (x >= window.width - edge)
+			return ResizeZone.RIGHT;
+
+		return y >= window.height - edge ? ResizeZone.BOTTOM : ResizeZone.NONE;
 	}
 
 	/**

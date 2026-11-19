@@ -246,7 +246,7 @@ public class PartyRenderSmokeTest
 		int seen = 0;
 		for (int creature = 0; creature < 4; creature++)
 		{
-			PartyRig rig = rig(WindowTheme.DARK_GLASS, MotionMode.OFF, CANVASES[CANVASES.length - 1], 1.0);
+			PartyRig rig = rig(WindowTheme.RUNELITE_DARK, MotionMode.OFF, CANVASES[CANVASES.length - 1], 1.0);
 			rig.publish(storedState(6), true);
 			rig.open();
 			rig.shell.showTab(WindowTab.STORAGE, rig.now);
@@ -275,7 +275,7 @@ public class PartyRenderSmokeTest
 			{
 				Dimension size = WindowFit.sizeFor(fraction, canvas[0], canvas[1]);
 				WindowLayout window = WindowLayout.of(size.width, size.height);
-				WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, window.scale);
+				WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, window.scale);
 				int line = WidgetKit.metrics(style, WindowFonts.Face.REGULAR).getHeight();
 				int small = WidgetKit.metrics(style, WindowFonts.Face.SMALL).getHeight();
 				SummaryLayout layout = SummaryLayout.of(window.body, style.metrics(), line, small,
@@ -389,7 +389,7 @@ public class PartyRenderSmokeTest
 			{
 				Dimension size = WindowFit.sizeFor(fraction, canvas[0], canvas[1]);
 				WindowLayout window = WindowLayout.of(size.width, size.height);
-				WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, window.scale);
+				WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, window.scale);
 				int line = WidgetKit.metrics(style, WindowFonts.Face.REGULAR).getHeight();
 				int small = WidgetKit.metrics(style, WindowFonts.Face.SMALL).getHeight();
 				SummaryLayout layout = SummaryLayout.of(window.body, style.metrics(), line, small);
@@ -435,7 +435,7 @@ public class PartyRenderSmokeTest
 			{
 				Dimension size = WindowFit.sizeFor(fraction, canvas[0], canvas[1]);
 				WindowLayout window = WindowLayout.of(size.width, size.height);
-				WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, window.scale);
+				WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, window.scale);
 				int line = WidgetKit.metrics(style, WindowFonts.Face.REGULAR).getHeight();
 				int small = WidgetKit.metrics(style, WindowFonts.Face.SMALL).getHeight();
 				SummaryLayout layout = SummaryLayout.of(window.body, style.metrics(), line, small);
@@ -464,7 +464,8 @@ public class PartyRenderSmokeTest
 	@Test
 	public void theThreeStagesOfTheMotionAndThePagesPaintInFullMode()
 	{
-		PartyRig rig = rig(WindowTheme.DARK_GLASS, MotionMode.FULL, new int[] {765, 503}, WindowFit.DEFAULT_FRACTION);
+		PartyRig rig = rig(WindowTheme.RUNELITE_DARK, MotionMode.FULL, new int[] {765, 503},
+			WindowFit.DEFAULT_FRACTION);
 		rig.publish(richState(6), true);
 		rig.open();
 		rig.now = 1_000;
@@ -519,7 +520,8 @@ public class PartyRenderSmokeTest
 	@Test
 	public void theRightColumnDrawsTheEggsAndTheFirstThreeTasks()
 	{
-		PartyRig rig = rig(WindowTheme.DARK_GLASS, MotionMode.OFF, new int[] {1024, 768}, WindowFit.DEFAULT_FRACTION);
+		PartyRig rig = rig(WindowTheme.RUNELITE_DARK, MotionMode.OFF, new int[] {1024, 768},
+			WindowSizePreset.MEDIUM.fraction());
 		rig.publish(richState(6), true);
 		rig.open();
 		rig.drawn.clear();

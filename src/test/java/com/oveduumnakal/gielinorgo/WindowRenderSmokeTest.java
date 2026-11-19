@@ -32,7 +32,7 @@ public class WindowRenderSmokeTest
 {
 	private static final int[][] CANVASES = {{765, 503}, {1024, 768}, {1920, 1080}, {800, 520}, {640, 700}};
 
-	private WindowTheme theme = WindowTheme.DARK_GLASS;
+	private WindowTheme theme = WindowTheme.RUNELITE_DARK;
 	private final WindowShell shell = new WindowShell(new WindowShell.Host()
 	{
 		@Override
@@ -60,25 +60,13 @@ public class WindowRenderSmokeTest
 		}
 
 		@Override
-		public String sizeLabel()
-		{
-			return "Size: Fit canvas";
-		}
-
-		@Override
 		public void resetWindow()
 		{
 			return;
 		}
 
 		@Override
-		public void flipTheme()
-		{
-			return;
-		}
-
-		@Override
-		public void nextSize()
+		public void resizeWindow(int width)
 		{
 			return;
 		}
@@ -150,7 +138,7 @@ public class WindowRenderSmokeTest
 	@Test
 	public void fixedModeGivesAWindowAboutFiveHundredAndThirtyFivePixelsWide()
 	{
-		Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, 765, 503);
+		Dimension size = WindowFit.sizeFor(WindowSizePreset.MEDIUM.fraction(), 765, 503);
 
 		assertEquals(536, size.width, 1);
 		assertEquals(348, size.height, 2);
@@ -158,12 +146,11 @@ public class WindowRenderSmokeTest
 	}
 
 	@Test
-	public void everyHitStaysInsideTheWindowAndHitsDoNotMoveWithTheTheme()
+	public void everyHitStaysInsideTheWindow()
 	{
 		for (int[] canvas : CANVASES)
 		{
 			Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, canvas[0], canvas[1]);
-			List<List<String>> perTheme = new ArrayList<>();
 			for (WindowTheme each : WindowTheme.values())
 			{
 				theme = each;
@@ -174,17 +161,9 @@ public class WindowRenderSmokeTest
 					.createGraphics();
 				fresh.paint(g, size.width, size.height, 5L);
 				g.dispose();
-				List<String> boxes = new ArrayList<>();
 				for (Hit hit : fresh.hits())
-				{
 					assertTrue(hit.id(), new Rectangle(0, 0, size.width, size.height).contains(hit.bounds()));
-					boxes.add(hit.id() + hit.bounds());
-				}
-
-				perTheme.add(boxes);
 			}
-
-			assertEquals(perTheme.get(0), perTheme.get(1));
 		}
 	}
 
@@ -217,25 +196,13 @@ public class WindowRenderSmokeTest
 			}
 
 			@Override
-			public String sizeLabel()
-			{
-				return "Size: Medium";
-			}
-
-			@Override
 			public void resetWindow()
 			{
 				return;
 			}
 
 			@Override
-			public void flipTheme()
-			{
-				return;
-			}
-
-			@Override
-			public void nextSize()
+			public void resizeWindow(int width)
 			{
 				return;
 			}
@@ -256,7 +223,7 @@ public class WindowRenderSmokeTest
 			{
 				Dimension size = WindowFit.sizeFor(fraction, canvas[0], canvas[1]);
 				WindowLayout layout = WindowLayout.of(size.width, size.height);
-				WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, layout.scale);
+				WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, layout.scale);
 				FontMetrics small = WidgetKit.metrics(style, WindowFonts.Face.SMALL);
 				String where = canvas[0] + "x" + canvas[1] + " scale " + layout.scale;
 
@@ -267,18 +234,11 @@ public class WindowRenderSmokeTest
 
 				int chip = 2 * style.metrics().chipSlant;
 				assertTrue(where + " close", textFits(style, "Close", layout.close.width - chip));
-				assertTrue(where + " reset", textFits(style, "Reset window", layout.reset.width - chip));
-				for (WindowTheme each : WindowTheme.values())
-					assertTrue(where + " theme " + each, textFits(style, each.toString(), layout.theme.width - chip));
-
-				for (WindowSizePreset preset : WindowSizePreset.values())
-					assertTrue(where + " size " + preset, textFits(style, "Size: " + preset,
-						layout.size.width - chip));
-
 				assertTrue(where + " change log", textFits(style, "What's New", layout.changelog.width - chip));
 				assertTrue(where + " feedback", textFits(style, "Feedback", layout.feedback.width - chip));
 				for (String hint : Arrays.asList(WindowShell.HINT_WINDOW, WindowShell.HINT_MENU,
-					WindowShell.HINT_MODAL, WindowShell.HINT_FIELD, WindowShell.HINT_UNFOCUSED))
+					WindowShell.HINT_MODAL, WindowShell.HINT_FIELD, WindowShell.HINT_SEARCH,
+					WindowShell.HINT_UNFOCUSED))
 					assertTrue(where + " hint " + hint, small.stringWidth(hint) <= layout.hints.width);
 			}
 	}
@@ -306,8 +266,7 @@ public class WindowRenderSmokeTest
 			Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, canvas[0], canvas[1]);
 			WindowLayout layout = WindowLayout.of(size.width, size.height);
 			List<Rectangle> parts = new ArrayList<>(Arrays.asList(layout.tabs));
-			parts.addAll(Arrays.asList(layout.close, layout.body, layout.hints, layout.reset, layout.theme,
-				layout.size));
+			parts.addAll(Arrays.asList(layout.close, layout.body, layout.hints, layout.grip));
 
 			for (Rectangle part : parts)
 				assertTrue(canvas[0] + " " + part, layout.window.contains(part));
@@ -361,23 +320,6 @@ public class WindowRenderSmokeTest
 				list.add(image.getRGB(x, y));
 
 		return list;
-	}
-
-	@Test
-	public void theTwoThemesLookDifferent()
-	{
-		Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, 765, 503);
-		List<List<Integer>> looks = new ArrayList<>();
-		for (WindowTheme each : WindowTheme.values())
-		{
-			theme = each;
-			shell.publish(WindowSnapshot.of(1, state(1), true));
-			shell.open(0L);
-			looks.add(pixels(paintAt(size, 0L)));
-			shell.close(0L, ShellMotion.Phase.CLOSE);
-		}
-
-		assertNotEquals(looks.get(0), looks.get(1));
 	}
 
 	@Test

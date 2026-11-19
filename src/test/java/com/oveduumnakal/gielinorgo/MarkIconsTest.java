@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -92,6 +93,25 @@ public class MarkIconsTest
 		assertTrue(differs(fresh, seen));
 		assertTrue(differs(fresh, caught));
 		assertTrue(differs(seen, caught));
+	}
+
+	@Test
+	public void theCaughtMarkIsACheckmarkNotAJar()
+	{
+		BufferedImage caught = paint(WildRecord.Kind.CAUGHT, 16, 0, 16);
+		BufferedImage check = WidgetKit.canvas(16, 16);
+		Graphics2D g = WidgetKit.graphics(check);
+		g.setColor(Color.WHITE);
+		Icons.check(g, 0, 0, 16);
+		g.dispose();
+		BufferedImage jar = WidgetKit.canvas(16, 16);
+		g = WidgetKit.graphics(jar);
+		g.setColor(Color.WHITE);
+		Icons.jar(g, 0, 0, 16);
+		g.dispose();
+
+		assertFalse(differs(caught, check));
+		assertTrue(differs(caught, jar));
 	}
 
 	private static boolean differs(BufferedImage a, BufferedImage b)

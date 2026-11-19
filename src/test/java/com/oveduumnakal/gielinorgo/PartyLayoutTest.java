@@ -26,7 +26,7 @@ public class PartyLayoutTest
 	{
 		Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, cw, ch);
 		WindowLayout window = WindowLayout.of(size.width, size.height);
-		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, window.scale);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, window.scale);
 		return PartyLayout.of(window.body, style.metrics(), window.scale, banner);
 	}
 
@@ -173,8 +173,8 @@ public class PartyLayoutTest
 	{
 		Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, 765, 503);
 		WindowLayout window = WindowLayout.of(size.width, size.height);
-		PartyLayout glass = PartyLayout.of(window.body, WindowStyle.of(WindowTheme.DARK_GLASS, window.scale).metrics(),
-			window.scale, true);
+		PartyLayout glass = PartyLayout.of(window.body, WindowStyle.of(WindowTheme.RUNELITE_DARK, window.scale)
+			.metrics(), window.scale, true);
 		PartyLayout dark = PartyLayout.of(window.body, WindowStyle.of(WindowTheme.RUNELITE_DARK, window.scale)
 			.metrics(), window.scale, true);
 
@@ -197,7 +197,7 @@ public class PartyLayoutTest
 			assertEquals(where, p.gender.height, p.style.height);
 			Dimension size = WindowFit.sizeFor(WindowFit.DEFAULT_FRACTION, canvas[0], canvas[1]);
 			double scale = WindowLayout.of(size.width, size.height).scale;
-			WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, scale);
+			WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, scale);
 			int text = style.metrics().text;
 			assertEquals(where, WindowFonts.pixelSize(WindowFonts.SMALL_UNITS, scale), text);
 			assertTrue(where, p.gender.width == text || p.gender.width == p.name.height);

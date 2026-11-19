@@ -1041,7 +1041,7 @@ public class GielinorGoPlugin extends Plugin
 		bubblesFailed = false;
 		bubbles = new WildBubbles();
 		bubbleOverlay = new WildBubbleOverlay(client, bodies, bubbles, new BubblePainter(() -> combatSprite),
-			config::windowStyle, config::windowAnimations, config::windowFraction, () -> loaded && bubblesOn(),
+			this::windowStyle, config::windowAnimations, config::windowFraction, () -> loaded && bubblesOn(),
 			System::currentTimeMillis, this::bubblesBroke);
 		bubbleInput = new BubbleInput(bubbleOverlay::hits, dragKey, bubbleSink());
 		spriteTries = 0;
@@ -3232,10 +3232,16 @@ public class GielinorGoPlugin extends Plugin
 			window.applyPreset(config.windowSize());
 	}
 
+	/** @return the one style the painted window and its overlays use */
+	private WindowTheme windowStyle()
+	{
+		return WindowTheme.RUNELITE_DARK;
+	}
+
 	/** Creates the painted window, its toggle, its notice and their input, and registers them. */
 	private void startWindow()
 	{
-		windowNotice = new WindowNotice(config::windowAnimations, config::windowStyle, System::currentTimeMillis,
+		windowNotice = new WindowNotice(config::windowAnimations, this::windowStyle, System::currentTimeMillis,
 			client::getCanvasWidth, client::getCanvasHeight);
 		window = new GoWindow(config, configManager, overlayManager, System::currentTimeMillis,
 			client::getCanvasWidth, client::getCanvasHeight, this::showNotice);
@@ -3243,7 +3249,7 @@ public class GielinorGoPlugin extends Plugin
 		window.shell().pages(new WindowPages(window.shell(), panelActions(), windowPortraits,
 			System::currentTimeMillis, PageText.Sink.NONE));
 		BufferedImage jar = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon_large.png");
-		windowToggle = new WindowToggle(config::windowStyle, config::windowAnimations,
+		windowToggle = new WindowToggle(this::windowStyle, config::windowAnimations,
 			System::currentTimeMillis, jar);
 		dragKey = new DragKey(runeLiteConfig::dragHotkey);
 		windowInput = new WindowInput(window::view, windowToggle::bounds, dragKey, windowSink());
@@ -3276,7 +3282,7 @@ public class GielinorGoPlugin extends Plugin
 	private void startControls()
 	{
 		BattleControlsModel model = new BattleControlsModel(this::chooseBattle);
-		battleControls = new BattleControls(model, config::windowStyle, config::windowFraction,
+		battleControls = new BattleControls(model, this::windowStyle, config::windowFraction,
 			client::getCanvasWidth, client::getCanvasHeight);
 		controlsInput = new WindowInput(battleControls::view, () -> null, dragKey, controlsSink(model));
 		overlayManager.add(battleControls);
@@ -3288,7 +3294,7 @@ public class GielinorGoPlugin extends Plugin
 	private void startTracker()
 	{
 		trackerModel = new TrackerModel();
-		trackerOverlay = new TrackerOverlay(config::windowStyle, config::windowFraction, client::getCanvasWidth,
+		trackerOverlay = new TrackerOverlay(this::windowStyle, config::windowFraction, client::getCanvasWidth,
 			client::getCanvasHeight, config::showTracker, director::active, () -> loaded,
 			() -> onGameThread(game::unpinAll));
 		overlayManager.add(trackerOverlay);
@@ -3420,6 +3426,13 @@ public class GielinorGoPlugin extends Plugin
 			public void toggleClicked()
 			{
 				clientThread.invoke(GielinorGoPlugin.this::toggleWindow);
+			}
+
+			@Override
+			public boolean resetRequested()
+			{
+				clientThread.invoke(() -> window.shell().onResetRequested());
+				return true;
 			}
 		};
 	}

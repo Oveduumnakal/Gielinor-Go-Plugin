@@ -44,6 +44,9 @@ final class BattleLayout
 		/** The card's stripe. */
 		final Rectangle stripe;
 
+		/** The square of the sigil badge, or an empty box when the block shows none. */
+		Rectangle badge = new Rectangle();
+
 		Placed(BattleBlock block, Rectangle box, Rectangle title, Rectangle status, Rectangle stripe)
 		{
 			this.block = block;
@@ -117,6 +120,12 @@ final class BattleLayout
 			{
 				int h = fonts.small.getHeight() + gap;
 				one = words(block, new Rectangle(0, y + gap / 2, width, fonts.small.getHeight()), y, h, width);
+				if (block.sigil() != BattleBlock.Sigil.NONE)
+				{
+					int side = fonts.small.getHeight();
+					one.badge = new Rectangle(0, one.title.y, side, side);
+					one.title.setBounds(side + pad / 2, one.title.y, width - side - pad / 2, side);
+				}
 			}
 			else if (block.kind() == BattleBlock.Kind.NOTE)
 			{
@@ -151,10 +160,12 @@ final class BattleLayout
 		int inner = Math.max(0, width - x - pad);
 		int top = y + pad;
 		int titleH = fonts.bold.getHeight();
+		boolean badged = block.sigil() != BattleBlock.Sigil.NONE;
+		int badgeW = badged ? titleH : 0;
 		int statusW = block.status().isEmpty() ? 0 : fonts.small.stringWidth(block.status()) + pad;
 		statusW = Math.min(statusW, inner / 2);
-		Rectangle title = new Rectangle(x, top, inner - statusW, titleH);
-		Rectangle status = new Rectangle(x + inner - statusW, top, statusW, titleH);
+		Rectangle title = new Rectangle(x, top, Math.max(0, inner - statusW - badgeW), titleH);
+		Rectangle status = new Rectangle(x + inner - statusW - badgeW, top, statusW, titleH);
 		int cursor = top + titleH + gap / 2;
 		List<Rectangle> items = new ArrayList<>();
 		List<List<Rectangle>> buttons = new ArrayList<>();
@@ -181,6 +192,9 @@ final class BattleLayout
 		int bottom = cursor + pad;
 		Rectangle box = new Rectangle(0, y, width, bottom - y);
 		Placed placed = new Placed(block, box, title, status, new Rectangle(0, y, stripeW, box.height));
+		if (badged)
+			placed.badge = new Rectangle(x + inner - badgeW, top, badgeW, titleH);
+
 		placed.items.addAll(items);
 		placed.buttons.addAll(buttons);
 		return placed;
