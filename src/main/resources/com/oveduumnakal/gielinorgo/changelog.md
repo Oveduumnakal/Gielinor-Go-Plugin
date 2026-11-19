@@ -57,6 +57,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **More menu on the Party page.** The "Start over?" box is gone. A More button at the bottom of the Party
+  page opens a menu with Change log, Feedback and Start over. Start over still asks first. (#289)
 - **No sidebar jar.** The jar button in RuneLite's sidebar is gone; the jar on the game screen still opens the
   window. (#267)
 - **Search the Collection.** Type part of a name in the search box above the list to find a creature. It works

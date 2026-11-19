@@ -1269,8 +1269,7 @@ final class WindowShell
 				close(nowMs, ShellMotion.Phase.CLOSE);
 				break;
 			case ID_CHANGELOG:
-				host.whatsNewSeen();
-				changelog = new ChangelogPage(Changelog.load());
+				openChangelog();
 				break;
 			case ID_FEEDBACK:
 				openFeedback(nowMs);
@@ -1284,11 +1283,23 @@ final class WindowShell
 		}
 	}
 
+	/** Opens the change log over the page and marks this version as seen. */
+	void openChangelog()
+	{
+		host.whatsNewSeen();
+		changelog = new ChangelogPage(Changelog.load());
+	}
+
+	/** @return the Feedback menu's items: Report a bug and Request a feature */
+	List<ContextMenu.Item> feedbackItems()
+	{
+		return FeedbackLinks.menu(host::openLink, Changelog.load().currentVersion());
+	}
+
 	private void openFeedback(long nowMs)
 	{
-		String version = Changelog.load().currentVersion();
 		Rectangle b = layout.feedback;
-		openMenu(FeedbackLinks.menu(host::openLink, version), b.x + b.width, b.y, focus.keyboardLed(), nowMs);
+		openMenu(feedbackItems(), b.x + b.width, b.y, focus.keyboardLed(), nowMs);
 	}
 
 	private void lockedClick(Hit hit, long nowMs)

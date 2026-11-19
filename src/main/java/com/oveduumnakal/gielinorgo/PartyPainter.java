@@ -44,8 +44,8 @@ final class PartyPainter
 	/** The label of the button that pins the party to the game screen. */
 	static final String PIN_PARTY = "Pin Party to UI";
 
-	/** The title of the reset banner. */
-	static final String BANNER = "Start over?";
+	/** The label of the button that opens the menu with Change log, Feedback and Start over. */
+	static final String MORE = "More";
 
 	private final PortraitCache pictures;
 	private final PartyMotion motion;
@@ -74,9 +74,8 @@ final class PartyPainter
 	 * @param g the graphics
 	 * @param ctx the frame's facts
 	 * @param layout where everything is
-	 * @param banner whether the reset banner shows
 	 */
-	void paint(Graphics2D g, PageContext ctx, PartyLayout layout, boolean banner)
+	void paint(Graphics2D g, PageContext ctx, PartyLayout layout)
 	{
 		Shape savedClip = g.getClip();
 		g.clipRect(ctx.body.x, ctx.body.y, ctx.body.width, ctx.body.height);
@@ -89,7 +88,7 @@ final class PartyPainter
 		else
 			empty(g, ctx, layout);
 
-		side(g, ctx, layout, state, banner);
+		side(g, ctx, layout, state);
 		g.setClip(savedClip);
 	}
 
@@ -392,7 +391,7 @@ final class PartyPainter
 		}
 	}
 
-	private void side(Graphics2D g, PageContext ctx, PartyLayout layout, PanelState state, boolean banner)
+	private void side(Graphics2D g, PageContext ctx, PartyLayout layout, PanelState state)
 	{
 		WindowStyle st = ctx.style;
 		PageText text = new PageText(st, sink);
@@ -426,8 +425,7 @@ final class PartyPainter
 
 		tasks(g, ctx, layout, state, text, bold, small);
 		pin(g, ctx, layout);
-		if (banner)
-			banner(g, ctx, layout, text, bold, small);
+		button(g, ctx, layout.moreButton, MORE, WindowPages.ID_MORE);
 	}
 
 	private void tasks(Graphics2D g, PageContext ctx, PartyLayout layout, PanelState state, PageText text, Font bold,
@@ -472,22 +470,6 @@ final class PartyPainter
 			ctx.pressOf(WindowPages.ID_PIN_PARTY));
 		if (ctx.focused && WindowPages.ID_PIN_PARTY.equals(ctx.highlight))
 			st.focusRing(g, Slant.shape(shape, st.metrics().chipSlant));
-	}
-
-	private void banner(Graphics2D g, PageContext ctx, PartyLayout layout, PageText text, Font bold, Font small)
-	{
-		WindowStyle st = ctx.style;
-		int pad = st.metrics().pad;
-		Rectangle box = layout.banner;
-		st.panel(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height));
-		FontMetrics bm = g.getFontMetrics(bold);
-		Rectangle title = inner(box, pad, bm.getHeight());
-		text.draw(g, BANNER, title, bold, ThemeColor.TEXT, PageText.Align.LEFT);
-		int top = title.y + bm.getHeight() + pad / 4;
-		Rectangle note = new Rectangle(title.x, top, title.width, Math.max(0, layout.resetButton.y - pad / 4 - top));
-		text.drawWrapped(g, "Begin a fresh save.", note, small, ThemeColor.SUBTEXT);
-		button(g, ctx, layout.resetButton, "Reset", WindowPages.ID_RESET_PROGRESS);
-		button(g, ctx, layout.dismissButton, "Dismiss", WindowPages.ID_DISMISS);
 	}
 
 	private void button(Graphics2D g, PageContext ctx, Rectangle box, String label, String id)

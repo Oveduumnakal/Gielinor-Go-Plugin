@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -453,34 +454,74 @@ public class WindowPagesTest
 		assertEquals(Collections.singletonList("useItem TEAM#3 SMALL_SALVE"), rig.calls);
 	}
 
+	/** Opens the More menu and chooses one of its items; the first item starts out highlighted after a key press. */
+	private void chooseMoreItem(int index)
+	{
+		rig.click(WindowPages.ID_MORE);
+		assertEquals(WindowKeyRules.KeyMode.MENU, rig.shell.keyMode());
+		int downs = index + (rig.shell.focus().keyboardLed() ? 0 : 1);
+		for (int i = 0; i < downs; i++)
+			rig.key(KeyEvent.VK_DOWN);
+
+		rig.key(KeyEvent.VK_ENTER);
+	}
+
 	@Test
-	public void theResetBannerAsksAgainWithNoFirstAndDismissHidesIt()
+	public void theMoreMenuOpensTheChangeLogFromItsFirstItem()
 	{
 		rig.publish(PartyRig.state(PartyRig.team(2)).withResetSummary("2 creatures"), true);
 		rig.open();
-		assertTrue(rig.ids().contains(WindowPages.ID_RESET_PROGRESS));
+		assertTrue(rig.ids().contains(WindowPages.ID_MORE));
 
-		rig.click(WindowPages.ID_RESET_PROGRESS);
+		chooseMoreItem(0);
+
+		assertNotNull(rig.shell.changelogPage());
+	}
+
+	@Test
+	public void theMoreMenuFeedbackItemOpensTheNestedListOfBothForms()
+	{
+		rig.publish(PartyRig.state(PartyRig.team(2)).withResetSummary("2 creatures"), true);
+		rig.open();
+
+		chooseMoreItem(1);
+		assertEquals(WindowKeyRules.KeyMode.MENU, rig.shell.keyMode());
+
+		rig.key(KeyEvent.VK_DOWN);
+		rig.key(KeyEvent.VK_ENTER);
+		assertEquals(WindowKeyRules.KeyMode.WINDOW, rig.shell.keyMode());
+	}
+
+	@Test
+	public void theMoreMenuStartOverAsksAgainAndNoKeepsTheSave()
+	{
+		rig.publish(PartyRig.state(PartyRig.team(2)).withResetSummary("2 creatures"), true);
+		rig.open();
+
+		chooseMoreItem(2);
 		assertEquals(WindowKeyRules.KeyMode.MODAL, rig.shell.keyMode());
 		rig.key(KeyEvent.VK_ENTER);
 		assertTrue(rig.calls.isEmpty());
 
-		rig.click(WindowPages.ID_RESET_PROGRESS);
+		chooseMoreItem(2);
 		rig.key(KeyEvent.VK_RIGHT);
 		rig.key(KeyEvent.VK_ENTER);
 		assertEquals(Collections.singletonList("resetProgress"), rig.calls);
-
-		rig.click(WindowPages.ID_DISMISS);
-		assertFalse(rig.ids().contains(WindowPages.ID_RESET_PROGRESS));
-		assertFalse(rig.ids().contains(WindowPages.ID_DISMISS));
 	}
 
 	@Test
-	public void noBannerShowsWhenThereIsNothingToReset()
+	public void theMoreButtonIsThereWithNothingToResetAndStartOverCannotBeChosen()
 	{
 		open(2, true);
+		assertTrue(rig.ids().contains(WindowPages.ID_MORE));
 
-		assertFalse(rig.ids().contains(WindowPages.ID_RESET_PROGRESS));
+		rig.click(WindowPages.ID_MORE);
+		rig.key(KeyEvent.VK_UP);
+		rig.key(KeyEvent.VK_UP);
+		rig.key(KeyEvent.VK_ENTER);
+
+		assertNotEquals(WindowKeyRules.KeyMode.MODAL, rig.shell.keyMode());
+		assertTrue(rig.calls.isEmpty());
 	}
 
 	@Test

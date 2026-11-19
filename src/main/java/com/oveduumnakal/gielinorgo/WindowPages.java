@@ -37,20 +37,29 @@ final class WindowPages implements WindowShell.PageActions
 	/** The id of the Open Storage button of an empty team. */
 	static final String ID_STORAGE = "btn:openStorage";
 
-	/** The id of the banner's Reset button. */
-	static final String ID_RESET_PROGRESS = "btn:resetProgress";
+	/** The id of the More button, which opens the menu with Change log, Feedback and Start over. */
+	static final String ID_MORE = "btn:more";
 
 	/** The id of the Pin Party to UI button. */
 	static final String ID_PIN_PARTY = "btn:pinParty";
-
-	/** The id of the banner's Dismiss button. */
-	static final String ID_DISMISS = "btn:dismissBanner";
 
 	/** The id of the Summary's portrait and name area, which opens the creature's menu. */
 	static final String ID_SUMMARY_MENU = "summary:menu";
 
 	/** The id of the Summary's moves box. */
 	static final String ID_MOVES = "summary:moves";
+
+	/** The More menu's item that opens the change log. */
+	static final String MORE_CHANGELOG = "Change log";
+
+	/** The More menu's item that opens the Feedback list. */
+	static final String MORE_FEEDBACK = "Feedback";
+
+	/** The More menu's item that starts the reset. */
+	static final String MORE_RESET = "Start over";
+
+	/** Why the Start over item is greyed out. */
+	static final String MORE_NOTHING = "Nothing to reset";
 
 	/** The title of the reset confirmation. */
 	static final String RESET_TITLE = "Reset progress";
@@ -84,7 +93,6 @@ final class WindowPages implements WindowShell.PageActions
 	private MotionMode mode = MotionMode.FULL;
 	private WindowTab tab = WindowTab.PARTY;
 	private boolean enter;
-	private boolean bannerDismissed;
 	private int anchorX;
 	private int anchorY;
 	private CreatureView shown;
@@ -299,7 +307,7 @@ final class WindowPages implements WindowShell.PageActions
 		long now = clock.getAsLong();
 		List<CreatureView> team = panel.team();
 		shown = follow(state, shown, team);
-		PartyLayout layout = PartyLayout.of(body, style.metrics(), style.scale(), showBanner(panel));
+		PartyLayout layout = PartyLayout.of(body, style.metrics(), style.scale());
 		if (enter)
 		{
 			motion.enter(layout.rows[0].width, mode, now);
@@ -335,13 +343,8 @@ final class WindowPages implements WindowShell.PageActions
 		order = Math.max(order, WindowShell.PAGE_ORDER + PartyLayout.SLOTS);
 		hits.add(new Hit(ID_PIN_PARTY, Hit.Kind.BUTTON, layout.pinButton, order++, true,
 			"Show your team in a box on the game screen. Press again to hide it."));
-		if (showBanner(panel))
-		{
-			hits.add(new Hit(ID_RESET_PROGRESS, Hit.Kind.BUTTON, layout.resetButton, order++, true,
-				"Start over with a fresh save. You are asked again first."));
-			hits.add(new Hit(ID_DISMISS, Hit.Kind.BUTTON, layout.dismissButton, order, true,
-				"Hide this until the window is opened again"));
-		}
+		hits.add(new Hit(ID_MORE, Hit.Kind.BUTTON, layout.moreButton, order, true,
+			"Change log, Feedback and Start over"));
 
 		hits.add(new Hit("area:eggs", Hit.Kind.AREA, layout.eggs, -1, true, eggsTip(panel.eggs())));
 		hits.add(new Hit("area:tasks", Hit.Kind.AREA, layout.tasks, -1, true, tasksTip(panel.tasks())));
@@ -490,22 +493,22 @@ final class WindowPages implements WindowShell.PageActions
 		Subject held = state.page() == PageState.Page.SUMMARY ? subject(panel, Holding.TEAM) : null;
 		if (held != null)
 		{
-			paintSummary(g, ctx, held, summaryOrigin(ctx, panel));
+			paintSummary(g, ctx, held, summaryOrigin(ctx));
 			return true;
 		}
 
-		PartyLayout layout = PartyLayout.of(ctx.body, ctx.style.metrics(), ctx.style.scale(), showBanner(panel));
+		PartyLayout layout = PartyLayout.of(ctx.body, ctx.style.metrics(), ctx.style.scale());
 		motion.highlight(WindowPages.rowIndex(ctx.highlight), ctx.mode, ctx.now);
-		party.paint(g, ctx, layout, showBanner(panel));
+		party.paint(g, ctx, layout);
 		return true;
 	}
 
-	private Rectangle summaryOrigin(PageContext ctx, PanelState panel)
+	private Rectangle summaryOrigin(PageContext ctx)
 	{
 		if (state.cameFrom() < 0)
 			return null;
 
-		PartyLayout rows = PartyLayout.of(ctx.body, ctx.style.metrics(), ctx.style.scale(), showBanner(panel));
+		PartyLayout rows = PartyLayout.of(ctx.body, ctx.style.metrics(), ctx.style.scale());
 		return rows.parts(rows.rows[state.cameFrom()]).portrait;
 	}
 
@@ -557,11 +560,6 @@ final class WindowPages implements WindowShell.PageActions
 			views.add(entry.view());
 
 		return views;
-	}
-
-	private boolean showBanner(PanelState panel)
-	{
-		return !bannerDismissed && !panel.resetSummary().isEmpty();
 	}
 
 	private PanelState loaded()
@@ -658,11 +656,8 @@ final class WindowPages implements WindowShell.PageActions
 			case ID_STORAGE:
 				shell.showTab(WindowTab.STORAGE, now);
 				break;
-			case ID_RESET_PROGRESS:
-				confirmReset(panel, now);
-				break;
-			case ID_DISMISS:
-				bannerDismissed = true;
+			case ID_MORE:
+				moreMenu(hit.bounds(), panel);
 				break;
 			case ID_PIN_PARTY:
 				shell.togglePartyPin();
@@ -815,6 +810,23 @@ final class WindowPages implements WindowShell.PageActions
 
 				break;
 		}
+	}
+
+	private void moreMenu(Rectangle button, PanelState panel)
+	{
+		int x = button.x;
+		int y = button.y + button.height;
+		boolean keyboard = shell.focus().keyboardLed();
+		List<ContextMenu.Item> items = new ArrayList<>();
+		items.add(ContextMenu.Item.of(MORE_CHANGELOG, shell::openChangelog));
+		items.add(ContextMenu.Item.opener(MORE_FEEDBACK,
+			() -> shell.openMenu(shell.feedbackItems(), x, y, keyboard, clock.getAsLong())));
+		if (panel.resetSummary().isEmpty())
+			items.add(ContextMenu.Item.disabled(MORE_RESET, MORE_NOTHING));
+		else
+			items.add(ContextMenu.Item.of(MORE_RESET, () -> confirmReset(panel, clock.getAsLong())));
+
+		shell.openMenu(items, x, y, keyboard, clock.getAsLong());
 	}
 
 	private void confirmReset(PanelState panel, long now)

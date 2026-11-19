@@ -401,12 +401,9 @@ public class PartyRenderSmokeTest
 							.append(SummaryLayout.BUTTONS[i]).append('\n');
 				}
 
-				PartyLayout party = PartyLayout.of(window.body, style.metrics(), window.scale, true);
-				if (!labelFits(style, "Reset", party.resetButton.width - chip))
-					problems.append(window.scale).append(" Reset\n");
-
-				if (!labelFits(style, "Dismiss", party.dismissButton.width - chip))
-					problems.append(window.scale).append(" Dismiss\n");
+				PartyLayout party = PartyLayout.of(window.body, style.metrics(), window.scale);
+				if (!labelFits(style, PartyPainter.MORE, party.moreButton.width - chip))
+					problems.append(window.scale).append(" More\n");
 			}
 
 		assertEquals(problems.toString(), "", problems.toString());
@@ -499,9 +496,9 @@ public class PartyRenderSmokeTest
 			assertNotEquals(theme.toString(), pixels(plain), pixels(menu));
 			rig.key(KeyEvent.VK_ESCAPE);
 
-			rig.click(WindowPages.ID_RESET_PROGRESS);
-			BufferedImage reset = rig.paint();
-			assertNotEquals(theme.toString(), pixels(plain), pixels(reset));
+			rig.click(WindowPages.ID_MORE);
+			BufferedImage more = rig.paint();
+			assertNotEquals(theme.toString(), pixels(plain), pixels(more));
 			rig.key(KeyEvent.VK_ESCAPE);
 
 			rig.click("row:2");
