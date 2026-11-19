@@ -26,7 +26,7 @@ final class FollowerPath
 	static final int MAX_TRAIL = 8;
 
 	/** Tiles the follower keeps between itself and the player, along the way the player came. */
-	static final double FOLLOW_GAP = 1.0;
+	static final double FOLLOW_GAP = 2.0;
 
 	/** Fastest the follower moves, in tiles per game tick. A running player moves 2. */
 	static final int MAX_SPEED = 4;
@@ -113,6 +113,9 @@ final class FollowerPath
 	private double lookX;
 	private double lookY;
 	private final FollowerStroll stroll;
+	private final FollowerPace pace;
+	private final double gap;
+	private boolean playerMoving;
 	private boolean strolling;
 	private boolean rejoinDue;
 
@@ -129,7 +132,21 @@ final class FollowerPath
 	 */
 	FollowerPath(Random random)
 	{
+		this(random, FOLLOW_GAP, true);
+	}
+
+	/**
+	 * Makes a path with its own gap and pace, so a test can check the trailing alone.
+	 *
+	 * @param random picks how long the follower rests, where it strolls to and how far it lags
+	 * @param gap tiles to keep behind the player, along the way the player came
+	 * @param lagging false to set off at once with every step, as a tight shadow
+	 */
+	FollowerPath(Random random, double gap, boolean lagging)
+	{
+		this.gap = gap;
 		stroll = new FollowerStroll(random);
+		pace = new FollowerPace(random, lagging);
 	}
 
 	/**
@@ -161,6 +178,7 @@ final class FollowerPath
 			return;
 		}
 
+		playerMoving = jump > ARRIVED;
 		if (jump > ARRIVED)
 		{
 			if (stroll.phase() == FollowerStroll.Phase.OFF)
@@ -186,7 +204,7 @@ final class FollowerPath
 		}
 
 		if (stroll.phase() == FollowerStroll.Phase.OFF)
-			walking = behind > ARRIVED;
+			walking = pace.moving(behind, playerMoving);
 	}
 
 	/**
@@ -217,8 +235,13 @@ final class FollowerPath
 			return;
 		}
 
-		double budget = Math.min(behind(), (double) MAX_SPEED / CLIENT_TICKS);
+		double excess = behind();
+		boolean go = pace.moving(excess, playerMoving);
+		double budget = go ? Math.min(excess, (double) MAX_SPEED / CLIENT_TICKS) : 0;
 		boolean moved = budget > ARRIVED;
+		if (go && excess - budget <= ARRIVED)
+			pace.caughtUp();
+
 		while (budget > 0)
 		{
 			double targetX = trail.isEmpty() ? drawnX : trail.peek()[0];
@@ -259,6 +282,7 @@ final class FollowerPath
 		errand = false;
 		rejoinDue = false;
 		stroll.stop();
+		pace.reset();
 		trail.clear();
 		waypoints.clear();
 	}
@@ -418,7 +442,7 @@ final class FollowerPath
 
 		FollowerStroll.Phase phase = stroll.phase();
 		boolean settled = phase == FollowerStroll.Phase.STANDING
-			|| phase == FollowerStroll.Phase.OFF && !walking && trail.isEmpty();
+			|| phase == FollowerStroll.Phase.OFF && !walking && behind() <= ARRIVED;
 		return stroll.restOver(settled);
 	}
 
@@ -688,6 +712,7 @@ final class FollowerPath
 		errand = false;
 		rejoinDue = false;
 		stroll.stop();
+		pace.reset();
 		playerX = px;
 		playerY = py;
 		drawnX = drawn;
@@ -727,6 +752,6 @@ final class FollowerPath
 		}
 
 		length += Math.max(Math.abs(drawnX - fromX), Math.abs(drawnY - fromY));
-		return Math.max(0, length - FOLLOW_GAP);
+		return Math.max(0, length - gap);
 	}
 }

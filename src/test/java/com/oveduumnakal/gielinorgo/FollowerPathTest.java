@@ -4,6 +4,8 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.Random;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -21,7 +23,7 @@ public class FollowerPathTest
 	private static final FollowerPath.Ground OPEN = (x, y) -> true;
 	private static final FollowerPath.Ground WALLED_IN = (x, y) -> false;
 
-	private final FollowerPath path = new FollowerPath();
+	private final FollowerPath path = new FollowerPath(new Random(), 1.0, false);
 
 	@Test
 	public void nothingIsPlacedBeforeTheFirstReading()
@@ -231,7 +233,7 @@ public class FollowerPathTest
 			path.playerAt(drawn, 3200, 0, OPEN);
 			path.advance();
 			if (drawn >= 3201)
-				assertTrue(path.x() <= drawn - FollowerPath.FOLLOW_GAP + CLOSE);
+				assertTrue(path.x() <= drawn - 1.0 + CLOSE);
 		}
 	}
 
@@ -422,7 +424,7 @@ public class FollowerPathTest
 
 		assertFalse(path.goTo(3200, 3200 + FollowerPath.MAX_ERRAND + 2, 3200, 3200));
 		assertFalse(path.onErrand());
-		assertFalse(new FollowerPath().goTo(1, 1, 2, 2));
+		assertFalse(new FollowerPath(new Random(), 1.0, false).goTo(1, 1, 2, 2));
 	}
 
 	@Test

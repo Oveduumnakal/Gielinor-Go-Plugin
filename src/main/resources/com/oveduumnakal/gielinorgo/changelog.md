@@ -61,6 +61,8 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Sharper icons and bubbles.** Text and icons stay crisp at any window size or UI scale. The wild creature
   bubbles became rings with a clear middle, the Battle bubble shows the game's Combat tab icon, and the jars you own
   open as an even honeycomb with easier-to-read counts. (#266)
+- **A more natural follower.** Your lead keeps a small gap, lags a step or two behind while you walk, then
+  catches up, instead of hugging your heels. It still keeps up through teleports and map loads. (#302)
 - **Daily and Weekly apart.** A line now separates the Daily tasks from the Weekly one on the Tasks page. (#288)
 - **A better pin.** The pin button on tasks and eggs is now a drawn push pin: tilted and outlined when free, upright
   and filled when pinned. (#287)
