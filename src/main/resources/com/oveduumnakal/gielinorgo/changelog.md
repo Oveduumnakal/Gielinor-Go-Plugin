@@ -65,6 +65,8 @@ A Creature Log, daily tasks and daily events give you goals.
   (#301)
 - **Two-step close.** When the mouse leaves a wild creature, the jar list folds away first and the three bubbles
   follow. (#300)
+- **Steady bubbles.** The bubbles stay put while your mouse is on one, even if the creature walks, and glide back
+  to it a second after you move off. (#293)
 - **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
   beside you, and three species are only met this way. (#90)
 - **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final

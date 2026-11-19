@@ -37,6 +37,12 @@ final class WildBubbles
 	 */
 	static final long GRACE_MS = 350;
 
+	/**
+	 * How long the pointer must be off every bubble before the bubbles, held still while it was on one, glide back to
+	 * the creature, in milliseconds.
+	 */
+	static final long HOLD_MS = 1000;
+
 	/** How long the pointer rests on the Catch bubble before the cluster opens. */
 	static final long CLUSTER_HOVER_MS = 450;
 
@@ -183,6 +189,9 @@ final class WildBubbles
 		private BubbleOffer offer;
 		private BubbleAnchors anchors;
 		private long outsideSince = -1;
+		private BubbleAnchors held;
+		private long holdOffSince = -1;
+		private Tween glide;
 		private ClusterState cluster = ClusterState.CLOSED;
 		private Tween[] slots = new Tween[0];
 		private int[] ranks = new int[0];
@@ -330,15 +339,22 @@ final class WildBubbles
 				return;
 		}
 
-		Geom geom = geom(g, anchors, now);
+		BubbleAnchors at = placed(g, anchors, now);
+		Geom geom = geom(g, at, now);
 		if (blocked(groupBounds(g, geom)))
 		{
 			retireCurrent(now);
 			return;
 		}
 
-		List<BubbleFrame.Disc> discs = discs(g, geom, anchors, now, true);
+		List<BubbleFrame.Disc> discs = discs(g, geom, at, now, true);
 		updateHover(g, discs, px, py, now);
+		if (holdLogic(g, discs, anchors, near, px, py, now))
+		{
+			refresh(g, anchors, now);
+			return;
+		}
+
 		boolean inside = near || inZones(zones(g, geom, discs, now), px, py);
 		if (inside)
 			g.outsideSince = -1;
@@ -571,7 +587,7 @@ final class WildBubbles
 		BubbleFrame.Card card = null;
 		for (Group g : retiring)
 		{
-			BubbleAnchors a = anchorsOf.apply(g.wildId);
+			BubbleAnchors a = placed(g, anchorsOf.apply(g.wildId), now);
 			if (a == null)
 				continue;
 
@@ -584,7 +600,7 @@ final class WildBubbles
 		int gen = 0;
 		boolean modal = false;
 		Group c = current;
-		BubbleAnchors anchors = c == null ? null : anchorsOf.apply(c.wildId);
+		BubbleAnchors anchors = c == null ? null : placed(c, anchorsOf.apply(c.wildId), now);
 		if (anchors != null)
 		{
 			boolean live = c.phase != Phase.CLOSING;
@@ -606,7 +622,8 @@ final class WildBubbles
 
 	private boolean onMainDisc(Group g, BubbleAnchors anchors, int px, int py, long now)
 	{
-		List<BubbleFrame.Disc> discs = discs(g, geom(g, anchors, now), anchors, now, true);
+		BubbleAnchors at = placed(g, anchors, now);
+		List<BubbleFrame.Disc> discs = discs(g, geom(g, at, now), at, now, true);
 		for (int i = 0; i < 3; i++)
 		{
 			BubbleFrame.Disc disc = discs.get(i);
@@ -893,7 +910,7 @@ final class WildBubbles
 		for (int i = 0; i < 3; i++)
 			zones.add(around(discs.get(i)));
 
-		zones.add(BubbleLayout.corridor(geom.arc, g.anchors.originY()));
+		zones.add(BubbleLayout.corridor(geom.arc, placed(g, g.anchors, now).originY()));
 		if (g.cluster == ClusterState.OPEN && geom.cluster != null)
 			zones.add(clusterZone(discs, geom));
 
@@ -927,12 +944,84 @@ final class WildBubbles
 	private void refresh(Group g, BubbleAnchors anchors, long now)
 	{
 		settle(g, now);
-		Geom geom = geom(g, anchors, now);
+		BubbleAnchors at = placed(g, anchors, now);
+		Geom geom = geom(g, at, now);
 		boolean live = g.phase != Phase.CLOSING;
-		List<BubbleFrame.Disc> discs = discs(g, geom, anchors, now, live);
+		List<BubbleFrame.Disc> discs = discs(g, geom, at, now, live);
 		g.zones = live ? zones(g, geom, discs, now) : Collections.emptyList();
 		boolean modal = live && (g.cluster == ClusterState.OPEN || g.card == CardState.PINNED);
 		g.hits = new BubbleFrame(discs, cardOf(g, geom, now, live), g.generation, modal).hits();
+	}
+
+	/**
+	 * Gives where the creature counts as being for the bubbles. While the pointer is on a bubble they stay where they
+	 * are even if the creature walks; once it has been off every bubble for {@link #HOLD_MS} they glide to the
+	 * creature.
+	 */
+	private static BubbleAnchors placed(Group g, BubbleAnchors live, long now)
+	{
+		if (live == null || g.held == null)
+			return live;
+
+		if (g.glide == null)
+			return g.held;
+
+		return BubbleAnchors.between(g.held, live, g.glide.value(now));
+	}
+
+	/**
+	 * Holds the bubbles still while the pointer is on any of them and lets them glide back after it has been away for
+	 * {@link #HOLD_MS}. If the pointer is no longer near the creature by then, the bubbles go back instead.
+	 *
+	 * @return whether the group was closed
+	 */
+	private boolean holdLogic(Group g, List<BubbleFrame.Disc> discs, BubbleAnchors live, boolean near, double px,
+		double py, long now)
+	{
+		boolean onBubble = false;
+		for (BubbleFrame.Disc disc : discs)
+		{
+			if (over(disc, px, py))
+				onBubble = true;
+		}
+
+		if (onBubble)
+		{
+			g.held = placed(g, live, now);
+			g.glide = null;
+			g.holdOffSince = -1;
+			return false;
+		}
+
+		if (g.held == null)
+			return false;
+
+		if (g.glide != null)
+		{
+			if (g.glide.done(now))
+			{
+				g.held = null;
+				g.glide = null;
+				g.holdOffSince = -1;
+			}
+
+			return false;
+		}
+
+		if (g.holdOffSince < 0)
+			g.holdOffSince = now;
+
+		if (now - g.holdOffSince < HOLD_MS)
+			return false;
+
+		if (!near)
+		{
+			close(g, now);
+			return true;
+		}
+
+		g.glide = Tween.of(0, 1, now, mode.moves() ? BubbleMotion.HOLD_GLIDE_MS : 0, Easing.IN_OUT_SINE);
+		return false;
 	}
 
 	private void clusterLogic(Group g, List<BubbleFrame.Disc> discs, Geom geom, double px, double py, long now)
@@ -1023,7 +1112,7 @@ final class WildBubbles
 		g.slots = new Tween[choices.size()];
 		g.clusterOutsideSince = -1;
 		g.jarHoverSince = -1;
-		BubbleLayout.ClusterPlan plan = geom(g, g.anchors, now).cluster;
+		BubbleLayout.ClusterPlan plan = geom(g, placed(g, g.anchors, now), now).cluster;
 		g.ranks = new int[plan.slots().size()];
 		for (int j = 0; j < g.ranks.length; j++)
 			g.ranks[j] = j;

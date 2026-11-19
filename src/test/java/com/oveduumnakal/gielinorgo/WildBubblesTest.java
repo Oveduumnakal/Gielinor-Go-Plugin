@@ -801,6 +801,104 @@ public class WildBubblesTest
 		assertFalse(bubbles.showing(ID));
 	}
 
+	private static final BubbleAnchors MOVED = new BubbleAnchors(460, 320, 460, 260);
+
+	private BubbleFrame movedFrame(long now)
+	{
+		return bubbles.frame(id -> id == ID ? MOVED : null, VIEW, new Dimension(190, 140), now, MotionMode.FULL);
+	}
+
+	private void movedTick(boolean near, double px, double py, long now)
+	{
+		tick(offer(), MOVED, near, px, py, now, Collections.emptyList());
+	}
+
+	@Test
+	public void theBubblesStayWhereTheyAreWhileThePointerIsOnOneAndTheCreatureMoves()
+	{
+		long t = open();
+		double x = arc.x(0);
+		double y = arc.y(0);
+		tick(true, x, y, t);
+
+		movedTick(true, x, y, t + 100);
+		movedTick(true, x, y, t + 3000);
+
+		assertEquals(x, disc(movedFrame(t + 3000), BubbleKind.JAR).x(), 1e-6);
+		assertEquals(arc.x(1), disc(movedFrame(t + 3000), BubbleKind.BATTLE).x(), 1e-6);
+		assertEquals(arc.x(2), disc(movedFrame(t + 3000), BubbleKind.INFO).x(), 1e-6);
+	}
+
+	@Test
+	public void theBubblesGlideToTheCreatureOneSecondAfterThePointerLeavesEveryBubble()
+	{
+		long t = open();
+		tick(true, arc.x(0), arc.y(0), t);
+		movedTick(true, arc.x(0), arc.y(0), t + 100);
+		double moved = BubbleLayout.main(MOVED, VIEW).x(0);
+
+		movedTick(true, 400, 320, t + 200);
+		movedTick(true, 400, 320, t + 1199);
+
+		assertEquals(arc.x(0), disc(movedFrame(t + 1199), BubbleKind.JAR).x(), 1e-6);
+
+		movedTick(true, 400, 320, t + 1200);
+		movedTick(true, 400, 320, t + 1400);
+		double mid = disc(movedFrame(t + 1400), BubbleKind.JAR).x();
+
+		assertTrue("gliding " + mid, mid > arc.x(0) + 1 && mid < moved - 1);
+
+		movedTick(true, 400, 320, t + 1700);
+
+		assertEquals(moved, disc(movedFrame(t + 1700), BubbleKind.JAR).x(), 1e-6);
+		assertTrue(bubbles.showing(ID));
+	}
+
+	@Test
+	public void theBubblesFollowTheCreatureAtOnceWhenThePointerIsOnNoBubble()
+	{
+		long t = open();
+		double moved = BubbleLayout.main(MOVED, VIEW).x(0);
+
+		movedTick(true, 400, 320, t + 100);
+
+		assertEquals(moved, disc(movedFrame(t + 100), BubbleKind.JAR).x(), 1e-6);
+	}
+
+	@Test
+	public void theBubblesGoBackInsteadOfGlidingWhenTheCreatureHasLeftTheRange()
+	{
+		long t = open();
+		tick(true, arc.x(0), arc.y(0), t);
+		movedTick(true, arc.x(0), arc.y(0), t + 100);
+
+		movedTick(false, 400, 290, t + 200);
+		movedTick(false, 400, 290, t + 1199);
+
+		assertTrue(bubbles.showing(ID));
+
+		movedTick(false, 400, 290, t + 1200);
+
+		assertFalse(bubbles.showing(ID));
+	}
+
+	@Test
+	public void returningToABubbleWhileTheyGlideHoldsThemWhereTheyAre()
+	{
+		long t = open();
+		tick(true, arc.x(0), arc.y(0), t);
+		movedTick(true, arc.x(0), arc.y(0), t + 100);
+		movedTick(true, 400, 320, t + 200);
+		movedTick(true, 400, 320, t + 1200);
+		movedTick(true, 400, 320, t + 1400);
+		BubbleFrame.Disc mid = disc(movedFrame(t + 1400), BubbleKind.JAR);
+
+		movedTick(true, mid.x(), mid.y(), t + 1400);
+		movedTick(true, mid.x(), mid.y(), t + 3000);
+
+		assertEquals(mid.x(), disc(movedFrame(t + 3000), BubbleKind.JAR).x(), 1e-6);
+	}
+
 	@Test
 	public void theClusterHoldsTheSelectedJarFirstThenTheSuggestedOnesThenTheRest()
 	{
