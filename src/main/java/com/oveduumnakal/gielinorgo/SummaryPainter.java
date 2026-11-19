@@ -265,6 +265,9 @@ final class SummaryPainter
 		int lineH = g.getFontMetrics(small).getHeight();
 		int y = box.y + layout.headingH + layout.pad;
 		int w = box.width - 2 * layout.pad;
+		if (y + lineH > box.y + box.height)
+			return;
+
 		text.draw(g, content.natureName(), new Rectangle(box.x + layout.pad, y, w, lineH), small, ThemeColor.TEXT,
 			PageText.Align.LEFT);
 		y += lineH;
