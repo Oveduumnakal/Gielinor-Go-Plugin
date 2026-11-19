@@ -49,10 +49,10 @@ final class PartyLayout
 	/** The top tasks box in the right column. */
 	final Rectangle tasks;
 
-	/** The Pin Party to UI button, above the More button. */
+	/** The Pin Party to UI button, at the foot of the right column, left of the More button. */
 	final Rectangle pinButton;
 
-	/** The More button at the foot of the right column; it opens Change log, Feedback and Start over. */
+	/** The More button at the foot of the right column, right of Pin Party to UI; it opens a menu. */
 	final Rectangle moreButton;
 
 	private final WindowStyle.Metrics metrics;
@@ -74,10 +74,13 @@ final class PartyLayout
 			rows[i] = new Rectangle(main.x + room, main.y + i * (rowH + gap), rowW, rowH);
 
 		int pad = metrics.pad;
-		int buttonH = Math.min(metrics.chipHeight + pad / 2, Math.max(0, side.height / 6));
-		moreButton = new Rectangle(side.x, side.y + side.height - buttonH, side.width, buttonH);
-		pinButton = new Rectangle(side.x, moreButton.y - gap - buttonH, side.width, buttonH);
-		int free = Math.max(0, pinButton.y - side.y - gap);
+		int buttonH = Math.min(metrics.chipHeight + pad / 2, Math.max(0, side.height / 8));
+		int rowTop = side.y + side.height - buttonH;
+		int moreW = Math.max(0, (side.width - gap) * 2 / 5);
+		int pinW = Math.max(0, side.width - gap - moreW);
+		pinButton = new Rectangle(side.x, rowTop, pinW, buttonH);
+		moreButton = new Rectangle(side.x + pinW + gap, rowTop, moreW, buttonH);
+		int free = Math.max(0, rowTop - side.y - gap);
 		int eggsH = Math.max(0, (free - gap) * 2 / 5);
 		eggs = new Rectangle(side.x, side.y, side.width, eggsH);
 		tasks = new Rectangle(side.x, side.y + eggsH + gap, side.width, Math.max(0, free - eggsH - gap));

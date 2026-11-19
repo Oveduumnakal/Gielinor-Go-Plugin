@@ -41,6 +41,13 @@ final class ContextMenu
 	private List<Rectangle> boxes = Collections.emptyList();
 	private int itemHeight;
 	private long openedMs;
+	private long lastMs;
+	private Rectangle canvasSeen = new Rectangle();
+	private WindowStyle styleSeen;
+	private FontMetrics fmSeen;
+	private ContextMenu child;
+	private int childIndex = -1;
+	private boolean childKeys;
 
 	/** One entry of the menu. */
 	static final class Item
@@ -51,9 +58,17 @@ final class ContextMenu
 		private final Runnable action;
 		private final boolean separator;
 		private final boolean opens;
+		private final List<Item> children;
 
 		private Item(String label, boolean enabled, String reason, Runnable action, boolean separator, boolean opens)
 		{
+			this(label, enabled, reason, action, separator, opens, null);
+		}
+
+		private Item(String label, boolean enabled, String reason, Runnable action, boolean separator, boolean opens,
+			List<Item> children)
+		{
+			this.children = children;
 			this.label = label;
 			this.enabled = enabled;
 			this.reason = reason == null ? "" : reason;
@@ -104,6 +119,25 @@ final class ContextMenu
 		static Item opener(String label, Runnable action)
 		{
 			return new Item(label, true, null, action, false, true);
+		}
+
+		/**
+		 * An item with a submenu. It is drawn with an arrow; hovering it, or pressing Right or Enter on it, opens the
+		 * list beside the menu, and choosing something in that list closes both.
+		 *
+		 * @param label the text
+		 * @param items the submenu's items
+		 * @return an enabled item that shows a list
+		 */
+		static Item submenu(String label, List<Item> items)
+		{
+			return new Item(label, true, null, null, false, true, Collections.unmodifiableList(new ArrayList<>(items)));
+		}
+
+		/** @return the submenu's items, or null when this item has none */
+		List<Item> children()
+		{
+			return children;
 		}
 
 		/**
@@ -181,6 +215,10 @@ final class ContextMenu
 		open = !items.isEmpty();
 		anchor = new Point(x, y);
 		openedMs = nowMs;
+		lastMs = nowMs;
+		child = null;
+		childIndex = -1;
+		childKeys = false;
 		highlight = keyboard ? next(-1, 1) : -1;
 		layout(canvas, style, fm);
 	}
@@ -190,6 +228,20 @@ final class ContextMenu
 	{
 		open = false;
 		highlight = -1;
+		closeChild();
+	}
+
+	private void closeChild()
+	{
+		child = null;
+		childIndex = -1;
+		childKeys = false;
+	}
+
+	/** @return the open submenu, or null when none shows */
+	ContextMenu submenu()
+	{
+		return child != null && child.open ? child : null;
 	}
 
 	/** @return whether the menu is open */
@@ -225,6 +277,9 @@ final class ContextMenu
 	 */
 	void layout(Rectangle canvas, WindowStyle style, FontMetrics fm)
 	{
+		canvasSeen = canvas;
+		styleSeen = style;
+		fmSeen = fm;
 		int pad = style.metrics().pad;
 		itemHeight = fm.getHeight() + pad / 2;
 		Dimension size = size(style, fm);
@@ -234,6 +289,47 @@ final class ContextMenu
 			list.add(new Rectangle(bounds.x, bounds.y + pad / 2 + i * itemHeight, bounds.width, itemHeight));
 
 		boxes = list;
+		if (child != null)
+			placeChild();
+	}
+
+	private void openChild(int at, boolean keyboard)
+	{
+		if (child != null && childIndex == at)
+		{
+			if (keyboard && !childKeys)
+			{
+				childKeys = true;
+				child.highlight = child.next(-1, 1);
+			}
+
+			return;
+		}
+
+		child = new ContextMenu();
+		childIndex = at;
+		childKeys = keyboard;
+		child.open(items.get(at).children, 0, 0, canvasSeen, styleSeen, fmSeen, keyboard, lastMs);
+		placeChild();
+	}
+
+	private void placeChild()
+	{
+		Rectangle row = boxes.get(childIndex);
+		Dimension size = child.size(styleSeen, fmSeen);
+		int x = bounds.x + bounds.width;
+		if (x + size.width > canvasSeen.x + canvasSeen.width)
+			x = bounds.x - size.width;
+
+		child.anchorAt(x, row.y - styleSeen.metrics().pad / 2, canvasSeen, styleSeen, fmSeen);
+	}
+
+	private void syncChild(int at)
+	{
+		if (items.get(at).children != null)
+			openChild(at, false);
+		else
+			closeChild();
 	}
 
 	/**
@@ -319,6 +415,9 @@ final class ContextMenu
 		int at = next(highlight < 0 && step < 0 ? 0 : highlight, step);
 		if (at >= 0)
 			highlight = at;
+
+		if (child != null && childIndex != highlight)
+			closeChild();
 	}
 
 	private int next(int from, int step)
@@ -335,16 +434,27 @@ final class ContextMenu
 	}
 
 	/**
-	 * Runs the highlighted item and closes the menu.
+	 * Runs the highlighted item and closes the menu; on an item with a submenu it opens the list instead.
 	 *
 	 * @return whether an item ran; false when nothing enabled is highlighted
 	 */
 	boolean activate()
 	{
+		return activate(true);
+	}
+
+	private boolean activate(boolean keyboard)
+	{
 		if (!open || highlight < 0 || !items.get(highlight).enabled)
 			return false;
 
 		Item item = items.get(highlight);
+		if (item.children != null)
+		{
+			openChild(highlight, keyboard);
+			return true;
+		}
+
 		Runnable action = item.action;
 		if (!item.opens)
 			close();
@@ -367,9 +477,18 @@ final class ContextMenu
 		if (!open)
 			return false;
 
+		if (child != null && child.open && child.bounds.contains(x, y))
+		{
+			child.onMouseMoved(x, y);
+			return true;
+		}
+
 		int at = itemAt(x, y);
 		if (at >= 0 && items.get(at).enabled)
+		{
 			highlight = at;
+			syncChild(at);
+		}
 
 		return bounds.contains(x, y);
 	}
@@ -387,6 +506,15 @@ final class ContextMenu
 		if (!open)
 			return false;
 
+		if (child != null && child.open && child.bounds.contains(x, y))
+		{
+			child.onMousePressed(x, y, button);
+			if (!child.open)
+				close();
+
+			return true;
+		}
+
 		int at = itemAt(x, y);
 		if (at < 0)
 		{
@@ -397,7 +525,7 @@ final class ContextMenu
 		if (button == MouseEvent.BUTTON1 && items.get(at).enabled)
 		{
 			highlight = at;
-			activate();
+			activate(false);
 		}
 
 		return true;
@@ -407,12 +535,15 @@ final class ContextMenu
 	 * Tells whether the menu uses a key, so a key listener can consume its pressed, typed and released events.
 	 *
 	 * @param keyCode the key, as {@link KeyEvent#getKeyCode}
-	 * @return whether the menu is open and the key is Up, Down, Enter, Space, Esc or Backspace
+	 * @return whether the menu is open and the key is Up, Down, Enter, Space, Esc or Backspace, or Right on an
+	 *         item with a submenu, or Left while a submenu shows
 	 */
 	boolean uses(int keyCode)
 	{
 		return open && (keyCode == KeyEvent.VK_UP || keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_ENTER
-			|| keyCode == KeyEvent.VK_SPACE || keyCode == KeyEvent.VK_ESCAPE || keyCode == KeyEvent.VK_BACK_SPACE);
+			|| keyCode == KeyEvent.VK_SPACE || keyCode == KeyEvent.VK_ESCAPE || keyCode == KeyEvent.VK_BACK_SPACE
+			|| keyCode == KeyEvent.VK_RIGHT && highlight >= 0 && items.get(highlight).children != null
+			|| keyCode == KeyEvent.VK_LEFT && child != null);
 	}
 
 	/**
@@ -426,8 +557,29 @@ final class ContextMenu
 		if (!uses(keyCode))
 			return false;
 
+		if (child != null && child.open && childKeys)
+		{
+			if (keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_ESCAPE || keyCode == KeyEvent.VK_BACK_SPACE)
+			{
+				closeChild();
+				return true;
+			}
+
+			child.onKeyPressed(keyCode);
+			if (!child.open)
+				close();
+
+			return true;
+		}
+
 		switch (keyCode)
 		{
+			case KeyEvent.VK_RIGHT:
+				openChild(highlight, true);
+				break;
+			case KeyEvent.VK_LEFT:
+				closeChild();
+				break;
 			case KeyEvent.VK_UP:
 				move(-1);
 				break;
@@ -460,6 +612,7 @@ final class ContextMenu
 		if (!open)
 			return;
 
+		lastMs = nowMs;
 		Font font = font(style);
 		FontMetrics fm = g.getFontMetrics(font);
 		layout(canvas, style, fm);
@@ -512,6 +665,8 @@ final class ContextMenu
 
 		g.setTransform(saved);
 		g.setComposite(savedComposite);
+		if (child != null && child.open)
+			child.paint(g, style, canvas, mode, nowMs);
 	}
 
 	private static int arrowWidth(FontMetrics fm)

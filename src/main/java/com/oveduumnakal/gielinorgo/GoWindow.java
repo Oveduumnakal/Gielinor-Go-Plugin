@@ -90,12 +90,6 @@ final class GoWindow extends Overlay
 			}
 
 			@Override
-			public boolean keyHints()
-			{
-				return config.windowKeyHints();
-			}
-
-			@Override
 			public boolean keyboard()
 			{
 				return config.windowKeyboard();

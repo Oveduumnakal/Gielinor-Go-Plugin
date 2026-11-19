@@ -108,12 +108,6 @@ final class PartyRig
 			}
 
 			@Override
-			public boolean keyHints()
-			{
-				return true;
-			}
-
-			@Override
 			public boolean keyboard()
 			{
 				return true;

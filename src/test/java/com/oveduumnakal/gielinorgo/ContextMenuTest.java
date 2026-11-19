@@ -47,6 +47,150 @@ public class ContextMenuTest
 		return menu;
 	}
 
+	private ContextMenu openWithSubmenu()
+	{
+		ContextMenu menu = new ContextMenu();
+		menu.open(Arrays.asList(
+			ContextMenu.Item.of("Change log", () -> ran.add("Change log")),
+			ContextMenu.Item.submenu("Feedback", Arrays.asList(
+				ContextMenu.Item.of("Report a bug", () -> ran.add("Report a bug")),
+				ContextMenu.Item.of("Request a feature", () -> ran.add("Request a feature")))),
+			ContextMenu.Item.of("Start over", () -> ran.add("Start over"))), 100, 100, CANVAS, STYLE, FM, false, 0);
+		return menu;
+	}
+
+	private static Rectangle middle(Rectangle box)
+	{
+		return new Rectangle(box.x + box.width / 2, box.y + box.height / 2, 0, 0);
+	}
+
+	@Test
+	public void hoveringASubmenuItemOpensItsListToTheRightWithoutAClick()
+	{
+		ContextMenu menu = openWithSubmenu();
+		Rectangle feedback = middle(menu.itemBounds(1));
+
+		menu.onMouseMoved(feedback.x, feedback.y);
+
+		ContextMenu sub = menu.submenu();
+		assertTrue(sub != null && sub.isOpen());
+		assertEquals(menu.bounds().x + menu.bounds().width, sub.bounds().x);
+		assertEquals(2, sub.items().size());
+		assertTrue(ran.isEmpty());
+	}
+
+	@Test
+	public void movingToAnotherItemClosesTheSubmenu()
+	{
+		ContextMenu menu = openWithSubmenu();
+		Rectangle feedback = middle(menu.itemBounds(1));
+		menu.onMouseMoved(feedback.x, feedback.y);
+		Rectangle start = middle(menu.itemBounds(2));
+
+		menu.onMouseMoved(start.x, start.y);
+
+		assertNull(menu.submenu());
+		assertTrue(menu.isOpen());
+	}
+
+	@Test
+	public void theSubmenuStaysOpenWhileThePointerIsOverIt()
+	{
+		ContextMenu menu = openWithSubmenu();
+		Rectangle feedback = middle(menu.itemBounds(1));
+		menu.onMouseMoved(feedback.x, feedback.y);
+		Rectangle inside = middle(menu.submenu().itemBounds(1));
+
+		assertTrue(menu.onMouseMoved(inside.x, inside.y));
+
+		assertTrue(menu.submenu() != null);
+		assertEquals(1, menu.submenu().highlight());
+	}
+
+	@Test
+	public void clickingASubmenuItemRunsItAndClosesBothLists()
+	{
+		ContextMenu menu = openWithSubmenu();
+		Rectangle feedback = middle(menu.itemBounds(1));
+		menu.onMouseMoved(feedback.x, feedback.y);
+		Rectangle item = middle(menu.submenu().itemBounds(1));
+
+		assertTrue(menu.onMousePressed(item.x, item.y, MouseEvent.BUTTON1));
+
+		assertEquals(Collections.singletonList("Request a feature"), ran);
+		assertFalse(menu.isOpen());
+		assertNull(menu.submenu());
+	}
+
+	@Test
+	public void clickingTheSubmenuItemItselfOpensTheListAndKeepsTheMenu()
+	{
+		ContextMenu menu = openWithSubmenu();
+		Rectangle feedback = middle(menu.itemBounds(1));
+
+		menu.onMousePressed(feedback.x, feedback.y, MouseEvent.BUTTON1);
+
+		assertTrue(menu.isOpen());
+		assertTrue(menu.submenu() != null);
+		assertTrue(ran.isEmpty());
+	}
+
+	@Test
+	public void rightOpensTheSubmenuLeftClosesItAndEscClosesTheSubmenuBeforeTheMenu()
+	{
+		ContextMenu menu = openWithSubmenu();
+		menu.onKeyPressed(KeyEvent.VK_DOWN);
+		menu.onKeyPressed(KeyEvent.VK_DOWN);
+		assertEquals(1, menu.highlight());
+		assertFalse(menu.uses(KeyEvent.VK_LEFT));
+		assertTrue(menu.uses(KeyEvent.VK_RIGHT));
+
+		menu.onKeyPressed(KeyEvent.VK_RIGHT);
+		assertTrue(menu.submenu() != null);
+		assertEquals(0, menu.submenu().highlight());
+
+		menu.onKeyPressed(KeyEvent.VK_LEFT);
+		assertNull(menu.submenu());
+		assertTrue(menu.isOpen());
+
+		menu.onKeyPressed(KeyEvent.VK_RIGHT);
+		menu.onKeyPressed(KeyEvent.VK_ESCAPE);
+		assertNull(menu.submenu());
+		assertTrue(menu.isOpen());
+
+		menu.onKeyPressed(KeyEvent.VK_ESCAPE);
+		assertFalse(menu.isOpen());
+	}
+
+	@Test
+	public void enterInsideTheSubmenuRunsTheItemAndClosesBothLists()
+	{
+		ContextMenu menu = openWithSubmenu();
+		menu.onKeyPressed(KeyEvent.VK_DOWN);
+		menu.onKeyPressed(KeyEvent.VK_DOWN);
+		menu.onKeyPressed(KeyEvent.VK_ENTER);
+		menu.onKeyPressed(KeyEvent.VK_DOWN);
+		menu.onKeyPressed(KeyEvent.VK_ENTER);
+
+		assertEquals(Collections.singletonList("Request a feature"), ran);
+		assertFalse(menu.isOpen());
+	}
+
+	@Test
+	public void aSubmenuThatDoesNotFitOnTheRightOpensOnTheLeft()
+	{
+		ContextMenu menu = new ContextMenu();
+		menu.open(Arrays.asList(ContextMenu.Item.submenu("Feedback", Arrays.asList(
+			ContextMenu.Item.of("Request a feature", () -> ran.add("x"))))), 480, 100, CANVAS, STYLE, FM, false, 0);
+		Rectangle feedback = middle(menu.itemBounds(0));
+
+		menu.onMouseMoved(feedback.x, feedback.y);
+
+		assertTrue(menu.submenu().bounds().x + menu.submenu().bounds().width <= menu.bounds().x
+			|| menu.submenu().bounds().x >= menu.bounds().x + menu.bounds().width);
+		assertTrue(CANVAS.contains(menu.submenu().bounds()));
+	}
+
 	@Test
 	public void aMenuOpenedByTheMouseHasNoHighlightAndOneByAKeyStartsOnTheFirstItem()
 	{

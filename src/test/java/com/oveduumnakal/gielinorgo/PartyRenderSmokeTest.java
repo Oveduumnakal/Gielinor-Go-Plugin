@@ -404,6 +404,9 @@ public class PartyRenderSmokeTest
 				PartyLayout party = PartyLayout.of(window.body, style.metrics(), window.scale);
 				if (!labelFits(style, PartyPainter.MORE, party.moreButton.width - chip))
 					problems.append(window.scale).append(" More\n");
+
+				if (!labelFits(style, PartyPainter.PIN_PARTY, party.pinButton.width - chip))
+					problems.append(window.scale).append(" Pin Party\n");
 			}
 
 		assertEquals(problems.toString(), "", problems.toString());

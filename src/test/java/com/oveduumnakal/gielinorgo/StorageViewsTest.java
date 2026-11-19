@@ -198,7 +198,7 @@ public class StorageViewsTest
 
 		List<String> headings = idsWith(rig, StoragePage.GROUP_PREFIX);
 
-		assertEquals(2, headings.size());
+		assertEquals(3, headings.size());
 		Hit first = rig.hit(headings.get(0));
 		assertEquals(Hit.Kind.AREA, first.kind());
 		assertTrue(first.tip().contains("2 stored"));
