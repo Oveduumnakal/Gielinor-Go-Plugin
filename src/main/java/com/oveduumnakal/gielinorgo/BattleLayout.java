@@ -164,7 +164,7 @@ final class BattleLayout
 		int badgeW = badged ? titleH : 0;
 		int statusW = block.status().isEmpty() ? 0 : fonts.small.stringWidth(block.status()) + pad;
 		statusW = Math.min(statusW, inner / 2);
-		Rectangle title = new Rectangle(x, top, inner - statusW - badgeW, titleH);
+		Rectangle title = new Rectangle(x, top, Math.max(0, inner - statusW - badgeW), titleH);
 		Rectangle status = new Rectangle(x + inner - statusW - badgeW, top, statusW, titleH);
 		int cursor = top + titleH + gap / 2;
 		List<Rectangle> items = new ArrayList<>();
