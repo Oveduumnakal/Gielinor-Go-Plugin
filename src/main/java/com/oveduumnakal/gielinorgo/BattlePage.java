@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.KeyEvent;
+import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -203,6 +204,7 @@ final class BattlePage
 			if (block.kind() == BattleBlock.Kind.HEADING)
 			{
 				text.draw(g, block.text(), onScreen(one.title), small, ThemeColor.SUBTEXT, PageText.Align.LEFT);
+				badge(g, st, block, onScreen(one.badge));
 			}
 			else if (block.kind() == BattleBlock.Kind.NOTE)
 			{
@@ -218,6 +220,17 @@ final class BattlePage
 		list.paintBar(g, st);
 	}
 
+	private static void badge(Graphics2D g, WindowStyle st, BattleBlock block, Rectangle at)
+	{
+		if (block.sigil() == BattleBlock.Sigil.NONE || at.isEmpty())
+			return;
+
+		boolean gold = block.sigil() == BattleBlock.Sigil.GOLD;
+		g.setColor(st.color(gold ? ThemeColor.GOLD : ThemeColor.ACCENT));
+		int side = Math.min(at.width, at.height);
+		Icons.sigil(g, gold, at.x + (at.width - side) / 2.0, at.y + (at.height - side) / 2.0, side);
+	}
+
 	private void card(Graphics2D g, PageContext ctx, PageText text, BattleLayout.Placed one, Font[] fonts)
 	{
 		WindowStyle st = ctx.style;
@@ -226,7 +239,9 @@ final class BattlePage
 		st.panel(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height));
 		Rectangle stripe = onScreen(one.stripe);
 		g.setColor(st.color(block.stripe()));
-		g.fillRect(stripe.x, stripe.y, stripe.width, stripe.height);
+		Area bar = new Area(st.panelShape(new Rectangle2D.Double(box.x, box.y, box.width, box.height)));
+		bar.intersect(new Area(stripe));
+		g.fill(bar);
 		Rectangle clip = list.viewport();
 		Rectangle title = onScreen(one.title);
 		if (title.intersects(clip))
@@ -234,6 +249,7 @@ final class BattlePage
 			text.draw(g, block.text(), title, fonts[0], ThemeColor.TEXT, PageText.Align.LEFT);
 			text.draw(g, block.status(), onScreen(one.status), fonts[2], block.statusColor(),
 				PageText.Align.RIGHT);
+			badge(g, st, block, onScreen(one.badge));
 		}
 
 		for (int i = 0; i < block.items().size(); i++)

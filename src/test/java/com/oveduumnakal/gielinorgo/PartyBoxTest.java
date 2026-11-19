@@ -64,7 +64,7 @@ public class PartyBoxTest
 	@Test
 	public void theBoxGrowsWithTheRowsAndStaysAsWide()
 	{
-		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
 
 		Dimension none = PartyBoxPainter.size(style, 0);
 		Dimension one = PartyBoxPainter.size(style, 1);

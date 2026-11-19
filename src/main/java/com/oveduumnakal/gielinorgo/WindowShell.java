@@ -27,7 +27,7 @@ import java.util.List;
  * The state, input handling and painting of the painted window's shell, with no RuneLite types so it paints into a
  * {@code BufferedImage} in a test. It owns whether the window is open, the active tab, the hover, the key focus and
  * the {@link Animations} table, and lays out the six tab headers, the Close button, a placeholder page per tab and the
- * footer (Reset window, the style button, the size button and the key hints). The pages themselves come later and plug
+ * footer (the size button, the change log, Feedback and the key hints). The pages themselves come later and plug
  * in through {@link PageActions}. The game thread owns it: painting reads one immutable {@link WindowSnapshot}, and
  * the mouse and key events arrive here already carried over from the UI thread. Hit rectangles are the final ones;
  * only a sliding row refuses clicks, and no page has one yet.
@@ -39,15 +39,6 @@ final class WindowShell
 {
 	/** The id of the Close button's hit. */
 	static final String ID_CLOSE = "btn:close";
-
-	/** The id of the Reset window button's hit. */
-	static final String ID_RESET = "btn:reset";
-
-	/** The id of the style button's hit. */
-	static final String ID_THEME = "btn:theme";
-
-	/** The id of the window size button's hit. */
-	static final String ID_SIZE = "btn:size";
 
 	/** The id of the Change log button's hit. */
 	static final String ID_CHANGELOG = "btn:changelog";
@@ -98,6 +89,7 @@ final class WindowShell
 	private WindowLayout layout;
 	private WindowStyle style;
 	private String pressedId;
+	private WindowLayout.ResizeZone resizing = WindowLayout.ResizeZone.NONE;
 	private String shakeId = "";
 	private long shakeMs;
 	private Modal modal;
@@ -133,17 +125,16 @@ final class WindowShell
 			return;
 		}
 
-		/** @return the words on the size button, such as {@code Size: Medium} */
-		String sizeLabel();
-
 		/** Puts the window back to its default size and place. */
 		void resetWindow();
 
-		/** Switches to the other style and saves the choice. */
-		void flipTheme();
-
-		/** Moves on to the next window size preset. */
-		void nextSize();
+		/**
+		 * Resizes the window while the player drags its edge or corner. The window keeps its shape and the host keeps
+		 * it between the smallest size and the game screen.
+		 *
+		 * @param width the width the pointer asks for, in window pixels
+		 */
+		void resizeWindow(int width);
 
 		/**
 		 * Shows a pop-up notice.
@@ -742,6 +733,15 @@ final class WindowShell
 			return;
 		}
 
+		WindowLayout.ResizeZone zone = button == MouseEvent.BUTTON1 ? layout.resizeZoneAt(x, y)
+			: WindowLayout.ResizeZone.NONE;
+		if (zone != WindowLayout.ResizeZone.NONE)
+		{
+			resizing = zone;
+			pressedId = null;
+			return;
+		}
+
 		if (changelog != null ? changelog.pressed(x, y) : pages.pointerPressed(x, y))
 		{
 			pressedId = null;
@@ -750,6 +750,12 @@ final class WindowShell
 
 		Hit hit = hitAt(x, y);
 		pressedId = hit != null && hit.enabled() ? hit.id() : null;
+	}
+
+	/** Alt and a right click on the window asks for it to go back to its normal size and place. */
+	void onResetRequested()
+	{
+		host.resetWindow();
 	}
 
 	/**
@@ -765,6 +771,12 @@ final class WindowShell
 	{
 		String down = pressedId;
 		pressedId = null;
+		if (resizing != WindowLayout.ResizeZone.NONE)
+		{
+			resizing = WindowLayout.ResizeZone.NONE;
+			return;
+		}
+
 		if (!open)
 			return;
 
@@ -807,12 +819,35 @@ final class WindowShell
 		if (!open)
 			return;
 
+		if (resizing != WindowLayout.ResizeZone.NONE)
+		{
+			resizeTo(x, y);
+			return;
+		}
+
 		if (modalOpen())
 			modal.onMouseDragged(x);
 		else if (!menu.isOpen() && changelog != null)
 			changelog.dragged(x, y);
 		else if (!menu.isOpen())
 			pages.pointerDragged(x, y);
+	}
+
+	private void resizeTo(int x, int y)
+	{
+		int byHeight = (int) Math.round(y * (double) WindowFit.DESIGN_W / WindowFit.DESIGN_H);
+		switch (resizing)
+		{
+			case RIGHT:
+				host.resizeWindow(x);
+				break;
+			case BOTTOM:
+				host.resizeWindow(byHeight);
+				break;
+			default:
+				host.resizeWindow(Math.max(x, byHeight));
+				break;
+		}
 	}
 
 	/**
@@ -925,6 +960,7 @@ final class WindowShell
 		paintTabs(g, shown, mode, nowMs);
 		paintPage(g, shown, mode, nowMs);
 		paintFooter(g);
+		style.grip(g, rect(layout.grip), resizing != WindowLayout.ResizeZone.NONE ? 1.0 : 0.0);
 	}
 
 	private void paintTabs(Graphics2D g, WindowSnapshot shown, MotionMode mode, long nowMs)
@@ -946,7 +982,8 @@ final class WindowShell
 		double barX = animations.value(TAB_BAR, nowMs, active.x);
 		int barH = Math.max(2, style.px(3));
 		g.setColor(style.color(ThemeColor.ACCENT));
-		g.fillRect((int) Math.round(barX), active.y + active.height + barH / 2, active.width, barH);
+		int barW = active.width - (int) Math.min(style.metrics().tabSlant, active.width / 2.0);
+		g.fillRect((int) Math.round(barX), active.y + active.height + barH / 2, barW, barH);
 		Rectangle2D close = rect(layout.close);
 		style.button(g, close, "Close", false, false, hoverOf(ID_CLOSE), pressOf(ID_CLOSE));
 		ringIf(g, ID_CLOSE, Slant.shape(close, style.metrics().chipSlant));
@@ -1024,11 +1061,6 @@ final class WindowShell
 		String hint = WindowStyle.ellipsize(hintText(), fm, layout.hints.width);
 		int baseline = layout.hints.y + (layout.hints.height + fm.getAscent() - fm.getDescent()) / 2;
 		style.text(g, hint, layout.hints.x, baseline, small, ThemeColor.SUBTEXT);
-		footerButton(g, layout.reset, ID_RESET, "Reset window");
-		footerButton(g, layout.theme, ID_THEME, host.theme().toString());
-		footerButton(g, layout.size, ID_SIZE, host.sizeLabel());
-		g.setColor(style.color(ThemeColor.ROW_BORDER));
-		g.fill(rect(layout.moreDivider));
 		footerButton(g, layout.changelog, ID_CHANGELOG, changelogLabel(), host.whatsNew());
 		footerButton(g, layout.feedback, ID_FEEDBACK, "Feedback");
 	}
@@ -1084,14 +1116,9 @@ final class WindowShell
 
 		list.add(new Hit(ID_CLOSE, Hit.Kind.BUTTON, layout.close, CLOSE_ORDER, true, "Close the window (Esc)"));
 		list.addAll(changelog != null ? changelog.hits(style, layout.body) : pages.hits(tab, layout.body));
-		list.add(new Hit(ID_RESET, Hit.Kind.BUTTON, layout.reset, FOOTER_ORDER, true,
-			"Put the window back to its normal size and place"));
-		list.add(new Hit(ID_THEME, Hit.Kind.BUTTON, layout.theme, FOOTER_ORDER + 1, true,
-			"Switch between the two window styles"));
-		list.add(new Hit(ID_SIZE, Hit.Kind.BUTTON, layout.size, FOOTER_ORDER + 2, true, "Change the window size"));
-		list.add(new Hit(ID_CHANGELOG, Hit.Kind.BUTTON, layout.changelog, FOOTER_ORDER + 3, true,
+		list.add(new Hit(ID_CHANGELOG, Hit.Kind.BUTTON, layout.changelog, FOOTER_ORDER, true,
 			host.whatsNew() ? "See what changed in this version" : "Read the change log"));
-		list.add(new Hit(ID_FEEDBACK, Hit.Kind.BUTTON, layout.feedback, FOOTER_ORDER + 4, true,
+		list.add(new Hit(ID_FEEDBACK, Hit.Kind.BUTTON, layout.feedback, FOOTER_ORDER + 1, true,
 			"Report a bug or request a feature"));
 		hits = Collections.unmodifiableList(list);
 		focus.setHits(hits);
@@ -1191,6 +1218,9 @@ final class WindowShell
 		if (chosen != null)
 		{
 			selectTab(chosen, nowMs);
+			if (chosen == WindowTab.PARTY && pages.depth() > 0)
+				pages.back();
+
 			return;
 		}
 
@@ -1198,15 +1228,6 @@ final class WindowShell
 		{
 			case ID_CLOSE:
 				close(nowMs, ShellMotion.Phase.CLOSE);
-				break;
-			case ID_RESET:
-				host.resetWindow();
-				break;
-			case ID_THEME:
-				host.flipTheme();
-				break;
-			case ID_SIZE:
-				host.nextSize();
 				break;
 			case ID_CHANGELOG:
 				host.whatsNewSeen();

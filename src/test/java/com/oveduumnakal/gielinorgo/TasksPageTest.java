@@ -68,7 +68,7 @@ public class TasksPageTest
 	public void aLineSeparatesTheDailyTasksFromTheWeeklyOne()
 	{
 		TasksPage tasks = new TasksPage(null);
-		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
 		PanelState panel = state(5);
 		tasks.layout(new Rectangle(0, 0, 700, 400), style, panel);
 		Rectangle line = tasks.divider();

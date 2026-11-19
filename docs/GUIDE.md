@@ -615,8 +615,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Click the Gielinor Go jar in RuneLite's sidebar, or the jar button at the top left of the game screen, to open and
   close the window. It has six tabs: **Party**, **Bag**, **Storage**, **Collection**, **Tasks** and **Battle**, and a
-  footer with the change log, the Feedback menu, the window size and style buttons and **Reset window**. Nothing is
-  shown before your save has loaded; the jar says "Still loading your save." instead.
+  footer with the change log, and the Feedback menu. Alt + right-click on the window puts it
+  back to its normal size and place. Nothing is shown before your save has loaded; the jar says "Still loading your save." instead.
 
 - **Party and Summary**
 
@@ -667,15 +667,17 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Moving and resizing**
 
-  Hold RuneLite's drag key (Alt unless you changed it) and drag the window or the jar button to move them; drag the
-  window's edge to resize it. It keeps its shape and follows the size of the game window. **Window style** (or the
-  style button) switches between Dark glass and RuneLite dark, and **Window animations** sets Full, Reduced or Off.
+  Hold RuneLite's drag key (Alt unless you changed it) and drag the window or the jar button to move them. To resize
+  the window, drag the grip in its bottom-right corner or its right or bottom edge, no key needed. It keeps its
+  shape, never gets smaller than its smallest readable size or bigger than the game screen, and follows the size of
+  the game window. A new window is Small. The window always uses the
+  RuneLite dark look, and **Window animations** sets Full, Reduced or Off.
 
   On a Steam Deck in KDE desktop mode, Alt+drag moves the whole RuneLite window instead. To change that, either set
   another key in RuneLite's own settings (Configuration, RuneLite, **Drag hotkey**; Shift or Ctrl work), or change
   KDE's shortcut under System Settings, Window Management, Window Behavior, **Modifier key** for the window
-  actions. Or skip dragging: pick a size with **Window size** in the settings, or use the **Reset window** and
-  size buttons at the foot of the window.
+  actions. Or skip dragging: pick a size with **Window size** in the settings, or Alt + right-click the window to reset
+  it to Small, centred.
 
 - **Keyboard and controller**
 

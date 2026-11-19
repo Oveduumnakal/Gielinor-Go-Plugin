@@ -34,9 +34,6 @@ public interface GielinorGoConfig extends Config
 	/** Key of the painted window's size preset. */
 	String WINDOW_SIZE = "windowSize";
 
-	/** Key of the painted window's style. */
-	String WINDOW_STYLE = "windowStyle";
-
 	/** Key of the hidden item that stores the painted window's width as a share of the canvas width. */
 	String WINDOW_FRACTION = "windowFraction";
 
@@ -445,35 +442,18 @@ public interface GielinorGoConfig extends Config
 	/**
 	 * The size of the painted window, as a share of the game screen's width.
 	 *
-	 * @return the size preset, medium by default
+	 * @return the size preset, small by default
 	 */
 	@ConfigItem(
 		keyName = GielinorGoConfig.WINDOW_SIZE,
 		name = "Window size",
-		description = "Sets the painted window to a size and centres it.\nYou can also hold RuneLite's drag key"
-			+ " (Alt unless you changed it)\nand drag the window's edge, or use the window's Reset window button.",
+		description = "Sets the painted window to a size and centres it.\nYou can also drag the window's edge or"
+			+ " its bottom-right corner,\nor Alt + right-click the window to reset it.",
 		position = 23
 	)
 	default WindowSizePreset windowSize()
 	{
-		return WindowSizePreset.MEDIUM;
-	}
-
-	/**
-	 * The look of the painted window.
-	 *
-	 * @return the style, dark glass by default
-	 */
-	@ConfigItem(
-		keyName = GielinorGoConfig.WINDOW_STYLE,
-		name = "Window style",
-		description = "Dark glass is blue-purple with a light lead row.\nRuneLite dark is grey and orange."
-			+ " The window's style button changes this too.",
-		position = 24
-	)
-	default WindowTheme windowStyle()
-	{
-		return WindowTheme.DARK_GLASS;
+		return WindowSizePreset.SMALL;
 	}
 
 	/**
