@@ -66,6 +66,7 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Party highlight.** The ring that follows your keyboard on the Party page has its own colour and now sits right
   on the row instead of beside it. (#277)
 - **Stab icon.** The dagger now points up and is as big as the other combat style icons. (#283)
+- **Gender icon size.** The gender sign is now the same size as the combat style icon beside it. (#285)
 - **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
   beside you, and three species are only met this way. (#90)
 - **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final

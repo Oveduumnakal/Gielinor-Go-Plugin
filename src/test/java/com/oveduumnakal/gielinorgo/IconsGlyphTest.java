@@ -54,4 +54,22 @@ public class IconsGlyphTest
 		for (int size : new int[] {12, 16, 17, 32, 48})
 			check(Icons::info, size);
 	}
+
+	@Test
+	public void genderSignsStayInsideTheirSquareAndLeaveTheSameMarginAsStylePictures()
+	{
+		for (int size : new int[] {16, 32, 64, 128})
+		{
+			check((g, x, y, s) -> Icons.gender(g, Gender.MALE, x, y, s), size);
+			check((g, x, y, s) -> Icons.gender(g, Gender.FEMALE, x, y, s), size);
+		}
+
+		BufferedImage image = WidgetKit.canvas(128, 128);
+		Graphics2D g = WidgetKit.graphics(image);
+		g.setColor(Color.WHITE);
+		Icons.gender(g, Gender.MALE, 0, 0, 128);
+		g.dispose();
+		assertEquals(0, WidgetKit.painted(image, 0, 0, 4, 128));
+		assertEquals(0, WidgetKit.painted(image, 124, 0, 4, 128));
+	}
 }
