@@ -26,13 +26,13 @@ public class FollowerPathStrollTest
 	private static final int ONE_REST = FollowerStroll.REST_MAX + 2 * FollowerPath.CLIENT_TICKS;
 	private static final FollowerPath.Ground OPEN = (x, y) -> true;
 
-	private FollowerPath path = new FollowerPath(new Random(5));
+	private FollowerPath path = new FollowerPath(new Random(5), 1.0, false);
 	private TilePath tiles = StrollField.open().path();
 	private FollowerPath.Router router = (fx, fy, tx, ty) -> tiles.route(fx, fy, tx, ty, FollowerPath.MAX_ERRAND);
 
 	private void start(long seed, boolean strolls)
 	{
-		path = new FollowerPath(new Random(seed));
+		path = new FollowerPath(new Random(seed), 1.0, false);
 		path.setStrolling(strolls);
 		path.playerAt(PX, PY, 0, OPEN);
 	}
