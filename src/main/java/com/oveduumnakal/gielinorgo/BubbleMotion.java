@@ -30,6 +30,9 @@ final class BubbleMotion
 	/** How long the hover growth glides, in milliseconds. */
 	static final long HOVER_MS = 120;
 
+	/** How long the held bubbles take to glide back to their creature, in milliseconds. */
+	static final long HOLD_GLIDE_MS = 400;
+
 	/** The period of the knocked-out ring pulse, in milliseconds. */
 	static final long PULSE_MS = 1200;
 

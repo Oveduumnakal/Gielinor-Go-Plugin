@@ -61,6 +61,14 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Sharper icons and bubbles.** Text and icons stay crisp at any window size or UI scale. The wild creature
   bubbles became rings with a clear middle, the Battle bubble shows the game's Combat tab icon, and the jars you own
   open as an even honeycomb with easier-to-read counts. (#266)
+- **Faster jar list.** The jar bubble opens its list after half a second of hovering, twice as fast as before.
+  (#301)
+- **Two-step close.** When the mouse leaves a wild creature, the jar list folds away first and the three bubbles
+  follow. (#300)
+- **Steady bubbles.** The bubbles stay put while your mouse is on one, even if the creature walks, and glide back
+  to it a second after you move off. (#293)
+- **Bubble tooltips.** The jar bubbles show the jar and its catch chance, Battle says Start combat and Info says
+  Information. (#292)
 - **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
   beside you, and three species are only met this way. (#90)
 - **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final

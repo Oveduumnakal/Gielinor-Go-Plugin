@@ -52,4 +52,19 @@ final class BubbleAnchors
 	{
 		return headY;
 	}
+
+	/**
+	 * Blends two places of the same creature.
+	 *
+	 * @param from where the creature was
+	 * @param to where it is
+	 * @param t how far along, 0 gives {@code from} and 1 gives {@code to}
+	 * @return the place in between
+	 */
+	static BubbleAnchors between(BubbleAnchors from, BubbleAnchors to, double t)
+	{
+		return new BubbleAnchors(from.originX + (to.originX - from.originX) * t,
+			from.originY + (to.originY - from.originY) * t, from.headX + (to.headX - from.headX) * t,
+			from.headY + (to.headY - from.headY) * t);
+	}
 }
