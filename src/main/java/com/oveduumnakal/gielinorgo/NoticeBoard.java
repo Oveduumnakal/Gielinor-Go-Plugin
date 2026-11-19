@@ -128,6 +128,12 @@ final class NoticeBoard
 			owed += extraTicks;
 	}
 
+	/** @return whether no line waits to show, queued or held back, so the last one has been shown */
+	boolean idle()
+	{
+		return queued.isEmpty() && held.isEmpty();
+	}
+
 	/** @return whether lines are being held back for a battle that is acted out on screen */
 	boolean holding()
 	{
