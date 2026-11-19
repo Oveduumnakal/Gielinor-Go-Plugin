@@ -73,6 +73,9 @@ final class WindowShell
 	/** The hint line while a text box has the keys. */
 	static final String HINT_FIELD = "Type   Enter Save   Esc Cancel";
 
+	/** The hint line while the Collection search box has the keys. */
+	static final String HINT_SEARCH = "Type   Enter Done   Esc Clear";
+
 	/** The hint line while the window has no focus. */
 	static final String HINT_UNFOCUSED = "Click the window to use keys";
 
@@ -1073,7 +1076,7 @@ final class WindowShell
 		switch (keyMode())
 		{
 			case FIELD:
-				return HINT_FIELD;
+				return modalOpen() ? HINT_FIELD : HINT_SEARCH;
 			case MODAL:
 				return HINT_MODAL;
 			case MENU:
