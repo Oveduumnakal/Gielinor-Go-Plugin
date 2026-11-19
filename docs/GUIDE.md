@@ -28,11 +28,12 @@ Every feature and every number, in detail. For the short version, see the [READM
   arc above it. The **Wild creature bubbles** setting (on by default) turns them on or off; off means the
   right-click **Battle** and **Catch** entries are all you get.
 
-  - **Left bubble: the jar.** Its circle is coloured to match your selected jar. A left click throws that jar.
-    Hover it for about a second, or right-click it, and the jars you own pop out with how many of each; click
-    one to select it (it does not throw). The selected jar stays selected after a throw.
-  - **Middle bubble: Battle** (red, crossed swords). A click starts a battle.
-  - **Right bubble: Info** (light blue, an "i"). Hover it for a short summary card of the creature next to it;
+  - **Left bubble: the jar.** Its ring is coloured to match your selected jar. A left click throws that jar.
+    Hover it for about a second, or right-click it, and the jars you own pop out to its left in a honeycomb, each
+    the same size as the bubble, with how many of each; click one to select it (it does not throw). The selected
+    jar stays selected after a throw.
+  - **Middle bubble: Battle** (red ring, the game's Combat tab icon). A click starts a battle.
+  - **Right bubble: Info** (light blue ring, an "i"). Hover it for a short summary card of the creature next to it;
     click it to pin the card until you click elsewhere or move the mouse away from the creature.
 
   The bubbles close a moment after the mouse leaves. They do not show during a battle, while the game menu is

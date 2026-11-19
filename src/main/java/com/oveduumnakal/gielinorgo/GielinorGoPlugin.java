@@ -51,6 +51,7 @@ import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
 import net.runelite.api.events.StatChanged;
 import net.runelite.api.gameval.InterfaceID;
+import net.runelite.api.gameval.SpriteID;
 import net.runelite.api.gameval.VarbitID;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
@@ -63,6 +64,7 @@ import net.runelite.client.events.ClientShutdown;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.events.PartyChanged;
 import net.runelite.client.events.RuneScapeProfileChanged;
+import net.runelite.client.game.SpriteManager;
 import net.runelite.client.input.KeyManager;
 import net.runelite.client.input.MouseManager;
 import net.runelite.client.party.PartyMember;
@@ -113,6 +115,9 @@ public class GielinorGoPlugin extends Plugin
 	/** Game ticks between window refreshes while nothing changes, so resting health still creeps up. */
 	private static final int PANEL_TICKS = 5;
 
+	/** How many game ticks to keep asking for the combat tab picture before giving up. */
+	private static final int SPRITE_TRIES = 100;
+
 	/** Game ticks between saves of changed progress. */
 	private static final int SAVE_TICKS = 50;
 
@@ -136,6 +141,9 @@ public class GielinorGoPlugin extends Plugin
 
 	@Inject
 	private ClientThread clientThread;
+
+	@Inject
+	private SpriteManager spriteManager;
 
 	@Inject
 	private ConfigManager configManager;
@@ -198,6 +206,8 @@ public class GielinorGoPlugin extends Plugin
 	private WildBubbleOverlay bubbleOverlay;
 	private BubbleInput bubbleInput;
 	private volatile boolean bubblesFailed;
+	private volatile BufferedImage combatSprite;
+	private int spriteTries;
 	private WildBodies bodies;
 	private final NoticeBoard noticeBoard = new NoticeBoard();
 	private final CueGate cueGate = new CueGate();
@@ -987,15 +997,37 @@ public class GielinorGoPlugin extends Plugin
 		return new BubbleOffer(wildId, jar, owned, ready, knockedOut, WildCardContent.of(entry, shown, knockedOut));
 	}
 
+	/**
+	 * Fetches the game's combat tab picture for the Battle bubble. It runs on the client thread and tries again on
+	 * later ticks, up to a limit, until the game has the picture ready.
+	 *
+	 * @return true when the picture is stored or the tries ran out, so the client thread stops calling it
+	 */
+	private boolean loadCombatSprite()
+	{
+		BufferedImage sprite = spriteManager.getSprite(SpriteID.SideIcons._0, 0);
+		if (sprite != null)
+		{
+			combatSprite = sprite;
+			log.debug("Gielinor Go: combat tab picture is {}x{}", sprite.getWidth(), sprite.getHeight());
+			return true;
+		}
+
+		spriteTries++;
+		return spriteTries >= SPRITE_TRIES;
+	}
+
 	/** Creates the wild creature bubbles, their overlay and their mouse input, and registers them. */
 	private void startBubbles()
 	{
 		bubblesFailed = false;
 		bubbles = new WildBubbles();
-		bubbleOverlay = new WildBubbleOverlay(client, bodies, bubbles, new BubblePainter(), config::windowStyle,
-			config::windowAnimations, config::windowFraction, () -> loaded && bubblesOn(),
+		bubbleOverlay = new WildBubbleOverlay(client, bodies, bubbles, new BubblePainter(() -> combatSprite),
+			config::windowStyle, config::windowAnimations, config::windowFraction, () -> loaded && bubblesOn(),
 			System::currentTimeMillis, this::bubblesBroke);
 		bubbleInput = new BubbleInput(bubbleOverlay::hits, dragKey, bubbleSink());
+		spriteTries = 0;
+		clientThread.invokeLater(this::loadCombatSprite);
 		overlayManager.add(bubbleOverlay);
 		mouseManager.registerMouseListener(bubbleInput);
 	}
@@ -3145,7 +3177,7 @@ public class GielinorGoPlugin extends Plugin
 		windowPortraits = new PortraitCache(portraits, System::currentTimeMillis);
 		window.shell().pages(new WindowPages(window.shell(), panelActions(), windowPortraits,
 			System::currentTimeMillis, PageText.Sink.NONE));
-		BufferedImage jar = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon.png");
+		BufferedImage jar = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon_large.png");
 		windowToggle = new WindowToggle(config::windowStyle, config::windowAnimations,
 			System::currentTimeMillis, jar);
 		dragKey = new DragKey(runeLiteConfig::dragHotkey);

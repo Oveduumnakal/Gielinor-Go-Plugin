@@ -30,15 +30,19 @@ public class BubbleLayoutTest
 		return new BubbleAnchors(headX, headY + 60, headX, headY);
 	}
 
-	private static BubbleLayout.ClusterPlan cluster(BubbleLayout.Arc arc, int n, int remembered, Rectangle view,
+	private static BubbleLayout.ClusterPlan cluster(BubbleLayout.Arc arc, int n, Rectangle view,
 		List<Rectangle> blockers)
 	{
 		List<Point2D.Double> mains = new ArrayList<>();
 		for (int i = 0; i < 3; i++)
 			mains.add(arc.rest(i));
 
-		return BubbleLayout.cluster(arc.x(0), arc.y(0), arc.radius(), n, remembered, mains, arc.radius() * 1.15,
-			view, blockers);
+		return BubbleLayout.cluster(arc.x(0), arc.y(0), n, mains, arc.radius() * 1.15, view, blockers);
+	}
+
+	private static double reach(Point2D.Double point)
+	{
+		return Math.hypot(point.x, point.y);
 	}
 
 	private static Rectangle around(Point2D.Double point)
@@ -131,9 +135,9 @@ public class BubbleLayoutTest
 	}
 
 	@Test
-	public void theClusterOffsetsAreUniqueAndSpacedAtLeastTwoRadii()
+	public void theClusterOffsetsAreSpacedAtLeastOneClusterSpacingApart()
 	{
-		for (int n = 1; n <= 17; n++)
+		for (int n = 1; n <= 19; n++)
 		{
 			List<Point2D.Double> slots = BubbleLayout.clusterOffsets(n);
 
@@ -141,29 +145,76 @@ public class BubbleLayoutTest
 			for (int i = 0; i < n; i++)
 			{
 				for (int j = i + 1; j < n; j++)
-					assertTrue("n=" + n + " " + i + "," + j, slots.get(i).distance(slots.get(j)) >= 2 * 12 - 1e-9);
+				{
+					double apart = slots.get(i).distance(slots.get(j));
+
+					assertTrue("n=" + n + " " + i + "," + j, apart >= BubbleLayout.CLUSTER_SPACING - 1e-9);
+				}
 			}
 		}
 	}
 
 	@Test
-	public void theFirstRingStartsAtTheTopAndGoesClockwise()
+	public void theClusterJarsAreTheSameSizeAsAMainBubble()
 	{
-		List<Point2D.Double> slots = BubbleLayout.clusterOffsets(7);
-
-		assertEquals(0.0, slots.get(0).x, 0.0);
-		assertEquals(0.0, slots.get(1).x, 1e-9);
-		assertEquals(-28.0, slots.get(1).y, 1e-9);
-		assertTrue(slots.get(2).x > 0);
+		assertEquals(BubbleLayout.MAIN_RADIUS, BubbleLayout.CLUSTER_RADIUS);
 	}
 
 	@Test
-	public void theClusterExtentGrowsWithTheRings()
+	public void theHoneycombStartsAtNineThenElevenAndSeven()
 	{
-		assertEquals(12.0, BubbleLayout.clusterExtent(1), 0.0);
-		assertEquals(40.0, BubbleLayout.clusterExtent(7), 0.0);
-		assertEquals(68.0, BubbleLayout.clusterExtent(8), 0.0);
-		assertEquals(68.0, BubbleLayout.clusterExtent(17), 0.0);
+		List<Point2D.Double> slots = BubbleLayout.clusterOffsets(3);
+		double s = BubbleLayout.CLUSTER_SPACING;
+
+		assertEquals(-s, slots.get(0).x, 1e-9);
+		assertEquals(0.0, slots.get(0).y, 1e-9);
+		assertEquals(-s / 2.0, slots.get(1).x, 1e-9);
+		assertEquals(-s * Math.sqrt(3.0) / 2.0, slots.get(1).y, 1e-9);
+		assertEquals(-s / 2.0, slots.get(2).x, 1e-9);
+		assertEquals(s * Math.sqrt(3.0) / 2.0, slots.get(2).y, 1e-9);
+	}
+
+	@Test
+	public void theHoneycombGrowsOutwardWithNoGaps()
+	{
+		List<Point2D.Double> slots = BubbleLayout.clusterOffsets(19);
+		double s = BubbleLayout.CLUSTER_SPACING;
+		double last = 0;
+		for (int i = 0; i < slots.size(); i++)
+		{
+			Point2D.Double slot = slots.get(i);
+			double nearest = reach(slot);
+			for (int j = 0; j < i; j++)
+				nearest = Math.min(nearest, slot.distance(slots.get(j)));
+
+			assertTrue("slot " + i + " is never nearer the bubble than the one before", reach(slot) >= last - 1e-6);
+			assertEquals("slot " + i + " touches the bubble or an earlier slot", s, nearest, 1e-6);
+			last = reach(slot);
+		}
+	}
+
+	@Test
+	public void theHoneycombStaysOnTheLeftOfTheBubble()
+	{
+		for (Point2D.Double slot : BubbleLayout.clusterOffsets(48))
+			assertTrue(slot.x < 0);
+	}
+
+	@Test
+	public void theHoneycombOffersEnoughSlotsToSkipBlockedOnes()
+	{
+		assertEquals(48, BubbleLayout.clusterOffsets(48).size());
+		assertTrue(BubbleLayout.CLUSTER_SLOTS < 48);
+	}
+
+	@Test
+	public void theMainBubblesAreOneSpacingApartToo()
+	{
+		BubbleLayout.Arc arc = BubbleLayout.main(at(400, 300), VIEW);
+
+		double apart = Math.hypot(arc.x(0) - arc.x(1), arc.y(0) - arc.y(1));
+
+		assertEquals(BubbleLayout.CLUSTER_SPACING, apart, 1e-9);
 	}
 
 	@Test
@@ -172,25 +223,24 @@ public class BubbleLayoutTest
 		BubbleLayout.Arc arc = BubbleLayout.main(at(400, 300), VIEW);
 		for (int n = 1; n <= 17; n++)
 		{
-			BubbleLayout.ClusterPlan plan = cluster(arc, n, -1, VIEW, NO_BLOCKERS);
+			BubbleLayout.ClusterPlan plan = cluster(arc, n, VIEW, NO_BLOCKERS);
 
 			assertEquals(n, plan.slots().size());
-			assertEquals(0, plan.direction());
 			assertInside(plan.bounds(), VIEW);
 			for (Point2D.Double slot : plan.slots())
 			{
 				for (int i = 0; i < 3; i++)
-					assertTrue(Math.hypot(slot.x - arc.x(i), slot.y - arc.y(i)) >= 12 + 15 + 2);
+					assertTrue(Math.hypot(slot.x - arc.x(i), slot.y - arc.y(i)) >= 15 + 15 + 2);
 			}
 		}
 	}
 
 	@Test
-	public void theClusterSlotsNeverOverlapEachOther()
+	public void theClusterSlotsStayOneSpacingApart()
 	{
 		BubbleLayout.Arc arc = BubbleLayout.main(at(400, 300), VIEW);
 
-		BubbleLayout.ClusterPlan plan = cluster(arc, 17, -1, VIEW, NO_BLOCKERS);
+		BubbleLayout.ClusterPlan plan = cluster(arc, 17, VIEW, NO_BLOCKERS);
 
 		for (int i = 0; i < 17; i++)
 		{
@@ -198,7 +248,7 @@ public class BubbleLayoutTest
 			{
 				Point2D.Double a = plan.slots().get(i);
 				Point2D.Double b = plan.slots().get(j);
-				assertTrue(a.distance(b) >= 24 - 1e-9);
+				assertTrue(a.distance(b) >= BubbleLayout.CLUSTER_SPACING - 1e-9);
 			}
 		}
 	}
@@ -211,66 +261,40 @@ public class BubbleLayoutTest
 		{
 			BubbleLayout.Arc arc = BubbleLayout.main(at(head[0], head[1]), VIEW);
 
-			BubbleLayout.ClusterPlan plan = cluster(arc, 17, -1, VIEW, NO_BLOCKERS);
+			BubbleLayout.ClusterPlan plan = cluster(arc, 17, VIEW, NO_BLOCKERS);
 
+			assertEquals(17, plan.slots().size());
 			assertInside(plan.bounds(), VIEW);
 		}
 	}
 
 	@Test
-	public void whereADirectionFitsNoJarOverlapsAMainBubble()
+	public void aBlockedSlotIsSkippedSoTheNextOneTakesItsPlace()
 	{
-		double[][] heads = {{780, 300}, {400, 580}, {780, 580}};
-		for (double[] head : heads)
-		{
-			BubbleLayout.Arc arc = BubbleLayout.main(at(head[0], head[1]), VIEW);
+		BubbleLayout.Arc arc = BubbleLayout.main(at(400, 300), VIEW);
+		BubbleLayout.ClusterPlan open = cluster(arc, 5, VIEW, NO_BLOCKERS);
+		List<Rectangle> blockers = Collections.singletonList(around(open.slots().get(0)));
 
-			BubbleLayout.ClusterPlan plan = cluster(arc, 17, -1, VIEW, NO_BLOCKERS);
+		BubbleLayout.ClusterPlan blocked = cluster(arc, 5, VIEW, blockers);
 
-			if (plan.direction() < 0)
-				continue;
-
-			for (Point2D.Double slot : plan.slots())
-			{
-				for (int i = 0; i < 3; i++)
-					assertTrue(Math.hypot(slot.x - arc.x(i), slot.y - arc.y(i)) >= 12 + 15 + 2);
-			}
-		}
+		assertEquals(5, blocked.slots().size());
+		Point2D.Double next = open.slots().get(1);
+		Point2D.Double taken = blocked.slots().get(0);
+		assertEquals(next.x, taken.x, 1e-9);
+		assertEquals(next.y, taken.y, 1e-9);
 	}
 
 	@Test
-	public void theClusterTakesTheNextDirectionWhenTheFirstIsBlocked()
-	{
-		BubbleLayout.Arc arc = BubbleLayout.main(at(400, 300), VIEW);
-		BubbleLayout.ClusterPlan first = cluster(arc, 5, -1, VIEW, NO_BLOCKERS);
-		List<Rectangle> blockers = Collections.singletonList(around(first.slots().get(0)));
-
-		BubbleLayout.ClusterPlan second = cluster(arc, 5, -1, VIEW, blockers);
-
-		assertEquals(0, first.direction());
-		assertEquals(1, second.direction());
-	}
-
-	@Test
-	public void theRememberedDirectionIsKeptWhileItStillFits()
+	public void theClusterIsCentredOnTheCatchBubble()
 	{
 		BubbleLayout.Arc arc = BubbleLayout.main(at(400, 300), VIEW);
 
-		BubbleLayout.ClusterPlan kept = cluster(arc, 5, 3, VIEW, NO_BLOCKERS);
+		BubbleLayout.ClusterPlan plan = cluster(arc, 3, VIEW, NO_BLOCKERS);
 
-		assertEquals(3, kept.direction());
-	}
-
-	@Test
-	public void theRememberedDirectionIsDroppedWhenItNoLongerFits()
-	{
-		BubbleLayout.Arc arc = BubbleLayout.main(at(400, 300), VIEW);
-		BubbleLayout.ClusterPlan up = cluster(arc, 5, 3, VIEW, NO_BLOCKERS);
-		List<Rectangle> blockers = Collections.singletonList(around(up.slots().get(0)));
-
-		BubbleLayout.ClusterPlan plan = cluster(arc, 5, 3, VIEW, blockers);
-
-		assertNotEquals(3, plan.direction());
+		assertEquals(arc.x(0), plan.centreX(), 1e-9);
+		assertEquals(arc.y(0), plan.centreY(), 1e-9);
+		assertEquals(arc.x(0) + BubbleLayout.clusterOffsets(1).get(0).x, plan.slots().get(0).x, 1e-9);
+		assertEquals(arc.y(0) + BubbleLayout.clusterOffsets(1).get(0).y, plan.slots().get(0).y, 1e-9);
 	}
 
 	@Test
@@ -356,20 +380,5 @@ public class BubbleLayoutTest
 		assertFalse(reach.contains(300 + rx + 1, 200));
 		assertFalse(reach.contains(300 - rx - 1, 200));
 		assertFalse(reach.contains(300, 200 + rx * 0.6 + 1));
-	}
-
-	@Test
-	public void theRanksCountSlotsFurtherLeft()
-	{
-		List<Point2D.Double> slots = new ArrayList<>();
-		slots.add(new Point2D.Double(50, 0));
-		slots.add(new Point2D.Double(10, 0));
-		slots.add(new Point2D.Double(90, 0));
-
-		int[] ranks = BubbleLayout.xRanks(slots);
-
-		assertEquals(1, ranks[0]);
-		assertEquals(0, ranks[1]);
-		assertEquals(2, ranks[2]);
 	}
 }

@@ -38,15 +38,39 @@ final class StillLayers
 	BufferedImage layer(String page, int width, int height, double scale, WindowTheme theme, long version,
 		Consumer<Graphics2D> painter)
 	{
-		Key key = new Key(width, height, Math.round(scale * 1000), theme, version);
+		return layer(page, width, height, scale, theme, version, painter, 1.0);
+	}
+
+	/**
+	 * Gives the still layer of a page at the sharpness of the canvas it will be drawn on. The layer has
+	 * {@code device} image pixels for each layout pixel, and the painter draws in layout pixels, so on a high-DPI
+	 * canvas the text and shapes are drawn at the real pixel size instead of being stretched when the layer is drawn.
+	 *
+	 * @param page which page, such as "party"
+	 * @param width the layer width in layout pixels
+	 * @param height the layer height in layout pixels
+	 * @param scale the window scale the layer is drawn at
+	 * @param theme the theme the layer is drawn in
+	 * @param version the snapshot version the layer shows
+	 * @param painter paints the still parts onto the layer
+	 * @param device the device pixels per layout pixel, from {@link CrispImages#deviceScale}; 1 for a plain canvas
+	 * @return the layer, {@code device} times as wide and high as {@code width} and {@code height}
+	 */
+	BufferedImage layer(String page, int width, int height, double scale, WindowTheme theme, long version,
+		Consumer<Graphics2D> painter, double device)
+	{
+		double pixelsPer = Math.max(1.0, device);
+		Key key = new Key(width, height, Math.round(scale * 1000), theme, version, Math.round(pixelsPer * 1000));
 		Entry entry = layers.get(page);
 		if (entry != null && entry.key.equals(key))
 			return entry.image;
 
-		BufferedImage image = new BufferedImage(Math.max(1, width), Math.max(1, height), BufferedImage.TYPE_INT_ARGB);
+		BufferedImage image = new BufferedImage(Math.max(1, (int) Math.ceil(width * pixelsPer)),
+			Math.max(1, (int) Math.ceil(height * pixelsPer)), BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = image.createGraphics();
 		try
 		{
+			g.scale(pixelsPer, pixelsPer);
 			painter.accept(g);
 		}
 		finally
@@ -76,7 +100,9 @@ final class StillLayers
 	void draw(Graphics2D target, int x, int y, String page, int width, int height, double scale, WindowTheme theme,
 		long version, Consumer<Graphics2D> painter)
 	{
-		target.drawImage(layer(page, width, height, scale, theme, version, painter), x, y, null);
+		double device = CrispImages.deviceScale(target);
+		BufferedImage image = layer(page, width, height, scale, theme, version, painter, device);
+		target.drawImage(image, x, y, Math.max(1, width), Math.max(1, height), null);
 	}
 
 	/** Forgets every layer, for when the window closes so no image is held while it is shut. */
@@ -105,9 +131,11 @@ final class StillLayers
 		private final long scaleMilli;
 		private final WindowTheme theme;
 		private final long version;
+		private final long deviceMilli;
 
-		Key(int width, int height, long scaleMilli, WindowTheme theme, long version)
+		Key(int width, int height, long scaleMilli, WindowTheme theme, long version, long deviceMilli)
 		{
+			this.deviceMilli = deviceMilli;
 			this.width = width;
 			this.height = height;
 			this.scaleMilli = scaleMilli;
@@ -123,13 +151,13 @@ final class StillLayers
 
 			Key k = (Key) other;
 			return width == k.width && height == k.height && scaleMilli == k.scaleMilli && theme == k.theme
-				&& version == k.version;
+				&& version == k.version && deviceMilli == k.deviceMilli;
 		}
 
 		@Override
 		public int hashCode()
 		{
-			return Objects.hash(width, height, scaleMilli, theme, version);
+			return Objects.hash(width, height, scaleMilli, theme, version, deviceMilli);
 		}
 	}
 

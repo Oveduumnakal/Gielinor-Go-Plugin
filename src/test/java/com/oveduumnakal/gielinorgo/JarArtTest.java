@@ -136,11 +136,11 @@ public class JarArtTest
 
 			int height = bottom - top + 1;
 			assertTrue(type.name() + " is not taller than wide", height > right - left + 1);
-			assertTrue(type.name() + " is too small", height >= 24);
+			assertTrue(type.name() + " is too small", height >= 96);
 			shortest = Math.min(shortest, height);
 			tallest = Math.max(tallest, height);
 		}
 
-		assertTrue("the jars differ in height by " + (tallest - shortest), tallest - shortest <= 4);
+		assertTrue("the jars differ in height by " + (tallest - shortest), tallest - shortest <= 16);
 	}
 }

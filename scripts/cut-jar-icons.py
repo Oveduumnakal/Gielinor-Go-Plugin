@@ -3,8 +3,8 @@
 
 Grid, row by row: Bronze, Iron, Rune, Dragon / Cave, Swift, Blessed, Slayer / Venom (Poison), Ember, Giant, Tide /
 Stab, Slash, Crush, Archer (Ranged) / Mystic (Magic). Every jar is scaled by the SAME factor, so the jars keep their
-relative sizes, and stands on the same line in a transparent 32 x 32 square with a two pixel margin all round (the
-game scales it down to 16 pixels when it draws it). Offline and repeatable:
+relative sizes, and stands on the same line in a transparent 128 x 128 square with an eight pixel margin all round (the
+game scales it to the exact pixel size when it draws it, so it stays sharp at any window size). Offline and repeatable:
     python3 scripts/cut-jar-icons.py
 Needs Pillow, numpy and scipy.
 """
@@ -17,8 +17,8 @@ from scipy import ndimage
 HERE = os.path.dirname(os.path.abspath(__file__))
 SOURCE = os.path.join(HERE, "jar-icons-source.png")
 OUT = os.path.join(HERE, "..", "src", "main", "resources", "com", "oveduumnakal", "gielinorgo", "jars")
-SIZE = 32
-MARGIN = 2
+SIZE = 128
+MARGIN = 8
 ALPHA_FLOOR = 16
 ORDER = ["bronze", "iron", "rune", "dragon", "cave", "swift", "blessed", "slayer", "venom", "ember", "giant", "tide",
          "stab", "slash", "crush", "archer", "mystic"]

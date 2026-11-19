@@ -9,7 +9,6 @@ import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -217,13 +216,9 @@ final class FloatingTextOverlay extends Overlay
 	 */
 	private static void drawJar(Graphics2D graphics, JarType jar, int x, int y, int alpha)
 	{
-		BufferedImage image = JarIcons.image(jar);
-		if (image == null)
-			return;
-
 		Composite before = graphics.getComposite();
 		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha / 255f));
-		graphics.drawImage(image, x - image.getWidth() - 2, y - image.getHeight() + 3, null);
+		JarIcons.draw(graphics, jar, x - JarIcons.ICON_SIZE - 2, y - JarIcons.ICON_SIZE + 3, JarIcons.ICON_SIZE);
 		graphics.setComposite(before);
 	}
 
@@ -238,13 +233,9 @@ final class FloatingTextOverlay extends Overlay
 	 */
 	private static void drawItem(Graphics2D graphics, ItemType item, int x, int y, int alpha)
 	{
-		BufferedImage image = ItemIcons.image(item);
-		if (image == null)
-			return;
-
 		Composite before = graphics.getComposite();
 		graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha / 255f));
-		graphics.drawImage(image, x - image.getWidth() - 2, y - image.getHeight() + 3, null);
+		ItemIcons.draw(graphics, item, x - ItemIcons.ICON_SIZE - 2, y - ItemIcons.ICON_SIZE + 3, ItemIcons.ICON_SIZE);
 		graphics.setComposite(before);
 	}
 }

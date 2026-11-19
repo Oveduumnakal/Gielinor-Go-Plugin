@@ -198,7 +198,7 @@ final class BagPainter
 			String id = jarId(i);
 			boolean selected = type == state.selectedJar();
 			int count = count(state.jars(), type);
-			cell(g, ctx, text, layout.jarCells[i], id, selected, JarIcons.image(type), String.valueOf(count),
+			cell(g, ctx, text, layout.jarCells[i], id, selected, JarIcons.source(type), String.valueOf(count),
 				count > 0 || selected, regular);
 		}
 	}
@@ -209,7 +209,7 @@ final class BagPainter
 		for (int i = 0; i < types.length; i++)
 		{
 			int count = count(state.items(), types[i]);
-			cell(g, ctx, text, layout.itemCells[i], ITEM_PREFIX + i, false, ItemIcons.image(types[i]),
+			cell(g, ctx, text, layout.itemCells[i], ITEM_PREFIX + i, false, ItemIcons.source(types[i]),
 				String.valueOf(count), count > 0, regular);
 		}
 	}
@@ -229,7 +229,7 @@ final class BagPainter
 		if (!bright)
 			g.setComposite(AlphaComposite.SrcOver.derive((float) DIM));
 
-		g.drawImage(icon, box.x + pad + st.metrics().slant / 2, box.y + (box.height - size) / 2, size, size, null);
+		CrispImages.draw(g, icon, box.x + pad + st.metrics().slant / 2, box.y + (box.height - size) / 2.0, size);
 		g.setComposite(saved);
 		int textX = box.x + pad + st.metrics().slant / 2 + size + pad;
 		Rectangle words = new Rectangle(textX, box.y, Math.max(0, box.x + box.width - textX - pad), box.height);

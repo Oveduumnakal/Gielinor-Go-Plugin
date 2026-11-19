@@ -20,10 +20,10 @@ import static org.junit.Assert.assertTrue;
 /** Checks the 17 bundled jar pictures: every jar has one, in the agreed size, with a clear margin, all different. */
 public class JarIconsTest
 {
-	private static final int SIDE = 32;
+	private static final int SIDE = 128;
 
 	@Test
-	public void everyJarHasA32PixelPictureWithAnAlphaChannel() throws IOException
+	public void everyJarHasA128PixelPictureWithAnAlphaChannel() throws IOException
 	{
 		for (JarType type : JarType.values())
 		{
@@ -62,16 +62,16 @@ public class JarIconsTest
 	}
 
 	@Test
-	public void theShownPictureIs16PixelsAndMissingJarsGiveNull()
+	public void theSourceKeepsTheFullFileSizeAndMissingJarsGiveNull()
 	{
 		for (JarType type : JarType.values())
 		{
-			assertNotNull(type.name(), JarIcons.image(type));
-			assertEquals(JarIcons.ICON_SIZE, JarIcons.image(type).getWidth());
-			assertEquals(JarIcons.ICON_SIZE, JarIcons.image(type).getHeight());
+			assertNotNull(type.name(), JarIcons.source(type));
+			assertEquals(SIDE, JarIcons.source(type).getWidth());
+			assertEquals(SIDE, JarIcons.source(type).getHeight());
 		}
 
-		assertEquals(null, JarIcons.image(null));
+		assertEquals(null, JarIcons.source(null));
 	}
 
 	private static BufferedImage read(JarType type) throws IOException

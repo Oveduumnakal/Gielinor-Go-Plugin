@@ -110,7 +110,7 @@ final class JarFlightOverlay extends Overlay
 	 */
 	private void draw(Graphics2D graphics, JarType flying)
 	{
-		BufferedImage image = JarIcons.image(flying);
+		BufferedImage image = JarIcons.source(flying);
 		Player player = client.getLocalPlayer();
 		Supplier<StageAnchors.Spot> place = target;
 		StageAnchors.Spot body = place == null ? null : place.get();
@@ -132,6 +132,7 @@ final class JarFlightOverlay extends Overlay
 		if (screen == null)
 			return;
 
-		graphics.drawImage(image, screen.getX() - image.getWidth() / 2, screen.getY() - image.getHeight() / 2, null);
+		double half = JarIcons.ICON_SIZE / 2.0;
+		CrispImages.draw(graphics, image, screen.getX() - half, screen.getY() - half, JarIcons.ICON_SIZE);
 	}
 }

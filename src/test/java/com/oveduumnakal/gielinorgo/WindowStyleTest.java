@@ -392,6 +392,28 @@ public class WindowStyleTest
 	}
 
 	@Test
+	public void stillLayersAreSharperOnADoubledCanvasAndPaintAgainWhenTheDensityChanges()
+	{
+		StillLayers layers = new StillLayers();
+		Consumer<Graphics2D> painter = p ->
+		{
+			p.setColor(Color.GREEN);
+			p.fillRect(0, 0, 50, 50);
+		};
+
+		BufferedImage plain = layers.layer("party", 50, 50, 1.0, WindowTheme.DARK_GLASS, 1, painter, 1.0);
+		BufferedImage doubled = layers.layer("party", 50, 50, 1.0, WindowTheme.DARK_GLASS, 1, painter, 2.0);
+
+		assertEquals(50, plain.getWidth());
+		assertEquals(100, doubled.getWidth());
+		assertEquals(100, doubled.getHeight());
+		assertEquals(Color.GREEN.getRGB(), doubled.getRGB(99, 99));
+		assertEquals(2, layers.paints());
+		assertSame(doubled, layers.layer("party", 50, 50, 1.0, WindowTheme.DARK_GLASS, 1, painter, 2.0));
+		assertEquals(2, layers.paints());
+	}
+
+	@Test
 	public void theNoticeDrawsAroundItsCentreAndFadesToNothing()
 	{
 		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
