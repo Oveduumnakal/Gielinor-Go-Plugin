@@ -21,7 +21,7 @@ final class WidgetKit
 	 */
 	static WindowStyle style(double scale)
 	{
-		return WindowStyle.of(WindowTheme.DARK_GLASS, scale);
+		return WindowStyle.of(WindowTheme.RUNELITE_DARK, scale);
 	}
 
 	/**
