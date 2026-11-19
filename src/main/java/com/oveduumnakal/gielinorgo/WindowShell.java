@@ -116,6 +116,18 @@ final class WindowShell
 		/** @return whether the window's keyboard is on */
 		boolean keyboard();
 
+		/** @return whether the party is pinned to the game screen */
+		default boolean partyPinned()
+		{
+			return false;
+		}
+
+		/** Pins the party to the game screen, or unpins it, and saves the choice. */
+		default void togglePartyPin()
+		{
+			return;
+		}
+
 		/** Puts the window back to its default size and place. */
 		void resetWindow();
 
@@ -397,6 +409,18 @@ final class WindowShell
 	WindowSnapshot snapshot()
 	{
 		return snapshot;
+	}
+
+	/** @return whether the party is pinned to the game screen */
+	boolean partyPinned()
+	{
+		return host.partyPinned();
+	}
+
+	/** Pins the party to the game screen, or unpins it. */
+	void togglePartyPin()
+	{
+		host.togglePartyPin();
 	}
 
 	/** @return whether the window is open and takes input; a window fading out is not */

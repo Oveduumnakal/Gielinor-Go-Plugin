@@ -40,6 +40,9 @@ final class WindowPages implements WindowShell.PageActions
 	/** The id of the banner's Reset button. */
 	static final String ID_RESET_PROGRESS = "btn:resetProgress";
 
+	/** The id of the Pin Party to UI button. */
+	static final String ID_PIN_PARTY = "btn:pinParty";
+
 	/** The id of the banner's Dismiss button. */
 	static final String ID_DISMISS = "btn:dismissBanner";
 
@@ -104,7 +107,7 @@ final class WindowPages implements WindowShell.PageActions
 		this.pictures = pictures;
 		this.clock = clock;
 		this.motion = new PartyMotion(shell.animations());
-		this.party = new PartyPainter(pictures, motion, sink);
+		this.party = new PartyPainter(pictures, motion, sink, shell::partyPinned);
 		this.summary = new SummaryPainter(pictures, sink);
 		this.bag = new BagPainter(sink);
 		this.tasks = new TasksPage(sink);
@@ -330,6 +333,8 @@ final class WindowPages implements WindowShell.PageActions
 		}
 
 		order = Math.max(order, WindowShell.PAGE_ORDER + PartyLayout.SLOTS);
+		hits.add(new Hit(ID_PIN_PARTY, Hit.Kind.BUTTON, layout.pinButton, order++, true,
+			"Show your team in a box on the game screen. Press again to hide it."));
 		if (showBanner(panel))
 		{
 			hits.add(new Hit(ID_RESET_PROGRESS, Hit.Kind.BUTTON, layout.resetButton, order++, true,
@@ -655,6 +660,9 @@ final class WindowPages implements WindowShell.PageActions
 				break;
 			case ID_DISMISS:
 				bannerDismissed = true;
+				break;
+			case ID_PIN_PARTY:
+				shell.togglePartyPin();
 				break;
 			case ID_SUMMARY_MENU:
 				menu(hit, hit.bounds().x + hit.bounds().width / 2, hit.bounds().y + hit.bounds().height / 2, false);

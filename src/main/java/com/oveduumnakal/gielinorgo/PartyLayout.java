@@ -49,6 +49,9 @@ final class PartyLayout
 	/** The top tasks box in the right column. */
 	final Rectangle tasks;
 
+	/** The Pin Party to UI button at the foot of the right column, above the banner. */
+	final Rectangle pinButton;
+
 	/** The reset banner at the foot of the right column, or an empty box when none is shown. */
 	final Rectangle banner;
 
@@ -78,11 +81,14 @@ final class PartyLayout
 
 		int bannerH = bannerShown ? Math.min(side.height / 3, (int) Math.round(96 * scale)) : 0;
 		int top = side.height - bannerH - (bannerShown ? gap : 0);
-		int eggsH = Math.max(0, (top - gap) * 2 / 5);
-		eggs = new Rectangle(side.x, side.y, side.width, eggsH);
-		tasks = new Rectangle(side.x, side.y + eggsH + gap, side.width, Math.max(0, top - eggsH - gap));
-		banner = new Rectangle(side.x, side.y + side.height - bannerH, side.width, bannerH);
 		int pad = metrics.pad;
+		int pinH = Math.min(metrics.chipHeight + pad / 2, Math.max(0, top / 4));
+		pinButton = new Rectangle(side.x, side.y + top - pinH, side.width, pinH);
+		int free = Math.max(0, top - pinH - gap);
+		int eggsH = Math.max(0, (free - gap) * 2 / 5);
+		eggs = new Rectangle(side.x, side.y, side.width, eggsH);
+		tasks = new Rectangle(side.x, side.y + eggsH + gap, side.width, Math.max(0, free - eggsH - gap));
+		banner = new Rectangle(side.x, side.y + side.height - bannerH, side.width, bannerH);
 		int buttonH = Math.min(metrics.chipHeight + pad / 2, Math.max(0, bannerH / 2 - pad / 2));
 		if (bannerShown)
 		{
