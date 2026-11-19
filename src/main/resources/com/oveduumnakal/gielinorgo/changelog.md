@@ -54,6 +54,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **Search the Collection.** Type part of a name in the search box above the list to find a creature. It works
+  with the Show filter, and creatures you have not met stay hidden. (#278)
 - **Green checkmark for caught.** A creature you have caught before now shows a green checkmark instead of a
   green jar, on its name tag and its info card. (#276)
 - **No rarity bar.** The coloured bar on the edge of creature portraits is gone; the rarity is still named in
