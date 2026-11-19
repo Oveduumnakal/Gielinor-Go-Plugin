@@ -6,6 +6,7 @@ package com.oveduumnakal.gielinorgo;
 
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,6 +62,21 @@ public class TasksPageTest
 		assertEquals("Reward: Rare egg", rig.hit("tasks:row:3").tip());
 		String streak = rig.hit(TasksPage.ID_STREAK).tip();
 		assertTrue(streak.contains("Missing a day costs nothing"));
+	}
+
+	@Test
+	public void aLineSeparatesTheDailyTasksFromTheWeeklyOne()
+	{
+		TasksPage tasks = new TasksPage(null);
+		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
+		PanelState panel = state(5);
+		tasks.layout(new Rectangle(0, 0, 700, 400), style, panel);
+		Rectangle line = tasks.divider();
+		assertTrue(line.width > 0 && line.height > 0);
+		PartyRig rig = page(panel, 765, 497);
+		Rectangle weekly = rig.hit("tasks:row:3").bounds();
+		Rectangle lastDaily = rig.hit("tasks:row:2").bounds();
+		assertTrue(lastDaily.y + lastDaily.height <= weekly.y);
 	}
 
 	@Test
@@ -177,6 +193,23 @@ public class TasksPageTest
 		assertEquals("Pin to the tracker", rig.hit("tasks:pin:0").tip());
 		assertTrue(rig.hit("tasks:pin:0").enabled());
 		assertEquals("Pin to the tracker", rig.hit("tasks:pin:3").tip());
+	}
+
+	@Test
+	public void aPinnedPinLooksClearlyDifferentFromAnUnpinnedOne()
+	{
+		PartyRig off = page(state(5), 765, 497);
+		PartyRig on = page(pinned(state(5), 0), 765, 497);
+		Rectangle box = off.hit("tasks:pin:0").bounds();
+		BufferedImage before = off.paint();
+		BufferedImage after = on.paint();
+		int differing = 0;
+		for (int x = box.x; x < box.x + box.width; x++)
+			for (int y = box.y; y < box.y + box.height; y++)
+				if (before.getRGB(x, y) != after.getRGB(x, y))
+					differing++;
+
+		assertTrue("pixels differing: " + differing, differing > box.width * box.height / 8);
 	}
 
 	@Test

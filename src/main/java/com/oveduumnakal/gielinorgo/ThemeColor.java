@@ -79,6 +79,9 @@ enum ThemeColor
 	/** An experience bar. */
 	XP_FILL,
 
+	/** The Bag's next-jar bar, a different hue and lightness from the experience bar beside it. */
+	JAR_FILL,
+
 	/** The empty part of an experience bar. */
 	XP_TRACK,
 

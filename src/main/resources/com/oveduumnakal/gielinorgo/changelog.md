@@ -68,6 +68,13 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Stab icon.** The dagger now points up and is as big as the other combat style icons. (#283)
 - **Gender icon size.** The gender sign is now the same size as the combat style icon beside it. (#285)
 - **Blue and pink gender signs.** The male sign is blue and the female sign is pink. (#284)
+- **Daily and Weekly apart.** A line now separates the Daily tasks from the Weekly one on the Tasks page. (#288)
+- **A better pin.** The pin button on tasks and eggs is now a drawn push pin: tilted and outlined when free, upright
+  and filled when pinned. (#287)
+- **Smaller Change log and Feedback.** The two buttons are shorter and sit in their own section at the right end
+  of the bottom row. (#289)
+- **Clearer Bag bars.** The Trainer level bar and the Next jar bar now use clearly different colours, easy to tell
+  apart even for colour-blind players. (#290)
 - **Faster jar list.** The jar bubble opens its list after half a second of hovering, twice as fast as before.
   (#301)
 - **Two-step close.** When the mouse leaves a wild creature, the jar list folds away first and the three bubbles
