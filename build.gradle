@@ -45,6 +45,14 @@ tasks.register('checkStyleRules', Exec) {
 
 check.dependsOn checkStyleRules
 
+tasks.register('checkMovesets', Exec) {
+	group = 'verification'
+	description = 'Fails when docs/MOVESETS.md is out of date (scripts/gen-movesets.py --check).'
+	commandLine pythonExecutable, 'scripts/gen-movesets.py', '--check'
+}
+
+check.dependsOn checkMovesets
+
 javadoc {
 	options.memberLevel = JavadocMemberLevel.PRIVATE
 	options.addStringOption('Xdoclint:syntax,html,reference', '-quiet')

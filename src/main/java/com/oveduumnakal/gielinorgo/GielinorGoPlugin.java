@@ -709,7 +709,10 @@ public class GielinorGoPlugin extends Plugin
 
 		trackerTick();
 		if (!battleBusy())
+		{
+			game.reviveHere();
 			game.rescue();
+		}
 
 		boolean changed = game.takeDirty();
 		unsaved |= changed;
@@ -2067,13 +2070,14 @@ public class GielinorGoPlugin extends Plugin
 				return;
 			}
 
-			boolean fighting = player.getInteracting() instanceof NPC;
+			boolean fighting = player.getInteracting() instanceof NPC
+				&& !RandomEvents.isRandomEvent(player.getInteracting().getName());
 			for (NPC npc : view.npcs())
 			{
 				if (fighting)
 					break;
 
-				fighting = npc.getInteracting() == player;
+				fighting = npc.getInteracting() == player && !RandomEvents.isRandomEvent(npc.getName());
 			}
 
 			if (fighting)
@@ -2387,8 +2391,8 @@ public class GielinorGoPlugin extends Plugin
 		if (pendingBattle != null)
 			pendingAge++;
 
-		if (pendingBattle != null && (pendingAge > PENDING_MAX_TICKS
-			|| !stage.active() && !arena.active() && noticeBoard.idle()))
+		if (pendingBattle != null && WindowRules.deferredDue(pendingAge, PENDING_MAX_TICKS,
+			stage.active() || arena.active(), noticeBoard.idle()))
 		{
 			heldNotices = new ArrayList<>();
 			settlePending();

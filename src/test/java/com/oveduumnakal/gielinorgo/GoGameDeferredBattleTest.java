@@ -127,4 +127,21 @@ public class GoGameDeferredBattleTest
 		assertEquals(now1.won(), later.won());
 		assertEquals(now1.log(), later.log());
 	}
+
+	@Test
+	public void aResultSettledBeforeAProfileChangeIsKeptAndNotWrittenAgain()
+	{
+		game.data().team.add(new Creature("chicken", 90, now));
+		WildEntry foe = wild(CHICKEN, 1, 1);
+		BattleResult result = game.battleDeferred(foe);
+		BattleSession owed = result.pending();
+		long before = first().xp;
+
+		assertTrue("settled before the other profile loads", game.finishDeferred(owed));
+		long paid = first().xp;
+		assertTrue(paid > before);
+
+		assertFalse("a second settle after the reload pays nothing", game.finishDeferred(owed));
+		assertEquals(paid, first().xp);
+	}
 }

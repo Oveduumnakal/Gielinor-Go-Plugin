@@ -2023,7 +2023,11 @@ final class GoGame
 			return;
 		}
 
-		data.storage.add(data.team.remove(teamIndex));
+		Creature moved = data.team.remove(teamIndex);
+		data.storage.add(moved);
+		if (moved.fainted)
+			moved.revive(ReviveRules.BANK_TO, clock.getAsLong());
+
 		dirty = true;
 	}
 
@@ -3892,6 +3896,38 @@ final class GoGame
 
 		List<Creature> kept = pick.from() == Holding.TEAM ? data.team : data.storage;
 		return reviveAtBank(kept.get(pick.index()));
+	}
+
+	/**
+	 * Revives every fainted creature, in the team and in storage, when the player is somewhere that allows a free
+	 * revive: a city or team town, near a bank, or with the bank open. Each comes back at
+	 * {@link ReviveRules#BANK_TO}. It does nothing while an Elite run is open. Call it every tick when no battle is
+	 * open; it is quiet when nothing has fainted.
+	 *
+	 * @return true when at least one creature was revived
+	 */
+	boolean reviveHere()
+	{
+		if (eliteOpen() || !ReviveRules.mayReviveHere(inTeamArea(), bankNear, bankOpen))
+			return false;
+
+		long now = clock.getAsLong();
+		boolean any = false;
+		for (List<Creature> kept : Arrays.asList(data.team, data.storage))
+		{
+			for (Creature creature : kept)
+			{
+				if (!creature.fainted)
+					continue;
+
+				creature.revive(ReviveRules.BANK_TO, now);
+				tell(nameOf(creature) + " was revived", Tone.GOOD);
+				any = true;
+			}
+		}
+
+		dirty |= any;
+		return any;
 	}
 
 	/**

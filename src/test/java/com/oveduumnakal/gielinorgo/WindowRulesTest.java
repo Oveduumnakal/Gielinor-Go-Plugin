@@ -84,4 +84,19 @@ public class WindowRulesTest
 			assertEquals(TeamSwapRule.allowed(city, bank, false), WindowRules.storageEnabled(city, bank));
 		}
 	}
+
+	@Test
+	public void aDeferredResultWaitsForTheSceneAndTheLines()
+	{
+		assertFalse(WindowRules.deferredDue(10, 300, true, true));
+		assertFalse(WindowRules.deferredDue(10, 300, false, false));
+		assertTrue(WindowRules.deferredDue(10, 300, false, true));
+	}
+
+	@Test
+	public void aDeferredResultIsWrittenAfterTheLimitEvenIfTheSceneNeverEnds()
+	{
+		assertFalse(WindowRules.deferredDue(300, 300, true, false));
+		assertTrue(WindowRules.deferredDue(301, 300, true, false));
+	}
 }

@@ -29,7 +29,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   right-click **Battle** and **Catch** entries are all you get.
 
   - **Left bubble: the jar.** Its ring is coloured to match your selected jar. A left click throws that jar.
-    Hover it for about a second, or right-click it, and the jars you own pop out to its left in a honeycomb, each
+    Hover it for about half a second, or right-click it, and the jars you own pop out to its left in a honeycomb, each
     the same size as the bubble, with how many of each; click one to select it (it does not throw). The selected
     jar stays selected after a throw.
   - **Middle bubble: Battle** (red ring, the game's Combat tab icon). A click starts a battle.
