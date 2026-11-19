@@ -15,6 +15,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
 import java.util.Objects;
@@ -232,6 +233,25 @@ final class WindowStyle
 	static ThemeColor rowText(boolean lead)
 	{
 		return lead ? ThemeColor.LEAD_TEXT : ThemeColor.ROW_TEXT;
+	}
+
+	/**
+	 * Paints the resize grip: three short diagonal lines in the bottom-right corner of the window.
+	 *
+	 * @param g the graphics
+	 * @param box the grip's square, in the window's corner
+	 * @param active how much the grip is being dragged, from 0 to 1
+	 */
+	void grip(Graphics2D g, Rectangle2D box, double active)
+	{
+		Color base = color(ThemeColor.SUBTEXT);
+		g.setColor(WindowTheme.mix(base, color(ThemeColor.ACCENT), active));
+		g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
+		double step = box.getWidth() / 4.0;
+		double right = box.getMaxX() - metrics.border;
+		double bottom = box.getMaxY() - metrics.border;
+		for (int i = 1; i <= 3; i++)
+			g.draw(new Line2D.Double(right - i * step, bottom, right, bottom - i * step));
 	}
 
 	/**

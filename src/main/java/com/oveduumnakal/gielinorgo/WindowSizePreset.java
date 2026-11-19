@@ -5,16 +5,16 @@
 package com.oveduumnakal.gielinorgo;
 
 /**
- * The "Window size" presets, each a fraction of the canvas width. They are a way to size the window without the
- * drag key, which a desktop (KDE on a Steam Deck) may take for itself. Holds no RuneLite types.
+ * The "Window size" presets of the settings, each a fraction of the canvas width. The player can also drag the
+ * window's edge or its corner grip, or hold RuneLite's drag key and drag the edge. Holds no RuneLite types.
  */
 public enum WindowSizePreset
 {
-	/** About half the canvas width. */
-	SMALL("Small", 0.50),
+	/** The default, half of the canvas width. */
+	SMALL("Small", WindowFit.DEFAULT_FRACTION),
 
-	/** The default, 70% of the canvas width. */
-	MEDIUM("Medium", WindowFit.DEFAULT_FRACTION),
+	/** About 70% of the canvas width. */
+	MEDIUM("Medium", 0.70),
 
 	/** About 85% of the canvas width. */
 	LARGE("Large", 0.85),

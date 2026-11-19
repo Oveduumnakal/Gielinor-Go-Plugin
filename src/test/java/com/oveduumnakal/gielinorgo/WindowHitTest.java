@@ -90,6 +90,13 @@ public class WindowHitTest
 		{
 			calls.add("toggle");
 		}
+
+		@Override
+		public boolean resetRequested()
+		{
+			calls.add("reset");
+			return true;
+		}
 	});
 
 	private MouseEvent press(int x, int y, int button, int modifiers)
@@ -104,6 +111,28 @@ public class WindowHitTest
 		MouseEvent event = WindowEvents.mouse(MouseEvent.MOUSE_RELEASED, x, y, button, 0);
 		input.mouseReleased(event);
 		return event;
+	}
+
+	@Test
+	public void altAndARightClickInsideResetsAndIsConsumedEvenWithAltAsTheDragKey()
+	{
+		int mask = InputEvent.ALT_DOWN_MASK | InputEvent.BUTTON3_DOWN_MASK;
+		MouseEvent down = press(150, 80, MouseEvent.BUTTON3, mask);
+		MouseEvent up = release(150, 80, MouseEvent.BUTTON3);
+
+		assertTrue(down.isConsumed());
+		assertTrue(up.isConsumed());
+		assertEquals(List.of("reset"), calls);
+	}
+
+	@Test
+	public void altAndARightClickOutsideTheWindowPassesThrough()
+	{
+		int mask = InputEvent.ALT_DOWN_MASK | InputEvent.BUTTON3_DOWN_MASK;
+		MouseEvent down = press(700, 400, MouseEvent.BUTTON3, mask);
+
+		assertFalse(down.isConsumed());
+		assertEquals(Collections.emptyList(), calls);
 	}
 
 	@Test

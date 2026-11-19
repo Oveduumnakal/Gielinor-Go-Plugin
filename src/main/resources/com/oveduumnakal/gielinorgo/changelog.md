@@ -54,6 +54,15 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
+- **Party backs out of Summary.** Clicking the Party tab while a creature's Summary is open takes you back to the
+  Party list. (#282)
+- **Resize the window by dragging.** Drag the grip in the window's bottom-right corner, or its right or bottom edge.
+  The window starts Small, and Alt + right-click brings it back to Small. The Size button is gone. (#271)
+- **Reset with Alt + right-click.** Hold Alt and right-click the window to put it back to its normal size and place.
+  The Reset window button is gone. (#269)
+- **One window look.** The window now uses only the RuneLite dark style; the style setting and the footer style
+  button are gone. (#270)
+- **Header underline fits.** The line under the active tab now ends where the slanted tab ends. (#272)
 - **Catch when nobody can fight.** With no team or a tired lead you can still catch: use the jar bubble or Catch
   in the right-click menu. (#82)
 - **Report a bug and Request a feature.** The Feedback button in the window opens GitHub with your text filled in.

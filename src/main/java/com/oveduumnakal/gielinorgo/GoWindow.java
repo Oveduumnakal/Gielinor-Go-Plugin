@@ -48,6 +48,7 @@ final class GoWindow extends Overlay
 	private Dimension lastSize;
 	private double fraction = -1;
 	private volatile double requestedFraction = -1;
+	private volatile int dragWidth = -1;
 	private volatile boolean recenter;
 	private boolean placed;
 	private boolean unsaved;
@@ -79,7 +80,7 @@ final class GoWindow extends Overlay
 			@Override
 			public WindowTheme theme()
 			{
-				return config.windowStyle();
+				return WindowTheme.RUNELITE_DARK;
 			}
 
 			@Override
@@ -101,32 +102,17 @@ final class GoWindow extends Overlay
 			}
 
 			@Override
-			public String sizeLabel()
-			{
-				return "Size: " + config.windowSize();
-			}
-
-			@Override
 			public void resetWindow()
 			{
 				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.WINDOW_SIZE,
-					WindowSizePreset.MEDIUM);
+					WindowSizePreset.SMALL);
 				applyFraction(WindowFit.DEFAULT_FRACTION);
 			}
 
 			@Override
-			public void flipTheme()
+			public void resizeWindow(int width)
 			{
-				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.WINDOW_STYLE,
-					config.windowStyle().next());
-			}
-
-			@Override
-			public void nextSize()
-			{
-				WindowSizePreset[] all = WindowSizePreset.values();
-				WindowSizePreset next = all[(config.windowSize().ordinal() + 1) % all.length];
-				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.WINDOW_SIZE, next);
+				dragWidth = width;
 			}
 
 			@Override
@@ -255,10 +241,19 @@ final class GoWindow extends Overlay
 			fraction = config.windowFraction();
 
 		Dimension preferred = getPreferredSize();
+		int dragged = dragWidth;
 		if (requestedFraction >= 0)
 		{
 			store(requestedFraction);
 			requestedFraction = -1;
+			dragWidth = -1;
+		}
+		else if (dragged >= 0)
+		{
+			dragWidth = -1;
+			fraction = WindowFit.fractionOf(fitToCanvas(dragged, cw, ch), cw);
+			resizedMs = clock.getAsLong();
+			unsaved = true;
 		}
 		else if (lastSize != null && preferred != null && !preferred.equals(lastSize))
 		{
@@ -287,6 +282,17 @@ final class GoWindow extends Overlay
 
 		placed = true;
 		return size;
+	}
+
+	private int fitToCanvas(int width, int cw, int ch)
+	{
+		Rectangle b = getBounds();
+		if (b == null)
+			return width;
+
+		int roomW = Math.max(0, cw - b.x);
+		int roomH = (int) ((long) Math.max(0, ch - b.y) * WindowFit.DESIGN_W / WindowFit.DESIGN_H);
+		return Math.min(width, Math.min(roomW, roomH));
 	}
 
 	private void store(double share)

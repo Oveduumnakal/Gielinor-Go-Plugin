@@ -28,7 +28,7 @@ public class WindowOverlaysTest
 		Graphics2D g = jar.createGraphics();
 		g.fillRect(2, 2, 14, 14);
 		g.dispose();
-		return new WindowToggle(() -> WindowTheme.DARK_GLASS, () -> motion, () -> now, jar);
+		return new WindowToggle(() -> WindowTheme.RUNELITE_DARK, () -> motion, () -> now, jar);
 	}
 
 	private static int opaque(BufferedImage image)
@@ -124,7 +124,7 @@ public class WindowOverlaysTest
 	@Test
 	public void theNoticePaintsWhileItLastsAndThenGoesAway()
 	{
-		WindowNotice notice = new WindowNotice(() -> motion, () -> WindowTheme.DARK_GLASS, () -> now, () -> 765,
+		WindowNotice notice = new WindowNotice(() -> motion, () -> WindowTheme.RUNELITE_DARK, () -> now, () -> 765,
 			() -> 503);
 		BufferedImage empty = new BufferedImage(765, 503, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = empty.createGraphics();
@@ -153,7 +153,7 @@ public class WindowOverlaysTest
 	@Test
 	public void aNewerNoticeReplacesTheOlderOne()
 	{
-		WindowNotice notice = new WindowNotice(() -> motion, () -> WindowTheme.DARK_GLASS, () -> now, () -> 765,
+		WindowNotice notice = new WindowNotice(() -> motion, () -> WindowTheme.RUNELITE_DARK, () -> now, () -> 765,
 			() -> 503);
 		notice.show(NoticeMessage.LOADING, 10, 10);
 		notice.show(NoticeMessage.BLOCKED_BATTLE, 20, 30);

@@ -142,7 +142,7 @@ public class WindowStyleTest
 	@Test
 	public void hoverLightensAndPressDarkens()
 	{
-		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
 		BufferedImage image = canvas();
 		Graphics2D g = graphics(image);
 		style.row(g, BOX, false, 0, 0);
@@ -193,7 +193,7 @@ public class WindowStyleTest
 	@Test
 	public void aDisabledTabHasItsOwnColoursAndNoHover()
 	{
-		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
 		BufferedImage image = canvas();
 		Graphics2D g = graphics(image);
 		style.tab(g, new Rectangle2D.Double(10, 10, 160, 44), "Party", false, false, 0);
@@ -201,7 +201,7 @@ public class WindowStyleTest
 		style.tab(g, new Rectangle2D.Double(10, 130, 160, 44), "Storage", false, true, 1);
 		g.dispose();
 
-		WindowTheme theme = WindowTheme.DARK_GLASS;
+		WindowTheme theme = WindowTheme.RUNELITE_DARK;
 		assertClose("tab", theme.color(ThemeColor.TAB), at(image, 20, 50));
 		assertClose("active tab", theme.color(ThemeColor.TAB_ACTIVE), at(image, 20, 110));
 		assertClose("disabled tab, hover ignored", theme.color(ThemeColor.TAB_DISABLED), at(image, 20, 170));
@@ -231,14 +231,14 @@ public class WindowStyleTest
 	@Test
 	public void theWindowAndPanelPaintBodyAndFrame()
 	{
-		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
 		BufferedImage image = canvas();
 		Graphics2D g = graphics(image);
 		style.window(g, new Rectangle(10, 10, 300, 200));
 		style.panel(g, new Rectangle2D.Double(30, 30, 100, 60));
 		g.dispose();
 
-		WindowTheme theme = WindowTheme.DARK_GLASS;
+		WindowTheme theme = WindowTheme.RUNELITE_DARK;
 		assertClose("window, over its own shadow", theme.color(ThemeColor.WINDOW), at(image, 250, 150), 8);
 		assertClose("frame", theme.color(ThemeColor.FRAME), at(image, 150, 10));
 		assertClose("panel", theme.color(ThemeColor.PANEL_BOX), at(image, 80, 60));
@@ -248,13 +248,13 @@ public class WindowStyleTest
 	@Test
 	public void layoutNumbersScaleWithTheWindowAndNothingElse()
 	{
-		WindowStyle one = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
-		WindowStyle two = WindowStyle.of(WindowTheme.DARK_GLASS, 2.0);
+		WindowStyle one = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
+		WindowStyle two = WindowStyle.of(WindowTheme.RUNELITE_DARK, 2.0);
 		assertEquals(14, one.metrics().slant);
 		assertEquals(28, two.metrics().slant);
 		assertEquals(64, one.metrics().row);
 		assertEquals(128, two.metrics().row);
-		WindowStyle tiny = WindowStyle.of(WindowTheme.DARK_GLASS, 0.1);
+		WindowStyle tiny = WindowStyle.of(WindowTheme.RUNELITE_DARK, 0.1);
 		WindowStyle lite = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
 		assertEquals(1, tiny.metrics().border);
 		assertEquals(one.metrics(), lite.metrics());
@@ -293,7 +293,7 @@ public class WindowStyleTest
 	@Test
 	public void nativeSizeTextPaintsOnlyCrispPixels()
 	{
-		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
 		BufferedImage image = canvas();
 		Graphics2D g = graphics(image);
 		style.text(g, "Lv 42 HP", 10, 40, style.font(WindowFonts.Face.REGULAR, 16), ThemeColor.TEXT);
@@ -347,27 +347,25 @@ public class WindowStyleTest
 			g.fillRect(0, 0, 10, 10);
 		};
 
-		BufferedImage first = layers.layer("party", 100, 80, 1.0, WindowTheme.DARK_GLASS, 1, painter);
-		assertSame(first, layers.layer("party", 100, 80, 1.0, WindowTheme.DARK_GLASS, 1, painter));
+		BufferedImage first = layers.layer("party", 100, 80, 1.0, WindowTheme.RUNELITE_DARK, 1, painter);
+		assertSame(first, layers.layer("party", 100, 80, 1.0, WindowTheme.RUNELITE_DARK, 1, painter));
 		assertEquals(1, layers.paints());
 		assertEquals(1, calls[0]);
 		assertEquals(Color.RED.getRGB(), first.getRGB(5, 5));
 		assertEquals(0, first.getRGB(50, 50));
 
-		layers.layer("party", 100, 80, 1.0, WindowTheme.DARK_GLASS, 2, painter);
-		assertEquals(2, layers.paints());
 		layers.layer("party", 100, 80, 1.0, WindowTheme.RUNELITE_DARK, 2, painter);
-		assertEquals(3, layers.paints());
+		assertEquals(2, layers.paints());
 		layers.layer("party", 100, 80, 1.5, WindowTheme.RUNELITE_DARK, 2, painter);
-		assertEquals(4, layers.paints());
+		assertEquals(3, layers.paints());
 		layers.layer("party", 120, 80, 1.5, WindowTheme.RUNELITE_DARK, 2, painter);
-		assertEquals(5, layers.paints());
+		assertEquals(4, layers.paints());
 		layers.layer("bag", 120, 80, 1.5, WindowTheme.RUNELITE_DARK, 2, painter);
-		assertEquals(6, layers.paints());
+		assertEquals(5, layers.paints());
 		assertEquals(2, layers.size());
 
 		layers.layer("bag", 120, 80, 1.5, WindowTheme.RUNELITE_DARK, 2, painter);
-		assertEquals(6, layers.paints());
+		assertEquals(5, layers.paints());
 		layers.clear();
 		assertEquals(0, layers.size());
 	}
@@ -378,7 +376,7 @@ public class WindowStyleTest
 		StillLayers layers = new StillLayers();
 		BufferedImage target = canvas();
 		Graphics2D g = graphics(target);
-		layers.draw(g, 30, 40, "party", 50, 50, 1.0, WindowTheme.DARK_GLASS, 1, p ->
+		layers.draw(g, 30, 40, "party", 50, 50, 1.0, WindowTheme.RUNELITE_DARK, 1, p ->
 		{
 			p.setColor(Color.GREEN);
 			p.fillRect(0, 0, 50, 50);
@@ -401,22 +399,22 @@ public class WindowStyleTest
 			p.fillRect(0, 0, 50, 50);
 		};
 
-		BufferedImage plain = layers.layer("party", 50, 50, 1.0, WindowTheme.DARK_GLASS, 1, painter, 1.0);
-		BufferedImage doubled = layers.layer("party", 50, 50, 1.0, WindowTheme.DARK_GLASS, 1, painter, 2.0);
+		BufferedImage plain = layers.layer("party", 50, 50, 1.0, WindowTheme.RUNELITE_DARK, 1, painter, 1.0);
+		BufferedImage doubled = layers.layer("party", 50, 50, 1.0, WindowTheme.RUNELITE_DARK, 1, painter, 2.0);
 
 		assertEquals(50, plain.getWidth());
 		assertEquals(100, doubled.getWidth());
 		assertEquals(100, doubled.getHeight());
 		assertEquals(Color.GREEN.getRGB(), doubled.getRGB(99, 99));
 		assertEquals(2, layers.paints());
-		assertSame(doubled, layers.layer("party", 50, 50, 1.0, WindowTheme.DARK_GLASS, 1, painter, 2.0));
+		assertSame(doubled, layers.layer("party", 50, 50, 1.0, WindowTheme.RUNELITE_DARK, 1, painter, 2.0));
 		assertEquals(2, layers.paints());
 	}
 
 	@Test
 	public void theNoticeDrawsAroundItsCentreAndFadesToNothing()
 	{
-		WindowStyle style = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
 		BufferedImage shown = canvas();
 		Graphics2D g = graphics(shown);
 		style.notice(g, "Still loading your save.", 200, 150, 1.0, 1.0);
