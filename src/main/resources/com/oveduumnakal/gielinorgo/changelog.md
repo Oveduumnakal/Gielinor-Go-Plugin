@@ -61,6 +61,8 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Sharper icons and bubbles.** Text and icons stay crisp at any window size or UI scale. The wild creature
   bubbles became rings with a clear middle, the Battle bubble shows the game's Combat tab icon, and the jars you own
   open as an even honeycomb with easier-to-read counts. (#266)
+- **Pin Party to UI.** A button on the Party page, and a setting, show your team
+  (portraits, names, levels and health) in a box on the game screen. (#268)
 - **One size on the Party view.** The gender and style icons now match the size of the text beside them. (#273)
 - **HP and XP side by side.** A Party row shows the health bar and the experience bar next to each other. (#274)
 - **Party highlight.** The ring that follows your keyboard on the Party page has its own colour and now sits right

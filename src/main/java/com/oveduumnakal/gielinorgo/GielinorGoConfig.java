@@ -40,6 +40,9 @@ public interface GielinorGoConfig extends Config
 	/** Key of the hidden item that stores the painted window's width as a share of the canvas width. */
 	String WINDOW_FRACTION = "windowFraction";
 
+	/** The key of {@link #pinParty()}. */
+	String PIN_PARTY = "pinParty";
+
 	/**
 	 * How rare wild creatures are.
 	 *
@@ -592,6 +595,24 @@ public interface GielinorGoConfig extends Config
 	default boolean showTracker()
 	{
 		return true;
+	}
+
+	/**
+	 * Whether the party box shows on the game screen.
+	 *
+	 * @return true to pin the party to the game screen
+	 */
+	@ConfigItem(
+		keyName = GielinorGoConfig.PIN_PARTY,
+		name = "Pin Party to UI",
+		description = "Shows your team, with portraits, names, levels and health, in a box on the game screen.\n"
+			+ "The Party page has a Pin Party to UI button too.\n"
+			+ "Hold RuneLite's drag key to move it.",
+		position = 34
+	)
+	default boolean pinParty()
+	{
+		return false;
 	}
 
 	/**

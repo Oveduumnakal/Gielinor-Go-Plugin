@@ -15,6 +15,7 @@ import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /**
  * Paints the Party page: six slanted rows (portrait, name, gender, style, level, health and experience bars, the
@@ -40,12 +41,16 @@ final class PartyPainter
 	/** The label of the button that goes to Storage from an empty team. */
 	static final String OPEN_STORAGE = "Open Storage";
 
+	/** The label of the button that pins the party to the game screen. */
+	static final String PIN_PARTY = "Pin Party to UI";
+
 	/** The title of the reset banner. */
 	static final String BANNER = "Start over?";
 
 	private final PortraitCache pictures;
 	private final PartyMotion motion;
 	private final PageText.Sink sink;
+	private final BooleanSupplier pinned;
 
 	/**
 	 * Creates the painter.
@@ -53,9 +58,11 @@ final class PartyPainter
 	 * @param pictures where creature pictures are
 	 * @param motion the rows' motion
 	 * @param sink hears every string drawn, for tests
+	 * @param pinned whether the party is pinned to the game screen, which lights the Pin Party to UI button
 	 */
-	PartyPainter(PortraitCache pictures, PartyMotion motion, PageText.Sink sink)
+	PartyPainter(PortraitCache pictures, PartyMotion motion, PageText.Sink sink, BooleanSupplier pinned)
 	{
+		this.pinned = pinned;
 		this.pictures = pictures;
 		this.motion = motion;
 		this.sink = sink;
@@ -418,6 +425,7 @@ final class PartyPainter
 		}
 
 		tasks(g, ctx, layout, state, text, bold, small);
+		pin(g, ctx, layout);
 		if (banner)
 			banner(g, ctx, layout, text, bold, small);
 	}
@@ -453,6 +461,17 @@ final class PartyPainter
 			st.xpBar(g, new Rectangle2D.Double(title.x, top + sm.getHeight() + 1, title.width, barH),
 				row.done() ? 1.0 : row.fraction());
 		}
+	}
+
+	private void pin(Graphics2D g, PageContext ctx, PartyLayout layout)
+	{
+		WindowStyle st = ctx.style;
+		Rectangle box = layout.pinButton;
+		Rectangle2D shape = new Rectangle2D.Double(box.x, box.y, box.width, box.height);
+		st.button(g, shape, PIN_PARTY, pinned.getAsBoolean(), false, ctx.hoverOf(WindowPages.ID_PIN_PARTY),
+			ctx.pressOf(WindowPages.ID_PIN_PARTY));
+		if (ctx.focused && WindowPages.ID_PIN_PARTY.equals(ctx.highlight))
+			st.focusRing(g, Slant.shape(shape, st.metrics().chipSlant));
 	}
 
 	private void banner(Graphics2D g, PageContext ctx, PartyLayout layout, PageText text, Font bold, Font small)

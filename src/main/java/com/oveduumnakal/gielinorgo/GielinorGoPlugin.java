@@ -235,6 +235,7 @@ public class GielinorGoPlugin extends Plugin
 	private BattleControls battleControls;
 	private WindowInput controlsInput;
 	private TrackerOverlay trackerOverlay;
+	private PartyBoxOverlay partyBoxOverlay;
 	private TrackerModel trackerModel;
 	private TrackerView lastTracker = TrackerView.NONE;
 	private BattleHotkeys hotkeys;
@@ -339,6 +340,7 @@ public class GielinorGoPlugin extends Plugin
 		startWindow();
 		startControls();
 		startTracker();
+		startPartyBox();
 		startBubbles();
 		clientThread.invoke(this::startOnClientThread);
 	}
@@ -346,6 +348,7 @@ public class GielinorGoPlugin extends Plugin
 	@Override
 	protected void shutDown()
 	{
+		stopPartyBox();
 		stopTracker();
 		stopBubbles();
 		stopControls();
@@ -1512,6 +1515,7 @@ public class GielinorGoPlugin extends Plugin
 		publishWindow(state);
 		lastTracker = state.tracker();
 		trackerOverlay.publish(trackerModel.frame(lastTracker, System.currentTimeMillis()));
+		partyBoxOverlay.publish(PartyBoxModel.rows(state.team()));
 	}
 
 	/**
@@ -1536,6 +1540,7 @@ public class GielinorGoPlugin extends Plugin
 		trackerModel.clear();
 		lastTracker = TrackerView.NONE;
 		trackerOverlay.publish(Collections.emptyList());
+		partyBoxOverlay.publish(Collections.emptyList());
 	}
 
 	/** @return the party members who also play, named as the party service names them */
@@ -3292,6 +3297,22 @@ public class GielinorGoPlugin extends Plugin
 			client::getCanvasHeight, config::showTracker, director::active, () -> loaded,
 			() -> onGameThread(game::unpinAll));
 		overlayManager.add(trackerOverlay);
+	}
+
+	/** Creates the pinned party box and registers it. It takes no mouse input, so every click goes to the game. */
+	private void startPartyBox()
+	{
+		partyBoxOverlay = new PartyBoxOverlay(windowPortraits, config::windowStyle, config::windowFraction,
+			client::getCanvasWidth, client::getCanvasHeight, config::pinParty, director::active, () -> loaded,
+			System::currentTimeMillis);
+		overlayManager.add(partyBoxOverlay);
+	}
+
+	/** Unregisters the pinned party box. */
+	private void stopPartyBox()
+	{
+		overlayManager.remove(partyBoxOverlay);
+		partyBoxOverlay.publish(Collections.emptyList());
 	}
 
 	/** Unregisters the pinned tracker. */

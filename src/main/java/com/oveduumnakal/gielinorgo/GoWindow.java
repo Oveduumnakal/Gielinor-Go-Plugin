@@ -122,6 +122,19 @@ final class GoWindow extends Overlay
 			}
 
 			@Override
+			public boolean partyPinned()
+			{
+				return config.pinParty();
+			}
+
+			@Override
+			public void togglePartyPin()
+			{
+				configManager.setConfiguration(GielinorGoConfig.GROUP, GielinorGoConfig.PIN_PARTY,
+					!config.pinParty());
+			}
+
+			@Override
 			public void nextSize()
 			{
 				WindowSizePreset[] all = WindowSizePreset.values();
