@@ -27,7 +27,7 @@ import java.util.List;
  * The state, input handling and painting of the painted window's shell, with no RuneLite types so it paints into a
  * {@code BufferedImage} in a test. It owns whether the window is open, the active tab, the hover, the key focus and
  * the {@link Animations} table, and lays out the six tab headers, the Close button, a placeholder page per tab and the
- * footer (the size button, the change log, Feedback and the key hints). The pages themselves come later and plug
+ * footer (the key hints). The pages themselves come later and plug
  * in through {@link PageActions}. The game thread owns it: painting reads one immutable {@link WindowSnapshot}, and
  * the mouse and key events arrive here already carried over from the UI thread. Hit rectangles are the final ones;
  * only a sliding row refuses clicks, and no page has one yet.
@@ -40,17 +40,8 @@ final class WindowShell
 	/** The id of the Close button's hit. */
 	static final String ID_CLOSE = "btn:close";
 
-	/** The id of the Change log button's hit. */
-	static final String ID_CHANGELOG = "btn:changelog";
-
-	/** The id of the Feedback button's hit. */
-	static final String ID_FEEDBACK = "btn:feedback";
-
 	/** The first focus order a page's hits may use; the tabs and the Close button come before it. */
 	static final int PAGE_ORDER = 10;
-
-	/** The focus order of the first footer button; a page's hits come before it. */
-	static final int FOOTER_ORDER = 100;
 
 	/** The hint line while the window has focus and nothing is open over it. */
 	static final String HINT_WINDOW = "Left/Right Tabs   Up/Down Select   Enter Press   Esc Back";
@@ -217,7 +208,7 @@ final class WindowShell
 		 *
 		 * @param tab the tab shown
 		 * @param body the page area in window pixels
-		 * @return the page's hits, with focus orders from {@link #PAGE_ORDER} up to {@link #FOOTER_ORDER}
+		 * @return the page's hits, with focus orders from {@link #PAGE_ORDER} up
 		 */
 		List<Hit> hits(WindowTab tab, Rectangle body);
 
@@ -1100,25 +1091,6 @@ final class WindowShell
 		String hint = WindowStyle.ellipsize(hintText(), fm, layout.hints.width);
 		int baseline = layout.hints.y + (layout.hints.height + fm.getAscent() - fm.getDescent()) / 2;
 		style.text(g, hint, layout.hints.x, baseline, small, ThemeColor.SUBTEXT);
-		footerButton(g, layout.changelog, ID_CHANGELOG, changelogLabel(), host.whatsNew());
-		footerButton(g, layout.feedback, ID_FEEDBACK, "Feedback");
-	}
-
-	private String changelogLabel()
-	{
-		return host.whatsNew() ? "What's New" : "Change log";
-	}
-
-	private void footerButton(Graphics2D g, Rectangle box, String id, String label)
-	{
-		footerButton(g, box, id, label, false);
-	}
-
-	private void footerButton(Graphics2D g, Rectangle box, String id, String label, boolean primary)
-	{
-		Rectangle2D shape = rect(box);
-		style.button(g, shape, label, primary, false, hoverOf(id), pressOf(id));
-		ringIf(g, id, Slant.shape(shape, style.metrics().chipSlant));
 	}
 
 	private String hintText()
@@ -1155,10 +1127,6 @@ final class WindowShell
 
 		list.add(new Hit(ID_CLOSE, Hit.Kind.BUTTON, layout.close, CLOSE_ORDER, true, "Close the window (Esc)"));
 		list.addAll(changelog != null ? changelog.hits(style, layout.body) : pages.hits(tab, layout.body));
-		list.add(new Hit(ID_CHANGELOG, Hit.Kind.BUTTON, layout.changelog, FOOTER_ORDER, true,
-			host.whatsNew() ? "See what changed in this version" : "Read the change log"));
-		list.add(new Hit(ID_FEEDBACK, Hit.Kind.BUTTON, layout.feedback, FOOTER_ORDER + 1, true,
-			"Report a bug or request a feature"));
 		hits = Collections.unmodifiableList(list);
 		focus.setHits(hits);
 	}
@@ -1268,12 +1236,6 @@ final class WindowShell
 			case ID_CLOSE:
 				close(nowMs, ShellMotion.Phase.CLOSE);
 				break;
-			case ID_CHANGELOG:
-				openChangelog();
-				break;
-			case ID_FEEDBACK:
-				openFeedback(nowMs);
-				break;
 			case ChangelogPage.ID_BACK:
 				changelog = null;
 				break;
@@ -1296,10 +1258,10 @@ final class WindowShell
 		return FeedbackLinks.menu(host::openLink, Changelog.load().currentVersion());
 	}
 
-	private void openFeedback(long nowMs)
+	/** @return whether this version's change log has not been seen yet */
+	boolean whatsNew()
 	{
-		Rectangle b = layout.feedback;
-		openMenu(feedbackItems(), b.x + b.width, b.y, focus.keyboardLed(), nowMs);
+		return host.whatsNew();
 	}
 
 	private void lockedClick(Hit hit, long nowMs)

@@ -8,7 +8,7 @@ import java.awt.Rectangle;
 
 /**
  * Where everything of the painted window's shell sits, worked out from the window's size alone: the header with its six
- * tabs and the Close button, the page area, the hint line, the footer buttons (Change log and Feedback on the right)
+ * tabs and the Close button, the page area, the hint line
  * and the resize grip in the bottom-right corner. Every length is a number of layout units in the 800 x 520 design
  * space times the one window scale, so nothing is positioned in raw pixels except the least sizes of the resize
  * zones. The page area takes whatever room the other parts leave, so a window a pixel off the design shape has no
@@ -36,21 +36,6 @@ final class WindowLayout
 
 	/** The height of the hint line, in layout units. */
 	static final double HINT_UNITS = 28;
-
-	/** The height of a footer button, in layout units. */
-	static final double BUTTON_UNITS = 40;
-
-	/** The gap between footer buttons, in layout units. */
-	static final double BUTTON_GAP_UNITS = 8;
-
-	/** The height of the Change log and Feedback buttons, which are smaller than the others, in layout units. */
-	static final double SMALL_BUTTON_UNITS = 28;
-
-	/** The width of the Change log button, in layout units. */
-	static final double CHANGELOG_UNITS = 134;
-
-	/** The width of the Feedback button, in layout units. */
-	static final double FEEDBACK_UNITS = 112;
 
 	/** The least width of the resize strip along an edge, in pixels, however small the window. */
 	static final int EDGE_MIN_PX = 4;
@@ -85,12 +70,6 @@ final class WindowLayout
 	/** The width of the strip along the right and bottom edges that resizes the window, in pixels. */
 	final int edge;
 
-	/** The Change log button, at the right end of the footer. */
-	final Rectangle changelog;
-
-	/** The Feedback button, at the right edge of the footer. */
-	final Rectangle feedback;
-
 	private WindowLayout(int width, int height)
 	{
 		scale = WindowFit.scale(width, height);
@@ -105,20 +84,13 @@ final class WindowLayout
 			tabs[i] = new Rectangle(m + i * (tabW + px(TAB_GAP_UNITS)), px(TAB_TOP_UNITS), tabW, tabH);
 
 		close = new Rectangle(width - m - px(CLOSE_UNITS), px(TAB_TOP_UNITS), px(CLOSE_UNITS), tabH);
-		int buttonH = px(BUTTON_UNITS);
 		int hintH = px(HINT_UNITS);
-		int buttonsTop = height - m - buttonH;
-		int hintsTop = buttonsTop - px(BUTTON_GAP_UNITS / 2) - hintH;
+		int gripSide = Math.max(GRIP_MIN_PX, px(MARGIN));
+		int hintsTop = height - Math.max(m, gripSide) - hintH;
 		hints = new Rectangle(m, hintsTop, width - 2 * m, hintH);
 		body = new Rectangle(m, headerH + m / 2, width - 2 * m, Math.max(0, hintsTop - headerH - m));
-		int gap = px(BUTTON_GAP_UNITS);
 		edge = Math.max(EDGE_MIN_PX, px(MARGIN / 2));
-		int gripSide = Math.max(GRIP_MIN_PX, px(MARGIN));
 		grip = new Rectangle(width - gripSide, height - gripSide, gripSide, gripSide);
-		int smallH = px(SMALL_BUTTON_UNITS);
-		int smallTop = buttonsTop + buttonH - smallH;
-		feedback = new Rectangle(width - m - px(FEEDBACK_UNITS), smallTop, px(FEEDBACK_UNITS), smallH);
-		changelog = new Rectangle(feedback.x - gap - px(CHANGELOG_UNITS), smallTop, px(CHANGELOG_UNITS), smallH);
 	}
 
 	/** Which part of the window a press resizes. */

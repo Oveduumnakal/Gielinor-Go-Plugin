@@ -75,8 +75,8 @@ public class PartyLayoutTest
 	}
 
 	/**
-	 * The Pin Party to UI and More buttons sit inside the right column at every size, below the tasks, with More at
-	 * the foot, and touch neither each other nor the tasks.
+	 * The Pin Party to UI and More buttons sit side by side at the foot of the right column at every size, below the
+	 * tasks, Pin on the left, and touch neither each other nor the tasks.
 	 */
 	@Test
 	public void thePinAndMoreButtonsFitTheRightColumnBelowTheTasksAtEverySize()
@@ -98,7 +98,8 @@ public class PartyLayoutTest
 			}
 
 			assertFalse(where, layout.pinButton.intersects(layout.moreButton));
-			assertTrue(where, layout.pinButton.y < layout.moreButton.y);
+			assertEquals(where, layout.pinButton.y, layout.moreButton.y);
+			assertTrue(where, layout.pinButton.x + layout.pinButton.width < layout.moreButton.x);
 			assertEquals(where, layout.side.y + layout.side.height, layout.moreButton.y + layout.moreButton.height);
 		}
 	}

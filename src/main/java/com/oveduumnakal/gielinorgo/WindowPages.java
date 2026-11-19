@@ -52,7 +52,10 @@ final class WindowPages implements WindowShell.PageActions
 	/** The More menu's item that opens the change log. */
 	static final String MORE_CHANGELOG = "Change log";
 
-	/** The More menu's item that opens the Feedback list. */
+	/** The More menu's change log item while this version's change log is unseen. */
+	static final String MORE_WHATS_NEW = "What's New";
+
+	/** The More menu's item whose submenu lists the two feedback forms. */
 	static final String MORE_FEEDBACK = "Feedback";
 
 	/** The More menu's item that starts the reset. */
@@ -818,9 +821,8 @@ final class WindowPages implements WindowShell.PageActions
 		int y = button.y + button.height;
 		boolean keyboard = shell.focus().keyboardLed();
 		List<ContextMenu.Item> items = new ArrayList<>();
-		items.add(ContextMenu.Item.of(MORE_CHANGELOG, shell::openChangelog));
-		items.add(ContextMenu.Item.opener(MORE_FEEDBACK,
-			() -> shell.openMenu(shell.feedbackItems(), x, y, keyboard, clock.getAsLong())));
+		items.add(ContextMenu.Item.of(shell.whatsNew() ? MORE_WHATS_NEW : MORE_CHANGELOG, shell::openChangelog));
+		items.add(ContextMenu.Item.submenu(MORE_FEEDBACK, shell.feedbackItems()));
 		if (panel.resetSummary().isEmpty())
 			items.add(ContextMenu.Item.disabled(MORE_RESET, MORE_NOTHING));
 		else

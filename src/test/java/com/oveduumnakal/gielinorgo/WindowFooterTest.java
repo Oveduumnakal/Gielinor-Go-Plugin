@@ -153,7 +153,7 @@ public class WindowFooterTest
 	private void openChangelog()
 	{
 		openPainted();
-		click(WindowShell.ID_CHANGELOG);
+		shell.openChangelog();
 		paint();
 	}
 
@@ -194,74 +194,23 @@ public class WindowFooterTest
 			assertEquals(where, WindowLayout.ResizeZone.BOTTOM, layout.resizeZoneAt(w / 2, h - 1));
 			assertEquals(where, WindowLayout.ResizeZone.NONE, layout.resizeZoneAt(w / 2, h / 2));
 			assertEquals(where, WindowLayout.ResizeZone.NONE, layout.resizeZoneAt(w, h / 2));
-			assertFalse(where, layout.grip.intersects(layout.changelog));
 		}
 	}
 
 	@Test
-	public void theFooterFitsEveryWindowScaleWithoutOverlapOrCutText()
+	public void theHintLineSitsAtTheFootOfEveryWindowSizeAndTheBodyStaysAboveIt()
 	{
 		for (int[] size : SIZES)
 		{
 			WindowLayout layout = WindowLayout.of(size[0], size[1]);
-			WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, layout.scale);
-			List<Rectangle> boxes = Arrays.asList(layout.changelog, layout.feedback);
-			List<String> labels = Arrays.asList("What's New", "Feedback");
-			BufferedImage image = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-			Graphics2D g = image.createGraphics();
-			for (int i = 0; i < boxes.size(); i++)
-			{
-				Rectangle a = boxes.get(i);
-				assertTrue(size[0] + " inside " + labels.get(i), layout.window.contains(a));
-				assertFalse(size[0] + " under the hints " + labels.get(i), a.intersects(layout.hints));
-				Font font = style.fitted(g, WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS, labels.get(i),
-					a.width - 2 * style.metrics().chipSlant);
-				FontMetrics fm = g.getFontMetrics(font);
-				assertTrue(size[0] + " text of " + labels.get(i), fm.stringWidth(labels.get(i))
-					<= a.width - 2 * style.metrics().chipSlant);
-				for (int j = i + 1; j < boxes.size(); j++)
-					assertFalse(size[0] + " " + labels.get(i) + " over " + labels.get(j), a.intersects(boxes.get(j)));
-			}
+			String where = size[0] + "x" + size[1];
 
-			g.dispose();
-			assertEquals(layout.feedback.y, layout.changelog.y);
-			assertEquals(layout.window.height - layout.px(WindowLayout.MARGIN),
-				layout.changelog.y + layout.changelog.height);
-			assertTrue(layout.changelog.height < layout.px(WindowLayout.BUTTON_UNITS));
-			assertEquals(layout.window.width - layout.px(WindowLayout.MARGIN),
-				layout.feedback.x + layout.feedback.width);
+			assertTrue(where, layout.window.contains(layout.hints));
+			assertFalse(where, layout.body.intersects(layout.hints));
+			assertFalse(where, layout.hints.intersects(layout.grip));
+			int bottom = layout.window.height - layout.px(WindowLayout.MARGIN);
+			assertTrue(where, layout.hints.y + layout.hints.height <= bottom);
 		}
-	}
-
-	@Test
-	public void theShellPublishesTheFooterHitsInsideTheWindowAtEverySize()
-	{
-		for (int[] size : SIZES)
-		{
-			width = size[0];
-			height = size[1];
-			WindowShell fresh = shell;
-			openPainted();
-			for (String id : Arrays.asList(WindowShell.ID_CHANGELOG, WindowShell.ID_FEEDBACK))
-			{
-				Hit h = hit(id);
-				assertNotNull(id, h);
-				assertTrue(id, new Rectangle(0, 0, width, height).contains(h.bounds()));
-			}
-
-			fresh.close(now, ShellMotion.Phase.CLOSE);
-		}
-	}
-
-	@Test
-	public void theChangeLogButtonReadsWhatsNewAndNamesItInItsTip()
-	{
-		openPainted();
-		assertEquals("Read the change log", hit(WindowShell.ID_CHANGELOG).tip());
-
-		whatsNew = true;
-		paint();
-		assertEquals("See what changed in this version", hit(WindowShell.ID_CHANGELOG).tip());
 	}
 
 	@Test
@@ -285,13 +234,13 @@ public class WindowFooterTest
 		assertTrue(shell.isOpen());
 
 		paint();
-		click(WindowShell.ID_CHANGELOG);
+		shell.openChangelog();
 		key(KeyEvent.VK_BACK_SPACE);
 		assertNull(shell.changelogPage());
 		assertTrue(shell.isOpen());
 
 		paint();
-		click(WindowShell.ID_CHANGELOG);
+		shell.openChangelog();
 		paint();
 		click(ChangelogPage.ID_BACK);
 		assertNull(shell.changelogPage());
@@ -311,7 +260,7 @@ public class WindowFooterTest
 		assertEquals(WindowTab.BAG, shell.tab());
 
 		paint();
-		click(WindowShell.ID_CHANGELOG);
+		shell.openChangelog();
 		shell.close(now, ShellMotion.Phase.CLOSE);
 		shell.open(now);
 		assertNull(shell.changelogPage());
@@ -368,7 +317,7 @@ public class WindowFooterTest
 	public void feedbackOpensAMenuWithBothFormsAndTheItemsOpenGitHub()
 	{
 		openPainted();
-		click(WindowShell.ID_FEEDBACK);
+		shell.openMenu(shell.feedbackItems(), 20, 20, false, now);
 		assertEquals(WindowKeyRules.KeyMode.MENU, shell.keyMode());
 
 		key(KeyEvent.VK_DOWN);
@@ -378,7 +327,7 @@ public class WindowFooterTest
 		assertEquals(WindowKeyRules.KeyMode.WINDOW, shell.keyMode());
 
 		paint();
-		click(WindowShell.ID_FEEDBACK);
+		shell.openMenu(shell.feedbackItems(), 20, 20, false, now);
 		key(KeyEvent.VK_DOWN);
 		key(KeyEvent.VK_DOWN);
 		key(KeyEvent.VK_ENTER);
@@ -390,7 +339,7 @@ public class WindowFooterTest
 	public void escClosesTheFeedbackMenuBeforeAnythingElse()
 	{
 		openPainted();
-		click(WindowShell.ID_FEEDBACK);
+		shell.openMenu(shell.feedbackItems(), 20, 20, false, now);
 		key(KeyEvent.VK_ESCAPE);
 
 		assertTrue(shell.isOpen());

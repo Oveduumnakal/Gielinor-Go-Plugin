@@ -57,8 +57,9 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### New in this release
 
-- **More menu on the Party page.** The "Start over?" box is gone. A More button at the bottom of the Party
-  page opens a menu with Change log, Feedback and Start over. Start over still asks first. (#289)
+- **More menu on the Party page.** The "Start over?" box and the footer's Change log and Feedback buttons are
+  gone. A More button next to Pin Party to UI opens a menu with Change log, Feedback and Start over. Hover
+  Feedback to open its list to the right. Start over still asks first. (#289)
 - **No sidebar jar.** The jar button in RuneLite's sidebar is gone; the jar on the game screen still opens the
   window. (#267)
 - **Search the Collection.** Type part of a name in the search box above the list to find a creature. It works
@@ -78,7 +79,7 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Header underline fits.** The line under the active tab now ends where the slanted tab ends. (#272)
 - **Catch when nobody can fight.** With no team or a tired lead you can still catch: use the jar bubble or Catch
   in the right-click menu. (#82)
-- **Report a bug and Request a feature.** The Feedback button in the window opens GitHub with your text filled in.
+- **Report a bug and Request a feature.** Feedback in the More menu opens GitHub with your text filled in.
   (#81)
 - **Sharper icons and bubbles.** Text and icons stay crisp at any window size or UI scale. The wild creature
   bubbles became rings with a clear middle, the Battle bubble shows the game's Combat tab icon, and the jars you own
@@ -97,8 +98,6 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Daily and Weekly apart.** A line now separates the Daily tasks from the Weekly one on the Tasks page. (#288)
 - **A better pin.** The pin button on tasks and eggs is now a drawn push pin: tilted and outlined when free, upright
   and filled when pinned. (#287)
-- **Smaller Change log and Feedback.** The two buttons are shorter and sit in their own section at the right end
-  of the bottom row. (#289)
 - **Clearer Bag bars.** The Trainer level bar and the Next jar bar now use clearly different colours, easy to tell
   apart even for colour-blind players. (#290)
 - **Faster jar list.** The jar bubble opens its list after half a second of hovering, twice as fast as before.

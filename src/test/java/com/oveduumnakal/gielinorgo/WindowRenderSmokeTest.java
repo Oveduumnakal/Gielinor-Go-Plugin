@@ -234,8 +234,6 @@ public class WindowRenderSmokeTest
 
 				int chip = 2 * style.metrics().chipSlant;
 				assertTrue(where + " close", textFits(style, "Close", layout.close.width - chip));
-				assertTrue(where + " change log", textFits(style, "What's New", layout.changelog.width - chip));
-				assertTrue(where + " feedback", textFits(style, "Feedback", layout.feedback.width - chip));
 				for (String hint : Arrays.asList(WindowShell.HINT_WINDOW, WindowShell.HINT_MENU,
 					WindowShell.HINT_MODAL, WindowShell.HINT_FIELD, WindowShell.HINT_SEARCH,
 					WindowShell.HINT_UNFOCUSED))

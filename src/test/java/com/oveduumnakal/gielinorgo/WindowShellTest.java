@@ -217,7 +217,7 @@ public class WindowShellTest
 	}
 
 	@Test
-	public void thereAreSixTabsAndSixFooterAndHeaderButtonsInOrder()
+	public void thereAreSixTabsAndTheCloseButtonInOrder()
 	{
 		openPainted(true);
 		List<String> ids = new ArrayList<>();
@@ -225,7 +225,7 @@ public class WindowShellTest
 			ids.add(hit.id());
 
 		assertEquals(Arrays.asList("tab:PARTY", "tab:BAG", "tab:STORAGE", "tab:COLLECTION", "tab:TASKS", "tab:BATTLE",
-			"btn:close", "btn:changelog", "btn:feedback"), ids);
+			"btn:close"), ids);
 		for (Hit hit : shell.hits())
 			assertTrue(hit.id(), new Rectangle(0, 0, W, H).contains(hit.bounds()));
 	}
@@ -329,10 +329,8 @@ public class WindowShellTest
 		key(KeyEvent.VK_DOWN);
 		assertEquals("btn:close", shell.focus().highlight());
 		key(KeyEvent.VK_DOWN);
-		assertEquals("btn:changelog", shell.focus().highlight());
-		key(KeyEvent.VK_DOWN);
-		assertEquals("btn:feedback", shell.focus().highlight());
-		key(KeyEvent.VK_DOWN);
+		assertEquals("btn:close", shell.focus().highlight());
+		key(KeyEvent.VK_UP);
 		assertEquals("btn:close", shell.focus().highlight());
 	}
 
@@ -377,10 +375,10 @@ public class WindowShellTest
 		shell.onPressed(W - 3, H - 3, MouseEvent.BUTTON3, 0, now);
 		shell.onDragged(W + 40, H + 40);
 		shell.onReleased(W + 40, H + 40, MouseEvent.BUTTON3, now);
-		click("btn:changelog");
+		click("tab:BAG");
 
 		assertEquals(Collections.emptyList(), calls);
-		assertTrue(shell.hits().stream().anyMatch(hit -> hit.id().equals("btn:changelog")));
+		assertEquals(WindowTab.BAG, shell.tab());
 	}
 
 	@Test
@@ -500,7 +498,7 @@ public class WindowShellTest
 		assertEquals("row:1", shell.focus().highlight());
 
 		key(KeyEvent.VK_DOWN);
-		assertEquals("btn:changelog", shell.focus().highlight());
+		assertEquals("btn:close", shell.focus().highlight());
 		key(KeyEvent.VK_UP);
 		assertEquals("row:1", shell.focus().highlight());
 
@@ -657,9 +655,9 @@ public class WindowShellTest
 	public void leavingTheWindowClearsAHoverButNotAKeyHighlight()
 	{
 		openPainted(true);
-		Rectangle b = hit("btn:changelog").bounds();
+		Rectangle b = hit("btn:close").bounds();
 		shell.onMoved(b.x + 20, b.y + b.height / 2, now);
-		assertEquals("btn:changelog", shell.focus().highlight());
+		assertEquals("btn:close", shell.focus().highlight());
 		shell.onLeft();
 		assertNull(shell.focus().highlight());
 
