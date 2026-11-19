@@ -49,22 +49,16 @@ final class PartyLayout
 	/** The top tasks box in the right column. */
 	final Rectangle tasks;
 
-	/** The Pin Party to UI button at the foot of the right column, above the banner. */
+	/** The Pin Party to UI button, above the More button. */
 	final Rectangle pinButton;
 
-	/** The reset banner at the foot of the right column, or an empty box when none is shown. */
-	final Rectangle banner;
-
-	/** The Reset progress button inside the banner, or an empty box. */
-	final Rectangle resetButton;
-
-	/** The Dismiss button inside the banner, or an empty box. */
-	final Rectangle dismissButton;
+	/** The More button at the foot of the right column; it opens Change log, Feedback and Start over. */
+	final Rectangle moreButton;
 
 	private final WindowStyle.Metrics metrics;
 	private final int gap;
 
-	private PartyLayout(Rectangle body, WindowStyle.Metrics metrics, double scale, boolean bannerShown)
+	private PartyLayout(Rectangle body, WindowStyle.Metrics metrics, double scale)
 	{
 		this.metrics = metrics;
 		gap = Math.max(2, (int) Math.round(GAP_UNITS * scale));
@@ -79,28 +73,14 @@ final class PartyLayout
 		for (int i = 0; i < SLOTS; i++)
 			rows[i] = new Rectangle(main.x + room, main.y + i * (rowH + gap), rowW, rowH);
 
-		int bannerH = bannerShown ? Math.min(side.height / 3, (int) Math.round(96 * scale)) : 0;
-		int top = side.height - bannerH - (bannerShown ? gap : 0);
 		int pad = metrics.pad;
-		int pinH = Math.min(metrics.chipHeight + pad / 2, Math.max(0, top / 4));
-		pinButton = new Rectangle(side.x, side.y + top - pinH, side.width, pinH);
-		int free = Math.max(0, top - pinH - gap);
+		int buttonH = Math.min(metrics.chipHeight + pad / 2, Math.max(0, side.height / 6));
+		moreButton = new Rectangle(side.x, side.y + side.height - buttonH, side.width, buttonH);
+		pinButton = new Rectangle(side.x, moreButton.y - gap - buttonH, side.width, buttonH);
+		int free = Math.max(0, pinButton.y - side.y - gap);
 		int eggsH = Math.max(0, (free - gap) * 2 / 5);
 		eggs = new Rectangle(side.x, side.y, side.width, eggsH);
 		tasks = new Rectangle(side.x, side.y + eggsH + gap, side.width, Math.max(0, free - eggsH - gap));
-		banner = new Rectangle(side.x, side.y + side.height - bannerH, side.width, bannerH);
-		int buttonH = Math.min(metrics.chipHeight + pad / 2, Math.max(0, bannerH / 2 - pad / 2));
-		if (bannerShown)
-		{
-			int half = Math.max(1, (banner.width - 2 * pad - gap) / 2);
-			resetButton = new Rectangle(banner.x + pad, banner.y + banner.height - pad / 2 - buttonH, half, buttonH);
-			dismissButton = new Rectangle(resetButton.x + half + gap, resetButton.y, half, buttonH);
-		}
-		else
-		{
-			resetButton = new Rectangle();
-			dismissButton = new Rectangle();
-		}
 	}
 
 	/**
@@ -109,12 +89,11 @@ final class PartyLayout
 	 * @param body the page area in window pixels
 	 * @param metrics the sizes at the window scale
 	 * @param scale the window scale
-	 * @param bannerShown whether the reset banner takes the foot of the right column
 	 * @return the layout
 	 */
-	static PartyLayout of(Rectangle body, WindowStyle.Metrics metrics, double scale, boolean bannerShown)
+	static PartyLayout of(Rectangle body, WindowStyle.Metrics metrics, double scale)
 	{
-		return new PartyLayout(body, metrics, scale, bannerShown);
+		return new PartyLayout(body, metrics, scale);
 	}
 
 	/** @return the gap between parts, in pixels */
