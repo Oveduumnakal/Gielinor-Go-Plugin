@@ -241,10 +241,13 @@ final class PartyPainter
 		}
 
 		text.drawName(g, model.name(), nameBox, ink);
-		g.setColor(st.color(ink));
 		if (model.gender() != null)
+		{
+			g.setColor(GenderColors.of(model.gender(), lead));
 			Icons.gender(g, model.gender(), parts.gender.x, parts.gender.y, parts.gender.width);
+		}
 
+		g.setColor(st.color(ink));
 		Icons.style(g, model.style(), parts.style.x, parts.style.y, parts.style.width);
 		text.draw(g, model.levelText(), parts.level, small, ink, PageText.Align.RIGHT);
 		text.draw(g, model.hpText(), parts.hpText, small, ink, PageText.Align.LEFT);
