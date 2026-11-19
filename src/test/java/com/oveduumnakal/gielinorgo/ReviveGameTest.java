@@ -194,4 +194,44 @@ public class ReviveGameTest
 		assertFalse(stored.fainted);
 		assertTrue(team.fainted);
 	}
+
+	@Test
+	public void reachingABankRevivesTheTeamAndStorageOnItsOwn()
+	{
+		assertFalse(game.reviveHere());
+		assertTrue(team.fainted);
+
+		game.setBankNear(true);
+
+		assertTrue(game.reviveHere());
+		assertFalse(team.fainted);
+		assertFalse(stored.fainted);
+		assertEquals(0.5, team.hpFractionAt(now), EPSILON);
+		assertEquals(0.5, stored.hpFractionAt(now), EPSILON);
+		assertFalse(game.reviveHere());
+	}
+
+	@Test
+	public void walkingIntoACityRevivesOnItsOwn()
+	{
+		game.setBankNear(false);
+		game.teamTowns(new TeamTowns(Arrays.asList(new TeamTowns.Town("Fortis", 1630, 3070, 1750, 3170))));
+		game.moveTo(1700, 3100, 0);
+
+		assertTrue(game.reviveHere());
+		assertFalse(team.fainted);
+		assertFalse(stored.fainted);
+	}
+
+	@Test
+	public void movingAFaintedCreatureIntoStorageRevivesIt()
+	{
+		game.setBankNear(true);
+
+		game.moveToStorage(0);
+
+		assertTrue(game.data().storage.contains(team));
+		assertFalse(team.fainted);
+		assertEquals(0.5, team.hpFractionAt(now), EPSILON);
+	}
 }

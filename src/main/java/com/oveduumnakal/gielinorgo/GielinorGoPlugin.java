@@ -694,7 +694,10 @@ public class GielinorGoPlugin extends Plugin
 
 		trackerTick();
 		if (!director.active())
+		{
+			game.reviveHere();
 			game.rescue();
+		}
 
 		boolean changed = game.takeDirty();
 		unsaved |= changed;
