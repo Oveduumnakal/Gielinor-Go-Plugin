@@ -66,6 +66,8 @@ A Creature Log, daily tasks and daily events give you goals.
   and filled when pinned. (#287)
 - **Smaller Change log and Feedback.** The two buttons are shorter and sit in their own section at the right end
   of the bottom row. (#289)
+- **Clearer Bag bars.** The Trainer level bar and the Next jar bar now use clearly different colours, easy to tell
+  apart even for colour-blind players. (#290)
 - **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
   beside you, and three species are only met this way. (#90)
 - **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final
