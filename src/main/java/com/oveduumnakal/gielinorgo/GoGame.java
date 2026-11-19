@@ -1125,9 +1125,31 @@ final class GoGame
 	 */
 	BattleResult battle(WildEntry entry)
 	{
+		return battle(entry, false);
+	}
+
+	/**
+	 * Works out a battle like {@link #battle} but writes nothing to the save: the health, a faint, the result, the
+	 * rewards and the tasks wait until the caller has shown the battle and calls {@link #finishDeferred} with the
+	 * session of the result. The wild creature is not marked as battled until then, so the caller must not start
+	 * another battle with it in between.
+	 *
+	 * @param entry the wild creature
+	 * @return the battle, whose {@link BattleResult#pending()} is the session to finish, or null when none started
+	 */
+	BattleResult battleDeferred(WildEntry entry)
+	{
+		return battle(entry, true);
+	}
+
+	private BattleResult battle(WildEntry entry, boolean defer)
+	{
 		BattleSession session = startAutoBattle(entry);
 		if (session == null)
 			return null;
+
+		if (defer)
+			session.deferred();
 
 		List<BattleLine> log = new ArrayList<>();
 		List<TurnResult> turns = new ArrayList<>();
@@ -1148,8 +1170,9 @@ final class GoGame
 		BattleState state = session.state();
 		boolean won = state.ended() == TurnResult.Status.WON;
 		log.add(BattleSim.closing(state.mine(), state.foe(), won));
-		return new BattleResult(won, log, state.mine().hpFraction(), state.totalAttacks(), turns,
+		BattleResult result = new BattleResult(won, log, state.mine().hpFraction(), state.totalAttacks(), turns,
 			session.fighter(0), session.fighters().get(0) == followerCreature());
+		return defer ? result.pending(session) : result;
 	}
 
 	private BattleSession startAutoBattle(WildEntry entry)
@@ -1532,11 +1555,37 @@ final class GoGame
 			dirty = true;
 		}
 
+		if (session.isDeferred())
+			return turn;
+
 		writeHealth(session);
 		if (turn.status().over())
 			settle(session, turn.status());
 
 		return turn;
+	}
+
+	/**
+	 * Writes the result of a battle that was played ahead of the screen ({@link #battleDeferred}): the health, a
+	 * faint, the {@code battled} mark, the rewards and the tasks. It does so once; a second call, or a battle that was
+	 * not deferred, changes nothing.
+	 *
+	 * @param session the battle
+	 * @return whether the result was written by this call
+	 */
+	boolean finishDeferred(BattleSession session)
+	{
+		if (!session.isDeferred())
+			return false;
+
+		session.settled();
+		writeHealth(session);
+		TurnResult.Status status = session.state().ended();
+		if (status != null)
+			settle(session, status);
+
+		dirty = true;
+		return true;
 	}
 
 	/**

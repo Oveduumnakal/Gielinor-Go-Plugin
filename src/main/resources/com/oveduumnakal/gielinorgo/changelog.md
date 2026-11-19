@@ -140,6 +140,8 @@ A Creature Log, daily tasks and daily events give you goals.
   lines. (#261)
 - **Window closes for a battle.** Starting any battle now closes the Gielinor Go window at once, so the battle is
   in view and no "in battle" message is left on screen. (#296)
+- **Battle result at the end.** A battle that plays itself now pays its XP and rewards, and faints a creature, only
+  after the last beat has shown, and the window stays shut until then. (#295)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

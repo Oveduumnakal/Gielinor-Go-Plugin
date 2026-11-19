@@ -18,6 +18,7 @@ final class BattleResult
 	private final List<TurnResult> played;
 	private final Combatant opener;
 	private final boolean leadOpened;
+	private BattleSession pending;
 
 	BattleResult(boolean won, List<BattleLine> lines, double hpFractionLeft, int turns)
 	{
@@ -45,6 +46,24 @@ final class BattleResult
 		this.lines = Collections.unmodifiableList(new ArrayList<>(lines));
 		this.hpFractionLeft = hpFractionLeft;
 		this.turns = turns;
+	}
+
+	/**
+	 * Notes the battle whose result is still to be written to the save.
+	 *
+	 * @param session the deferred battle
+	 * @return this result
+	 */
+	BattleResult pending(BattleSession session)
+	{
+		this.pending = session;
+		return this;
+	}
+
+	/** @return the deferred battle whose result is still to be written to the save, or null when none waits */
+	BattleSession pending()
+	{
+		return pending;
 	}
 
 	/** @return the turns the battle was made of, in order; none for a battle that was resolved in one go */
