@@ -15,6 +15,15 @@ import static org.junit.Assert.assertTrue;
 public class WindowRulesTest
 {
 	@Test
+	public void aBattleIsOnWhenAnySceneOrDirectorIsOn()
+	{
+		assertFalse(WindowRules.battleOn(false, false, false));
+		assertTrue(WindowRules.battleOn(true, false, false));
+		assertTrue(WindowRules.battleOn(false, true, false));
+		assertTrue(WindowRules.battleOn(false, false, true));
+	}
+
+	@Test
 	public void opensOnlyWhenLoadedAndNothingIsFighting()
 	{
 		assertTrue(WindowRules.mayOpen(false, false, true));

@@ -1711,6 +1711,7 @@ public class GielinorGoPlugin extends Plugin
 	private void beginFriendBattle(FriendTurnBattle friend)
 	{
 		heldNotices = HeldNotices.open(heldNotices);
+		closeWindowForBattle();
 		BattleSession battle = game.startFriendBattle(friend);
 		BattleState state = battle.state();
 		Combatant first = state.mine();
@@ -2279,6 +2280,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		friends.cancelChallenge();
+		closeWindowForBattle();
 
 		if (config.chooseBattleActions())
 		{
@@ -2467,6 +2469,9 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void playTeamBattle(TeamBattleResult result, boolean allowScene)
 	{
+		if (result != null)
+			closeWindowForBattle();
+
 		boolean staged = result != null && allowScene && config.battleAnimations() && !stage.active()
 			&& arena.start(result.duels(), result.leadFirst());
 		if (!staged)
@@ -2638,6 +2643,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 		}
 
+		closeWindowForBattle();
 		BattleState state = battle.state();
 		Combatant first = state.mine();
 		List<Creature> fighters = battle.fighters();
@@ -3398,7 +3404,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 		}
 
-		NoticeMessage blocked = WindowRules.blockedNotice(combatWatch.inCombat(now), director.active(),
+		NoticeMessage blocked = WindowRules.blockedNotice(combatWatch.inCombat(now), battleOn(),
 			loaded && saveLive());
 		if (blocked == null)
 		{
@@ -3422,7 +3428,7 @@ public class GielinorGoPlugin extends Plugin
 
 		long now = System.currentTimeMillis();
 		boolean fighting = combatWatch.inCombat(now);
-		boolean battle = director != null && director.active();
+		boolean battle = director != null && battleOn();
 		boolean locked = !WindowRules.mayOpen(fighting, battle, loaded && saveLive());
 		windowToggle.locked(locked);
 		WindowShell shell = window.shell();
@@ -3445,6 +3451,27 @@ public class GielinorGoPlugin extends Plugin
 
 		chatTyping = typing;
 		clearMenuUnderWindow();
+	}
+
+	/** @return whether a Gielinor Go battle is on, one the player steers or one acted out on screen */
+	private boolean battleOn()
+	{
+		return WindowRules.battleOn(director.active(), stage.active(), arena.active());
+	}
+
+	/**
+	 * Closes the painted window as a battle starts, with the notice that says why. Every path that starts a battle
+	 * calls it, so the window is gone whether the battle was started from the window, a bubble, the menu or a friend.
+	 */
+	private void closeWindowForBattle()
+	{
+		if (window == null || !window.shell().isOpen())
+			return;
+
+		long now = System.currentTimeMillis();
+		window.shell().close(now, ShellMotion.Phase.COMBAT_CLOSE);
+		Rectangle b = window.screenBounds();
+		showNotice(NoticeMessage.CLOSED_BATTLE, b.x + b.width / 2, b.y + b.height / 2);
 	}
 
 	/** Closes the painted window at once, for logout and world hop. */

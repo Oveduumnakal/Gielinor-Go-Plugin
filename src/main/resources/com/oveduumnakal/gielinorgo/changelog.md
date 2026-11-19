@@ -138,6 +138,8 @@ A Creature Log, daily tasks and daily events give you goals.
   style. (#258)
 - **New jar pictures.** All 17 jars have new artwork wherever a jar is shown: the Bag, the throw, and the floating
   lines. (#261)
+- **Window closes for a battle.** Starting any battle now closes the Gielinor Go window at once, so the battle is
+  in view and no "in battle" message is left on screen. (#296)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
