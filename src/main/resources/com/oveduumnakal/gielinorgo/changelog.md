@@ -42,6 +42,7 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Daily and weekly tasks.** Three tasks a day and one a week, paid when you finish them. (#28)
 - **City Champions and the Elite challenge.** Eight champions, eight sigils and the Grand Champion title.
   (#1, #26, #72)
+- **Champion card edge.** The colored stripe on a champion card now follows the card's rounded corners. (#279)
 
 ### Friends
 

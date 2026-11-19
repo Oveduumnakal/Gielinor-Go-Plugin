@@ -9,6 +9,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.KeyEvent;
+import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -226,7 +227,9 @@ final class BattlePage
 		st.panel(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height));
 		Rectangle stripe = onScreen(one.stripe);
 		g.setColor(st.color(block.stripe()));
-		g.fillRect(stripe.x, stripe.y, stripe.width, stripe.height);
+		Area bar = new Area(st.panelShape(new Rectangle2D.Double(box.x, box.y, box.width, box.height)));
+		bar.intersect(new Area(stripe));
+		g.fill(bar);
 		Rectangle clip = list.viewport();
 		Rectangle title = onScreen(one.title);
 		if (title.intersects(clip))

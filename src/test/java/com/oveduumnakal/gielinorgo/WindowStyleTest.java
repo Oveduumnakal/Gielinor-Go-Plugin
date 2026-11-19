@@ -64,6 +64,15 @@ public class WindowStyleTest
 	}
 
 	@Test
+	public void thePanelShapeRoundsTheCornersSoACardStripeCanFollowThem()
+	{
+		Shape shape = WindowStyle.of(WindowTheme.DARK_GLASS, 1.0).panelShape(BOX);
+
+		assertFalse("the very corner is cut away", shape.contains(BOX.getX() + 0.5, BOX.getY() + 0.5));
+		assertTrue("the middle of the left edge is kept", shape.contains(BOX.getX() + 1, BOX.getCenterY()));
+	}
+
+	@Test
 	public void slantShapeFitsItsBoxAndLeansLikeASlash()
 	{
 		Path2D.Double shape = Slant.shape(BOX, 10);
