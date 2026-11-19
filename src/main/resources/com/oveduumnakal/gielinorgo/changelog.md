@@ -64,6 +64,8 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Daily and Weekly apart.** A line now separates the Daily tasks from the Weekly one on the Tasks page. (#288)
 - **A better pin.** The pin button on tasks and eggs is now a drawn push pin: tilted and outlined when free, upright
   and filled when pinned. (#287)
+- **Smaller Change log and Feedback.** The two buttons are shorter and sit in their own section at the right end
+  of the bottom row. (#289)
 - **Skilling encounters.** Fishing, Woodcutting, Mining, Farming and Hunter sometimes bring a wild creature
   beside you, and three species are only met this way. (#90)
 - **Boss eggs.** Your first kill of a boss always drops its egg, later kills 1 in 20; a raid gives its final

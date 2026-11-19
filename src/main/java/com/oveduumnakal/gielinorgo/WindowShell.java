@@ -1003,6 +1003,8 @@ final class WindowShell
 		footerButton(g, layout.reset, ID_RESET, "Reset window");
 		footerButton(g, layout.theme, ID_THEME, host.theme().toString());
 		footerButton(g, layout.size, ID_SIZE, host.sizeLabel());
+		g.setColor(style.color(ThemeColor.ROW_BORDER));
+		g.fill(rect(layout.moreDivider));
 		footerButton(g, layout.changelog, ID_CHANGELOG, changelogLabel(), host.whatsNew());
 		footerButton(g, layout.feedback, ID_FEEDBACK, "Feedback");
 	}
