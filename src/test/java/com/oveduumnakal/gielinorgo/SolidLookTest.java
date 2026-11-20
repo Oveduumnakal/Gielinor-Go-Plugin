@@ -70,13 +70,26 @@ public class SolidLookTest
 		assertEquals(file + " height", expected.getHeight(), actual.getHeight());
 		int differing = 0;
 		int worst = 0;
+		int[] box = {Integer.MAX_VALUE, Integer.MAX_VALUE, -1, -1};
+		String first = "";
 		for (int y = 0; y < actual.getHeight(); y++)
 		{
 			for (int x = 0; x < actual.getWidth(); x++)
 			{
 				int level = difference(expected.getRGB(x, y), actual.getRGB(x, y));
 				if (level > 0)
+				{
 					differing++;
+					box[0] = Math.min(box[0], x);
+					box[1] = Math.min(box[1], y);
+					box[2] = Math.max(box[2], x);
+					box[3] = Math.max(box[3], y);
+					if (first.isEmpty())
+					{
+						first = " first at " + x + "," + y + " expected " + Integer.toHexString(expected.getRGB(x, y))
+							+ " actual " + Integer.toHexString(actual.getRGB(x, y));
+					}
+				}
 
 				worst = Math.max(worst, level);
 			}
@@ -96,7 +109,8 @@ public class SolidLookTest
 			}
 		}
 
-		assertTrue(file + ": " + share * 100 + "% of the pixels differ", share <= MAX_DIFFERING);
+		String where = " in " + box[0] + "," + box[1] + " to " + box[2] + "," + box[3] + first;
+		assertTrue(file + ": " + share * 100 + "% of the pixels differ" + where, share <= MAX_DIFFERING);
 		assertTrue(file + ": a channel differs by " + worst, worst <= MAX_LEVELS);
 	}
 

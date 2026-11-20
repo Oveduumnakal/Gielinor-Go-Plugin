@@ -23,6 +23,7 @@ public class GlassLookTest
 	public void emptyTheCaches()
 	{
 		GlassPanel.clear();
+		GlassStyle.clearSprites();
 		SoftShadows.clear();
 	}
 
