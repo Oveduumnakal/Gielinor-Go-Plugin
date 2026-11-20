@@ -87,6 +87,30 @@ public class WindowKeysTest
 		return event.isConsumed();
 	}
 
+	/**
+	 * Strikes a key as the toolkit does: a consumed press drops the typed event that would follow it, so the
+	 * character only reaches the listener when the press was left alone. The release follows either way.
+	 *
+	 * @param code the key
+	 * @param c the character the key types, or {@link KeyEvent#CHAR_UNDEFINED}
+	 * @return whether the window took the key: its press, or the character that followed it
+	 */
+	private boolean strike(int code, char c)
+	{
+		KeyEvent press = WindowEvents.press(code, 0);
+		keys.keyPressed(press);
+		boolean taken = press.isConsumed();
+		if (!taken && c != KeyEvent.CHAR_UNDEFINED)
+		{
+			KeyEvent typed = WindowEvents.typed(c, 0);
+			keys.keyTyped(typed);
+			taken = typed.isConsumed();
+		}
+
+		keys.keyReleased(WindowEvents.release(code, 0));
+		return taken;
+	}
+
 	@Test
 	public void theKeysItUsesAreConsumedPressedTypedAndReleased()
 	{
@@ -278,12 +302,45 @@ public class WindowKeysTest
 		focused = false;
 		keyboard = false;
 
-		assertTrue(pressed(KeyEvent.VK_A));
-		assertTrue(typed('a'));
-		assertTrue(released(KeyEvent.VK_A));
+		assertTrue(strike(KeyEvent.VK_A, 'a'));
 		assertTrue(pressed(KeyEvent.VK_ENTER));
 		assertTrue(pressed(KeyEvent.VK_F5));
-		assertEquals(List.of("pressed 65", "typed a", "pressed 10", "pressed 116"), calls);
+		assertEquals(List.of("typed a", "pressed 10", "pressed 116"), calls);
+	}
+
+	@Test
+	public void aCharacterTypedIntoATextBoxReachesTheBoxAndNeverTheGame()
+	{
+		mode = WindowKeyRules.KeyMode.FIELD;
+
+		assertTrue(strike(KeyEvent.VK_N, 'n'));
+		assertTrue(strike(KeyEvent.VK_SPACE, ' '));
+		assertTrue(strike(KeyEvent.VK_1, '1'));
+		assertTrue(strike(KeyEvent.VK_MINUS, '-'));
+		assertEquals(List.of("typed n", "typed  ", "typed 1", "typed -"), calls);
+	}
+
+	@Test
+	public void theKeysATextBoxActsOnArePressedAndConsumedNotTyped()
+	{
+		mode = WindowKeyRules.KeyMode.FIELD;
+
+		assertTrue(strike(KeyEvent.VK_BACK_SPACE, '\b'));
+		assertTrue(strike(KeyEvent.VK_DELETE, (char) 127));
+		assertTrue(strike(KeyEvent.VK_LEFT, KeyEvent.CHAR_UNDEFINED));
+		assertTrue(strike(KeyEvent.VK_HOME, KeyEvent.CHAR_UNDEFINED));
+		assertEquals(List.of("pressed 8", "pressed 127", "pressed 37", "pressed 36"), calls);
+	}
+
+	@Test
+	public void aCharacterKeyPressInATextBoxIsLeftAloneSoItsTypedCharacterFollows()
+	{
+		mode = WindowKeyRules.KeyMode.FIELD;
+
+		assertFalse(pressed(KeyEvent.VK_Q));
+		assertFalse(pressed(KeyEvent.VK_SPACE));
+		assertTrue(typed('q'));
+		assertFalse(released(KeyEvent.VK_Q));
 	}
 
 	@Test
@@ -307,8 +364,8 @@ public class WindowKeysTest
 		mode = WindowKeyRules.KeyMode.FIELD;
 		openKey = new Keybind(KeyEvent.VK_F, 0);
 
-		assertTrue(pressed(KeyEvent.VK_F));
-		assertEquals(List.of("pressed 70"), calls);
+		assertTrue(strike(KeyEvent.VK_F, 'f'));
+		assertEquals(List.of("typed f"), calls);
 	}
 
 	@Test
