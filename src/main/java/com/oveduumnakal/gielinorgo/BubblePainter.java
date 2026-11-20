@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 /**
  * Paints a {@link BubbleFrame}: the round action bubbles above a wild creature and the abbreviated card beside them.
  * It draws exactly what the frame says, in its position, size and opacity; the only state it keeps between frames is
- * the card's cached glass background ({@link GlassPanel}). The bubbles are world objects and have their own fixed
+ * the card's glass background ({@link GlassPanel}, cached). The bubbles are world objects and have their own fixed
  * colours ({@link JarPalette}); the card follows the window theme of the {@link WindowStyle} it is given, on frosted
  * glass. Everything is drawn with vector shapes, bundled pictures and the kit's
  * fonts, and the graphics are left exactly as they were found. Holds no RuneLite types.
@@ -90,8 +90,7 @@ final class BubblePainter
 	};
 
 	private final Supplier<BufferedImage> combatSprite;
-	private final CardBackdrop backdrop;
-	private final GlassPanel glass = new GlassPanel();
+	private final WashSource washes;
 
 	/** Creates a painter that draws its own crossed swords on the Battle bubble. */
 	BubblePainter()
@@ -108,26 +107,20 @@ final class BubblePainter
 	 */
 	BubblePainter(Supplier<BufferedImage> combatSprite)
 	{
-		this(combatSprite, CardBackdrop.NONE);
+		this(combatSprite, WashSource.NONE);
 	}
 
 	/**
-	 * Creates a painter whose frosted-glass card can show a blurred picture of the scene behind it.
+	 * Creates a painter whose glass card takes its colours from the scene round it.
 	 *
 	 * @param combatSprite the game's combat tab picture for the Battle bubble, or a supplier of null while it is not
 	 *        loaded, in which case the painter draws its own crossed swords
-	 * @param backdrop gives the blurred scene behind the card; {@link CardBackdrop#NONE} for none
+	 * @param washes gives the wash of the scene round the card; {@link WashSource#NONE} for none
 	 */
-	BubblePainter(Supplier<BufferedImage> combatSprite, CardBackdrop backdrop)
+	BubblePainter(Supplier<BufferedImage> combatSprite, WashSource washes)
 	{
 		this.combatSprite = combatSprite;
-		this.backdrop = backdrop;
-	}
-
-	/** @return the glass the card is painted on; for the cost test */
-	GlassPanel glass()
-	{
-		return glass;
+		this.washes = washes;
 	}
 
 	/**
@@ -460,11 +453,12 @@ final class BubblePainter
 		alpha(g, card.alpha());
 		if (style.theme().glass())
 		{
-			Rectangle footprint = new Rectangle(box.x, box.y, box.width,
-				box.height + Math.max(0, style.metrics().shadow));
+			Rectangle footprint = GlassPanel.footprint(box, style);
 			Shape onScreen = g.getTransform().createTransformedShape(footprint);
 			Rectangle screen = onScreen.getBounds();
-			glass.paint(g, box, style, backdrop.behind(screen));
+			GlassPanel.paint(g, new RoundRectangle2D.Double(box.x, box.y, box.width, box.height,
+				style.metrics().corner * 2, style.metrics().corner * 2), style, washes.wash("card", screen),
+				Readability.BODY);
 		}
 		else
 		{

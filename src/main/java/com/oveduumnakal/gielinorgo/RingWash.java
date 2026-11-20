@@ -23,8 +23,14 @@ final class RingWash
 	/** The thickness of the band read on each side, in frame pixels. */
 	static final int BAND = 6;
 
-	/** How many frame pixels one cell of the wash covers along each side. */
+	/** How many frame pixels one cell of the wash covers along each side, on a small surface. */
 	static final int CELL = 8;
+
+	/**
+	 * The most cells the wash has in either direction. A big surface such as the window gets bigger cells, so the wash
+	 * stays cheap to make and to darken (see {@link Readability}); it is smooth anyway.
+	 */
+	static final int MAX_CELLS = 40;
 
 	/**
 	 * How much stronger the wash's colours are made than the scene's, as frosted glass does; 1 keeps them as they are.
@@ -48,7 +54,8 @@ final class RingWash
 	 *
 	 * @param frame the finished frame
 	 * @param card the card's footprint (body and shadow), in frame pixels
-	 * @return the wash, {@link #CELL} times smaller than the card (at least two cells each way), or null when no
+	 * @return the wash, {@link #CELL} times smaller than the card (at least two and at most {@link #MAX_CELLS} cells
+	 *         each way), or null when no
 	 *         side of the band is on the frame
 	 */
 	static BufferedImage wash(BufferedImage frame, Rectangle card)
@@ -56,8 +63,8 @@ final class RingWash
 		if (card.width <= 0 || card.height <= 0)
 			return null;
 
-		int cols = Math.max(2, card.width / CELL);
-		int rows = Math.max(2, card.height / CELL);
+		int cols = Math.max(2, Math.min(MAX_CELLS, card.width / CELL));
+		int rows = Math.max(2, Math.min(MAX_CELLS, card.height / CELL));
 		int out = GAP + BAND;
 		Rectangle frameBox = new Rectangle(0, 0, frame.getWidth(), frame.getHeight());
 		double[][] top = side(frame, frameBox, new Rectangle(card.x, card.y - out, card.width, BAND), cols, true);

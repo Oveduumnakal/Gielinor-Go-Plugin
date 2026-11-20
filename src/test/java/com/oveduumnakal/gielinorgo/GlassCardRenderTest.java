@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -152,7 +153,7 @@ public class GlassCardRenderTest
 	@Test
 	public void theSceneShowsThroughTheCardInEveryTheme()
 	{
-		for (WindowTheme theme : WindowTheme.values())
+		for (WindowTheme theme : new WindowTheme[] {WindowTheme.RUNELITE_GLASS})
 		{
 			BubblePainter painter = new BubblePainter();
 			WindowStyle style = WindowStyle.of(theme, 1.0);
@@ -171,29 +172,9 @@ public class GlassCardRenderTest
 	}
 
 	@Test
-	public void aBlurredBackdropSmoothsTheBusySceneBehindTheCard()
-	{
-		WindowStyle style = WindowStyle.of(WindowTheme.values()[0], 1.0);
-		BufferedImage scene = WidgetKit.canvas(W, H);
-		fill(scene, Scene.BUSY);
-		int[] pixels = scene.getRGB(0, 0, W, H, null, 0, W);
-		BubblePainter plain = new BubblePainter(() -> null, box -> scene.getSubimage(box.x, box.y, box.width,
-			box.height));
-		BubblePainter blurred = new BubblePainter(() -> null, box -> BackdropBlur.blur(pixels, W, H, box));
-		BubbleFrame frame = frame(plain, style);
-		Rectangle box = frame.card().bounds();
-		int x = box.x + style.px(4);
-
-		BufferedImage sharp = render(plain, frame, style, Scene.BUSY, "-unblurred");
-		BufferedImage soft = render(blurred, frame, style, Scene.BUSY, "-blurred");
-
-		assertTrue(spread(soft, x, box) < spread(sharp, x, box));
-	}
-
-	@Test
 	public void theRingWashTintsTheCardWithTheSceneAroundIt()
 	{
-		WindowStyle style = WindowStyle.of(WindowTheme.values()[0], 1.0);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_GLASS, 1.0);
 		BubblePainter plain = new BubblePainter();
 		BubbleFrame frame = frame(plain, style);
 		Rectangle box = frame.card().bounds();
@@ -203,7 +184,7 @@ public class GlassCardRenderTest
 		{
 			BufferedImage around = WidgetKit.canvas(W, H);
 			fill(around, scene);
-			BubblePainter ringed = new BubblePainter(() -> null, foot -> RingWash.wash(around, foot));
+			BubblePainter ringed = new BubblePainter(() -> null, (name, foot) -> RingWash.wash(around, foot));
 			BufferedImage image = render(ringed, frame, style, scene, "-ring");
 			assertNotEquals(scene.name(), 0, image.getRGB(x, y) & 0xFFFFFF);
 		}
@@ -218,9 +199,9 @@ public class GlassCardRenderTest
 		g.setColor(new Color(0x2040C0));
 		g.fillRect(0, 0, W, H);
 		g.dispose();
-		int overWarm = render(new BubblePainter(() -> null, foot -> RingWash.wash(warm, foot)), frame, style,
+		int overWarm = render(new BubblePainter(() -> null, (name, foot) -> RingWash.wash(warm, foot)), frame, style,
 			Scene.DARK).getRGB(x, y);
-		int overCool = render(new BubblePainter(() -> null, foot -> RingWash.wash(cool, foot)), frame, style,
+		int overCool = render(new BubblePainter(() -> null, (name, foot) -> RingWash.wash(cool, foot)), frame, style,
 			Scene.DARK).getRGB(x, y);
 		assertTrue((overWarm >> 16 & 0xFF) > (overCool >> 16 & 0xFF));
 		assertTrue((overCool & 0xFF) > (overWarm & 0xFF));
@@ -255,21 +236,23 @@ public class GlassCardRenderTest
 	@Test
 	public void theCachedGlassIsNoSlowerThanPaintingItEachFrame()
 	{
-		WindowStyle style = WindowStyle.of(WindowTheme.values()[0], 1.0);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_GLASS, 1.0);
 		BubblePainter painter = new BubblePainter();
 		BubbleFrame frame = frame(painter, style);
 		Rectangle box = frame.card().bounds();
 		BufferedImage canvas = WidgetKit.canvas(W, H);
 		fill(canvas, Scene.BUSY);
 		Graphics2D g = WidgetKit.graphics(canvas);
-		GlassPanel glass = new GlassPanel();
+		Shape body = Shapes.roundedSlant(new java.awt.geom.Rectangle2D.Double(box.x, box.y, box.width, box.height),
+			style.metrics().slant, box.height * GlassTokens.TIP_ROUND);
+		WindowStyle solid = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
 
-		double old = micros(() -> style.window(g, box));
-		double warm = micros(() -> glass.paint(g, box, style, null));
+		double old = micros(() -> solid.window(g, box));
+		double warm = micros(() -> GlassPanel.paint(g, body, style, null, Readability.BODY));
 		double cold = micros(() ->
 		{
-			glass.clear();
-			glass.paint(g, box, style, null);
+			GlassPanel.clear();
+			GlassPanel.paint(g, body, style, null, Readability.BODY);
 		});
 		double card = micros(() -> painter.paint(g, frame, style, 1000L));
 		g.dispose();

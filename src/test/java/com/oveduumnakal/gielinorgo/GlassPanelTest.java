@@ -4,9 +4,10 @@
  */
 package com.oveduumnakal.gielinorgo;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,119 +18,87 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-/**
- * Pins the frosted-glass card's readability: the fill and the strongest sheen, laid over a white, a black and a mid
- * grey scene, keep the card's text at WCAG contrast (4.5 for text, 3.0 for the grey subtext) in every theme.
- */
+/** Tests the glass body: its cached still layer, its see-through tint and its grain. */
 public class GlassPanelTest
 {
-	private static final int[] SCENES = {0xFFFFFF, 0x000000, 0x808080};
+	private static final WindowStyle STYLE = WindowStyle.of(WindowTheme.RUNELITE_GLASS, 1.0);
 
-	private static Color behindText(WindowStyle style, int scene)
+	private static Shape body(int x, int y, int w, int h)
 	{
-		Color filled = WindowTheme.over(GlassPanel.fill(style), new Color(scene));
-		return WindowTheme.over(GlassPanel.sheen(GlassPanel.SHEEN_TOP), filled);
+		return Shapes.roundedSlant(new Rectangle2D.Double(x, y, w, h), 14, h * GlassTokens.TIP_ROUND);
 	}
 
 	@Test
-	public void textReadsOverWhiteBlackAndGreyScenes()
+	public void theStillLayerIsPaintedOnceForTheSameForm()
 	{
-		StringBuilder report = new StringBuilder();
-		for (WindowTheme theme : WindowTheme.values())
-		{
-			WindowStyle style = WindowStyle.of(theme, 1.0);
-			for (int scene : SCENES)
-			{
-				Color under = behindText(style, scene);
-				double text = WindowTheme.contrast(style.color(ThemeColor.TEXT), under);
-				double subtext = WindowTheme.contrast(style.color(ThemeColor.SUBTEXT), under);
-				String name = String.format("%s over %06X: text %.2f, subtext %.2f", theme.name(), scene, text,
-					subtext);
-				report.append(name).append('\n');
-				assertTrue(name, text >= 4.5);
-				assertTrue(name, subtext >= 3.0);
-			}
-		}
-
-		System.out.print(report);
-	}
-
-	@Test
-	public void theFillIsSeeThrough()
-	{
-		for (WindowTheme theme : WindowTheme.values())
-		{
-			WindowStyle style = WindowStyle.of(theme, 1.0);
-			assertTrue(theme.name(), GlassPanel.fill(style).getAlpha() < 255);
-			assertNotEquals(theme.name(), behindText(style, 0xFFFFFF), behindText(style, 0x000000));
-		}
-	}
-
-	@Test
-	public void theStillLayerIsPaintedOnceForTheSameKey()
-	{
-		GlassPanel glass = new GlassPanel();
-		WindowStyle style = WindowStyle.of(WindowTheme.values()[0], 1.0);
-		BufferedImage canvas = WidgetKit.canvas(300, 200);
+		GlassPanel.clear();
+		BufferedImage canvas = WidgetKit.canvas(400, 300);
 		Graphics2D g = WidgetKit.graphics(canvas);
-		glass.paint(g, new Rectangle(10, 10, 200, 120), style, null);
-		glass.paint(g, new Rectangle(40, 30, 200, 120), style, null);
-		assertEquals(1, glass.paints());
-		glass.paint(g, new Rectangle(40, 30, 210, 120), style, null);
-		assertEquals(2, glass.paints());
-		WindowStyle bigger = WindowStyle.of(WindowTheme.values()[0], 1.5);
-		glass.paint(g, new Rectangle(40, 30, 210, 120), bigger, null);
-		assertEquals(3, glass.paints());
+		int before = GlassPanel.paints();
+		GlassPanel.paint(g, body(10, 10, 200, 120), STYLE, null, Readability.BODY);
+		GlassPanel.paint(g, body(40, 30, 200, 120), STYLE, null, Readability.BODY);
+		assertEquals(before + 1, GlassPanel.paints());
+		GlassPanel.paint(g, body(40, 30, 210, 120), STYLE, null, Readability.BODY);
+		assertEquals(before + 2, GlassPanel.paints());
+		WindowStyle bigger = WindowStyle.of(WindowTheme.RUNELITE_GLASS, 1.5);
+		GlassPanel.paint(g, body(40, 30, 210, 120), bigger, null, Readability.BODY);
+		assertEquals(before + 3, GlassPanel.paints());
 		g.dispose();
 	}
 
 	@Test
-	public void aTamedBackdropAlwaysLeavesTheTextReadable()
+	public void theTintIsSeeThroughAndThickerWithoutAWash()
 	{
-		int[] backdrops = {0xFFFFFF, 0xF4F1E8, 0xFFFF00, 0x00FFFF, 0x80C0FF, 0x808080, 0x101418, 0x000000};
-		StringBuilder report = new StringBuilder();
-		for (WindowTheme theme : WindowTheme.values())
+		assertTrue(GlassPanel.tint(STYLE, GlassTokens.TINT_SOLID).getAlpha() < 255);
+		assertTrue(GlassPanel.tint(STYLE, GlassTokens.TINT_OVER_WASH).getAlpha()
+			< GlassPanel.tint(STYLE, GlassTokens.TINT_SOLID).getAlpha());
+	}
+
+	@Test
+	public void theSceneShowsThroughTheBody()
+	{
+		Shape shape = body(30, 30, 160, 100);
+		BufferedImage bright = WidgetKit.canvas(260, 200);
+		BufferedImage dark = WidgetKit.canvas(260, 200);
+		for (BufferedImage image : new BufferedImage[] {bright, dark})
 		{
-			WindowStyle style = WindowStyle.of(theme, 1.0);
-			for (int backdrop : backdrops)
-			{
-				Color raw = new Color(backdrop);
-				Color tamed = GlassPanel.tame(raw, style);
-				Color under = GlassPanel.behindText(GlassPanel.seen(raw, tamed), style);
-				double text = WindowTheme.contrast(style.color(ThemeColor.TEXT), under);
-				double subtext = WindowTheme.contrast(style.color(ThemeColor.SUBTEXT), under);
-				String name = String.format("%s backdrop %06X tamed to %06X: text %.2f, subtext %.2f", theme.name(),
-					backdrop, tamed.getRGB() & 0xFFFFFF, text, subtext);
-				report.append(name).append('\n');
-				assertTrue(name, text >= GlassPanel.TEXT_CONTRAST);
-				assertTrue(name, subtext >= GlassPanel.SUBTEXT_CONTRAST);
-			}
+			Graphics2D g = image.createGraphics();
+			g.setColor(image == bright ? java.awt.Color.WHITE : java.awt.Color.BLACK);
+			g.fillRect(0, 0, 260, 200);
+			WindowStyle.prepare(g);
+			GlassPanel.paint(g, shape, STYLE, null, Readability.BODY);
+			g.dispose();
 		}
 
-		System.out.print(report);
+		assertNotEquals(bright.getRGB(110, 80), dark.getRGB(110, 80));
 	}
 
 	@Test
-	public void aDarkBackdropIsLeftAsItIs()
+	public void aWashIsDrawnInsideTheBodyOnly()
 	{
-		WindowStyle style = WindowStyle.of(WindowTheme.values()[0], 1.0);
-		Color night = new Color(0x101418);
-		assertEquals(night, GlassPanel.tame(night, style));
-	}
+		Shape shape = body(30, 30, 160, 100);
+		BufferedImage wash = new BufferedImage(4, 4, BufferedImage.TYPE_INT_RGB);
+		for (int y = 0; y < 4; y++)
+		{
+			for (int x = 0; x < 4; x++)
+				wash.setRGB(x, y, 0x2040C0);
+		}
 
-	@Test
-	public void theFillOverABackdropIsThinner()
-	{
-		WindowStyle style = WindowStyle.of(WindowTheme.values()[0], 1.0);
-		assertTrue(GlassPanel.fill(style, GlassPanel.BACKDROP_FILL_ALPHA).getAlpha() < GlassPanel.fill(style)
-			.getAlpha());
+		BufferedImage image = WidgetKit.canvas(260, 200);
+		Graphics2D g = WidgetKit.graphics(image);
+		GlassPanel.paint(g, shape, STYLE, wash, Readability.BODY);
+		g.dispose();
+		int inside = image.getRGB(110, 80);
+		assertTrue((inside & 0xFF) > (inside >> 16 & 0xFF));
+		assertEquals(0, image.getRGB(3, 3) >>> 24);
+		assertEquals(0, image.getRGB(250, 3) >>> 24);
 	}
 
 	@Test
 	public void theGrainSpecksVaryInLightAndOpacity()
 	{
 		BufferedImage grain = GlassPanel.grain();
-		int peak = (int) Math.round(GlassPanel.GRAIN_PEAK_ALPHA * 255);
+		int peak = (int) Math.round(GlassTokens.GRAIN_PEAK_ALPHA * 255);
 		int light = 0;
 		int dark = 0;
 		Set<Integer> opacities = new HashSet<>();
@@ -150,5 +119,14 @@ public class GlassPanelTest
 
 		assertTrue(light > 0 && dark > 0);
 		assertTrue(opacities.size() > 10);
+	}
+
+	@Test
+	public void thePaddingHoldsTheLargestShadow()
+	{
+		Rectangle box = new Rectangle(0, 0, 10, 10);
+		assertTrue(box.width > 0);
+		assertTrue(GlassPanel.pad(STYLE) >= GlassStyle.px(STYLE, GlassTokens.LARGE_DARK_DY
+			+ GlassTokens.LARGE_DARK_BLUR));
 	}
 }

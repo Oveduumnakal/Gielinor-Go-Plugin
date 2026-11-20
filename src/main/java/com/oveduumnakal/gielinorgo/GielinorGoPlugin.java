@@ -186,6 +186,8 @@ public class GielinorGoPlugin extends Plugin
 	@Inject
 	private DrawManager drawManager;
 
+	private Backdrops backdrops;
+
 	private final Random random = new Random();
 	private final CombatWatch combatWatch = new CombatWatch();
 	private final Map<Integer, NPC> candidates = new HashMap<>();
@@ -327,6 +329,7 @@ public class GielinorGoPlugin extends Plugin
 			config::itemKey, () -> choiceOpen, this::hotkeyPressed);
 		keyManager.registerKeyListener(hotkeys);
 		detectVersionChange();
+		backdrops = new Backdrops(client, drawManager, config::glassLook);
 		startWindow();
 		startControls();
 		startTracker();
@@ -1033,7 +1036,7 @@ public class GielinorGoPlugin extends Plugin
 		bubblesFailed = false;
 		bubbles = new WildBubbles();
 		bubbleOverlay = new WildBubbleOverlay(client, bodies, bubbles, new BubblePainter(() -> combatSprite,
-			FrameBackdrop.create(client, drawManager)),
+			backdrops),
 			this::windowStyle, config::windowAnimations, config::windowFraction, () -> loaded && bubblesOn(),
 			System::currentTimeMillis, this::bubblesBroke);
 		bubbleInput = new BubbleInput(bubbleOverlay::hits, dragKey, bubbleSink());
