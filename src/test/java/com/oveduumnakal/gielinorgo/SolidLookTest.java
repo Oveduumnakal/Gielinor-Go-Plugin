@@ -46,6 +46,20 @@ public class SolidLookTest
 	 */
 	static void check(String folder, String name, BufferedImage actual)
 	{
+		check(folder, name, actual, 0);
+	}
+
+	/**
+	 * Compares a picture to its recording, or records it, ignoring differences of at most {@code noise} levels (soft
+	 * gradients round one level apart on another machine).
+	 *
+	 * @param folder the folder under the test resources
+	 * @param name the picture's file name without the extension
+	 * @param actual the picture
+	 * @param noise the most a channel may differ by and still count as equal
+	 */
+	static void check(String folder, String name, BufferedImage actual, int noise)
+	{
 		String file = name + ".png";
 		String path = "/com/oveduumnakal/gielinorgo/" + folder + "/" + file;
 		if ("1".equals(System.getenv("SOLID_LOOK_RECORD")))
@@ -77,7 +91,7 @@ public class SolidLookTest
 			for (int x = 0; x < actual.getWidth(); x++)
 			{
 				int level = difference(expected.getRGB(x, y), actual.getRGB(x, y));
-				if (level > 0)
+				if (level > noise)
 				{
 					differing++;
 					box[0] = Math.min(box[0], x);
