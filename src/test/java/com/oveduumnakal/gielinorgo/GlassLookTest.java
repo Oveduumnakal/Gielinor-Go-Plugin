@@ -34,6 +34,12 @@ public class GlassLookTest
 	}
 
 	@Test
+	public void theWildBubblesLookAsRecorded()
+	{
+		SolidLookTest.check(FOLDER, "bubbles-1.0", LookSheet.bubbles(WindowTheme.RUNELITE_GLASS, 1.0));
+	}
+
+	@Test
 	public void theInfoCardLooksAsRecorded()
 	{
 		for (double scale : SCALES)

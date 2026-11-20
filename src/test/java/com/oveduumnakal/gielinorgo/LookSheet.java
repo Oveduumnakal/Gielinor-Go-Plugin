@@ -176,7 +176,8 @@ final class LookSheet
 	static BufferedImage bubbles(WindowTheme theme, double scale)
 	{
 		WindowStyle st = WindowStyle.of(theme, scale);
-		BubblePainter painter = new BubblePainter();
+		BufferedImage clean = scene(200, 90);
+		BubblePainter painter = new BubblePainter(() -> null, (name, foot) -> RingWash.wash(clean, foot));
 		List<BubbleFrame.Disc> discs = Arrays.asList(disc(BubbleKind.JAR, 40, 50, JarType.RUNE, false),
 			disc(BubbleKind.BATTLE, 80, 28, null, false), disc(BubbleKind.INFO, 120, 50, null, false),
 			disc(BubbleKind.JAR, 160, 50, JarType.DRAGON, true));

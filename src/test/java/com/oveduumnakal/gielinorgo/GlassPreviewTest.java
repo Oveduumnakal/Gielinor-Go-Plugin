@@ -9,6 +9,9 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.junit.Assume;
@@ -147,6 +150,70 @@ public class GlassPreviewTest
 			write(sheet, new Rectangle(0, 0, sheet.getWidth(), sheet.getHeight()), "primitives-" + scale);
 			BufferedImage card = LookSheet.card(WindowTheme.RUNELITE_GLASS, scale);
 			write(card, new Rectangle(0, 0, card.getWidth(), card.getHeight()), "card-sheet-" + scale);
+		}
+	}
+
+	/**
+	 * Paints the overlays on the screenshot: the tracker, the party box, a tooltip, a notice and three bubbles.
+	 */
+	@Test
+	public void theOverlaysAndBubblesOnTheScene()
+	{
+		BufferedImage scene = scene();
+		BufferedImage clean = copy(scene);
+		WashSource source = (name, box) -> RingWash.wash(clean, box);
+		WindowStyle.share(source);
+		try
+		{
+			WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_GLASS, 1.0);
+			BufferedImage canvas = copy(scene);
+			Graphics2D g = WidgetKit.graphics(canvas);
+			g.translate(60, 60);
+			new TrackerPainter(PageText.Sink.NONE).paint(g, style, Arrays.asList(
+				new TrackerView.Line(TrackerView.Kind.TASK, "task:0", "Walk 4,000 tiles with a creature",
+					"1.2k / 4k", 0.3, null, false),
+				new TrackerView.Line(TrackerView.Kind.EGG, "egg:0", "Legendary egg", "12,345 steps", 0.2,
+					Rarity.LEGENDARY, false)));
+			g.translate(0, 150);
+			List<CreatureView> team = new ArrayList<>();
+			for (int i = 0; i < 3; i++)
+				team.add(new CreatureView("Goblin", 10 + i, 0.5, 1.0 - i * 0.15, Rarity.COMMON, CombatType.CRUSH,
+					false, null));
+
+			new PartyBoxPainter(new PartyRig().pictures, PageText.Sink.NONE).paint(g, style,
+				PartyBoxModel.rows(team), 0L);
+			g.translate(-60, -210);
+			Tooltip tip = new Tooltip();
+			tip.hover("row:1", "Giant rat", 400, 300, 0);
+			tip.paint(g, style, new Rectangle(0, 0, 1897, 1029), 400);
+			style.notice(g, "Caught an Imp!", 800, 200, 1.0, 1.0);
+			g.dispose();
+			write(canvas, new Rectangle(0, 0, 1000, 520), "overlays");
+
+			BufferedImage spots = copy(scene);
+			BubblePainter painter = new BubblePainter(() -> null, source);
+			Graphics2D bg = WidgetKit.graphics(spots);
+			int[][] at = {{1185, 560}, {900, 120}, {1480, 470}};
+			for (int[] p : at)
+			{
+				List<BubbleFrame.Disc> discs = Arrays.asList(
+					new BubbleFrame.Disc(BubbleKind.JAR, p[0] - 40, p[1], 15, 1.0, 1.0, 0.0, JarType.RUNE, 0, false,
+						false, 0.0, true),
+					new BubbleFrame.Disc(BubbleKind.BATTLE, p[0], p[1] - 22, 15, 1.0, 1.0, 0.0, null, 0, false,
+						false, 0.0, true),
+					new BubbleFrame.Disc(BubbleKind.INFO, p[0] + 40, p[1], 15, 1.0, 1.0, 0.0, null, 0, false, false,
+						0.0, true));
+				painter.paint(bg, new BubbleFrame(discs, null, 1, true), style, 1000L);
+			}
+
+			bg.dispose();
+			write(spots, new Rectangle(1100, 480, 160, 120), "bubbles-floor");
+			write(spots, new Rectangle(820, 60, 160, 120), "bubbles-grass");
+			write(spots, new Rectangle(1400, 400, 160, 120), "bubbles-wall");
+		}
+		finally
+		{
+			WindowStyle.share(null);
 		}
 	}
 }

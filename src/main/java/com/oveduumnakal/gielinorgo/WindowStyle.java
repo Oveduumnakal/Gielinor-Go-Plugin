@@ -20,7 +20,9 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The paint kit of the window: the slanted row, the health and experience bars, a tab with a disabled state, a chip,
@@ -39,6 +41,8 @@ final class WindowStyle
 	static final double HP_DANGER_BELOW = 0.20;
 
 	private static volatile WashSource shared = WashSource.NONE;
+
+	private static final Map<String, Long> FADES = new ConcurrentHashMap<>();
 
 	private final WindowTheme theme;
 	private final double scale;
@@ -432,6 +436,33 @@ final class WindowStyle
 		return washes.wash(surface, toScreen.createTransformedShape(footprint).getBounds());
 	}
 
+	private void paintPopup(Graphics2D g, Shape body, String surface, BufferedImage wash, List<Readability.Need> needs)
+	{
+		if (wash == null)
+		{
+			FADES.remove(surface);
+			GlassPanel.paint(g, body, this, null, needs);
+			return;
+		}
+
+		long now = System.currentTimeMillis();
+		long since = now - FADES.computeIfAbsent(surface, name -> now);
+		double t = Math.min(1.0, since / (double) GlassTokens.WASH_FADE_MS);
+		if (t >= 1.0)
+		{
+			GlassPanel.paint(g, body, this, wash, needs);
+			return;
+		}
+
+		Composite saved = g.getComposite();
+		float alpha = saved instanceof AlphaComposite ? ((AlphaComposite) saved).getAlpha() : 1f;
+		g.setComposite(AlphaComposite.SrcOver.derive(alpha * (float) (1.0 - t)));
+		GlassPanel.paint(g, body, this, null, needs);
+		g.setComposite(AlphaComposite.SrcOver.derive(alpha * (float) t));
+		GlassPanel.paint(g, body, this, wash, needs);
+		g.setComposite(saved);
+	}
+
 	/**
 	 * Paints a pop-up box: a tooltip, the right-click menu or a modal's dialog. The solid look has an optional shadow
 	 * and a fill with a border; the glass look has a raised glass body over its own wash.
@@ -449,7 +480,7 @@ final class WindowStyle
 	{
 		if (theme.glass())
 		{
-			GlassPanel.paint(g, outline(Kind.BODY, box), this, washFor(g, surface, box), needs);
+			paintPopup(g, outline(Kind.BODY, box), surface, washFor(g, surface, box), needs);
 			return;
 		}
 

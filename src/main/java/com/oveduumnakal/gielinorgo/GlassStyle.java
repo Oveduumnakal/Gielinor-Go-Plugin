@@ -10,11 +10,15 @@ import java.awt.GradientPaint;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
 import java.awt.Paint;
+import java.awt.RadialGradientPaint;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.TexturePaint;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
 /**
  * The drawing of the glass look's elements (#324): a raised surface with two soft outer shadows and a bevel, a lifted
@@ -389,6 +393,61 @@ final class GlassStyle
 				- width));
 		}
 
+		g.setStroke(stroke);
+	}
+
+	/**
+	 * Gives how far a bubble's shadows reach beyond its edge, which is the room its wash is made for.
+	 *
+	 * @param style the style
+	 * @return the pad in pixels
+	 */
+	static int discPad(WindowStyle style)
+	{
+		return px(style, 3 * GlassTokens.SMALL_DARK_BLUR + GlassTokens.SMALL_DARK_DY + 2);
+	}
+
+	/**
+	 * Paints the glass of a round wild-creature bubble: two soft shadows, the scene wash, the window tint, the
+	 * bubble's own colour, a soft highlight at its top left, the grain, a bevel and a thin rim in its colour. The
+	 * icon is painted by the caller on top.
+	 *
+	 * @param g the graphics
+	 * @param style the style
+	 * @param cx the centre x
+	 * @param cy the centre y
+	 * @param r the radius
+	 * @param bubble the bubble's colour
+	 * @param wash the scene wash round the bubble, or null
+	 */
+	static void disc(Graphics2D g, WindowStyle style, double cx, double cy, double r, Color bubble,
+		BufferedImage wash)
+	{
+		Ellipse2D body = new Ellipse2D.Double(cx - r, cy - r, 2 * r, 2 * r);
+		shadowsSmall(g, body, style, 1.0);
+		Shape clip = g.getClip();
+		g.clip(body);
+		GlassPanel.washWithin(g, body, style, wash, Readability.BODY, discPad(style));
+		g.setColor(GlassPanel.tint(style, wash != null ? GlassTokens.TINT_OVER_WASH : GlassTokens.TINT_SOLID));
+		g.fill(body);
+		g.setColor(GlassTokens.of(bubble, GlassTokens.BUBBLE_TINT));
+		g.fill(body);
+		g.setPaint(new RadialGradientPaint((float) (cx + r * GlassTokens.BUBBLE_HIGHLIGHT_X),
+			(float) (cy + r * GlassTokens.BUBBLE_HIGHLIGHT_Y), (float) (r * GlassTokens.BUBBLE_HIGHLIGHT_RADIUS),
+			new float[] {0f, 1f}, new Color[] {GlassTokens.white(GlassTokens.BUBBLE_HIGHLIGHT),
+				GlassTokens.white(0)}));
+		g.fill(body);
+		g.setPaint(new TexturePaint(GlassPanel.grainTile(), new Rectangle2D.Double(cx - r, cy - r,
+			GlassTokens.GRAIN_SIZE, GlassTokens.GRAIN_SIZE)));
+		g.fill(body);
+		g.setClip(clip);
+		bevel(g, body, style, GlassTokens.BUBBLE_BEVEL, GlassTokens.BUBBLE_BEVEL_LIGHT, GlassTokens.BUBBLE_BEVEL_DARK);
+		Stroke stroke = g.getStroke();
+		g.setStroke(new BasicStroke(GlassTokens.BUBBLE_RIM));
+		g.setColor(GlassTokens.of(WindowTheme.mix(bubble, Color.WHITE, GlassTokens.BUBBLE_RIM_WHITE),
+			GlassTokens.BUBBLE_RIM_ALPHA));
+		double inset = GlassTokens.BUBBLE_RIM / 2.0;
+		g.draw(new Ellipse2D.Double(cx - r + inset, cy - r + inset, 2 * r - 2 * inset, 2 * r - 2 * inset));
 		g.setStroke(stroke);
 	}
 

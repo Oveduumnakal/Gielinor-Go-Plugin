@@ -236,10 +236,15 @@ final class BubblePainter
 		Color fill = d.disabled() ? WindowTheme.mix(base, GREY, 0.75) : base;
 		double opacity = d.alpha() * (d.disabled() ? DISABLED_ALPHA : 1.0);
 		alpha(g, opacity);
-		Area shadow = new Area(circle(cx, cy + 2, r));
-		shadow.subtract(new Area(circle(cx, cy, r)));
-		g.setColor(new Color(0, 0, 0, 77));
-		g.fill(shadow);
+		boolean glass = style.theme().glass();
+		if (!glass)
+		{
+			Area shadow = new Area(circle(cx, cy + 2, r));
+			shadow.subtract(new Area(circle(cx, cy, r)));
+			g.setColor(new Color(0, 0, 0, 77));
+			g.fill(shadow);
+		}
+
 		if (d.pulse() > 0)
 		{
 			double p = clamp(d.pulse());
@@ -248,18 +253,26 @@ final class BubblePainter
 			g.draw(circle(cx, cy, r + 2 + 3 * p));
 		}
 
-		Area band = new Area(circle(cx, cy, r));
-		band.subtract(new Area(circle(cx, cy, r * INNER_RATIO)));
-		g.setColor(fill);
-		g.fill(band);
-		g.setColor(withAlpha(WindowTheme.mix(fill, Color.WHITE, 0.35), 0.6));
-		g.setStroke(new BasicStroke(1f));
-		g.draw(circle(cx, cy, Math.max(0.5, r - 1.25)));
-		g.setColor(withAlpha(OUTLINE, 0.85));
-		g.setStroke(new BasicStroke(2f));
-		g.draw(circle(cx, cy, r));
-		g.setColor(withAlpha(d.disabled() ? WindowTheme.mix(INNER, GREY, 0.3) : INNER, INNER_OPACITY));
-		g.fill(circle(cx, cy, r * INNER_RATIO));
+		if (glass)
+		{
+			GlassStyle.disc(g, style, cx, cy, r, fill, discWash(g, d, cx, cy, r, style));
+		}
+		else
+		{
+			Area band = new Area(circle(cx, cy, r));
+			band.subtract(new Area(circle(cx, cy, r * INNER_RATIO)));
+			g.setColor(fill);
+			g.fill(band);
+			g.setColor(withAlpha(WindowTheme.mix(fill, Color.WHITE, 0.35), 0.6));
+			g.setStroke(new BasicStroke(1f));
+			g.draw(circle(cx, cy, Math.max(0.5, r - 1.25)));
+			g.setColor(withAlpha(OUTLINE, 0.85));
+			g.setStroke(new BasicStroke(2f));
+			g.draw(circle(cx, cy, r));
+			g.setColor(withAlpha(d.disabled() ? WindowTheme.mix(INNER, GREY, 0.3) : INNER, INNER_OPACITY));
+			g.fill(circle(cx, cy, r * INNER_RATIO));
+		}
+
 		if (jar)
 			jarFace(g, d, fill, opacity, style);
 		else if (d.kind() == BubbleKind.BATTLE)
@@ -284,6 +297,17 @@ final class BubblePainter
 
 		if (jar && d.count() > 0)
 			badge(g, d);
+	}
+
+	private BufferedImage discWash(Graphics2D g, BubbleFrame.Disc d, double cx, double cy, double r,
+		WindowStyle style)
+	{
+		int pad = GlassStyle.discPad(style);
+		Rectangle2D footprint = new Rectangle2D.Double(cx - r - pad, cy - r - pad, 2 * (r + pad), 2 * (r + pad));
+		AffineTransform toScreen = g.getTransform();
+		Rectangle onScreen = toScreen.createTransformedShape(footprint).getBounds();
+		String jar = d.jar() == null ? "" : ":" + d.jar();
+		return washes.wash("bubble:" + d.kind() + jar, onScreen);
 	}
 
 	private void jarFace(Graphics2D g, BubbleFrame.Disc d, Color fill, double opacity, WindowStyle style)

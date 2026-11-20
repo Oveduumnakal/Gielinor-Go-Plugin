@@ -134,6 +134,27 @@ final class GlassPanel
 	}
 
 	/**
+	 * Paints a wash that was made for a footprint of a given room round the outline, clipped to the outline. A small
+	 * surface, such as a bubble, has less shadow room than a window, so it reads the scene nearer to it.
+	 *
+	 * @param g the graphics
+	 * @param outline the surface's outline
+	 * @param style the style the surface is drawn in
+	 * @param wash the scene wash, or null to paint nothing
+	 * @param needs the text colours that sit on the surface
+	 * @param pad how far the footprint reaches beyond the outline on every side, in pixels
+	 */
+	static synchronized void washWithin(Graphics2D g, Shape outline, WindowStyle style, BufferedImage wash,
+		List<Readability.Need> needs, int pad)
+	{
+		Rectangle2D b = outline.getBounds2D();
+		if (wash == null || b.getWidth() <= 0 || b.getHeight() <= 0)
+			return;
+
+		drawWash(g, outline, footprint(b, pad), tamed(wash, style, needs));
+	}
+
+	/**
 	 * Paints only the still layer of a body: shadows, tint, sheen, grain and bevel.
 	 *
 	 * @param g the graphics

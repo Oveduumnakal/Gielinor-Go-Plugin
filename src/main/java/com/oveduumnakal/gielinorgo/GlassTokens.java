@@ -233,6 +233,9 @@ final class GlassTokens
 	/** The opacity of the focus glow's blurred copy. */
 	static final double GLOW_ALPHA = 0.35;
 
+	/** How long a pop-up's wash takes to fade in once it first arrives, in milliseconds. */
+	static final long WASH_FADE_MS = 100;
+
 	/** How often the backdrops ask for a new frame while a surface is shown, in milliseconds. */
 	static final long WASH_REFRESH_MS = 100;
 
