@@ -633,8 +633,8 @@ final class ContextMenu
 		g.translate(anchor.x, anchor.y);
 		g.scale(scale, scale);
 		g.translate(-anchor.x, -anchor.y);
-		style.box(g, new Rectangle2D.Double(bounds.x, bounds.y, bounds.width, bounds.height), WindowStyle.Kind.BODY,
-			ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER);
+		style.popup(g, new Rectangle2D.Double(bounds.x, bounds.y, bounds.width, bounds.height), "menu",
+			ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER, false, Readability.BODY);
 		int pad = style.metrics().pad;
 		for (int i = 0; i < items.size(); i++)
 		{

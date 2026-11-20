@@ -1,0 +1,42 @@
+/*
+ * Copyright (c) 2026, Oveduumnakal
+ * All rights reserved.
+ */
+package com.oveduumnakal.gielinorgo;
+
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * Holds the glass look to recorded pictures, as {@link SolidLookTest} does for the solid look: every primitive and the
+ * Info card painted with {@link WindowTheme#RUNELITE_GLASS} at scales 1.0 and 1.5 over a fixed scene, with each
+ * surface's wash made from that scene. Same tolerance. Record with {@code SOLID_LOOK_RECORD=1}; the pictures live in
+ * {@code src/test/resources/.../glass-look/}.
+ */
+public class GlassLookTest
+{
+	private static final String FOLDER = "glass-look";
+	private static final double[] SCALES = {1.0, 1.5};
+
+	/** Starts every test from empty caches, so the pictures do not depend on what other tests painted first. */
+	@Before
+	public void emptyTheCaches()
+	{
+		GlassPanel.clear();
+		SoftShadows.clear();
+	}
+
+	@Test
+	public void everyPrimitiveLooksAsRecorded()
+	{
+		for (double scale : SCALES)
+			SolidLookTest.check(FOLDER, "primitives-" + scale, LookSheet.primitives(WindowTheme.RUNELITE_GLASS, scale));
+	}
+
+	@Test
+	public void theInfoCardLooksAsRecorded()
+	{
+		for (double scale : SCALES)
+			SolidLookTest.check(FOLDER, "card-" + scale, LookSheet.card(WindowTheme.RUNELITE_GLASS, scale));
+	}
+}

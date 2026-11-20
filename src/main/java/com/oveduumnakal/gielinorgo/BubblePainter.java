@@ -452,17 +452,9 @@ final class BubblePainter
 		g.translate(-ax, -ay);
 		alpha(g, card.alpha());
 		if (style.theme().glass())
-		{
-			Rectangle footprint = GlassPanel.footprint(box, style);
-			Shape onScreen = g.getTransform().createTransformedShape(footprint);
-			Rectangle screen = onScreen.getBounds();
-			GlassPanel.paint(g, style.outline(WindowStyle.Kind.BODY, rect(box)), style, washes.wash("card", screen),
-				Readability.BODY);
-		}
+			style.window(g, box, style.withWashes(washes).washFor(g, "card", rect(box)));
 		else
-		{
 			style.window(g, box);
-		}
 
 		if (card.pinned())
 			style.focusRing(g, style.outline(WindowStyle.Kind.BODY, rect(box)));

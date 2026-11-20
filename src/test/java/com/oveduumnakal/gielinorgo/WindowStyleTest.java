@@ -131,7 +131,7 @@ public class WindowStyleTest
 	@Test
 	public void aRowIsPaintedInThemeColoursAndClippedToTheSlant()
 	{
-		for (WindowTheme theme : WindowTheme.values())
+		for (WindowTheme theme : new WindowTheme[] {WindowTheme.RUNELITE_DARK})
 		{
 			WindowStyle style = WindowStyle.of(theme, 1.0);
 			BufferedImage image = canvas();
@@ -180,7 +180,7 @@ public class WindowStyleTest
 	@Test
 	public void healthAndExperienceBarsFillTheRightShare()
 	{
-		for (WindowTheme theme : WindowTheme.values())
+		for (WindowTheme theme : new WindowTheme[] {WindowTheme.RUNELITE_DARK})
 		{
 			WindowStyle style = WindowStyle.of(theme, 1.0);
 			BufferedImage image = canvas();

@@ -109,11 +109,46 @@ final class GlassPanel
 		if (b.getWidth() <= 0 || b.getHeight() <= 0)
 			return;
 
-		int pad = pad(style);
-		if (wash != null)
-			drawWash(g, outline, footprint(b, pad), tamed(wash, style, needs));
+		wash(g, outline, style, wash, needs);
+		still(g, outline, style, wash != null);
+	}
 
-		g.drawImage(still(outline, b, style, wash != null, pad), (int) Math.round(b.getX()) - pad,
+	/**
+	 * Paints only the wash of a body, clipped to its outline; the still layer goes on top of it (see {@link #still}).
+	 * A caller that caches the still layer paints the wash itself each frame with this.
+	 *
+	 * @param g the graphics
+	 * @param outline the body's outline, on whole pixels
+	 * @param style the style the body is drawn in
+	 * @param wash the scene wash, or null to paint nothing
+	 * @param needs the text colours that sit on the body
+	 */
+	static synchronized void wash(Graphics2D g, Shape outline, WindowStyle style, BufferedImage wash,
+		List<Readability.Need> needs)
+	{
+		Rectangle2D b = outline.getBounds2D();
+		if (wash == null || b.getWidth() <= 0 || b.getHeight() <= 0)
+			return;
+
+		drawWash(g, outline, footprint(b, pad(style)), tamed(wash, style, needs));
+	}
+
+	/**
+	 * Paints only the still layer of a body: shadows, tint, sheen, grain and bevel.
+	 *
+	 * @param g the graphics
+	 * @param outline the body's outline, on whole pixels
+	 * @param style the style the body is drawn in
+	 * @param overWash whether a wash lies under it, which makes the tint thinner
+	 */
+	static synchronized void still(Graphics2D g, Shape outline, WindowStyle style, boolean overWash)
+	{
+		Rectangle2D b = outline.getBounds2D();
+		if (b.getWidth() <= 0 || b.getHeight() <= 0)
+			return;
+
+		int pad = pad(style);
+		g.drawImage(still(outline, b, style, overWash, pad), (int) Math.round(b.getX()) - pad,
 			(int) Math.round(b.getY()) - pad, null);
 	}
 
@@ -223,7 +258,9 @@ final class GlassPanel
 		g.setPaint(new GradientPaint(0, (float) b.getY(), GlassTokens.white(GlassTokens.SHEEN_TOP), 0,
 			(float) b.getMaxY(), GlassTokens.white(GlassTokens.SHEEN_BOTTOM)));
 		g.fill(body);
-		g.setPaint(new TexturePaint(GRAIN, new Rectangle(0, 0, GlassTokens.GRAIN_SIZE, GlassTokens.GRAIN_SIZE)));
+		int pad = pad(style);
+		g.setPaint(new TexturePaint(GRAIN, new Rectangle2D.Double(b.getX() - pad, b.getY() - pad,
+			GlassTokens.GRAIN_SIZE, GlassTokens.GRAIN_SIZE)));
 		g.fill(body);
 		GlassStyle.bevel(g, body, style, GlassTokens.LARGE_BEVEL, GlassTokens.LARGE_BEVEL_LIGHT,
 			GlassTokens.LARGE_BEVEL_DARK);

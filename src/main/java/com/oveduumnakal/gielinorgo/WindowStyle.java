@@ -17,6 +17,8 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -35,15 +37,41 @@ final class WindowStyle
 	/** The share of a health bar under which it turns to the danger colour. */
 	static final double HP_DANGER_BELOW = 0.20;
 
+	private static volatile WashSource shared = WashSource.NONE;
+
 	private final WindowTheme theme;
 	private final double scale;
 	private final Metrics metrics;
+	private final WashSource washes;
 
-	private WindowStyle(WindowTheme theme, double scale)
+	private WindowStyle(WindowTheme theme, double scale, WashSource washes)
 	{
 		this.theme = theme;
 		this.scale = scale;
 		this.metrics = new Metrics(scale);
+		this.washes = washes;
+	}
+
+	/**
+	 * Sets the wash source every style made from now on uses for its glass surfaces. The plugin sets it once, to its
+	 * {@link Backdrops}, when it starts, and clears it when it stops.
+	 *
+	 * @param source the source, or null for none
+	 */
+	static void share(WashSource source)
+	{
+		shared = source == null ? WashSource.NONE : source;
+	}
+
+	/**
+	 * Gives a style like this one that takes its washes from another source, for a test or a preview.
+	 *
+	 * @param source the source
+	 * @return the style
+	 */
+	WindowStyle withWashes(WashSource source)
+	{
+		return new WindowStyle(theme, scale, source);
 	}
 
 	/**
@@ -53,7 +81,7 @@ final class WindowStyle
 	 */
 	static WindowStyle of(WindowTheme theme, double scale)
 	{
-		return new WindowStyle(theme, scale);
+		return new WindowStyle(theme, scale, shared);
 	}
 
 	/** @return the theme this style paints in */
@@ -287,6 +315,68 @@ final class WindowStyle
 	 */
 	void window(Graphics2D g, Rectangle box)
 	{
+		window(g, box, null);
+	}
+
+	/**
+	 * Paints a window-like body that has a wash source of its own surface name: the tracker, the party box or the
+	 * battle controls.
+	 *
+	 * @param g the graphics, painting on the screen's own pixels
+	 * @param box the body's bounds
+	 * @param surface the surface's name, for its wash
+	 */
+	void windowOn(Graphics2D g, Rectangle box, String surface)
+	{
+		window(g, box, washFor(g, surface, new Rectangle2D.Double(box.x, box.y, box.width, box.height)));
+	}
+
+	/**
+	 * Paints the wash under a window, inside its outline, for a caller that caches the rest (see
+	 * {@link #windowStill}). Nothing is painted in the solid look.
+	 *
+	 * @param g the graphics, painting on the screen's own pixels
+	 * @param box the window bounds
+	 * @param wash the scene wash, or null
+	 */
+	void washUnder(Graphics2D g, Rectangle box, BufferedImage wash)
+	{
+		if (theme.glass())
+			GlassPanel.wash(g, outline(Kind.BODY, box), this, wash, Readability.BODY);
+	}
+
+	/**
+	 * Paints the window without its wash: the solid window as it is, or the glass window's still layer (shadows, tint,
+	 * sheen, grain and bevel), which is the same every frame and so can be cached.
+	 *
+	 * @param g the graphics
+	 * @param box the window bounds
+	 * @param overWash whether a wash is drawn under it, which makes the glass tint thinner
+	 */
+	void windowStill(Graphics2D g, Rectangle box, boolean overWash)
+	{
+		if (theme.glass())
+			GlassPanel.still(g, outline(Kind.BODY, box), this, overWash);
+		else
+			window(g, box);
+	}
+
+	/**
+	 * Paints the window over a wash: in the glass look the wash of the scene round it is drawn inside its outline,
+	 * under the glass; in the solid look the wash is ignored.
+	 *
+	 * @param g the graphics
+	 * @param box the window bounds
+	 * @param wash the scene wash, stretched over the window and its shadow room, or null
+	 */
+	void window(Graphics2D g, Rectangle box, BufferedImage wash)
+	{
+		if (theme.glass())
+		{
+			GlassPanel.paint(g, outline(Kind.BODY, box), this, wash, Readability.BODY);
+			return;
+		}
+
 		Shape body = outline(Kind.BODY, box);
 		g.setColor(color(ThemeColor.SHADOW));
 		g.fill(outline(Kind.BODY, new Rectangle2D.Double(box.x, box.y + metrics.shadow, box.width, box.height)));
@@ -305,8 +395,71 @@ final class WindowStyle
 	 */
 	void header(Graphics2D g, Rectangle2D box)
 	{
+		if (theme.glass())
+		{
+			g.setColor(GlassTokens.white(GlassTokens.RAISED_FILL * 0.7));
+			g.fill(box);
+			GlassStyle.bevel(g, box, this, GlassTokens.SMALL_BEVEL, GlassTokens.SMALL_BEVEL_LIGHT * 0.7,
+				GlassTokens.SMALL_BEVEL_DARK * 0.7);
+			return;
+		}
+
 		g.setColor(color(ThemeColor.HEADER));
 		g.fill(box);
+	}
+
+	/**
+	 * Gives the wash a glass surface lies on: the surface's footprint (its body and the room its shadows take),
+	 * measured on the screen through the graphics' transform, is asked of the wash source. The graphics must paint on
+	 * the screen's own pixels, not into a cached layer.
+	 *
+	 * @param g the graphics
+	 * @param surface the surface's name, one wash is kept per name
+	 * @param box the surface's content box
+	 * @return the wash, or null in the solid look or when there is none yet
+	 */
+	BufferedImage washFor(Graphics2D g, String surface, Rectangle2D box)
+	{
+		if (!theme.glass())
+			return null;
+
+		int pad = bodyPad();
+		Rectangle2D over = drawn(Kind.BODY, box);
+		Rectangle2D footprint = new Rectangle2D.Double(over.getX() - pad, over.getY() - pad, over.getWidth() + 2 * pad,
+			over.getHeight() + 2 * pad);
+		AffineTransform toScreen = g.getTransform();
+		return washes.wash(surface, toScreen.createTransformedShape(footprint).getBounds());
+	}
+
+	/**
+	 * Paints a pop-up box: a tooltip, the right-click menu or a modal's dialog. The solid look has an optional shadow
+	 * and a fill with a border; the glass look has a raised glass body over its own wash.
+	 *
+	 * @param g the graphics
+	 * @param box the box
+	 * @param surface the surface's name, for its wash
+	 * @param fill the colour name of the solid fill
+	 * @param border the colour name of the solid border
+	 * @param shadow whether the solid look drops a shadow
+	 * @param needs the text colours that sit on it, for the readability guard
+	 */
+	void popup(Graphics2D g, Rectangle2D box, String surface, ThemeColor fill, ThemeColor border, boolean shadow,
+		List<Readability.Need> needs)
+	{
+		if (theme.glass())
+		{
+			GlassPanel.paint(g, outline(Kind.BODY, box), this, washFor(g, surface, box), needs);
+			return;
+		}
+
+		if (shadow)
+		{
+			g.setColor(color(ThemeColor.SHADOW));
+			g.fill(outline(Kind.BODY, new Rectangle2D.Double(box.getX(), box.getY() + metrics.shadow, box.getWidth(),
+				box.getHeight())));
+		}
+
+		box(g, box, Kind.BODY, fill, border);
 	}
 
 	/**
@@ -328,6 +481,12 @@ final class WindowStyle
 	 */
 	void panel(Graphics2D g, Rectangle2D box)
 	{
+		if (theme.glass())
+		{
+			GlassStyle.pressed(g, outline(Kind.PANEL, box), this, GlassTokens.black(GlassTokens.INSET_FILL));
+			return;
+		}
+
 		box(g, box, Kind.PANEL, ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER);
 	}
 
@@ -364,6 +523,12 @@ final class WindowStyle
 	Shape row(Graphics2D g, Rectangle2D box, boolean lead, double hover, double press)
 	{
 		Shape shape = outline(Kind.ROW, box);
+		if (theme.glass())
+		{
+			GlassStyle.row(g, shape, this, lead, hover, press);
+			return shape;
+		}
+
 		g.setColor(color(lead ? ThemeColor.LEAD_ROW : ThemeColor.ROW));
 		g.fill(shape);
 		shade(g, shape, hover, press);
@@ -391,6 +556,12 @@ final class WindowStyle
 	 */
 	void grip(Graphics2D g, Rectangle2D box, double active)
 	{
+		if (theme.glass())
+		{
+			GlassStyle.grip(g, this, box, active);
+			return;
+		}
+
 		Color base = color(ThemeColor.SUBTEXT);
 		g.setColor(WindowTheme.mix(base, color(ThemeColor.ACCENT), active));
 		g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
@@ -411,6 +582,12 @@ final class WindowStyle
 	 */
 	void shade(Graphics2D g, Shape shape, double hover, double press)
 	{
+		if (theme.glass())
+		{
+			GlassStyle.shade(g, shape, hover, press);
+			return;
+		}
+
 		if (hover > 0)
 		{
 			g.setColor(WindowTheme.fade(color(ThemeColor.HOVER_SHADE), hover));
@@ -444,6 +621,12 @@ final class WindowStyle
 	 */
 	void focusRing(Graphics2D g, Shape shape, ThemeColor ring)
 	{
+		if (theme.glass())
+		{
+			GlassStyle.focus(g, shape, this, color(ring));
+			return;
+		}
+
 		g.setColor(color(ring));
 		g.setStroke(new BasicStroke(Math.max(2f, metrics.border)));
 		g.draw(shape);
@@ -460,6 +643,12 @@ final class WindowStyle
 	 */
 	void bar(Graphics2D g, Rectangle2D box, double fraction, ThemeColor fill, ThemeColor track)
 	{
+		if (theme.glass())
+		{
+			GlassStyle.bar(g, this, box, fraction, fill);
+			return;
+		}
+
 		g.setColor(color(track));
 		g.fill(outline(Kind.BAR, box));
 		if (fraction > 0)
@@ -506,13 +695,22 @@ final class WindowStyle
 	void tab(Graphics2D g, Rectangle2D box, String label, boolean active, boolean disabled, double hover)
 	{
 		Shape shape = outline(Kind.TAB, box);
-		ThemeColor body = disabled ? ThemeColor.TAB_DISABLED : active ? ThemeColor.TAB_ACTIVE : ThemeColor.TAB;
-		ThemeColor text = disabled ? ThemeColor.TAB_DISABLED_TEXT
-			: active ? ThemeColor.TAB_ACTIVE_TEXT : ThemeColor.TAB_TEXT;
-		g.setColor(color(body));
-		g.fill(shape);
-		if (!disabled)
-			shade(g, shape, active ? 0 : hover, 0);
+		Color text = color(disabled ? ThemeColor.TAB_DISABLED_TEXT
+			: active ? ThemeColor.TAB_ACTIVE_TEXT : ThemeColor.TAB_TEXT);
+		if (theme.glass())
+		{
+			GlassStyle.tab(g, shape, this, active, disabled, hover);
+			if (active && !disabled)
+				text = GlassTokens.ACTIVE_TAB_TEXT;
+		}
+		else
+		{
+			ThemeColor body = disabled ? ThemeColor.TAB_DISABLED : active ? ThemeColor.TAB_ACTIVE : ThemeColor.TAB;
+			g.setColor(color(body));
+			g.fill(shape);
+			if (!disabled)
+				shade(g, shape, active ? 0 : hover, 0);
+		}
 
 		Font font = fitted(g, WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS, label,
 			(int) box.getWidth() - 2 * metrics.tabSlant);
@@ -545,10 +743,17 @@ final class WindowStyle
 		ThemeColor body = disabled ? ThemeColor.TAB_DISABLED : primary ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP;
 		ThemeColor text = disabled ? ThemeColor.TAB_DISABLED_TEXT
 			: primary ? ThemeColor.CHIP_ACCENT_TEXT : ThemeColor.CHIP_TEXT;
-		g.setColor(color(body));
-		g.fill(shape);
-		if (!disabled)
-			shade(g, shape, hover, press);
+		if (theme.glass())
+		{
+			GlassStyle.button(g, shape, this, primary, disabled, hover, press);
+		}
+		else
+		{
+			g.setColor(color(body));
+			g.fill(shape);
+			if (!disabled)
+				shade(g, shape, hover, press);
+		}
 
 		Font font = fitted(g, WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS, label,
 			(int) box.getWidth() - 2 * metrics.chipSlant);
@@ -585,8 +790,16 @@ final class WindowStyle
 	{
 		int w = chipWidth(g, label);
 		Rectangle2D box = new Rectangle2D.Double(x, y, w, metrics.chipHeight);
-		g.setColor(color(accent ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP));
-		g.fill(outline(Kind.CHIP, box));
+		if (theme.glass())
+		{
+			GlassStyle.chip(g, outline(Kind.CHIP, box), this, accent);
+		}
+		else
+		{
+			g.setColor(color(accent ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP));
+			g.fill(outline(Kind.CHIP, box));
+		}
+
 		Font font = font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
 		text(g, label, x + metrics.chipPad, baseline(box, g.getFontMetrics(font)), font,
 			accent ? ThemeColor.CHIP_ACCENT_TEXT : ThemeColor.CHIP_TEXT);
@@ -619,7 +832,22 @@ final class WindowStyle
 		g.scale(grow, grow);
 		g.setComposite(AlphaComposite.SrcOver.derive((float) Math.max(0.0, Math.min(1.0, opacity))));
 		Rectangle2D box = new Rectangle2D.Double(-w / 2.0, -h / 2.0, w, h);
-		this.box(g, box, Kind.BODY, ThemeColor.NOTICE, ThemeColor.FRAME);
+		if (theme.glass())
+		{
+			Shape pill = outline(Kind.BODY, box);
+			GlassStyle.shadowsSmall(g, pill, this, 1.0);
+			BufferedImage wash = washFor(g, "notice", box);
+			GlassPanel.wash(g, pill, this, wash, Readability.NOTICE);
+			g.setColor(GlassPanel.tint(this, wash != null ? GlassTokens.TINT_OVER_WASH : GlassTokens.TINT_SOLID));
+			g.fill(pill);
+			GlassStyle.bevel(g, pill, this, GlassTokens.SMALL_BEVEL, GlassTokens.SMALL_BEVEL_LIGHT,
+				GlassTokens.SMALL_BEVEL_DARK);
+		}
+		else
+		{
+			this.box(g, box, Kind.BODY, ThemeColor.NOTICE, ThemeColor.FRAME);
+		}
+
 		text(g, message, (int) Math.round(-fm.stringWidth(message) / 2.0), baseline(box, fm), font,
 			ThemeColor.NOTICE_TEXT);
 		g.setTransform(saved);

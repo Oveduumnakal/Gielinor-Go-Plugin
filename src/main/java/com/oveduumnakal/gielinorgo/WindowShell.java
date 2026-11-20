@@ -961,12 +961,14 @@ final class WindowShell
 		WindowLayout lay = layout;
 		WindowStyle st = style;
 		int pad = st.bodyPad();
+		BufferedImage wash = st.washFor(g, "window", rect(lay.window));
+		st.washUnder(g, lay.window, wash);
 		layers.draw(g, -pad, -pad, "frame", lay.window.width + 2 * pad, lay.window.height + 2 * pad, lay.scale,
-			st.theme(), 0, layer ->
+			st.theme(), wash != null ? 1 : 0, layer ->
 			{
 				WindowStyle.prepare(layer);
 				layer.translate(pad, pad);
-				st.window(layer, lay.window);
+				st.windowStill(layer, lay.window, wash != null);
 				Shape saved = layer.getClip();
 				layer.clip(st.outline(WindowStyle.Kind.BODY, rect(lay.window)));
 				st.header(layer, rect(lay.header));

@@ -12,6 +12,7 @@ import java.awt.LinearGradientPaint;
 import java.awt.Paint;
 import java.awt.Shape;
 import java.awt.Stroke;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
@@ -67,16 +68,29 @@ final class GlassStyle
 	 */
 	static void raisedSmall(Graphics2D g, Shape shape, WindowStyle style, Color fill, double lift)
 	{
+		shadowsSmall(g, shape, style, lift);
+		g.setColor(fill);
+		g.fill(shape);
+		bevel(g, shape, style, GlassTokens.SMALL_BEVEL, GlassTokens.SMALL_BEVEL_LIGHT,
+			GlassTokens.SMALL_BEVEL_DARK);
+	}
+
+	/**
+	 * Paints the two soft shadows of a small raised element, outside its outline.
+	 *
+	 * @param g the graphics
+	 * @param shape the outline
+	 * @param style the style
+	 * @param lift how lifted it is, from 1 (resting) up to {@link GlassTokens#LIFT}
+	 */
+	static void shadowsSmall(Graphics2D g, Shape shape, WindowStyle style, double lift)
+	{
 		SoftShadows.outer(g, shape, GlassTokens.black(GlassTokens.SMALL_DARK),
 			px(style, GlassTokens.SMALL_DARK_DX * lift), px(style, GlassTokens.SMALL_DARK_DY * lift),
 			Math.max(1, px(style, GlassTokens.SMALL_DARK_BLUR * lift)));
 		SoftShadows.outer(g, shape, GlassTokens.white(GlassTokens.SMALL_LIGHT),
 			px(style, GlassTokens.SMALL_LIGHT_OFFSET), px(style, GlassTokens.SMALL_LIGHT_OFFSET),
 			Math.max(1, px(style, GlassTokens.SMALL_LIGHT_BLUR)));
-		g.setColor(fill);
-		g.fill(shape);
-		bevel(g, shape, style, GlassTokens.SMALL_BEVEL, GlassTokens.SMALL_BEVEL_LIGHT,
-			GlassTokens.SMALL_BEVEL_DARK);
 	}
 
 	/**
@@ -142,6 +156,239 @@ final class GlassStyle
 		g.draw(shape);
 		g.setClip(clip);
 		g.setPaint(paint);
+		g.setStroke(stroke);
+	}
+
+	private static double lift(double hover)
+	{
+		return 1.0 + (GlassTokens.LIFT - 1.0) * clamp(hover);
+	}
+
+	private static double clamp(double v)
+	{
+		return Math.max(0.0, Math.min(1.0, v));
+	}
+
+	private static Color raisedFill(double hover)
+	{
+		double t = clamp(hover);
+		return GlassTokens.white(GlassTokens.RAISED_FILL + (GlassTokens.LIFTED_FILL - GlassTokens.RAISED_FILL) * t);
+	}
+
+	/**
+	 * Paints a tab: the active one pressed in, an inactive one raised, a disabled one flat; a hovered one lifts.
+	 *
+	 * @param g the graphics
+	 * @param shape the tab's outline
+	 * @param style the style
+	 * @param active whether it is the selected tab
+	 * @param disabled whether it cannot be chosen
+	 * @param hover how much the pointer is on it, from 0 to 1
+	 */
+	static void tab(Graphics2D g, Shape shape, WindowStyle style, boolean active, boolean disabled, double hover)
+	{
+		if (disabled)
+		{
+			g.setColor(GlassTokens.white(GlassTokens.FLAT_FILL));
+			g.fill(shape);
+		}
+		else if (active)
+		{
+			pressed(g, shape, style, GlassTokens.black(GlassTokens.PRESSED_TAB_FILL));
+		}
+		else
+		{
+			raisedSmall(g, shape, style, raisedFill(hover), lift(hover));
+		}
+	}
+
+	/**
+	 * Paints a button: the main one raised in the accent colour, a plain one raised, a disabled one flat; a hovered one
+	 * lifts and a pressed one is pressed in.
+	 *
+	 * @param g the graphics
+	 * @param shape the button's outline
+	 * @param style the style
+	 * @param primary whether it is the main choice
+	 * @param disabled whether it cannot be pressed
+	 * @param hover how much the pointer is on it, from 0 to 1
+	 * @param press how much it is pressed, from 0 to 1
+	 */
+	static void button(Graphics2D g, Shape shape, WindowStyle style, boolean primary, boolean disabled, double hover,
+		double press)
+	{
+		if (disabled)
+		{
+			g.setColor(GlassTokens.white(GlassTokens.FLAT_FILL));
+			g.fill(shape);
+		}
+		else if (press >= 0.5)
+		{
+			pressed(g, shape, style, primary ? GlassTokens.of(GlassTokens.ACCENT, GlassTokens.ACCENT_ALPHA * 0.8)
+				: GlassTokens.white(GlassTokens.PRESSED_BUTTON_FILL));
+		}
+		else if (primary)
+		{
+			raisedSmall(g, shape, style, GlassTokens.of(GlassTokens.ACCENT, GlassTokens.ACCENT_ALPHA), lift(hover));
+			if (hover > 0)
+			{
+				g.setColor(GlassTokens.white(0.10 * clamp(hover)));
+				g.fill(shape);
+			}
+		}
+		else
+		{
+			raisedSmall(g, shape, style, raisedFill(hover), lift(hover));
+		}
+	}
+
+	/**
+	 * Paints a chip: raised, in the accent colour when it stands out.
+	 *
+	 * @param g the graphics
+	 * @param shape the chip's outline
+	 * @param style the style
+	 * @param accent whether it stands out
+	 */
+	static void chip(Graphics2D g, Shape shape, WindowStyle style, boolean accent)
+	{
+		raisedSmall(g, shape, style, accent ? GlassTokens.of(GlassTokens.ACCENT, GlassTokens.ACCENT_ALPHA)
+			: raisedFill(0), 1.0);
+	}
+
+	/**
+	 * Paints a row: pressed in when plain, raised in the lead colour when it leads; a hovered row lightens and a
+	 * pressed one darkens.
+	 *
+	 * @param g the graphics
+	 * @param shape the row's outline
+	 * @param style the style
+	 * @param lead whether it is the lead row
+	 * @param hover how much the pointer is on it, from 0 to 1
+	 * @param press how much it is pressed, from 0 to 1
+	 */
+	static void row(Graphics2D g, Shape shape, WindowStyle style, boolean lead, double hover, double press)
+	{
+		if (lead)
+		{
+			raisedSmall(g, shape, style, GlassTokens.of(style.color(ThemeColor.LEAD_ROW), GlassTokens.ACCENT_ALPHA),
+				lift(hover));
+		}
+		else
+		{
+			pressed(g, shape, style, GlassTokens.black(GlassTokens.INSET_FILL));
+		}
+
+		if (hover > 0)
+		{
+			g.setColor(GlassTokens.white((lead ? 0.10 : 0.08) * clamp(hover)));
+			g.fill(shape);
+		}
+
+		if (press > 0)
+		{
+			g.setColor(GlassTokens.black(0.18 * clamp(press)));
+			g.fill(shape);
+		}
+	}
+
+	/**
+	 * Paints a bar: a groove with a vertical-gradient fill one pixel inside it.
+	 *
+	 * @param g the graphics
+	 * @param style the style
+	 * @param box the bar's box
+	 * @param fraction the filled share, from 0 to 1
+	 * @param fill the colour name of the fill
+	 */
+	static void bar(Graphics2D g, WindowStyle style, Rectangle2D box, double fraction, ThemeColor fill)
+	{
+		double skew = style.skew(WindowStyle.Kind.BAR);
+		groove(g, style.outline(WindowStyle.Kind.BAR, box), style);
+		if (fraction <= 0)
+			return;
+
+		double in = Math.max(1, style.scale());
+		Rectangle2D inner = new Rectangle2D.Double(box.getX() + in, box.getY() + in, box.getWidth() - 2 * in,
+			box.getHeight() - 2 * in);
+		Color bottom = style.color(fill);
+		Color top = fill == ThemeColor.XP_FILL ? GlassTokens.XP_TOP
+			: WindowTheme.mix(bottom, Color.WHITE, GlassTokens.HP_TOP_LIGHT);
+		if (fill == ThemeColor.XP_FILL)
+			bottom = GlassTokens.XP_BOTTOM;
+
+		gradientFill(g, style.filled(inner, skew, fraction), top, bottom);
+	}
+
+	/**
+	 * Paints the focus ring: a soft glow outside the outline and a sharp ring on it.
+	 *
+	 * @param g the graphics
+	 * @param shape the outline to ring
+	 * @param style the style
+	 * @param ring the ring's colour
+	 */
+	static void focus(Graphics2D g, Shape shape, WindowStyle style, Color ring)
+	{
+		SoftShadows.outer(g, shape, GlassTokens.of(ring, GlassTokens.GLOW_ALPHA), 0, 0,
+			Math.max(2, px(style, GlassTokens.GLOW_WIDTH)));
+		Stroke stroke = g.getStroke();
+		g.setColor(GlassTokens.of(ring, GlassTokens.RING_ALPHA));
+		g.setStroke(new BasicStroke((float) Math.max(GlassTokens.RING_WIDTH, GlassTokens.RING_WIDTH * style.scale())));
+		g.draw(shape);
+		g.setStroke(stroke);
+	}
+
+	/**
+	 * Lays a light over a shape the pointer is on and a dark over one that is pressed, for surfaces without a state
+	 * of their own.
+	 *
+	 * @param g the graphics
+	 * @param shape what to shade
+	 * @param hover how much the pointer is on it, from 0 to 1
+	 * @param press how much it is pressed, from 0 to 1
+	 */
+	static void shade(Graphics2D g, Shape shape, double hover, double press)
+	{
+		if (hover > 0)
+		{
+			g.setColor(GlassTokens.white(0.12 * clamp(hover)));
+			g.fill(shape);
+		}
+
+		if (press > 0)
+		{
+			g.setColor(GlassTokens.black(0.22 * clamp(press)));
+			g.fill(shape);
+		}
+	}
+
+	/**
+	 * Paints the resize grip as three short grooves: a dark line with a light one beside it.
+	 *
+	 * @param g the graphics
+	 * @param style the style
+	 * @param box the grip's square
+	 * @param active how much the grip is being dragged, from 0 to 1
+	 */
+	static void grip(Graphics2D g, WindowStyle style, Rectangle2D box, double active)
+	{
+		Stroke stroke = g.getStroke();
+		float width = Math.max(1f, style.metrics().border);
+		double step = box.getWidth() / 4.0;
+		double right = box.getMaxX() - style.metrics().border;
+		double bottom = box.getMaxY() - style.metrics().border;
+		for (int i = 1; i <= 3; i++)
+		{
+			g.setStroke(new BasicStroke(width));
+			g.setColor(WindowTheme.mix(GlassTokens.black(0.45), GlassTokens.of(style.color(ThemeColor.ACCENT), 0.9),
+				active));
+			g.draw(new Line2D.Double(right - i * step, bottom, right, bottom - i * step));
+			g.setColor(GlassTokens.white(0.22));
+			g.draw(new Line2D.Double(right - i * step - width, bottom - width, right - width, bottom - i * step
+				- width));
+		}
+
 		g.setStroke(stroke);
 	}
 

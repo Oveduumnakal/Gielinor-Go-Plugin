@@ -65,15 +65,17 @@ final class LookSheet
 	 */
 	static BufferedImage primitives(WindowTheme theme, double scale)
 	{
-		WindowStyle st = WindowStyle.of(theme, scale);
-		int w = st.px(SHEET_UNITS);
-		int h = st.px(SHEET_HEIGHT_UNITS);
+		WindowStyle plain = WindowStyle.of(theme, scale);
+		int w = plain.px(SHEET_UNITS);
+		int h = plain.px(SHEET_HEIGHT_UNITS);
+		BufferedImage clean = scene(w, h);
+		WindowStyle st = plain.withWashes((name, box) -> RingWash.wash(clean, box));
 		BufferedImage image = scene(w, h);
 		Graphics2D g = WidgetKit.graphics(image);
 		int gap = st.px(12);
 		int x0 = gap;
 		int y = gap;
-		st.window(g, new Rectangle(x0, y, st.px(250), st.px(120)));
+		st.windowOn(g, new Rectangle(x0, y, st.px(250), st.px(120)), "window");
 		st.header(g, new Rectangle2D.Double(x0 + st.px(270), y, st.px(300), st.px(44)));
 		st.panel(g, new Rectangle2D.Double(x0 + st.px(270), y + st.px(56), st.px(300), st.px(64)));
 		y += st.px(136);
@@ -149,10 +151,15 @@ final class LookSheet
 	static BufferedImage card(WindowTheme theme, double scale)
 	{
 		WindowStyle st = WindowStyle.of(theme, scale);
-		BubblePainter painter = new BubblePainter();
+		BubblePainter measure = new BubblePainter();
+		BubbleFrame sample = GlassCardRenderTest.frame(measure, st, st.px(24), st.px(24));
+		Rectangle box = sample.card().bounds();
+		int w = box.width + st.px(48);
+		int h = box.height + st.px(60);
+		BufferedImage clean = scene(w, h);
+		BubblePainter painter = new BubblePainter(() -> null, (name, foot) -> RingWash.wash(clean, foot));
 		BubbleFrame frame = GlassCardRenderTest.frame(painter, st, st.px(24), st.px(24));
-		Rectangle box = frame.card().bounds();
-		BufferedImage image = scene(box.width + st.px(48), box.height + st.px(60));
+		BufferedImage image = scene(w, h);
 		Graphics2D g = WidgetKit.graphics(image);
 		painter.paint(g, frame, st, 1000L);
 		g.dispose();

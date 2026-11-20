@@ -41,7 +41,7 @@ final class BattleControlsPainter
 	void paint(Graphics2D g, WindowStyle style, BattleControlsModel model, BattleControlsModel.Layout layout)
 	{
 		PageText text = new PageText(style, sink);
-		style.window(g, new Rectangle(layout.size));
+		style.windowOn(g, new Rectangle(layout.size), "battle");
 		Font bold = style.font(WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS);
 		Font small = style.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
 		text.draw(g, model.title(), layout.title, bold, ThemeColor.GOLD, PageText.Align.LEFT);

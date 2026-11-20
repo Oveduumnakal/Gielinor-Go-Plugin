@@ -330,6 +330,7 @@ public class GielinorGoPlugin extends Plugin
 		keyManager.registerKeyListener(hotkeys);
 		detectVersionChange();
 		backdrops = new Backdrops(client, drawManager, config::glassLook);
+		WindowStyle.share(backdrops);
 		startWindow();
 		startControls();
 		startTracker();
@@ -345,6 +346,7 @@ public class GielinorGoPlugin extends Plugin
 		stopTracker();
 		stopBubbles();
 		stopControls();
+		WindowStyle.share(null);
 		stopWindow();
 		keyManager.unregisterKeyListener(hotkeys);
 		choiceOpen = false;

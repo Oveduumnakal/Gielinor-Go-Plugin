@@ -56,7 +56,8 @@ public class FocusRingTest
 				Graphics2D g = WidgetKit.graphics(image);
 				style.focusRing(g, outline);
 				g.dispose();
-				double stroke = Math.max(2, style.metrics().border);
+				double stroke = Math.max(2, style.metrics().border)
+					+ (theme.glass() ? 3 * GlassTokens.GLOW_WIDTH : 0);
 				assertEquals(theme + " " + kind, 0, outside(image, outline, stroke));
 				assertTrue(theme + " " + kind + " paints something", WidgetKit.painted(image, 0, 0, 260, 140) > 0);
 			}

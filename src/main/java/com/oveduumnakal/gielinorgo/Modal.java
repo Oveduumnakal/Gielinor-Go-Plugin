@@ -464,8 +464,8 @@ final class Modal
 		g.setColor(style.color(ThemeColor.SCRIM));
 		g.fillRect(area.x, area.y, area.width, area.height);
 		g.setClip(savedClip);
-		style.box(g, new Rectangle2D.Double(dialog.x, dialog.y, dialog.width, dialog.height), WindowStyle.Kind.BODY,
-			ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER);
+		style.popup(g, new Rectangle2D.Double(dialog.x, dialog.y, dialog.width, dialog.height), "modal",
+			ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER, false, Readability.BODY);
 		int pad = style.metrics().pad;
 		style.text(g, title, dialog.x + pad, dialog.y + pad + bold.getAscent(), boldFont, ThemeColor.TEXT);
 		int textTop = dialog.y + pad + bold.getHeight() + pad;

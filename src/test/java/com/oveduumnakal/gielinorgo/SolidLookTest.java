@@ -83,6 +83,19 @@ public class SolidLookTest
 		}
 
 		double share = differing / (double) (actual.getWidth() * actual.getHeight());
+		String dump = System.getenv("LOOK_ACTUAL_DIR");
+		if (dump != null && (share > MAX_DIFFERING || worst > MAX_LEVELS))
+		{
+			try
+			{
+				ImageIO.write(actual, "png", new File(dump, "actual-" + folder + "-" + file));
+			}
+			catch (IOException e)
+			{
+				throw new IllegalStateException(e);
+			}
+		}
+
 		assertTrue(file + ": " + share * 100 + "% of the pixels differ", share <= MAX_DIFFERING);
 		assertTrue(file + ": a channel differs by " + worst, worst <= MAX_LEVELS);
 	}

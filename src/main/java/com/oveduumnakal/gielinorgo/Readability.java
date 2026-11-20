@@ -34,6 +34,12 @@ final class Readability
 	static final List<Need> NOTICE = Collections.singletonList(
 		new Need(ThemeColor.NOTICE_TEXT, GlassTokens.TEXT_CONTRAST, null));
 
+	/**
+	 * How much more contrast than the minimum a wash is darkened for, so the grain, the wash's own colour boost and the
+	 * scene differing a little from its wash still leave the minimum.
+	 */
+	static final double MARGIN = 1.1;
+
 	private static final int BISECTIONS = 10;
 	private static final double[] LINEAR = linearTable();
 
@@ -186,7 +192,7 @@ final class Readability
 			Color behind = need.overlay() == null ? under : WindowTheme.over(need.overlay(), under);
 			double bg = luminance(behind);
 			double ratio = (Math.max(textLum[i], bg) + 0.05) / (Math.min(textLum[i], bg) + 0.05);
-			if (ratio < need.minimum())
+			if (ratio < need.minimum() * MARGIN)
 				return false;
 		}
 

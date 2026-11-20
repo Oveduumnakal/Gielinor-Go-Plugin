@@ -160,11 +160,8 @@ final class Tooltip
 		Rectangle box = bounds(style, fm, canvas);
 		int pad = style.metrics().pad;
 		TextLayout layout = TextLayout.plain(text, fm, box.width - 2 * pad, 0);
-		g.setColor(style.color(ThemeColor.SHADOW));
-		g.fill(style.outline(WindowStyle.Kind.BODY, new Rectangle2D.Double(box.x, box.y + style.metrics().shadow,
-			box.width, box.height)));
-		style.box(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height), WindowStyle.Kind.BODY,
-			ThemeColor.TOOLTIP, ThemeColor.PANEL_BORDER);
+		style.popup(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height), "tooltip", ThemeColor.TOOLTIP,
+			ThemeColor.PANEL_BORDER, true, Readability.TOOLTIP);
 		layout.paint(g, style, box.x + pad, box.y + pad / 2, ThemeColor.TOOLTIP_TEXT);
 		return box;
 	}
