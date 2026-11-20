@@ -481,7 +481,15 @@ final class BubblePainter
 			style.window(g, box);
 
 		if (card.pinned())
+		{
 			style.focusRing(g, style.outline(WindowStyle.Kind.BODY, rect(box)));
+		}
+		else
+		{
+			g.setColor(JarPalette.INFO_BASE);
+			g.setStroke(new BasicStroke((float) Math.max(1.0, style.scale())));
+			g.draw(style.outline(WindowStyle.Kind.BODY, rect(box)));
+		}
 
 		PageText text = new PageText(style, PageText.Sink.NONE);
 		int pad = style.px(8);

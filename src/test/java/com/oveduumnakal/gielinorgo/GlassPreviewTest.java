@@ -77,7 +77,7 @@ public class GlassPreviewTest
 	}
 
 	/**
-	 * Paints the Info card on the screenshot at a few spots.
+	 * Paints the Info card on the screenshot at a few spots, pinned (orange ring) and not (thin blue border).
 	 */
 	@Test
 	public void theInfoCardOnTheScene()
@@ -90,15 +90,18 @@ public class GlassPreviewTest
 		for (int i = 0; i < spots.length; i++)
 		{
 			BubblePainter painter = new BubblePainter(() -> null, (name, foot) -> RingWash.wash(clean, foot));
-			BubbleFrame frame = GlassCardRenderTest.frame(painter, style, spots[i][0], spots[i][1]);
-			Rectangle box = frame.card().bounds();
-			BufferedImage canvas = copy(scene);
-			Graphics2D g = WidgetKit.graphics(canvas);
-			painter.paint(g, frame, style, 1000L);
-			g.dispose();
-			int m = 60;
-			write(canvas, new Rectangle(box.x - m, box.y - m, box.width + 2 * m, box.height + 2 * m),
-				"card-" + names[i]);
+			for (boolean pinned : new boolean[] {true, false})
+			{
+				BubbleFrame frame = GlassCardRenderTest.frame(painter, style, spots[i][0], spots[i][1], pinned);
+				Rectangle box = frame.card().bounds();
+				BufferedImage canvas = copy(scene);
+				Graphics2D g = WidgetKit.graphics(canvas);
+				painter.paint(g, frame, style, 1000L);
+				g.dispose();
+				int m = 60;
+				write(canvas, new Rectangle(box.x - m, box.y - m, box.width + 2 * m, box.height + 2 * m),
+					"card-" + names[i] + (pinned ? "" : "-unpinned"));
+			}
 		}
 	}
 

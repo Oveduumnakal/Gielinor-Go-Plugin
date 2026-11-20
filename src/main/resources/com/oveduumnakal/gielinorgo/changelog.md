@@ -201,8 +201,8 @@ A Creature Log, daily tasks and daily events give you goals.
   picture and the description with what it grows into (shown as ??? until you have seen it) on the left, and the
   stat bars, nature, bond hearts and move pills on the right. (#281)
 - **Glass look.** Windows, boxes, the Info card and wild bubbles are frosted glass that takes its colours from the
-  game around them; soft raised buttons and pressed-in bars. Settings > Glass look turns it off for the solid
-  look. (#324)
+  game around them; soft raised buttons and pressed-in bars. The Info card has a thin blue edge until you click it.
+  Settings > Glass look turns it off for the solid look. (#324)
 - **One shape everywhere.** Every part of the window now has the slanted shape. (#321)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
