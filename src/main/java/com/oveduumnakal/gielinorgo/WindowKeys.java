@@ -19,7 +19,8 @@ import net.runelite.client.input.KeyListener;
  * The keyboard side of the painted window, a {@link KeyListener} like {@link BattleHotkeys}. Keys belong to the window
  * only while it has focus: then it consumes pressed, typed and released for the keys it uses, so arrows do not turn
  * the camera and Enter does not open chat. A text box that has focus takes every key it uses regardless of the window
- * keyboard setting. It ignores key repeat for Enter, Space and Esc (holding Up or Down still repeats), lets anything
+ * keyboard setting; it leaves the press of a character key alone, so the typed character that follows reaches it. It
+ * ignores key repeat for Enter, Space and Esc (holding Up or Down still repeats), lets anything
  * with Ctrl or Alt through, lets RuneLite's drag key through, and does nothing while the player types in chat. The
  * rebindable "open window" key works while the window is closed or unfocused. It runs on the UI thread and decides
  * from the published {@link WindowView}; the work goes to a {@link Sink} that carries it to the game thread. Holds no
@@ -117,7 +118,12 @@ final class WindowKeys implements KeyListener
 			return;
 		}
 
-		if (!WindowKeyRules.uses(mode(), code, event.getModifiersEx()))
+		WindowKeyRules.KeyMode mode = mode();
+		if (mode == WindowKeyRules.KeyMode.FIELD
+			&& WindowKeyRules.typesCharacter(code, event.getModifiersEx(), event.isActionKey()))
+			return;
+
+		if (!WindowKeyRules.uses(mode, code, event.getModifiersEx()))
 			return;
 
 		take(event);

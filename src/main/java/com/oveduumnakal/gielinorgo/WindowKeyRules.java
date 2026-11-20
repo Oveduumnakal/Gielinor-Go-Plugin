@@ -66,6 +66,43 @@ final class WindowKeyRules
 	}
 
 	/**
+	 * Tells whether a key in a text box is a character key, which the box takes from the typed character that follows
+	 * and not from the key press. Consuming the press of such a key would stop the typed character from ever
+	 * arriving, since the toolkit drops the typed event of a consumed press, so the box could not be typed into.
+	 * Enter, Esc, Backspace, Delete, Tab, the arrows and the other action keys, modifier keys and Ctrl chords are not
+	 * character keys: the box acts on their press.
+	 *
+	 * @param keyCode the key, as {@link KeyEvent#getKeyCode}
+	 * @param modifiers the modifiers, as {@link InputEvent#getModifiersEx}
+	 * @param actionKey whether the key is an action key, as {@link KeyEvent#isActionKey}
+	 * @return true when the press must be left alone so the typed character follows
+	 */
+	static boolean typesCharacter(int keyCode, int modifiers, boolean actionKey)
+	{
+		if (actionKey || chorded(modifiers))
+			return false;
+
+		switch (keyCode)
+		{
+			case KeyEvent.VK_ENTER:
+			case KeyEvent.VK_ESCAPE:
+			case KeyEvent.VK_BACK_SPACE:
+			case KeyEvent.VK_DELETE:
+			case KeyEvent.VK_TAB:
+			case KeyEvent.VK_SHIFT:
+			case KeyEvent.VK_CONTROL:
+			case KeyEvent.VK_ALT:
+			case KeyEvent.VK_META:
+			case KeyEvent.VK_ALT_GRAPH:
+			case KeyEvent.VK_CAPS_LOCK:
+			case KeyEvent.VK_UNDEFINED:
+				return false;
+			default:
+				return true;
+		}
+	}
+
+	/**
 	 * Tells whether the window takes a typed character. Enter, Space, Esc and Backspace type characters of their own,
 	 * and the game would act on them (Enter opens chat), so the window takes those along with the key.
 	 *
