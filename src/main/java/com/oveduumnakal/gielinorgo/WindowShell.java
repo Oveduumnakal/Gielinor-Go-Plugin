@@ -1003,10 +1003,9 @@ final class WindowShell
 		Rectangle active = layout.tabs[tab.ordinal()];
 		double barX = animations.value(TAB_BAR, nowMs, active.x);
 		int barH = Math.max(2, style.px(3));
-		g.setColor(style.color(ThemeColor.ACCENT));
 		int barW = active.width - (int) Math.min(style.metrics().tabSlant, active.width / 2.0);
-		g.fill(style.slant(new Rectangle2D.Double(Math.round(barX), active.y + active.height + barH / 2, barW, barH),
-			style.metrics().tabSlant * (double) barH / active.height));
+		style.fillAccent(g, style.slant(new Rectangle2D.Double(Math.round(barX), active.y + active.height + barH / 2,
+			barW, barH), style.metrics().tabSlant * (double) barH / active.height));
 		Rectangle2D close = rect(layout.close);
 		style.closeButton(g, close, hoverOf(ID_CLOSE), pressOf(ID_CLOSE));
 		ringIf(g, ID_CLOSE, style.outline(WindowStyle.Kind.BUTTON, close));

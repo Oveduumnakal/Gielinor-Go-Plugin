@@ -5,6 +5,8 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.awt.Color;
+import java.util.EnumSet;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -18,6 +20,11 @@ import static org.junit.Assert.assertTrue;
 /** Checks both window styles: every colour is filled, text is readable, and the layout is the same in both. */
 public class WindowThemeTest
 {
+	/** The colours that follow the metal: the solid look's orange, bronze with the bronze border, silver with steel. */
+	private static final Set<ThemeColor> ACCENTS = EnumSet.of(ThemeColor.ACCENT, ThemeColor.XP_FILL,
+		ThemeColor.CHIP_ACCENT, ThemeColor.CHIP_ACCENT_TEXT, ThemeColor.LEAD_ROW, ThemeColor.LEAD_BORDER,
+		ThemeColor.LEAD_TEXT, ThemeColor.SELECTION);
+
 	private static final double READABLE = 4.5;
 
 	private static final ThemeColor[][] TEXT_ON =
@@ -80,21 +87,53 @@ public class WindowThemeTest
 	}
 
 	@Test
-	public void theStylesAreRuneLiteDarkAndRuneLiteGlass()
+	public void theStylesAreRuneLiteDarkAndRuneLiteGlassWithEitherBorder()
 	{
-		assertEquals(2, WindowTheme.values().length);
+		assertEquals(3, WindowTheme.values().length);
 		assertEquals("RuneLite dark", WindowTheme.RUNELITE_DARK.toString());
 		assertEquals("RuneLite glass", WindowTheme.RUNELITE_GLASS.toString());
 		assertTrue(WindowTheme.RUNELITE_GLASS.glass());
+		assertTrue(WindowTheme.RUNELITE_GLASS_STEEL.glass());
 		assertFalse(WindowTheme.RUNELITE_DARK.glass());
+	}
+
+	@Test
+	public void theBorderSettingPicksTheGlassStyleAndBronzeIsTheDefault()
+	{
+		assertEquals(WindowTheme.RUNELITE_GLASS, WindowTheme.of(true, GlassBorder.BRONZE));
+		assertEquals(WindowTheme.RUNELITE_GLASS_STEEL, WindowTheme.of(true, GlassBorder.STEEL_BLUE));
+		assertEquals(WindowTheme.RUNELITE_GLASS, WindowTheme.of(true, null));
+		assertEquals(WindowTheme.RUNELITE_DARK, WindowTheme.of(false, GlassBorder.STEEL_BLUE));
+		assertEquals(GlassBorder.BRONZE, WindowTheme.RUNELITE_GLASS.border());
+		assertEquals(GlassBorder.STEEL_BLUE, WindowTheme.RUNELITE_GLASS_STEEL.border());
+		assertEquals(GlassBorder.BRONZE, new GielinorGoConfig()
+		{
+		}.glassBorder());
 	}
 
 	@Test
 	public void theGlassStyleHasTheSamePaletteAsTheSolidOne()
 	{
 		for (ThemeColor name : ThemeColor.values())
+		{
+			if (ACCENTS.contains(name))
+				continue;
+
 			assertEquals(name.toString(), WindowTheme.RUNELITE_DARK.color(name),
 				WindowTheme.RUNELITE_GLASS.color(name));
+			assertEquals(name.toString(), WindowTheme.RUNELITE_DARK.color(name),
+				WindowTheme.RUNELITE_GLASS_STEEL.color(name));
+		}
+
+		for (ThemeColor name : ACCENTS)
+		{
+			assertTrue(name.toString(), !WindowTheme.RUNELITE_DARK.color(name)
+				.equals(WindowTheme.RUNELITE_GLASS_STEEL.color(name)));
+			assertTrue(name.toString(), !WindowTheme.RUNELITE_GLASS.color(name)
+				.equals(WindowTheme.RUNELITE_GLASS_STEEL.color(name)));
+		}
+
+		assertEquals(0xDC8A00, WindowTheme.RUNELITE_DARK.color(ThemeColor.ACCENT).getRGB() & 0xFFFFFF);
 	}
 
 	@Test

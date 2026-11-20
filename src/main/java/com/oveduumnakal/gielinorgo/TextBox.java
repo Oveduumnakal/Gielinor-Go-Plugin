@@ -534,6 +534,7 @@ final class TextBox
 		if (style.theme().glass())
 		{
 			style.groove(g, fieldShape);
+			GlassStyle.borderInset(g, fieldShape, style, 1.0);
 		}
 		else
 		{
