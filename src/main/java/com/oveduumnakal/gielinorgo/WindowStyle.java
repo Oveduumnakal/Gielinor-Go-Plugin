@@ -524,7 +524,9 @@ final class WindowStyle
 	{
 		if (theme.glass())
 		{
-			paintPopup(g, outline(Kind.BODY, box), surface, washFor(g, surface, box), needs);
+			Shape body = outline(Kind.BODY, box);
+			paintPopup(g, body, surface, washFor(g, surface, box), needs);
+			GlassStyle.border(g, body, this, 1.0);
 			return;
 		}
 
@@ -951,6 +953,7 @@ final class WindowStyle
 		if (theme.glass())
 		{
 			GlassStyle.button(g, shape, this, primary, disabled, hover, press);
+			GlassStyle.border(g, shape, this, disabled ? GlassTokens.BORDER_DISABLED : 1.0);
 		}
 		else
 		{

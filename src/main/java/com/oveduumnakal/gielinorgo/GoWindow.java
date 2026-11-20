@@ -80,7 +80,7 @@ final class GoWindow extends Overlay
 			@Override
 			public WindowTheme theme()
 			{
-				return WindowTheme.of(config.glassLook());
+				return WindowTheme.of(config.glassLook(), config.glassBorder());
 			}
 
 			@Override

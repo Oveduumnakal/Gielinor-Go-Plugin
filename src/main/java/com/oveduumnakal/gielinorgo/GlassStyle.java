@@ -360,6 +360,34 @@ final class GlassStyle
 	}
 
 	/**
+	 * Strokes the thin metal border of the style's theme round a shape: a 1 pixel line that fades from the light metal
+	 * at the top edge to the dark at the bottom.
+	 *
+	 * @param g the graphics; its paint and stroke are put back
+	 * @param shape the outline of the button or pop-up
+	 * @param style the style, for the scale and the border colours
+	 * @param strength how much of the border shows, from 0 to 1
+	 */
+	static void border(Graphics2D g, Shape shape, WindowStyle style, double strength)
+	{
+		Rectangle2D b = shape.getBounds2D();
+		if (b.getHeight() <= 0 || strength <= 0)
+			return;
+
+		GlassBorder metal = style.theme().border();
+		Color[] colors = {GlassTokens.of(metal.high(), strength), GlassTokens.of(metal.middle(), strength),
+			GlassTokens.of(metal.low(), strength)};
+		float[] stops = {0f, (float) GlassTokens.BORDER_MIDDLE, 1f};
+		Paint savedPaint = g.getPaint();
+		Stroke savedStroke = g.getStroke();
+		g.setPaint(new LinearGradientPaint(0f, (float) b.getY(), 0f, (float) b.getMaxY(), stops, colors));
+		g.setStroke(new BasicStroke((float) Math.max(1.0, GlassTokens.BORDER_WIDTH * style.scale())));
+		g.draw(shape);
+		g.setStroke(savedStroke);
+		g.setPaint(savedPaint);
+	}
+
+	/**
 	 * Paints a chip: raised, in the accent colour when it stands out.
 	 *
 	 * @param g the graphics

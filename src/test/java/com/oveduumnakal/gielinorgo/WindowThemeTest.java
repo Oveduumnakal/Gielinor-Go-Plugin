@@ -80,21 +80,40 @@ public class WindowThemeTest
 	}
 
 	@Test
-	public void theStylesAreRuneLiteDarkAndRuneLiteGlass()
+	public void theStylesAreRuneLiteDarkAndRuneLiteGlassWithEitherBorder()
 	{
-		assertEquals(2, WindowTheme.values().length);
+		assertEquals(3, WindowTheme.values().length);
 		assertEquals("RuneLite dark", WindowTheme.RUNELITE_DARK.toString());
 		assertEquals("RuneLite glass", WindowTheme.RUNELITE_GLASS.toString());
 		assertTrue(WindowTheme.RUNELITE_GLASS.glass());
+		assertTrue(WindowTheme.RUNELITE_GLASS_STEEL.glass());
 		assertFalse(WindowTheme.RUNELITE_DARK.glass());
+	}
+
+	@Test
+	public void theBorderSettingPicksTheGlassStyleAndBronzeIsTheDefault()
+	{
+		assertEquals(WindowTheme.RUNELITE_GLASS, WindowTheme.of(true, GlassBorder.BRONZE));
+		assertEquals(WindowTheme.RUNELITE_GLASS_STEEL, WindowTheme.of(true, GlassBorder.STEEL_BLUE));
+		assertEquals(WindowTheme.RUNELITE_GLASS, WindowTheme.of(true, null));
+		assertEquals(WindowTheme.RUNELITE_DARK, WindowTheme.of(false, GlassBorder.STEEL_BLUE));
+		assertEquals(GlassBorder.BRONZE, WindowTheme.RUNELITE_GLASS.border());
+		assertEquals(GlassBorder.STEEL_BLUE, WindowTheme.RUNELITE_GLASS_STEEL.border());
+		assertEquals(GlassBorder.BRONZE, new GielinorGoConfig()
+		{
+		}.glassBorder());
 	}
 
 	@Test
 	public void theGlassStyleHasTheSamePaletteAsTheSolidOne()
 	{
 		for (ThemeColor name : ThemeColor.values())
+		{
 			assertEquals(name.toString(), WindowTheme.RUNELITE_DARK.color(name),
 				WindowTheme.RUNELITE_GLASS.color(name));
+			assertEquals(name.toString(), WindowTheme.RUNELITE_DARK.color(name),
+				WindowTheme.RUNELITE_GLASS_STEEL.color(name));
+		}
 	}
 
 	@Test

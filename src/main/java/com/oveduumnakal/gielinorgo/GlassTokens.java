@@ -29,6 +29,15 @@ final class GlassTokens
 	 */
 	static final double POPUP_TINT = 0.94;
 
+	/** The width of the metal border round buttons and pop-ups, in pixels at scale 1. */
+	static final double BORDER_WIDTH = 1.1;
+
+	/** How much of the border's strength a disabled button keeps. */
+	static final double BORDER_DISABLED = 0.45;
+
+	/** Where the middle colour of the border sits, from the top (0) to the bottom (1). */
+	static final double BORDER_MIDDLE = 0.45;
+
 	/** The opacity of the white sheen at the top edge. */
 	static final double SHEEN_TOP = 0.08;
 

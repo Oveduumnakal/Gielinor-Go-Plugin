@@ -18,34 +18,50 @@ import java.util.Map;
 public enum WindowTheme
 {
 	/** RuneLite's own grey and orange, with an amber lead row, painted as solid fills. */
-	RUNELITE_DARK("RuneLite dark", runeLitePalette(), false),
+	RUNELITE_DARK("RuneLite dark", runeLitePalette(), false, GlassBorder.BRONZE),
 
 	/**
 	 * The same colours as {@link #RUNELITE_DARK}, painted as tinted glass the game shows through
 	 * (#324). Switched on by the Glass look setting.
 	 */
-	RUNELITE_GLASS("RuneLite glass", runeLitePalette(), true);
+	RUNELITE_GLASS("RuneLite glass", runeLitePalette(), true, GlassBorder.BRONZE),
+
+	/** {@link #RUNELITE_GLASS} with the steel blue border, for the Glass border setting. */
+	RUNELITE_GLASS_STEEL("RuneLite glass, steel border", runeLitePalette(), true, GlassBorder.STEEL_BLUE);
 
 	private final String label;
 	private final Map<ThemeColor, Color> colors;
 	private final boolean glass;
+	private final GlassBorder border;
 
-	WindowTheme(String label, Palette palette, boolean glass)
+	WindowTheme(String label, Palette palette, boolean glass, GlassBorder border)
 	{
 		this.label = label;
 		this.colors = palette.colors;
 		this.glass = glass;
+		this.border = border;
 	}
 
 	/**
-	 * The one place the Glass look setting picks a style, so the window and its overlays always agree.
+	 * The one place the Glass look and Glass border settings pick a style, so the window and its overlays always
+	 * agree.
 	 *
 	 * @param glass the Glass look setting
-	 * @return {@link #RUNELITE_GLASS} when on, {@link #RUNELITE_DARK} when off
+	 * @param border the Glass border setting
+	 * @return the glass style with that border when on, {@link #RUNELITE_DARK} when off
 	 */
-	static WindowTheme of(boolean glass)
+	static WindowTheme of(boolean glass, GlassBorder border)
 	{
-		return glass ? RUNELITE_GLASS : RUNELITE_DARK;
+		if (!glass)
+			return RUNELITE_DARK;
+
+		return border == GlassBorder.STEEL_BLUE ? RUNELITE_GLASS_STEEL : RUNELITE_GLASS;
+	}
+
+	/** @return the metal border glass buttons and pop-ups wear; unused by the solid look */
+	GlassBorder border()
+	{
+		return border;
 	}
 
 	/** @return true when the window is painted as tinted glass, false for the solid fills */

@@ -614,6 +614,23 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * The metal of the thin border the Glass look draws round buttons and pop-ups.
+	 *
+	 * @return the border, bronze by default
+	 */
+	@ConfigItem(
+		keyName = "glassBorder",
+		name = "Glass border",
+		description = "The thin metal edge round buttons, tooltips and menus in the Glass look.\nBronze: warm brass."
+			+ "\nSteel blue: the blue of the Info card's edge.",
+		position = 37
+	)
+	default GlassBorder glassBorder()
+	{
+		return GlassBorder.BRONZE;
+	}
+
+	/**
 	 * Whether skilling counts toward hatching eggs.
 	 *
 	 * @return true when an XP drop in a skill that is not a combat skill counts as one step for the eggs
