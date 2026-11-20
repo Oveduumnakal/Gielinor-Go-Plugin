@@ -44,6 +44,9 @@ final class GlassTokens
 	/** The radius of a soft tip, as a share of the element's height. */
 	static final double TIP_ROUND = 0.15;
 
+	/** The largest tip radius, in pixels at scale 1, so a big body does not get big round corners. */
+	static final double TIP_MAX = 10;
+
 	/** The lowest contrast allowed between body text and what is behind it. */
 	static final double TEXT_CONTRAST = 4.5;
 

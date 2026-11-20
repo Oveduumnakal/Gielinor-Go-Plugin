@@ -7,7 +7,7 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.RoundRectangle2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  * A scrolling list of equal-height rows. It paints only the rows that are in view, so a list of 1,254 species costs
@@ -314,12 +314,13 @@ final class ScrollList
 			return;
 
 		Rectangle track = trackBounds();
-		int corner = barWidth / 2;
 		g.setColor(style.color(ThemeColor.SCROLL_TRACK));
-		g.fill(new RoundRectangle2D.Double(track.x, track.y, track.width, track.height, corner * 2, corner * 2));
+		g.fill(style.outline(WindowStyle.Kind.FIELD, new Rectangle2D.Double(track.x, track.y, track.width,
+			track.height)));
 		Rectangle thumb = thumbBounds();
 		g.setColor(style.color(ThemeColor.SCROLL_THUMB));
-		g.fill(new RoundRectangle2D.Double(thumb.x, thumb.y, thumb.width, thumb.height, corner * 2, corner * 2));
+		g.fill(style.outline(WindowStyle.Kind.FIELD, new Rectangle2D.Double(thumb.x, thumb.y, thumb.width,
+			thumb.height)));
 	}
 
 	/** @return the bar's groove, or an empty box when nothing scrolls */

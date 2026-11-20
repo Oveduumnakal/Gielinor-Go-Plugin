@@ -208,9 +208,10 @@ public class WildBubblesRenderSmokeTest
 				BufferedImage image = render(name, frame, style);
 
 				assertTrue(name, size.width >= style.px(BubblePainter.CARD_UNITS));
-				assertTrue(name, alphaAt(image, bounds.x + 4, bounds.y + 4) > 0);
+				assertTrue(name, alphaAt(image, bounds.x + bounds.width / 2, bounds.y + 4) > 0);
 				assertEquals(name, 0, alphaAt(image, 2, 2));
-				assertEquals(name, 0, WidgetKit.painted(image, 0, 0, bounds.x - 4, H));
+				int room = theme.glass() ? GlassPanel.pad(style) : style.metrics().slant;
+				assertEquals(name, 0, WidgetKit.painted(image, 0, 0, Math.max(0, bounds.x - room), H));
 			}
 		}
 	}

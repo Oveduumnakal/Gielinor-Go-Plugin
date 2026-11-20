@@ -126,7 +126,7 @@ final class PartyPainter
 			Rectangle row = layout.rows[Math.max(0, Math.min(PartyLayout.SLOTS - 1, whole))];
 			int near = Math.max(0, Math.min(PartyLayout.SLOTS - 1, (int) Math.round(at)));
 			double x = row.x + motion.nudge(near, ctx.now) * st.metrics().nudge;
-			st.focusRing(g, Slant.shape(new Rectangle2D.Double(x, y, row.width, row.height), st.metrics().slant),
+			st.focusRing(g, st.outline(WindowStyle.Kind.ROW, new Rectangle2D.Double(x, y, row.width, row.height)),
 				ThemeColor.PARTY_HIGHLIGHT);
 		}
 
@@ -158,7 +158,7 @@ final class PartyPainter
 	{
 		WindowStyle st = ctx.style;
 		Composite saved = PageContext.fade(g, 0.55);
-		Shape shape = Slant.shape(new Rectangle2D.Double(row.x, row.y, row.width, row.height), st.metrics().slant);
+		Shape shape = st.outline(WindowStyle.Kind.ROW, new Rectangle2D.Double(row.x, row.y, row.width, row.height));
 		g.setColor(st.color(ThemeColor.PANEL_BOX));
 		g.fill(shape);
 		Stroke stroke = g.getStroke();
@@ -189,8 +189,8 @@ final class PartyPainter
 			double glow = ctx.mode.loops() ? 0.35 + 0.65 * pulse : 1.0;
 			g.setColor(WindowTheme.fade(st.color(ThemeColor.LEAD_BORDER), glow));
 			g.setStroke(new BasicStroke(st.metrics().border + 1f));
-			g.draw(Slant.shape(new Rectangle2D.Double(box.getX() + 1, box.getY() + 1, box.getWidth() - 2,
-				box.getHeight() - 2), st.metrics().slant));
+			g.draw(st.outline(WindowStyle.Kind.ROW, new Rectangle2D.Double(box.getX() + 1, box.getY() + 1,
+				box.getWidth() - 2, box.getHeight() - 2)));
 			g.setStroke(stroke);
 		}
 
@@ -293,7 +293,7 @@ final class PartyPainter
 		{
 			double pulse = Loop.pulse(ctx.mode, ctx.now, WindowTimes.LEAD_PULSE, 0);
 			g.setColor(WindowTheme.fade(st.color(ThemeColor.HP_DANGER), 0.2 + 0.5 * pulse));
-			g.fill(Slant.filled(hpBox, st.metrics().barSlant, hp));
+			g.fill(st.filled(hpBox, st.metrics().barSlant, hp));
 		}
 
 		st.xpBar(g, new Rectangle2D.Double(parts.xp.x, parts.xp.y, parts.xp.width, parts.xp.height),
@@ -324,7 +324,7 @@ final class PartyPainter
 			st.button(g, shape, OPEN_STORAGE, true, false, ctx.hoverOf(WindowPages.ID_STORAGE),
 				ctx.pressOf(WindowPages.ID_STORAGE));
 			if (ctx.focused && WindowPages.ID_STORAGE.equals(ctx.highlight))
-				st.focusRing(g, Slant.shape(shape, st.metrics().chipSlant));
+				st.focusRing(g, st.outline(WindowStyle.Kind.BUTTON, shape));
 		}
 	}
 
@@ -469,7 +469,7 @@ final class PartyPainter
 		st.button(g, shape, PIN_PARTY, pinned.getAsBoolean(), false, ctx.hoverOf(WindowPages.ID_PIN_PARTY),
 			ctx.pressOf(WindowPages.ID_PIN_PARTY));
 		if (ctx.focused && WindowPages.ID_PIN_PARTY.equals(ctx.highlight))
-			st.focusRing(g, Slant.shape(shape, st.metrics().chipSlant));
+			st.focusRing(g, st.outline(WindowStyle.Kind.BUTTON, shape));
 	}
 
 	private void button(Graphics2D g, PageContext ctx, Rectangle box, String label, String id)
@@ -478,7 +478,7 @@ final class PartyPainter
 		Rectangle2D shape = new Rectangle2D.Double(box.x, box.y, box.width, box.height);
 		st.button(g, shape, label, false, false, ctx.hoverOf(id), ctx.pressOf(id));
 		if (ctx.focused && id.equals(ctx.highlight))
-			st.focusRing(g, Slant.shape(shape, st.metrics().chipSlant));
+			st.focusRing(g, st.outline(WindowStyle.Kind.BUTTON, shape));
 	}
 
 	private static Rectangle inner(Rectangle box, int pad, int height)

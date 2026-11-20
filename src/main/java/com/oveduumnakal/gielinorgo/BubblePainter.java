@@ -456,8 +456,7 @@ final class BubblePainter
 			Rectangle footprint = GlassPanel.footprint(box, style);
 			Shape onScreen = g.getTransform().createTransformedShape(footprint);
 			Rectangle screen = onScreen.getBounds();
-			GlassPanel.paint(g, new RoundRectangle2D.Double(box.x, box.y, box.width, box.height,
-				style.metrics().corner * 2, style.metrics().corner * 2), style, washes.wash("card", screen),
+			GlassPanel.paint(g, style.outline(WindowStyle.Kind.BODY, rect(box)), style, washes.wash("card", screen),
 				Readability.BODY);
 		}
 		else
@@ -466,7 +465,7 @@ final class BubblePainter
 		}
 
 		if (card.pinned())
-			style.focusRing(g, box);
+			style.focusRing(g, style.outline(WindowStyle.Kind.BODY, rect(box)));
 
 		PageText text = new PageText(style, PageText.Sink.NONE);
 		int pad = style.px(8);
@@ -522,6 +521,11 @@ final class BubblePainter
 		if (content.knockedOutLine() != null)
 			text.draw(g, content.knockedOutLine(), new Rectangle(left, y, inner, line), small, KNOCKED_OUT,
 				PageText.Align.LEFT);
+	}
+
+	private static Rectangle2D rect(Rectangle box)
+	{
+		return new Rectangle2D.Double(box.x, box.y, box.width, box.height);
 	}
 
 	private static WildRecord.Kind recordKind(String label)

@@ -609,7 +609,7 @@ final class CollectionPage
 	{
 		search.paint(g, ctx.style, searchBox, ctx.mode, ctx.now);
 		if (!search.focused() && ctx.focused && ID_SEARCH.equals(ctx.highlight))
-			ctx.style.focusRing(g, rect(searchBox));
+			ctx.style.focusRing(g, ctx.style.outline(WindowStyle.Kind.FIELD, rect(searchBox)));
 	}
 
 	private void row(Graphics2D g, PageContext ctx, PageText text, int index, Rectangle box, Font small)

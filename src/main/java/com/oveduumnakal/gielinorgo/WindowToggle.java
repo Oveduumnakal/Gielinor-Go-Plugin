@@ -12,10 +12,11 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
-import java.awt.geom.RoundRectangle2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
@@ -171,7 +172,8 @@ final class WindowToggle extends Overlay
 		if (off)
 			g.setComposite(AlphaComposite.SrcOver.derive(LOCKED_ALPHA));
 
-		RoundRectangle2D box = new RoundRectangle2D.Double(0.5, 0.5, SIZE - 1, SIZE - 1, 10, 10);
+		Shape box = WindowStyle.of(look, 1.0).outline(WindowStyle.Kind.BUTTON,
+			new Rectangle2D.Double(1, 1, SIZE - 2, SIZE - 2));
 		g.setColor(look.color(ThemeColor.HEADER));
 		g.fill(box);
 		g.setColor(look.color(off ? ThemeColor.PANEL_BORDER : ThemeColor.FRAME));

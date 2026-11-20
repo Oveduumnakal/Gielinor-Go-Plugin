@@ -64,12 +64,14 @@ public class WindowStyleTest
 	}
 
 	@Test
-	public void thePanelShapeRoundsTheCornersSoACardStripeCanFollowThem()
+	public void thePanelShapeSlantsTheCornersSoACardStripeCanFollowThem()
 	{
-		Shape shape = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0).panelShape(BOX);
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_DARK, 1.0);
+		Shape shape = style.panelShape(BOX);
 
 		assertFalse("the very corner is cut away", shape.contains(BOX.getX() + 0.5, BOX.getY() + 0.5));
-		assertTrue("the middle of the left edge is kept", shape.contains(BOX.getX() + 1, BOX.getCenterY()));
+		assertTrue("the middle of the left edge is kept", shape.contains(BOX.getX() + 5, BOX.getCenterY()));
+		assertTrue("the long end of the left edge is kept", shape.contains(BOX.getX() + 1, BOX.getMaxY() - 1));
 	}
 
 	@Test

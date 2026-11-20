@@ -17,7 +17,6 @@ import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
 import java.util.Objects;
 
 /**
@@ -157,6 +156,129 @@ final class WindowStyle
 		return ThemeColor.HP_FILL;
 	}
 
+	/** The kinds of element in the window. Each kind has one slant, so every element of a kind has the same shape. */
+	enum Kind
+	{
+		/** A window, box, card, modal, menu, tooltip or notice: the large slanted shapes. */
+		BODY,
+		/** A boxed section inside a window. */
+		PANEL,
+		/** A party row, a portrait frame or a pin button. */
+		ROW,
+		/** A tab. */
+		TAB,
+		/** A button. */
+		BUTTON,
+		/** A small label such as a style or a trait. */
+		CHIP,
+		/** A health, experience or time bar. */
+		BAR,
+		/** A search box or the thumb of a scroll bar. */
+		FIELD
+	}
+
+	/**
+	 * Gives how far the sides of an element lean.
+	 *
+	 * @param kind the kind of element
+	 * @return the lean in pixels
+	 */
+	int skew(Kind kind)
+	{
+		switch (kind)
+		{
+			case BODY:
+				return metrics.slant;
+			case PANEL:
+				return metrics.slant / 2;
+			case ROW:
+				return metrics.slant;
+			case TAB:
+				return metrics.tabSlant;
+			case BUTTON:
+			case CHIP:
+				return metrics.chipSlant;
+			default:
+				return metrics.barSlant;
+		}
+	}
+
+	/**
+	 * Gives the box a body is drawn over: a body is drawn wider than its content box by its lean (half on each side),
+	 * so the content stays inside the slanted sides. Other kinds are drawn over their box.
+	 *
+	 * @param kind the kind of element
+	 * @param box the element's content box
+	 * @return the box to draw the outline over
+	 */
+	Rectangle2D drawn(Kind kind, Rectangle2D box)
+	{
+		if (kind != Kind.BODY)
+			return box;
+
+		double half = skew(kind) / 2.0;
+		return new Rectangle2D.Double(box.getX() - half, box.getY(), box.getWidth() + 2 * half, box.getHeight());
+	}
+
+	/**
+	 * Gives the outline of an element. Every fill, border, shadow, clip and highlight of the element uses this one
+	 * outline, so nothing is painted as a plain rectangle. The solid look has sharp slants; the glass look rounds the
+	 * tips by {@link GlassTokens#TIP_ROUND} of the element's height (at most {@link GlassTokens#TIP_MAX} pixels).
+	 *
+	 * @param kind the kind of element
+	 * @param box the element's box
+	 * @return the outline
+	 */
+	Shape outline(Kind kind, Rectangle2D box)
+	{
+		return slant(drawn(kind, box), skew(kind));
+	}
+
+	/**
+	 * Gives the slanted outline of a box at a lean of the caller's choice: sharp in the solid look, with soft tips in
+	 * the glass look.
+	 *
+	 * @param box the box the outline fits in
+	 * @param skew how far the sides lean, in pixels
+	 * @return the outline
+	 */
+	Shape slant(Rectangle2D box, double skew)
+	{
+		if (!theme.glass())
+			return Slant.shape(box, skew);
+
+		double radius = Math.min(box.getHeight() * GlassTokens.TIP_ROUND, GlassTokens.TIP_MAX * scale);
+		return Shapes.roundedSlant(box, skew, radius);
+	}
+
+	/**
+	 * Gives the filled part of a slanted bar, still slanted the same way: sharp in the solid look, with soft tips in
+	 * the glass look.
+	 *
+	 * @param box the box of the whole bar
+	 * @param skew how far the sides lean, in pixels
+	 * @param fraction the filled share, from 0 to 1
+	 * @return the outline of the filled part
+	 */
+	Shape filled(Rectangle2D box, double skew, double fraction)
+	{
+		if (!theme.glass())
+			return Slant.filled(box, skew, fraction);
+
+		double radius = Math.min(box.getHeight() * GlassTokens.TIP_ROUND, GlassTokens.TIP_MAX * scale);
+		return Shapes.roundedFilled(box, skew, fraction, radius);
+	}
+
+	/**
+	 * Gives how far a body's paint reaches beyond its content box on every side: its lean, and its shadows.
+	 *
+	 * @return the room in pixels
+	 */
+	int bodyPad()
+	{
+		return theme.glass() ? GlassPanel.pad(this) : metrics.slant / 2 + metrics.shadow + 1;
+	}
+
 	/**
 	 * Paints the window: a soft shadow, the body and the frame.
 	 *
@@ -165,14 +287,14 @@ final class WindowStyle
 	 */
 	void window(Graphics2D g, Rectangle box)
 	{
-		RoundRectangle2D body = round(box, metrics.corner);
+		Shape body = outline(Kind.BODY, box);
 		g.setColor(color(ThemeColor.SHADOW));
-		g.fill(round(new Rectangle2D.Double(box.x, box.y + metrics.shadow, box.width, box.height), metrics.corner));
+		g.fill(outline(Kind.BODY, new Rectangle2D.Double(box.x, box.y + metrics.shadow, box.width, box.height)));
 		g.setColor(color(ThemeColor.WINDOW));
 		g.fill(body);
 		g.setColor(color(ThemeColor.FRAME));
 		g.setStroke(new BasicStroke(metrics.border));
-		g.draw(inset(box, metrics.border / 2.0));
+		g.draw(outline(Kind.BODY, inset(box, metrics.border / 2.0)));
 	}
 
 	/**
@@ -195,7 +317,7 @@ final class WindowStyle
 	 */
 	Shape panelShape(Rectangle2D box)
 	{
-		return round(box, metrics.corner);
+		return outline(Kind.PANEL, box);
 	}
 
 	/**
@@ -206,12 +328,26 @@ final class WindowStyle
 	 */
 	void panel(Graphics2D g, Rectangle2D box)
 	{
-		RoundRectangle2D shape = round(box, metrics.corner);
-		g.setColor(color(ThemeColor.PANEL_BOX));
-		g.fill(shape);
-		g.setColor(color(ThemeColor.PANEL_BORDER));
+		box(g, box, Kind.PANEL, ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER);
+	}
+
+	/**
+	 * Paints a slanted box: a fill and a border on the outline of its kind. The panel, the menu and the modal's dialog
+	 * are painted by this.
+	 *
+	 * @param g the graphics
+	 * @param box the box
+	 * @param kind the kind of element, which sets the lean
+	 * @param fill the colour name of the fill
+	 * @param border the colour name of the border
+	 */
+	void box(Graphics2D g, Rectangle2D box, Kind kind, ThemeColor fill, ThemeColor border)
+	{
+		g.setColor(color(fill));
+		g.fill(outline(kind, box));
+		g.setColor(color(border));
 		g.setStroke(new BasicStroke(metrics.border));
-		g.draw(round(inset(box, metrics.border / 2.0), metrics.corner));
+		g.draw(outline(kind, inset(box, metrics.border / 2.0)));
 	}
 
 	/**
@@ -227,13 +363,13 @@ final class WindowStyle
 	 */
 	Shape row(Graphics2D g, Rectangle2D box, boolean lead, double hover, double press)
 	{
-		Shape shape = Slant.shape(box, metrics.slant);
+		Shape shape = outline(Kind.ROW, box);
 		g.setColor(color(lead ? ThemeColor.LEAD_ROW : ThemeColor.ROW));
 		g.fill(shape);
 		shade(g, shape, hover, press);
 		g.setColor(color(lead ? ThemeColor.LEAD_BORDER : ThemeColor.ROW_BORDER));
 		g.setStroke(new BasicStroke(metrics.border));
-		g.draw(Slant.shape(inset(box, metrics.border / 2.0), metrics.slant));
+		g.draw(outline(Kind.ROW, inset(box, metrics.border / 2.0)));
 		return shape;
 	}
 
@@ -325,11 +461,11 @@ final class WindowStyle
 	void bar(Graphics2D g, Rectangle2D box, double fraction, ThemeColor fill, ThemeColor track)
 	{
 		g.setColor(color(track));
-		g.fill(Slant.shape(box, metrics.barSlant));
+		g.fill(outline(Kind.BAR, box));
 		if (fraction > 0)
 		{
 			g.setColor(color(fill));
-			g.fill(Slant.filled(box, metrics.barSlant, fraction));
+			g.fill(filled(box, metrics.barSlant, fraction));
 		}
 	}
 
@@ -369,7 +505,7 @@ final class WindowStyle
 	 */
 	void tab(Graphics2D g, Rectangle2D box, String label, boolean active, boolean disabled, double hover)
 	{
-		Shape shape = Slant.shape(box, metrics.tabSlant);
+		Shape shape = outline(Kind.TAB, box);
 		ThemeColor body = disabled ? ThemeColor.TAB_DISABLED : active ? ThemeColor.TAB_ACTIVE : ThemeColor.TAB;
 		ThemeColor text = disabled ? ThemeColor.TAB_DISABLED_TEXT
 			: active ? ThemeColor.TAB_ACTIVE_TEXT : ThemeColor.TAB_TEXT;
@@ -405,7 +541,7 @@ final class WindowStyle
 		g.translate(box.getCenterX(), box.getCenterY());
 		g.scale(shrink, shrink);
 		g.translate(-box.getCenterX(), -box.getCenterY());
-		Shape shape = Slant.shape(box, metrics.chipSlant);
+		Shape shape = outline(Kind.BUTTON, box);
 		ThemeColor body = disabled ? ThemeColor.TAB_DISABLED : primary ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP;
 		ThemeColor text = disabled ? ThemeColor.TAB_DISABLED_TEXT
 			: primary ? ThemeColor.CHIP_ACCENT_TEXT : ThemeColor.CHIP_TEXT;
@@ -450,7 +586,7 @@ final class WindowStyle
 		int w = chipWidth(g, label);
 		Rectangle2D box = new Rectangle2D.Double(x, y, w, metrics.chipHeight);
 		g.setColor(color(accent ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP));
-		g.fill(Slant.shape(box, metrics.chipSlant));
+		g.fill(outline(Kind.CHIP, box));
 		Font font = font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
 		text(g, label, x + metrics.chipPad, baseline(box, g.getFontMetrics(font)), font,
 			accent ? ThemeColor.CHIP_ACCENT_TEXT : ThemeColor.CHIP_TEXT);
@@ -483,11 +619,7 @@ final class WindowStyle
 		g.scale(grow, grow);
 		g.setComposite(AlphaComposite.SrcOver.derive((float) Math.max(0.0, Math.min(1.0, opacity))));
 		Rectangle2D box = new Rectangle2D.Double(-w / 2.0, -h / 2.0, w, h);
-		g.setColor(color(ThemeColor.NOTICE));
-		g.fill(round(box, metrics.corner));
-		g.setColor(color(ThemeColor.FRAME));
-		g.setStroke(new BasicStroke(metrics.border));
-		g.draw(round(inset(box, metrics.border / 2.0), metrics.corner));
+		this.box(g, box, Kind.BODY, ThemeColor.NOTICE, ThemeColor.FRAME);
 		text(g, message, (int) Math.round(-fm.stringWidth(message) / 2.0), baseline(box, fm), font,
 			ThemeColor.NOTICE_TEXT);
 		g.setTransform(saved);
@@ -553,12 +685,6 @@ final class WindowStyle
 	private static int baseline(Rectangle2D box, FontMetrics fm)
 	{
 		return (int) Math.round(box.getCenterY() + (fm.getAscent() - fm.getDescent()) / 2.0);
-	}
-
-	private static RoundRectangle2D round(Rectangle2D box, double corner)
-	{
-		return new RoundRectangle2D.Double(box.getX(), box.getY(), box.getWidth(), box.getHeight(), corner * 2,
-			corner * 2);
 	}
 
 	private static Rectangle2D inset(Rectangle2D box, double by)

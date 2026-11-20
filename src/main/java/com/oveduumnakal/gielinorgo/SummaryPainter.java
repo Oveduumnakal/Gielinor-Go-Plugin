@@ -13,9 +13,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 
 /**
@@ -115,8 +113,8 @@ final class SummaryPainter
 		header(g, ctx, layout, content);
 		chips(g, ctx, layout, content);
 		if (ctx.focused && WindowPages.ID_SUMMARY_MENU.equals(ctx.highlight))
-			st.focusRing(g, Slant.shape(new Rectangle2D.Double(layout.left.x, layout.left.y, layout.left.width,
-				layout.left.height), st.metrics().slant / 2.0));
+			st.focusRing(g, st.outline(WindowStyle.Kind.PANEL, new Rectangle2D.Double(layout.left.x, layout.left.y,
+				layout.left.width, layout.left.height)));
 	}
 
 	private static Rectangle shrunk(Rectangle target)
@@ -135,12 +133,12 @@ final class SummaryPainter
 		WindowStyle st = ctx.style;
 		PageText text = new PageText(st, sink);
 		int d = box.height;
-		RoundRectangle2D pill = new RoundRectangle2D.Double(box.x + d / 2.0, box.y, Math.max(0, box.width - d / 2.0),
-			box.height, box.height, box.height);
+		Shape pill = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(box.x + d / 2.0, box.y,
+			Math.max(0, box.width - d / 2.0), box.height));
 		g.setColor(st.color(ThemeColor.PANEL_BOX));
 		g.fill(pill);
 		outline(g, st, pill);
-		Ellipse2D badge = new Ellipse2D.Double(box.x, box.y, d, d);
+		Shape badge = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(box.x, box.y, d, d));
 		g.setColor(st.color(ThemeColor.CHIP_ACCENT));
 		g.fill(badge);
 		outline(g, st, badge);
@@ -289,8 +287,7 @@ final class SummaryPainter
 			return;
 
 		WindowStyle st = ctx.style;
-		RoundRectangle2D pill = new RoundRectangle2D.Double(box.x, box.y, box.width, box.height, box.height,
-			box.height);
+		Shape pill = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(box.x, box.y, box.width, box.height));
 		g.setColor(st.color(ThemeColor.PANEL_BOX));
 		g.fill(pill);
 		outline(g, st, pill);
@@ -351,7 +348,8 @@ final class SummaryPainter
 
 		PageText text = new PageText(st, sink);
 		if (ctx.focused && WindowPages.ID_MOVES.equals(ctx.highlight))
-			st.focusRing(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height));
+			st.focusRing(g, st.outline(WindowStyle.Kind.PANEL, new Rectangle2D.Double(box.x, box.y, box.width,
+				box.height)));
 
 		Font regular = st.font(WindowFonts.Face.REGULAR, WindowFonts.BODY_UNITS);
 		Font small = st.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
@@ -375,8 +373,8 @@ final class SummaryPainter
 			g.translate(pill.getCenterX(), pill.getCenterY());
 			g.scale(pop, pop);
 			g.translate(-pill.getCenterX(), -pill.getCenterY());
-			RoundRectangle2D shape = new RoundRectangle2D.Double(pill.x, pill.y, pill.width, pill.height, pill.height,
-				pill.height);
+			Shape shape = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(pill.x, pill.y, pill.width,
+				pill.height));
 			g.setColor(st.color(ThemeColor.CHIP));
 			g.fill(shape);
 			outline(g, st, shape);
@@ -422,7 +420,7 @@ final class SummaryPainter
 			Rectangle2D shape = new Rectangle2D.Double(b.x, b.y, b.width, b.height);
 			st.button(g, shape, labels[i], i == 0, !enabled[i], ctx.hoverOf(id), ctx.pressOf(id));
 			if (ctx.focused && id.equals(ctx.highlight))
-				st.focusRing(g, Slant.shape(shape, st.metrics().chipSlant));
+				st.focusRing(g, st.outline(WindowStyle.Kind.BUTTON, shape));
 		}
 	}
 }

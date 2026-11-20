@@ -960,12 +960,18 @@ final class WindowShell
 	{
 		WindowLayout lay = layout;
 		WindowStyle st = style;
-		layers.draw(g, 0, 0, "frame", lay.window.width, lay.window.height, lay.scale, st.theme(), 0, layer ->
-		{
-			WindowStyle.prepare(layer);
-			st.window(layer, lay.window);
-			st.header(layer, rect(lay.header));
-		});
+		int pad = st.bodyPad();
+		layers.draw(g, -pad, -pad, "frame", lay.window.width + 2 * pad, lay.window.height + 2 * pad, lay.scale,
+			st.theme(), 0, layer ->
+			{
+				WindowStyle.prepare(layer);
+				layer.translate(pad, pad);
+				st.window(layer, lay.window);
+				Shape saved = layer.getClip();
+				layer.clip(st.outline(WindowStyle.Kind.BODY, rect(lay.window)));
+				st.header(layer, rect(lay.header));
+				layer.setClip(saved);
+			});
 		paintTabs(g, shown, mode, nowMs);
 		paintPage(g, shown, mode, nowMs);
 		style.grip(g, rect(layout.grip), resizing != WindowLayout.ResizeZone.NONE ? 1.0 : 0.0);
@@ -983,7 +989,7 @@ final class WindowShell
 			Rectangle2D box = rect(layout.tabs[i]);
 			box.setRect(box.getX() + shake, box.getY(), box.getWidth(), box.getHeight());
 			style.tab(g, box, t.label(), t == tab, disabled, hoverOf(t.hitId()));
-			ringIf(g, t.hitId(), Slant.shape(box, style.metrics().tabSlant));
+			ringIf(g, t.hitId(), style.outline(WindowStyle.Kind.TAB, box));
 		}
 
 		Rectangle active = layout.tabs[tab.ordinal()];
@@ -991,10 +997,11 @@ final class WindowShell
 		int barH = Math.max(2, style.px(3));
 		g.setColor(style.color(ThemeColor.ACCENT));
 		int barW = active.width - (int) Math.min(style.metrics().tabSlant, active.width / 2.0);
-		g.fillRect((int) Math.round(barX), active.y + active.height + barH / 2, barW, barH);
+		g.fill(style.slant(new Rectangle2D.Double(Math.round(barX), active.y + active.height + barH / 2, barW, barH),
+			style.metrics().tabSlant * (double) barH / active.height));
 		Rectangle2D close = rect(layout.close);
 		style.button(g, close, "Close", false, false, hoverOf(ID_CLOSE), pressOf(ID_CLOSE));
-		ringIf(g, ID_CLOSE, Slant.shape(close, style.metrics().chipSlant));
+		ringIf(g, ID_CLOSE, style.outline(WindowStyle.Kind.BUTTON, close));
 	}
 
 	private void paintPage(Graphics2D g, WindowSnapshot shown, MotionMode mode, long nowMs)

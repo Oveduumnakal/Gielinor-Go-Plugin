@@ -9,6 +9,7 @@ import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Rectangle2D;
 
@@ -87,7 +88,12 @@ final class StorageBoxPainter
 		RowModel model = RowModel.of(view, -1);
 		double wash = look.source ? SOURCE_OPACITY : 1.0;
 		Composite saved = PageContext.fade(g, model.dim() * wash);
-		PortraitFrame.paint(g, st, pictures, model, rect(box), 0, 0, ctx.now, ctx.mode);
+		Rectangle2D cellBox = rect(box);
+		Shape cell = st.outline(WindowStyle.Kind.PANEL, cellBox);
+		PortraitFrame.paint(g, st, pictures, model, cellBox, st.skew(WindowStyle.Kind.PANEL), 0, ctx.now,
+			ctx.mode);
+		Shape savedClip = g.getClip();
+		g.clip(cell);
 		int strip = Math.max(2, st.px(STRIP_UNITS));
 		g.setColor(st.color(ThemeColor.HP_TRACK));
 		g.fillRect(box.x, box.y + box.height - strip, box.width, strip);
@@ -106,6 +112,7 @@ final class StorageBoxPainter
 
 		int icon = Math.max(6, st.px(ICON_UNITS));
 		int inset = Math.max(1, st.metrics().pad / 4);
+		g.setClip(savedClip);
 		Icons.style(g, model.style(), box.x + box.width - icon - inset, box.y + inset, icon);
 		if (look.selecting)
 		{
@@ -114,10 +121,9 @@ final class StorageBoxPainter
 		}
 
 		g.setComposite(saved);
-		Rectangle2D shape = rect(box);
-		st.shade(g, shape, look.hover, look.press);
+		st.shade(g, cell, look.hover, look.press);
 		if (look.hover > 0 || look.target)
-			st.focusRing(g, shape);
+			st.focusRing(g, cell);
 	}
 
 	/**
@@ -131,7 +137,7 @@ final class StorageBoxPainter
 	static void empty(Graphics2D g, WindowStyle st, Rectangle box, boolean target)
 	{
 		Composite saved = PageContext.fade(g, 0.55);
-		Rectangle2D shape = rect(box);
+		Shape shape = st.outline(WindowStyle.Kind.PANEL, rect(box));
 		g.setColor(st.color(ThemeColor.PANEL_BOX));
 		g.fill(shape);
 		Stroke stroke = g.getStroke();
@@ -212,10 +218,7 @@ final class StorageBoxPainter
 
 		y += m.pad / 2;
 		int barH = Math.max(3, m.bar / 2);
-		g.setColor(st.color(ThemeColor.HP_TRACK));
-		g.fillRect(inner.x, y, inner.width, barH);
-		g.setColor(st.color(WindowStyle.hpColor(model.hp())));
-		g.fillRect(inner.x, y, (int) Math.round(inner.width * model.hp()), barH);
+		st.hpBar(g, new Rectangle2D.Double(inner.x, y, inner.width, barH), model.hp());
 		y += barH + m.pad;
 		int room = inner.y + inner.height - y;
 		text.drawWrapped(g, "Click to move to your team.\n" + how + "\nRight-click for more.",
