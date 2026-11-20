@@ -90,6 +90,20 @@ public class GlassCardRenderTest
 
 	private static BubbleFrame frame(BubblePainter painter, WindowStyle style)
 	{
+		return frame(painter, style, 30, 30);
+	}
+
+	/**
+	 * Builds a frame holding the sample Info card.
+	 *
+	 * @param painter the painter that measures the card
+	 * @param style the style
+	 * @param x the card's left edge
+	 * @param y the card's top edge
+	 * @return the frame
+	 */
+	static BubbleFrame frame(BubblePainter painter, WindowStyle style, int x, int y)
+	{
 		Species species = new Species("Imp", 5, CombatType.MAGIC, Trait.UNHOLY, Trait.SLAYER, Trait.MAGIC)
 			.withFactors(1.25, 0.75, 1.0, 1.12);
 		WildEntry entry = new WildEntry(3, species, 14, species.level(), false, false);
@@ -100,7 +114,7 @@ public class GlassCardRenderTest
 		Graphics2D pg = WidgetKit.graphics(probe);
 		Dimension size = painter.cardSize(pg, content, style);
 		pg.dispose();
-		Rectangle bounds = new Rectangle(30, 30, size.width, size.height);
+		Rectangle bounds = new Rectangle(x, y, size.width, size.height);
 		BubbleFrame.Card card = new BubbleFrame.Card(bounds, content, true, 1.0, 1.0, BubbleFrame.Side.RIGHT, true);
 		return new BubbleFrame(Collections.emptyList(), card, 1, true);
 	}
