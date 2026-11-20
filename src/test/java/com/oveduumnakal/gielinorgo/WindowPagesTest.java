@@ -281,6 +281,24 @@ public class WindowPagesTest
 	}
 
 	@Test
+	public void theSummaryStaysOpenWhenItsCreatureGainsExperienceOrIsRenamed()
+	{
+		open(3, true);
+		List<CreatureView> team = PartyRig.team(3);
+		rig.publish(PartyRig.state(team), true);
+		rig.paint();
+		rig.click("row:1");
+		CreatureView held = team.get(1);
+
+		CreatureView trained = PartyRig.creature(held.name(), held.level() + 1, 0.9, 0.5, "Gobbo");
+		rig.publish(PartyRig.state(Arrays.asList(team.get(0), trained, team.get(2))), true);
+		rig.paint();
+
+		assertEquals(PageState.Page.SUMMARY, rig.pages.pageState().page());
+		assertEquals(1, rig.pages.pageState().index());
+	}
+
+	@Test
 	public void theSummaryFollowsACreatureThatBecameTheLead()
 	{
 		open(3, true);

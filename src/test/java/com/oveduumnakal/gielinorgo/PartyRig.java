@@ -197,7 +197,22 @@ final class PartyRig
 	 */
 	static CreatureView creature(String name, int level, double hp, String nickname)
 	{
-		return new CreatureView(name, level, 0.4, hp, Rarity.RARE, CombatType.SLASH, false, nickname,
+		return creature(name, level, 0.4, hp, nickname);
+	}
+
+	/**
+	 * Builds a creature with a given experience bar.
+	 *
+	 * @param name the species name
+	 * @param level the level
+	 * @param xp the share of the way to the next level
+	 * @param hp the health fraction
+	 * @param nickname the nickname, or null
+	 * @return the creature
+	 */
+	static CreatureView creature(String name, int level, double xp, double hp, String nickname)
+	{
+		return new CreatureView(name, level, xp, hp, Rarity.RARE, CombatType.SLASH, false, nickname,
 			new StatRolls(3, -2, 0, 5, Temperament.BRAVE), 0, Arrays.asList(SLASH, BASH), Collections.emptyList(), 3)
 			.withGender(Gender.FEMALE)
 			.withDetails("A small green creature with a bad temper.", "Grows into Hobgoblin (20)");

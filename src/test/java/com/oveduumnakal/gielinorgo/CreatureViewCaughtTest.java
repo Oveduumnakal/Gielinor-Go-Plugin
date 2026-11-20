@@ -66,6 +66,18 @@ public class CreatureViewCaughtTest
 	}
 
 	@Test
+	public void trainingAndRenamingDoNotMakeAnotherCreature()
+	{
+		CreatureView before = base().withCaught(5L);
+		CreatureView after = new CreatureView("Goblin", 13, 0.9, 0.3, Rarity.COMMON, CombatType.CRUSH, false, "Gobbo")
+			.withCaught(5L);
+
+		assertFalse(before.equals(after));
+		assertTrue(before.sameCreature(after));
+		assertTrue(after.sameCreature(before));
+	}
+
+	@Test
 	public void theGameFillsItInFromTheSavedCreature()
 	{
 		GoGame game = new GoGame(new SpeciesTable(Arrays.asList(new Species("Cub", 5, CombatType.STAB))),
