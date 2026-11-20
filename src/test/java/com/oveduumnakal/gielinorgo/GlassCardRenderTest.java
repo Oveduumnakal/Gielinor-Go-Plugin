@@ -39,7 +39,9 @@ public class GlassCardRenderTest
 		/** A dark, night-time scene. */
 		DARK,
 		/** Random coloured squares, like a busy game scene. */
-		BUSY
+		BUSY,
+		/** Grass above water, each with a little noise, like a lake shore. */
+		SHORE
 	}
 
 	private static void fill(BufferedImage image, Scene scene)
@@ -47,7 +49,22 @@ public class GlassCardRenderTest
 		Graphics2D g = image.createGraphics();
 		try
 		{
-			if (scene == Scene.BUSY)
+			if (scene == Scene.SHORE)
+			{
+				Random random = new Random(7);
+				for (int y = 0; y < image.getHeight(); y += 4)
+				{
+					for (int x = 0; x < image.getWidth(); x += 4)
+					{
+						int shade = random.nextInt(40);
+						Color base = y < image.getHeight() / 2 ? new Color(70 + shade, 120 + shade, 40)
+							: new Color(30, 70 + shade, 140 + shade);
+						g.setColor(base);
+						g.fillRect(x, y, 4, 4);
+					}
+				}
+			}
+			else if (scene == Scene.BUSY)
 			{
 				Random random = new Random(6);
 				for (int y = 0; y < image.getHeight(); y += 6)
@@ -146,16 +163,53 @@ public class GlassCardRenderTest
 		BufferedImage scene = WidgetKit.canvas(W, H);
 		fill(scene, Scene.BUSY);
 		int[] pixels = scene.getRGB(0, 0, W, H, null, 0, W);
-		BubblePainter plain = new BubblePainter();
+		BubblePainter plain = new BubblePainter(() -> null, box -> scene.getSubimage(box.x, box.y, box.width,
+			box.height));
 		BubblePainter blurred = new BubblePainter(() -> null, box -> BackdropBlur.blur(pixels, W, H, box));
 		BubbleFrame frame = frame(plain, style);
 		Rectangle box = frame.card().bounds();
 		int x = box.x + style.px(4);
 
-		BufferedImage sharp = render(plain, frame, style, Scene.BUSY);
+		BufferedImage sharp = render(plain, frame, style, Scene.BUSY, "-unblurred");
 		BufferedImage soft = render(blurred, frame, style, Scene.BUSY, "-blurred");
 
 		assertTrue(spread(soft, x, box) < spread(sharp, x, box));
+	}
+
+	@Test
+	public void theRingWashTintsTheCardWithTheSceneAroundIt()
+	{
+		WindowStyle style = WindowStyle.of(WindowTheme.values()[0], 1.0);
+		BubblePainter plain = new BubblePainter();
+		BubbleFrame frame = frame(plain, style);
+		Rectangle box = frame.card().bounds();
+		int x = (int) box.getCenterX();
+		int y = box.y + box.height - style.px(4);
+		for (Scene scene : Scene.values())
+		{
+			BufferedImage around = WidgetKit.canvas(W, H);
+			fill(around, scene);
+			BubblePainter ringed = new BubblePainter(() -> null, foot -> RingWash.wash(around, foot));
+			BufferedImage image = render(ringed, frame, style, scene, "-ring");
+			assertNotEquals(scene.name(), 0, image.getRGB(x, y) & 0xFFFFFF);
+		}
+
+		BufferedImage warm = WidgetKit.canvas(W, H);
+		Graphics2D g = warm.createGraphics();
+		g.setColor(new Color(0xC04020));
+		g.fillRect(0, 0, W, H);
+		g.dispose();
+		BufferedImage cool = WidgetKit.canvas(W, H);
+		g = cool.createGraphics();
+		g.setColor(new Color(0x2040C0));
+		g.fillRect(0, 0, W, H);
+		g.dispose();
+		int overWarm = render(new BubblePainter(() -> null, foot -> RingWash.wash(warm, foot)), frame, style,
+			Scene.DARK).getRGB(x, y);
+		int overCool = render(new BubblePainter(() -> null, foot -> RingWash.wash(cool, foot)), frame, style,
+			Scene.DARK).getRGB(x, y);
+		assertTrue((overWarm >> 16 & 0xFF) > (overCool >> 16 & 0xFF));
+		assertTrue((overCool & 0xFF) > (overWarm & 0xFF));
 	}
 
 	private static int spread(BufferedImage image, int x, Rectangle box)

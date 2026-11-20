@@ -8,6 +8,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -79,5 +81,74 @@ public class GlassPanelTest
 		glass.paint(g, new Rectangle(40, 30, 210, 120), bigger, null);
 		assertEquals(3, glass.paints());
 		g.dispose();
+	}
+
+	@Test
+	public void aTamedBackdropAlwaysLeavesTheTextReadable()
+	{
+		int[] backdrops = {0xFFFFFF, 0xF4F1E8, 0xFFFF00, 0x00FFFF, 0x80C0FF, 0x808080, 0x101418, 0x000000};
+		StringBuilder report = new StringBuilder();
+		for (WindowTheme theme : WindowTheme.values())
+		{
+			WindowStyle style = WindowStyle.of(theme, 1.0);
+			for (int backdrop : backdrops)
+			{
+				Color raw = new Color(backdrop);
+				Color tamed = GlassPanel.tame(raw, style);
+				Color under = GlassPanel.behindText(GlassPanel.seen(raw, tamed), style);
+				double text = WindowTheme.contrast(style.color(ThemeColor.TEXT), under);
+				double subtext = WindowTheme.contrast(style.color(ThemeColor.SUBTEXT), under);
+				String name = String.format("%s backdrop %06X tamed to %06X: text %.2f, subtext %.2f", theme.name(),
+					backdrop, tamed.getRGB() & 0xFFFFFF, text, subtext);
+				report.append(name).append('\n');
+				assertTrue(name, text >= GlassPanel.TEXT_CONTRAST);
+				assertTrue(name, subtext >= GlassPanel.SUBTEXT_CONTRAST);
+			}
+		}
+
+		System.out.print(report);
+	}
+
+	@Test
+	public void aDarkBackdropIsLeftAsItIs()
+	{
+		WindowStyle style = WindowStyle.of(WindowTheme.values()[0], 1.0);
+		Color night = new Color(0x101418);
+		assertEquals(night, GlassPanel.tame(night, style));
+	}
+
+	@Test
+	public void theFillOverABackdropIsThinner()
+	{
+		WindowStyle style = WindowStyle.of(WindowTheme.values()[0], 1.0);
+		assertTrue(GlassPanel.fill(style, GlassPanel.BACKDROP_FILL_ALPHA).getAlpha() < GlassPanel.fill(style)
+			.getAlpha());
+	}
+
+	@Test
+	public void theGrainSpecksVaryInLightAndOpacity()
+	{
+		BufferedImage grain = GlassPanel.grain();
+		int peak = (int) Math.round(GlassPanel.GRAIN_PEAK_ALPHA * 255);
+		int light = 0;
+		int dark = 0;
+		Set<Integer> opacities = new HashSet<>();
+		for (int y = 0; y < grain.getHeight(); y++)
+		{
+			for (int x = 0; x < grain.getWidth(); x++)
+			{
+				int argb = grain.getRGB(x, y);
+				int a = argb >>> 24;
+				assertTrue(a <= peak);
+				opacities.add(a);
+				if ((argb & 0xFF) == 0xFF)
+					light++;
+				else
+					dark++;
+			}
+		}
+
+		assertTrue(light > 0 && dark > 0);
+		assertTrue(opacities.size() > 10);
 	}
 }

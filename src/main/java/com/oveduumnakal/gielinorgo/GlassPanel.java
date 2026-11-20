@@ -34,14 +34,45 @@ final class GlassPanel
 	/** The opacity of the theme's window colour laid over the scene; high enough that text reads over white. */
 	static final double FILL_ALPHA = 0.78;
 
+	/**
+	 * The opacity of the window colour over a backdrop. Lower than {@link #FILL_ALPHA}, so the backdrop's colours show;
+	 * {@link #tame} darkens any backdrop colour that would leave the text hard to read.
+	 */
+	static final double BACKDROP_FILL_ALPHA = 0.29;
+
+	/**
+	 * The opacity the backdrop is drawn at, so the real scene still shows faintly through it. The readability guard
+	 * takes the scene there to be about the backdrop's own colour, which holds for the ring wash (it is made from the
+	 * scene round the card) but not for small bright spots in a busy scene.
+	 */
+	static final double WASH_ALPHA = 0.68;
+
+	/** The lowest contrast allowed between the main text and what is behind it. */
+	static final double TEXT_CONTRAST = 4.5;
+
+	/** The lowest contrast allowed between the faint text and what is behind it. */
+	static final double SUBTEXT_CONTRAST = 3.0;
+
 	/** The opacity of the white sheen at the top edge. */
 	static final double SHEEN_TOP = 0.08;
 
 	/** The opacity of the white sheen at the bottom edge. */
 	static final double SHEEN_BOTTOM = 0.04;
 
-	/** The opacity of the grain tile laid over the fill. */
-	static final double GRAIN_ALPHA = 0.035;
+	/**
+	 * The opacity of the strongest grain speck. Each speck is light or dark and has its own opacity, from clear up to
+	 * this, so the grain reads as soft frost instead of even static.
+	 */
+	static final double GRAIN_PEAK_ALPHA = 0.14;
+
+	/**
+	 * The least share of its opacity a speck keeps after its random jitter, from 0 to 1. Lower makes the grain
+	 * patchier.
+	 */
+	static final double GRAIN_FLOOR = 0.6;
+
+	/** How many times the grain's light and dark are averaged with their neighbours, so specks clump softly. */
+	static final int GRAIN_SOFTEN = 2;
 
 	/** The opacity of the light edge round the outside. */
 	static final double EDGE_ALPHA = 0.35;
@@ -54,9 +85,13 @@ final class GlassPanel
 
 	private static final BufferedImage GRAIN = grain();
 
-	private Key key;
-	private BufferedImage still;
+	private final Key[] keys = new Key[2];
+	private final BufferedImage[] stills = new BufferedImage[2];
 	private int paints;
+	private Look look;
+	private BufferedImage rawBackdrop;
+	private WindowTheme tamedTheme;
+	private BufferedImage tamedBackdrop;
 
 	/**
 	 * Gives the fill colour exactly as it is painted: the theme's window colour at {@link #FILL_ALPHA}.
@@ -66,8 +101,108 @@ final class GlassPanel
 	 */
 	static Color fill(WindowStyle style)
 	{
+		return fill(style, FILL_ALPHA);
+	}
+
+	/**
+	 * Gives the fill colour at an opacity.
+	 *
+	 * @param style the style the panel is drawn in
+	 * @param opacity from 0 to 1
+	 * @return the theme's window colour at that opacity
+	 */
+	static Color fill(WindowStyle style, double opacity)
+	{
 		Color window = style.color(ThemeColor.WINDOW);
-		return new Color(window.getRed(), window.getGreen(), window.getBlue(), alpha(FILL_ALPHA));
+		return new Color(window.getRed(), window.getGreen(), window.getBlue(), alpha(opacity));
+	}
+
+	/**
+	 * Darkens a backdrop colour just enough that both kinds of text still read over the fill and the strongest sheen
+	 * laid on it, with the backdrop at {@link #WASH_ALPHA} over a scene of the same colour. Colours that already read
+	 * are kept as they are.
+	 *
+	 * @param color the backdrop colour, taken as opaque
+	 * @param style the style the panel is drawn in
+	 * @return the colour, scaled toward black as little as needed
+	 */
+	static Color tame(Color color, WindowStyle style)
+	{
+		if (reads(seen(color, color), style))
+			return color;
+
+		double low = 0.0;
+		double high = 1.0;
+		for (int i = 0; i < 12; i++)
+		{
+			double mid = (low + high) / 2;
+			if (reads(seen(color, scaled(color, mid)), style))
+				low = mid;
+			else
+				high = mid;
+		}
+
+		return scaled(color, low);
+	}
+
+	/**
+	 * Gives what shows through the panel's fill: the backdrop at {@link #WASH_ALPHA} over the scene.
+	 *
+	 * @param scene the scene colour behind the panel
+	 * @param backdrop the backdrop colour drawn over it
+	 * @return the opaque mix
+	 */
+	static Color seen(Color scene, Color backdrop)
+	{
+		return WindowTheme.mix(scene, backdrop, WASH_ALPHA);
+	}
+
+	/**
+	 * Tames every pixel of a backdrop.
+	 *
+	 * @param backdrop the backdrop
+	 * @param style the style the panel is drawn in
+	 * @return a new picture with each pixel passed through {@link #tame(Color, WindowStyle)}
+	 */
+	static BufferedImage tame(BufferedImage backdrop, WindowStyle style)
+	{
+		int w = backdrop.getWidth();
+		int h = backdrop.getHeight();
+		BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+		for (int y = 0; y < h; y++)
+		{
+			for (int x = 0; x < w; x++)
+				out.setRGB(x, y, tame(new Color(backdrop.getRGB(x, y)), style).getRGB());
+		}
+
+		return out;
+	}
+
+	/**
+	 * Gives what the text is drawn on where the panel is lightest: a backdrop colour under the backdrop fill and the
+	 * strongest sheen.
+	 *
+	 * @param color the backdrop colour, taken as opaque
+	 * @param style the style the panel is drawn in
+	 * @return the opaque colour behind the text
+	 */
+	static Color behindText(Color color, WindowStyle style)
+	{
+		Color filled = WindowTheme.over(fill(style, BACKDROP_FILL_ALPHA), color);
+		return WindowTheme.over(sheen(SHEEN_TOP), filled);
+	}
+
+	private static boolean reads(Color color, WindowStyle style)
+	{
+		Color under = behindText(color, style);
+		return WindowTheme.contrast(style.color(ThemeColor.TEXT), under) >= TEXT_CONTRAST
+			&& WindowTheme.contrast(style.color(ThemeColor.SUBTEXT), under) >= SUBTEXT_CONTRAST;
+	}
+
+	private static Color scaled(Color color, double factor)
+	{
+		return new Color((int) Math.round(color.getRed() * factor), (int) Math.round(color.getGreen() * factor),
+			(int) Math.round(color.getBlue() * factor));
 	}
 
 	/**
@@ -88,39 +223,106 @@ final class GlassPanel
 	 * @param g the graphics
 	 * @param box the panel bounds
 	 * @param style the style the panel is drawn in
-	 * @param backdrop the blurred scene behind the panel, stretched to {@code box}, or null to show the scene itself
+	 * @param backdrop the blurred scene behind the panel, stretched to {@code box}, or null to show the scene itself;
+	 *        it is darkened where the text would not read over it, drawn at {@link #WASH_ALPHA} so the scene shows
+	 *        faintly, and the fill over it is thinner
 	 */
 	void paint(Graphics2D g, Rectangle box, WindowStyle style, BufferedImage backdrop)
 	{
 		if (box.width <= 0 || box.height <= 0)
 			return;
 
+		if (look != null)
+		{
+			look.paint(g, box, style, backdrop);
+			return;
+		}
+
 		if (backdrop != null)
 		{
 			Shape clip = g.getClip();
 			Object interpolation = g.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
+			Composite composite = g.getComposite();
 			try
 			{
 				g.clip(body(box, style));
+				float alpha = composite instanceof AlphaComposite ? ((AlphaComposite) composite).getAlpha() : 1f;
+				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha * (float) WASH_ALPHA));
 				g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-				g.drawImage(backdrop, box.x, box.y, box.width, box.height, null);
+				g.drawImage(tamed(backdrop, style), box.x, box.y, box.width, box.height, null);
 			}
 			finally
 			{
+				g.setComposite(composite);
 				g.setClip(clip);
 				if (interpolation != null)
 					g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, interpolation);
 			}
 		}
 
-		g.drawImage(still(box.width, box.height, style), box.x, box.y, null);
+		g.drawImage(still(box.width, box.height, style, backdrop != null), box.x, box.y, null);
 	}
 
-	/** Forgets the cached still layer, so the next {@link #paint} paints it again. For the cost test. */
+	private BufferedImage tamed(BufferedImage backdrop, WindowStyle style)
+	{
+		if (backdrop != rawBackdrop || style.theme() != tamedTheme)
+		{
+			rawBackdrop = backdrop;
+			tamedTheme = style.theme();
+			tamedBackdrop = tame(backdrop, style);
+		}
+
+		return tamedBackdrop;
+	}
+
+	/**
+	 * Swaps in another background, so other glass styles can be compared on the same card. Spike only (#294): the
+	 * plugin never sets one.
+	 *
+	 * @param look the background to paint instead, or null for the frosted glass
+	 */
+	void look(Look look)
+	{
+		this.look = look;
+	}
+
+	/**
+	 * Paints a chip in the swapped-in style, if there is one.
+	 *
+	 * @param g the graphics
+	 * @param x the left edge
+	 * @param y the top edge
+	 * @param label the chip's text
+	 * @param accent whether it stands out
+	 * @param style the style the panel is drawn in
+	 * @return false when there is no other style, so the caller paints its own chip
+	 */
+	boolean chip(Graphics2D g, int x, int y, String label, boolean accent, WindowStyle style)
+	{
+		return look != null && look.chip(g, x, y, label, accent, style);
+	}
+
+	/**
+	 * Paints a bar in the swapped-in style, if there is one.
+	 *
+	 * @param g the graphics
+	 * @param box the bar's box
+	 * @param fraction the filled share, from 0 to 1
+	 * @param style the style the panel is drawn in
+	 * @return false when there is no other style, so the caller paints its own bar
+	 */
+	boolean bar(Graphics2D g, Rectangle2D box, double fraction, WindowStyle style)
+	{
+		return look != null && look.bar(g, box, fraction, style);
+	}
+
+	/** Forgets the cached still layers, so the next {@link #paint} paints it again. For the cost test. */
 	void clear()
 	{
-		key = null;
-		still = null;
+		keys[0] = null;
+		keys[1] = null;
+		stills[0] = null;
+		stills[1] = null;
 	}
 
 	/** @return how many times the still layer has been painted; for tests */
@@ -129,11 +331,12 @@ final class GlassPanel
 		return paints;
 	}
 
-	private BufferedImage still(int width, int height, WindowStyle style)
+	private BufferedImage still(int width, int height, WindowStyle style, boolean overBackdrop)
 	{
+		int slot = overBackdrop ? 1 : 0;
 		Key wanted = new Key(width, height, Math.round(style.scale() * 1000), style.theme());
-		if (still != null && wanted.equals(key))
-			return still;
+		if (stills[slot] != null && wanted.equals(keys[slot]))
+			return stills[slot];
 
 		int shadow = Math.max(0, style.metrics().shadow);
 		BufferedImage image = new BufferedImage(width, height + shadow, BufferedImage.TYPE_INT_ARGB);
@@ -141,7 +344,7 @@ final class GlassPanel
 		try
 		{
 			WindowStyle.prepare(g);
-			paintStill(g, new Rectangle(0, 0, width, height), style);
+			paintStill(g, new Rectangle(0, 0, width, height), style, overBackdrop ? BACKDROP_FILL_ALPHA : FILL_ALPHA);
 		}
 		finally
 		{
@@ -149,12 +352,12 @@ final class GlassPanel
 		}
 
 		paints++;
-		key = wanted;
-		still = image;
+		keys[slot] = wanted;
+		stills[slot] = image;
 		return image;
 	}
 
-	private static void paintStill(Graphics2D g, Rectangle box, WindowStyle style)
+	private static void paintStill(Graphics2D g, Rectangle box, WindowStyle style, double fillAlpha)
 	{
 		WindowStyle.Metrics m = style.metrics();
 		RoundRectangle2D body = body(box, style);
@@ -164,16 +367,13 @@ final class GlassPanel
 		g.setColor(style.color(ThemeColor.SHADOW));
 		g.fill(shadow);
 
-		g.setColor(fill(style));
+		g.setColor(fill(style, fillAlpha));
 		g.fill(body);
 		g.setPaint(new GradientPaint(0, box.y, sheen(SHEEN_TOP), 0, box.y + box.height, sheen(SHEEN_BOTTOM)));
 		g.fill(body);
 
-		Composite composite = g.getComposite();
-		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) GRAIN_ALPHA));
 		g.setPaint(new TexturePaint(GRAIN, new Rectangle(0, 0, GRAIN_SIZE, GRAIN_SIZE)));
 		g.fill(body);
-		g.setComposite(composite);
 
 		float edge = Math.max(1f, style.px(1));
 		g.setStroke(new BasicStroke(edge));
@@ -201,20 +401,114 @@ final class GlassPanel
 		return (int) Math.round(Math.max(0.0, Math.min(1.0, opacity)) * 255);
 	}
 
-	private static BufferedImage grain()
+	/**
+	 * Makes the grain tile: soft light and dark specks, each with its own opacity. The tile wraps at its edges, so it
+	 * repeats without seams.
+	 *
+	 * @return the tile, white and black pixels at varied opacity
+	 */
+	static BufferedImage grain()
 	{
 		Random random = new Random(294);
+		int count = GRAIN_SIZE * GRAIN_SIZE;
+		double[] tone = new double[count];
+		double[] jitter = new double[count];
+		for (int i = 0; i < count; i++)
+			tone[i] = random.nextGaussian();
+
+		for (int i = 0; i < count; i++)
+			jitter[i] = random.nextDouble();
+
+		for (int p = 0; p < GRAIN_SOFTEN; p++)
+			tone = soften(tone);
+
+		double peak = 0;
+		for (double t : tone)
+			peak = Math.max(peak, Math.abs(t));
+
 		BufferedImage tile = new BufferedImage(GRAIN_SIZE, GRAIN_SIZE, BufferedImage.TYPE_INT_ARGB);
 		for (int y = 0; y < GRAIN_SIZE; y++)
 		{
 			for (int x = 0; x < GRAIN_SIZE; x++)
 			{
-				int v = random.nextInt(256);
-				tile.setRGB(x, y, 0xFF000000 | v << 16 | v << 8 | v);
+				int i = y * GRAIN_SIZE + x;
+				double t = peak == 0 ? 0 : tone[i] / peak;
+				double opacity = GRAIN_PEAK_ALPHA * Math.abs(t) * (GRAIN_FLOOR + (1 - GRAIN_FLOOR) * jitter[i]);
+				int v = t >= 0 ? 255 : 0;
+				tile.setRGB(x, y, alpha(opacity) << 24 | v << 16 | v << 8 | v);
 			}
 		}
 
 		return tile;
+	}
+
+	private static double[] soften(double[] tone)
+	{
+		double[] out = new double[tone.length];
+		for (int y = 0; y < GRAIN_SIZE; y++)
+		{
+			for (int x = 0; x < GRAIN_SIZE; x++)
+			{
+				double sum = 0;
+				for (int dy = -1; dy <= 1; dy++)
+				{
+					for (int dx = -1; dx <= 1; dx++)
+					{
+						int yy = Math.floorMod(y + dy, GRAIN_SIZE);
+						int xx = Math.floorMod(x + dx, GRAIN_SIZE);
+						sum += tone[yy * GRAIN_SIZE + xx];
+					}
+				}
+
+				out[y * GRAIN_SIZE + x] = sum / 9;
+			}
+		}
+
+		return out;
+	}
+
+	/** A whole panel background painted instead of the frosted glass, for comparing styles (#294 spike). */
+	interface Look
+	{
+		/**
+		 * Paints the background.
+		 *
+		 * @param g the graphics
+		 * @param box the panel bounds
+		 * @param style the style the panel is drawn in
+		 * @param backdrop the scene backdrop as given, not yet darkened, or null
+		 */
+		void paint(Graphics2D g, Rectangle box, WindowStyle style, BufferedImage backdrop);
+
+		/**
+		 * Paints a chip in this style.
+		 *
+		 * @param g the graphics
+		 * @param x the left edge
+		 * @param y the top edge
+		 * @param label the chip's text
+		 * @param accent whether it stands out
+		 * @param style the style the panel is drawn in
+		 * @return false to let the caller paint its own chip
+		 */
+		default boolean chip(Graphics2D g, int x, int y, String label, boolean accent, WindowStyle style)
+		{
+			return false;
+		}
+
+		/**
+		 * Paints a bar in this style.
+		 *
+		 * @param g the graphics
+		 * @param box the bar's box
+		 * @param fraction the filled share, from 0 to 1
+		 * @param style the style the panel is drawn in
+		 * @return false to let the caller paint its own bar
+		 */
+		default boolean bar(Graphics2D g, Rectangle2D box, double fraction, WindowStyle style)
+		{
+			return false;
+		}
 	}
 
 	/** What the cached still layer was painted for. */
