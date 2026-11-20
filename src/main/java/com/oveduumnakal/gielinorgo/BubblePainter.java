@@ -30,7 +30,7 @@ import java.util.function.Supplier;
  * Paints a {@link BubbleFrame}: the round action bubbles above a wild creature and the abbreviated card beside them.
  * It draws exactly what the frame says, in its position, size and opacity; the only state it keeps between frames is
  * the card's glass background ({@link GlassPanel}, cached). The bubbles are world objects and have their own fixed
- * colours ({@link JarPalette}); the card follows the window theme of the {@link WindowStyle} it is given, on frosted
+ * colours ({@link JarPalette}); the card follows the window theme of the {@link WindowStyle} it is given, on tinted
  * glass. Everything is drawn with vector shapes, bundled pictures and the kit's
  * fonts, and the graphics are left exactly as they were found. Holds no RuneLite types.
  */

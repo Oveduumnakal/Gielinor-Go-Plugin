@@ -12,19 +12,17 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.TexturePaint;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 /**
  * Paints the large raised glass body of a window, a box, the Info card, a modal, a menu or a tooltip (#324): the soft
  * dark and light shadows outside, the scene wash drawn each frame inside the outline, then a see-through tint, a
- * sheen fading down, a faint grain and a bevel. The shape is the caller's outline, so the same code paints a slanted
+ * sheen fading down and a bevel. The shape is the caller's outline, so the same code paints a slanted
  * window with soft tips or any other body. Everything but the wash is the same from frame to frame, so it is painted
  * once into an image (kept in a small least-recently-used cache keyed by the outline's form, the scale, the theme and
  * whether a wash is under it) and only drawn after that. With no wash yet the tint is thicker, so text still reads.
@@ -34,8 +32,6 @@ final class GlassPanel
 {
 	/** How many still layers the cache keeps. */
 	static final int CAPACITY = 24;
-
-	private static final BufferedImage GRAIN = grain();
 
 	private static final Map<Key, BufferedImage> STILLS = new LinkedHashMap<Key, BufferedImage>(CAPACITY + 1, 0.75f,
 		true)
@@ -167,7 +163,7 @@ final class GlassPanel
 	}
 
 	/**
-	 * Paints only the still layer of a body: shadows, tint, sheen, grain and bevel.
+	 * Paints only the still layer of a body: shadows, tint, sheen and bevel.
 	 *
 	 * @param g the graphics
 	 * @param outline the body's outline, on whole pixels
@@ -316,91 +312,8 @@ final class GlassPanel
 		g.setPaint(new GradientPaint(0, (float) b.getY(), GlassTokens.white(GlassTokens.SHEEN_TOP), 0,
 			(float) b.getMaxY(), GlassTokens.white(GlassTokens.SHEEN_BOTTOM)));
 		g.fill(body);
-		int pad = pad(style);
-		g.setPaint(new TexturePaint(GRAIN, new Rectangle2D.Double(b.getX() - pad, b.getY() - pad,
-			GlassTokens.GRAIN_SIZE, GlassTokens.GRAIN_SIZE)));
-		g.fill(body);
 		GlassStyle.bevel(g, body, style, GlassTokens.LARGE_BEVEL, GlassTokens.LARGE_BEVEL_LIGHT,
 			GlassTokens.LARGE_BEVEL_DARK);
-	}
-
-	/**
-	 * Gives the grain tile's shared copy, for painting glass elsewhere with the same frost.
-	 *
-	 * @return the tile
-	 */
-	static BufferedImage grainTile()
-	{
-		return GRAIN;
-	}
-
-	/**
-	 * Makes the grain tile: soft light and dark specks, each with its own opacity. The tile wraps at its edges, so it
-	 * repeats without seams.
-	 *
-	 * @return the tile, white and black pixels at varied opacity
-	 */
-	static BufferedImage grain()
-	{
-		int size = GlassTokens.GRAIN_SIZE;
-		Random random = new Random(294);
-		int count = size * size;
-		double[] tone = new double[count];
-		double[] jitter = new double[count];
-		for (int i = 0; i < count; i++)
-			tone[i] = random.nextGaussian();
-
-		for (int i = 0; i < count; i++)
-			jitter[i] = random.nextDouble();
-
-		for (int p = 0; p < GlassTokens.GRAIN_SOFTEN; p++)
-			tone = soften(tone);
-
-		double peak = 0;
-		for (double t : tone)
-			peak = Math.max(peak, Math.abs(t));
-
-		BufferedImage tile = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
-		for (int y = 0; y < size; y++)
-		{
-			for (int x = 0; x < size; x++)
-			{
-				int i = y * size + x;
-				double t = peak == 0 ? 0 : tone[i] / peak;
-				double opacity = GlassTokens.GRAIN_PEAK_ALPHA * Math.abs(t)
-					* (GlassTokens.GRAIN_FLOOR + (1 - GlassTokens.GRAIN_FLOOR) * jitter[i]);
-				int v = t >= 0 ? 255 : 0;
-				tile.setRGB(x, y, GlassTokens.of(new Color(v, v, v), opacity).getRGB());
-			}
-		}
-
-		return tile;
-	}
-
-	private static double[] soften(double[] tone)
-	{
-		int size = GlassTokens.GRAIN_SIZE;
-		double[] out = new double[tone.length];
-		for (int y = 0; y < size; y++)
-		{
-			for (int x = 0; x < size; x++)
-			{
-				double sum = 0;
-				for (int dy = -1; dy <= 1; dy++)
-				{
-					for (int dx = -1; dx <= 1; dx++)
-					{
-						int yy = Math.floorMod(y + dy, size);
-						int xx = Math.floorMod(x + dx, size);
-						sum += tone[yy * size + xx];
-					}
-				}
-
-				out[y * size + x] = sum / 9;
-			}
-		}
-
-		return out;
 	}
 
 	/** What a cached still layer was painted for. */

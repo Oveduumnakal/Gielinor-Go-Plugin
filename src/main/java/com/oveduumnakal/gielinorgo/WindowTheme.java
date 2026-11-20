@@ -21,8 +21,8 @@ public enum WindowTheme
 	RUNELITE_DARK("RuneLite dark", runeLitePalette(), false),
 
 	/**
-	 * The same colours as {@link #RUNELITE_DARK}, painted as frosted glass that takes its colours from the game scene
-	 * round each surface (#324). Switched on by the Glass look setting.
+	 * The same colours as {@link #RUNELITE_DARK}, painted as tinted glass the game shows through
+	 * (#324). Switched on by the Glass look setting.
 	 */
 	RUNELITE_GLASS("RuneLite glass", runeLitePalette(), true);
 
@@ -48,7 +48,7 @@ public enum WindowTheme
 		return glass ? RUNELITE_GLASS : RUNELITE_DARK;
 	}
 
-	/** @return true when the window is painted as frosted glass, false for the solid fills */
+	/** @return true when the window is painted as tinted glass, false for the solid fills */
 	public boolean glass()
 	{
 		return glass;

@@ -13,7 +13,6 @@ import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.Shape;
 import java.awt.Stroke;
-import java.awt.TexturePaint;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
@@ -523,7 +522,7 @@ final class GlassStyle
 
 	/**
 	 * Paints the glass of a round wild-creature bubble: two soft shadows, the scene wash, the window tint, the
-	 * bubble's own colour, a soft highlight at its top left, the grain, a bevel and a thin rim in its colour. The
+	 * bubble's own colour, a soft highlight at its top left, a bevel and a thin rim in its colour. The
 	 * icon is painted by the caller on top.
 	 *
 	 * @param g the graphics
@@ -550,9 +549,6 @@ final class GlassStyle
 			(float) (cy + r * GlassTokens.BUBBLE_HIGHLIGHT_Y), (float) (r * GlassTokens.BUBBLE_HIGHLIGHT_RADIUS),
 			new float[] {0f, 1f}, new Color[] {GlassTokens.white(GlassTokens.BUBBLE_HIGHLIGHT),
 				GlassTokens.white(0)}));
-		g.fill(body);
-		g.setPaint(new TexturePaint(GlassPanel.grainTile(), new Rectangle2D.Double(cx - r, cy - r,
-			GlassTokens.GRAIN_SIZE, GlassTokens.GRAIN_SIZE)));
 		g.fill(body);
 		g.setClip(clip);
 		bevel(g, body, style, GlassTokens.BUBBLE_BEVEL, GlassTokens.BUBBLE_BEVEL_LIGHT, GlassTokens.BUBBLE_BEVEL_DARK);

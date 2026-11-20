@@ -68,8 +68,7 @@ final class LookSheet
 		WindowStyle plain = WindowStyle.of(theme, scale);
 		int w = plain.px(SHEET_UNITS);
 		int h = plain.px(SHEET_HEIGHT_UNITS);
-		BufferedImage clean = scene(w, h);
-		WindowStyle st = plain.withWashes((name, box) -> RingWash.wash(clean, box));
+		WindowStyle st = plain.withWashes(WashSource.NONE);
 		BufferedImage image = scene(w, h);
 		Graphics2D g = WidgetKit.graphics(image);
 		int gap = st.px(12);
@@ -156,8 +155,7 @@ final class LookSheet
 		Rectangle box = sample.card().bounds();
 		int w = box.width + st.px(48);
 		int h = box.height + st.px(60);
-		BufferedImage clean = scene(w, h);
-		BubblePainter painter = new BubblePainter(() -> null, (name, foot) -> RingWash.wash(clean, foot));
+		BubblePainter painter = new BubblePainter(() -> null, WashSource.NONE);
 		BubbleFrame frame = GlassCardRenderTest.frame(painter, st, st.px(24), st.px(24));
 		BufferedImage image = scene(w, h);
 		Graphics2D g = WidgetKit.graphics(image);
@@ -176,8 +174,7 @@ final class LookSheet
 	static BufferedImage bubbles(WindowTheme theme, double scale)
 	{
 		WindowStyle st = WindowStyle.of(theme, scale);
-		BufferedImage clean = scene(200, 90);
-		BubblePainter painter = new BubblePainter(() -> null, (name, foot) -> RingWash.wash(clean, foot));
+		BubblePainter painter = new BubblePainter(() -> null, WashSource.NONE);
 		List<BubbleFrame.Disc> discs = Arrays.asList(disc(BubbleKind.JAR, 40, 50, JarType.RUNE, false),
 			disc(BubbleKind.BATTLE, 80, 28, null, false), disc(BubbleKind.INFO, 120, 50, null, false),
 			disc(BubbleKind.JAR, 160, 50, JarType.DRAGON, true));

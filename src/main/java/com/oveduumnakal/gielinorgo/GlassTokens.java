@@ -7,7 +7,7 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.Color;
 
 /**
- * Every number of the glass look in one place (#324): how strong the wash, the tint, the sheen and the grain are, how
+ * Every number of the glass look in one place (#324): how strong the wash, the tint and the sheen are, how
  * big a surface's shadows and bevel are, and how pressed, lifted and accented elements are filled. Lengths are in
  * pixels at scale 1; paint code multiplies them by the style's scale. Opacities run from 0 to 1. Holds no RuneLite
  * types.
@@ -28,18 +28,6 @@ final class GlassTokens
 
 	/** The opacity of the white sheen at the bottom edge. */
 	static final double SHEEN_BOTTOM = 0.04;
-
-	/** The opacity of the strongest grain speck. */
-	static final double GRAIN_PEAK_ALPHA = 0.14;
-
-	/** The least share of its opacity a grain speck keeps after its random jitter. */
-	static final double GRAIN_FLOOR = 0.6;
-
-	/** How many times the grain's light and dark are averaged with their neighbours. */
-	static final int GRAIN_SOFTEN = 2;
-
-	/** The side of the square grain tile, in pixels. */
-	static final int GRAIN_SIZE = 64;
 
 	/** The radius of a soft tip, as a share of the element's height. */
 	static final double TIP_ROUND = 0.15;

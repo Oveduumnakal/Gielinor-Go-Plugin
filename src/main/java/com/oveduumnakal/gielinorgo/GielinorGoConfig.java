@@ -604,8 +604,8 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "glassLook",
 		name = "Glass look",
-		description = "Shows the windows, boxes and bubbles as frosted glass that takes its colours from the game"
-			+ " around them.\nOff: the solid look.",
+		description = "Shows the windows, boxes and bubbles as tinted glass the game shows through."
+			+ "\nOff: the solid look.",
 		position = 35
 	)
 	default boolean glassLook()

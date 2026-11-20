@@ -192,8 +192,10 @@ final class WindowStyle
 	/** The kinds of element in the window. Each kind has one slant, so every element of a kind has the same shape. */
 	enum Kind
 	{
-		/** A window, box, card, modal, menu, tooltip or notice: the large slanted shapes. */
+		/** A card, modal, menu, tooltip or notice: the large slanted shapes. */
 		BODY,
+		/** The main window and the pinned boxes: plain rectangles with soft corners, the only shapes without a lean. */
+		FRAME,
 		/** A boxed section inside a window. */
 		PANEL,
 		/** A party row, a portrait frame or a pin button. */
@@ -220,6 +222,8 @@ final class WindowStyle
 	{
 		switch (kind)
 		{
+			case FRAME:
+				return 0;
 			case BODY:
 				return metrics.slant;
 			case PANEL:
@@ -264,6 +268,9 @@ final class WindowStyle
 	 */
 	Shape outline(Kind kind, Rectangle2D box)
 	{
+		if (kind == Kind.FRAME)
+			return Shapes.roundedSlant(box, 0, GlassTokens.TIP_MAX * scale);
+
 		return slant(drawn(kind, box), skew(kind));
 	}
 
@@ -333,7 +340,19 @@ final class WindowStyle
 	 */
 	void windowOn(Graphics2D g, Rectangle box, String surface)
 	{
-		window(g, box, washFor(g, surface, new Rectangle2D.Double(box.x, box.y, box.width, box.height)));
+		body(g, Kind.BODY, box, washFor(g, surface, new Rectangle2D.Double(box.x, box.y, box.width, box.height)));
+	}
+
+	/**
+	 * Paints a pinned box, the tracker or the party box: the window's body as a plain rectangle with soft corners.
+	 *
+	 * @param g the graphics, painting on the screen's own pixels
+	 * @param box the box's bounds
+	 * @param surface the surface's name, for its wash
+	 */
+	void pinnedOn(Graphics2D g, Rectangle box, String surface)
+	{
+		body(g, Kind.FRAME, box, washFor(g, surface, new Rectangle2D.Double(box.x, box.y, box.width, box.height)));
 	}
 
 	/**
@@ -347,12 +366,12 @@ final class WindowStyle
 	void washUnder(Graphics2D g, Rectangle box, BufferedImage wash)
 	{
 		if (theme.glass())
-			GlassPanel.wash(g, outline(Kind.BODY, box), this, wash, Readability.BODY);
+			GlassPanel.wash(g, outline(Kind.FRAME, box), this, wash, Readability.BODY);
 	}
 
 	/**
 	 * Paints the window without its wash: the solid window as it is, or the glass window's still layer (shadows, tint,
-	 * sheen, grain and bevel), which is the same every frame and so can be cached.
+	 * sheen and bevel), which is the same every frame and so can be cached.
 	 *
 	 * @param g the graphics
 	 * @param box the window bounds
@@ -361,9 +380,9 @@ final class WindowStyle
 	void windowStill(Graphics2D g, Rectangle box, boolean overWash)
 	{
 		if (theme.glass())
-			GlassPanel.still(g, outline(Kind.BODY, box), this, overWash);
+			GlassPanel.still(g, outline(Kind.FRAME, box), this, overWash);
 		else
-			window(g, box);
+			body(g, Kind.FRAME, box, null);
 	}
 
 	/**
@@ -376,20 +395,25 @@ final class WindowStyle
 	 */
 	void window(Graphics2D g, Rectangle box, BufferedImage wash)
 	{
+		body(g, Kind.BODY, box, wash);
+	}
+
+	private void body(Graphics2D g, Kind kind, Rectangle box, BufferedImage wash)
+	{
 		if (theme.glass())
 		{
-			GlassPanel.paint(g, outline(Kind.BODY, box), this, wash, Readability.BODY);
+			GlassPanel.paint(g, outline(kind, box), this, wash, Readability.BODY);
 			return;
 		}
 
-		Shape body = outline(Kind.BODY, box);
+		Shape body = outline(kind, box);
 		g.setColor(color(ThemeColor.SHADOW));
-		g.fill(outline(Kind.BODY, new Rectangle2D.Double(box.x, box.y + metrics.shadow, box.width, box.height)));
+		g.fill(outline(kind, new Rectangle2D.Double(box.x, box.y + metrics.shadow, box.width, box.height)));
 		g.setColor(color(ThemeColor.WINDOW));
 		g.fill(body);
 		g.setColor(color(ThemeColor.FRAME));
 		g.setStroke(new BasicStroke(metrics.border));
-		g.draw(outline(Kind.BODY, inset(box, metrics.border / 2.0)));
+		g.draw(outline(kind, inset(box, metrics.border / 2.0)));
 	}
 
 	/**

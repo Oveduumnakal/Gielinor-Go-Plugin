@@ -20,8 +20,8 @@ import org.junit.Test;
 /**
  * Lets the owner review the glass look without a client (#324): paints every glass surface on a game screenshot and
  * writes pictures. Skipped unless the environment variable {@code GLASS_SCENE} names a screenshot; the pictures go to
- * the folder {@code BUBBLE_PNG_DIR}, as {@code preview-<name>.png}. The wash of each surface is made the way the game
- * makes it, from a band of the screenshot just outside the surface ({@link RingWash}).
+ * the folder {@code BUBBLE_PNG_DIR}, as {@code preview-<name>.png}. Surfaces are tinted and see-through with no scene
+ * wash, as the game paints them.
  */
 public class GlassPreviewTest
 {
@@ -83,13 +83,12 @@ public class GlassPreviewTest
 	public void theInfoCardOnTheScene()
 	{
 		BufferedImage scene = scene();
-		BufferedImage clean = copy(scene);
 		String[] names = {"grass", "stone-wall", "beige-wall"};
 		int[][] spots = {{820, 30}, {1150, 170}, {1480, 420}};
 		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_GLASS, 1.0);
 		for (int i = 0; i < spots.length; i++)
 		{
-			BubblePainter painter = new BubblePainter(() -> null, (name, foot) -> RingWash.wash(clean, foot));
+			BubblePainter painter = new BubblePainter(() -> null, WashSource.NONE);
 			for (boolean pinned : new boolean[] {true, false})
 			{
 				BubbleFrame frame = GlassCardRenderTest.frame(painter, style, spots[i][0], spots[i][1], pinned);
@@ -112,8 +111,7 @@ public class GlassPreviewTest
 	public void theMainWindowOnEveryPage()
 	{
 		BufferedImage scene = scene();
-		BufferedImage clean = copy(scene);
-		WindowStyle.share((name, box) -> RingWash.wash(clean, box));
+		WindowStyle.share(WashSource.NONE);
 		try
 		{
 			for (WindowTab tab : WindowTab.values())
@@ -163,8 +161,7 @@ public class GlassPreviewTest
 	public void theOverlaysAndBubblesOnTheScene()
 	{
 		BufferedImage scene = scene();
-		BufferedImage clean = copy(scene);
-		WashSource source = (name, box) -> RingWash.wash(clean, box);
+		WashSource source = WashSource.NONE;
 		WindowStyle.share(source);
 		try
 		{

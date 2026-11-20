@@ -9,9 +9,9 @@ import org.junit.Test;
 
 /**
  * Holds the glass look to recorded pictures, as {@link SolidLookTest} does for the solid look: every primitive and the
- * Info card painted with {@link WindowTheme#RUNELITE_GLASS} at scales 1.0 and 1.5 over a fixed scene, with each
- * surface's wash made from that scene. Same tolerance. Record with {@code SOLID_LOOK_RECORD=1}; the pictures live in
- * {@code src/test/resources/.../glass-look/}.
+ * Info card painted with {@link WindowTheme#RUNELITE_GLASS} at scales 1.0 and 1.5 over a fixed scene, tinted and
+ * see-through with no scene wash, as the game paints it. Same tolerance. Record with {@code SOLID_LOOK_RECORD=1};
+ * the pictures live in {@code src/test/resources/.../glass-look/}.
  */
 public class GlassLookTest
 {

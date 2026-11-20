@@ -976,7 +976,7 @@ final class WindowShell
 				layer.translate(pad, pad);
 				st.windowStill(layer, lay.window, wash != null);
 				Shape saved = layer.getClip();
-				layer.clip(st.outline(WindowStyle.Kind.BODY, rect(lay.window)));
+				layer.clip(st.outline(WindowStyle.Kind.FRAME, rect(lay.window)));
 				st.header(layer, rect(lay.header));
 				layer.setClip(saved);
 			});

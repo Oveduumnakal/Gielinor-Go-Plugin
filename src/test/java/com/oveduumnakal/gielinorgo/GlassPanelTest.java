@@ -9,8 +9,6 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.junit.Test;
 
@@ -18,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-/** Tests the glass body: its cached still layer, its see-through tint and its grain. */
+/** Tests the glass body: its cached still layer, its see-through tint. */
 public class GlassPanelTest
 {
 	private static final WindowStyle STYLE = WindowStyle.of(WindowTheme.RUNELITE_GLASS, 1.0);
@@ -92,33 +90,6 @@ public class GlassPanelTest
 		assertTrue((inside & 0xFF) > (inside >> 16 & 0xFF));
 		assertEquals(0, image.getRGB(3, 3) >>> 24);
 		assertEquals(0, image.getRGB(250, 3) >>> 24);
-	}
-
-	@Test
-	public void theGrainSpecksVaryInLightAndOpacity()
-	{
-		BufferedImage grain = GlassPanel.grain();
-		int peak = (int) Math.round(GlassTokens.GRAIN_PEAK_ALPHA * 255);
-		int light = 0;
-		int dark = 0;
-		Set<Integer> opacities = new HashSet<>();
-		for (int y = 0; y < grain.getHeight(); y++)
-		{
-			for (int x = 0; x < grain.getWidth(); x++)
-			{
-				int argb = grain.getRGB(x, y);
-				int a = argb >>> 24;
-				assertTrue(a <= peak);
-				opacities.add(a);
-				if ((argb & 0xFF) == 0xFF)
-					light++;
-				else
-					dark++;
-			}
-		}
-
-		assertTrue(light > 0 && dark > 0);
-		assertTrue(opacities.size() > 10);
 	}
 
 	@Test
