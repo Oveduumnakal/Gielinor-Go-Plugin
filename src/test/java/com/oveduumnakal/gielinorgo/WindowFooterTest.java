@@ -219,6 +219,24 @@ public class WindowFooterTest
 	}
 
 	@Test
+	public void theChangeLogBackXSitsInTheTopLeftOfThePageAndTheCloseXInTheTopRight()
+	{
+		openChangelog();
+		WindowLayout layout = WindowLayout.of(width, height);
+		Rectangle back = hit(ChangelogPage.ID_BACK).bounds();
+
+		assertTrue("left of the page area's middle", back.getCenterX() < layout.body.getCenterX());
+		assertTrue("above the page area's middle", back.getCenterY() < layout.body.getCenterY());
+		assertEquals("flush with the page's left padding", back.x - layout.body.x, back.y - layout.body.y);
+		assertTrue("an X button, not a wide label", back.width <= 2 * back.height);
+		assertEquals("Back to the window (Esc)", hit(ChangelogPage.ID_BACK).tip());
+		Rectangle close = hit(WindowShell.ID_CLOSE).bounds();
+		assertTrue("Close stays on the right", close.getCenterX() > layout.window.getCenterX());
+		assertTrue("an X button, not a wide label", close.width <= 2 * close.height);
+		assertEquals("Close the window (Esc)", hit(WindowShell.ID_CLOSE).tip());
+	}
+
+	@Test
 	public void escAndBackReturnFromTheChangeLogAndAnotherEscCloses()
 	{
 		openChangelog();

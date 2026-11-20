@@ -221,7 +221,8 @@ public class WindowRenderSmokeTest
 						layout.tabs[i].width - 2 * style.metrics().tabSlant));
 
 				int chip = 2 * style.metrics().chipSlant;
-				assertTrue(where + " close", textFits(style, "Close", layout.close.width - chip));
+				assertTrue(where + " close X has room", layout.close.width - chip >= layout.close.height / 2);
+				assertTrue(where + " close X is not wider than tall", layout.close.width <= 2 * layout.close.height);
 			}
 	}
 

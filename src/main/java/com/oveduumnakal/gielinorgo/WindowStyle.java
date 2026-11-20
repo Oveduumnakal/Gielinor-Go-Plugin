@@ -42,6 +42,9 @@ final class WindowStyle
 
 	private static volatile WashSource shared = WashSource.NONE;
 
+	/** How much of the button's height an X takes. */
+	private static final double CROSS_SHARE = 0.46;
+
 	private static final Map<String, Long> FADES = new ConcurrentHashMap<>();
 
 	private final WindowTheme theme;
@@ -877,6 +880,48 @@ final class WindowStyle
 	void button(Graphics2D g, Rectangle2D box, String label, boolean primary, boolean disabled, double hover,
 		double press)
 	{
+		paintButton(g, box, primary, disabled, hover, press, (gg, color) ->
+		{
+			Font font = fitted(gg, WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS, label,
+				(int) box.getWidth() - 2 * metrics.chipSlant);
+			FontMetrics fm = gg.getFontMetrics(font);
+			text(gg, label, (int) Math.round(box.getCenterX() - fm.stringWidth(label) / 2.0), baseline(box, fm), font,
+				color);
+		});
+	}
+
+	/**
+	 * Paints a button that shows an X instead of a label, drawn as a vector so it stays sharp at every size. It is
+	 * shaped, shaded and pressed like {@link #button}.
+	 *
+	 * @param g the graphics
+	 * @param box the button's box
+	 * @param hover how much the pointer is on it, from 0 to 1
+	 * @param press how much it is pressed, from 0 to 1
+	 */
+	void closeButton(Graphics2D g, Rectangle2D box, double hover, double press)
+	{
+		paintButton(g, box, false, false, hover, press, (gg, ink) ->
+		{
+			double side = Math.min(box.getHeight(), box.getWidth() - 2 * metrics.chipSlant) * CROSS_SHARE;
+			gg.setColor(color(ink));
+			Icons.cross(gg, box.getCenterX() - side / 2.0, box.getCenterY() - side / 2.0, side);
+		});
+	}
+
+	/** Paints what sits on a button over its body, in the colour of the button's text. */
+	private interface ButtonContent
+	{
+		/**
+		 * @param g the graphics, already shrunk for a press
+		 * @param text the colour name of the button's text
+		 */
+		void paint(Graphics2D g, ThemeColor text);
+	}
+
+	private void paintButton(Graphics2D g, Rectangle2D box, boolean primary, boolean disabled, double hover,
+		double press, ButtonContent content)
+	{
 		AffineTransform saved = g.getTransform();
 		double shrink = 1.0 - (1.0 - WindowTimes.PRESS_SCALE) * Math.max(0.0, Math.min(1.0, press));
 		g.translate(box.getCenterX(), box.getCenterY());
@@ -898,11 +943,7 @@ final class WindowStyle
 				shade(g, shape, hover, press);
 		}
 
-		Font font = fitted(g, WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS, label,
-			(int) box.getWidth() - 2 * metrics.chipSlant);
-		FontMetrics fm = g.getFontMetrics(font);
-		text(g, label, (int) Math.round(box.getCenterX() - fm.stringWidth(label) / 2.0), baseline(box, fm), font,
-			text);
+		content.paint(g, text);
 		g.setTransform(saved);
 	}
 
