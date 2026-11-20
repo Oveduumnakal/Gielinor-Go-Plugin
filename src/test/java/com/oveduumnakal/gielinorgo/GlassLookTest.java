@@ -24,6 +24,12 @@ public class GlassLookTest
 	 */
 	private static final int NOISE = 4;
 
+	/** The most pixels that may differ past the noise: the soft corners anti-alias differently under Java 11 and 21. */
+	private static final double SHARE = 0.01;
+
+	/** The most a channel may differ by in an edge pixel under another Java version. */
+	private static final int WORST = 96;
+
 	/** Starts every test from empty caches, so the pictures do not depend on what other tests painted first. */
 	@Before
 	public void emptyTheCaches()
@@ -38,19 +44,21 @@ public class GlassLookTest
 	{
 		for (double scale : SCALES)
 			SolidLookTest.check(FOLDER, "primitives-" + scale, LookSheet.primitives(WindowTheme.RUNELITE_GLASS, scale),
-				NOISE);
+				NOISE, SHARE, WORST);
 	}
 
 	@Test
 	public void theWildBubblesLookAsRecorded()
 	{
-		SolidLookTest.check(FOLDER, "bubbles-1.0", LookSheet.bubbles(WindowTheme.RUNELITE_GLASS, 1.0), NOISE);
+		SolidLookTest.check(FOLDER, "bubbles-1.0", LookSheet.bubbles(WindowTheme.RUNELITE_GLASS, 1.0),
+			NOISE, SHARE, WORST);
 	}
 
 	@Test
 	public void theInfoCardLooksAsRecorded()
 	{
 		for (double scale : SCALES)
-			SolidLookTest.check(FOLDER, "card-" + scale, LookSheet.card(WindowTheme.RUNELITE_GLASS, scale), NOISE);
+			SolidLookTest.check(FOLDER, "card-" + scale, LookSheet.card(WindowTheme.RUNELITE_GLASS, scale),
+				NOISE, SHARE, WORST);
 	}
 }

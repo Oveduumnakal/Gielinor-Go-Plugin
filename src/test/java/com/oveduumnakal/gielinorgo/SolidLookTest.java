@@ -60,6 +60,23 @@ public class SolidLookTest
 	 */
 	static void check(String folder, String name, BufferedImage actual, int noise)
 	{
+		check(folder, name, actual, noise, MAX_DIFFERING, MAX_LEVELS);
+	}
+
+	/**
+	 * Compares a picture to its recording, or records it, with its own tolerance: a pixel counts as different when a
+	 * channel differs by more than {@code noise}, at most {@code share} of the pixels may differ, and none by more than
+	 * {@code worstLevel}. Soft-cornered outlines anti-alias a little differently under another Java version.
+	 *
+	 * @param folder the folder under the test resources
+	 * @param name the picture's file name without the extension
+	 * @param actual the picture
+	 * @param noise the most a channel may differ by and still count as equal
+	 * @param share the most pixels that may differ, as a share of all
+	 * @param worstLevel the most a channel may differ by in any pixel
+	 */
+	static void check(String folder, String name, BufferedImage actual, int noise, double share, int worstLevel)
+	{
 		String file = name + ".png";
 		String path = "/com/oveduumnakal/gielinorgo/" + folder + "/" + file;
 		if ("1".equals(System.getenv("SOLID_LOOK_RECORD")))
@@ -109,9 +126,9 @@ public class SolidLookTest
 			}
 		}
 
-		double share = differing / (double) (actual.getWidth() * actual.getHeight());
+		double differs = differing / (double) (actual.getWidth() * actual.getHeight());
 		String dump = System.getenv("LOOK_ACTUAL_DIR");
-		if (dump != null && (share > MAX_DIFFERING || worst > MAX_LEVELS))
+		if (dump != null && (differs > share || worst > worstLevel))
 		{
 			try
 			{
@@ -124,8 +141,8 @@ public class SolidLookTest
 		}
 
 		String where = " (worst " + worst + ") in " + box[0] + "," + box[1] + " to " + box[2] + "," + box[3] + first;
-		assertTrue(file + ": " + share * 100 + "% of the pixels differ" + where, share <= MAX_DIFFERING);
-		assertTrue(file + ": a channel differs by " + worst, worst <= MAX_LEVELS);
+		assertTrue(file + ": " + differs * 100 + "% of the pixels differ" + where, differs <= share);
+		assertTrue(file + ": a channel differs by " + worst, worst <= worstLevel);
 	}
 
 	private static BufferedImage read(String path)
