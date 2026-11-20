@@ -87,6 +87,28 @@ public class PartyMotionTest
 	}
 
 	@Test
+	public void aCreatureThatGainedExperienceStaysPutAndItsBarEases()
+	{
+		List<CreatureView> before = Arrays.asList(PartyRig.creature("Goblin", 5, 0.2, 1.0, null),
+			PartyRig.creature("Cow", 5, 0.5, 1.0, null));
+		motion.sync(before, layout, MotionMode.FULL, 0L);
+		motion.enter(layout.rows[0].width, MotionMode.FULL, 0L);
+
+		List<CreatureView> after = Arrays.asList(PartyRig.creature("Goblin", 6, 0.1, 1.0, null),
+			PartyRig.creature("Cow", 5, 0.6, 1.0, null));
+		motion.sync(after, layout, MotionMode.FULL, 5_000L);
+
+		assertTrue(motion.ghosts(5_000L).isEmpty());
+		assertFalse(motion.sliding(0, 5_000L));
+		assertFalse(motion.sliding(1, 5_000L));
+		assertEquals(0.0, motion.rowX(0, 5_000L), 0.0);
+		assertEquals(0.2, motion.xp(0, 5_000L), 0.0);
+		double mid = motion.xp(1, 5_000L + WindowTimes.XP_BAR / 2);
+		assertTrue(mid > 0.5 && mid < 0.6);
+		assertEquals(0.6, motion.xp(1, 5_000L + WindowTimes.XP_BAR), 0.0);
+	}
+
+	@Test
 	public void theBarsJumpInOffMode()
 	{
 		motion.sync(team("Goblin"), layout, MotionMode.OFF, 0L);

@@ -454,26 +454,20 @@ final class CreatureView
 	}
 
 	/**
-	 * Tells whether another view shows the same creature, leaving health out because it recovers by itself.
+	 * Tells whether another view shows the same creature. A creature keeps its identity while it trains, so only what
+	 * never changes counts: its species, rarity, type, rolls and the time it was caught. Level, experience, health,
+	 * moves, hearts, gilding, the nickname and the evolution hints change on their own or by the player's hand and are
+	 * left out, or a creature that gained experience would no longer be itself.
 	 *
 	 * @param that the other view
-	 * @return true when everything but the health fraction is equal
+	 * @return true when both are the same creature, whatever has changed on it since
 	 */
 	boolean sameCreature(CreatureView that)
 	{
-		return level == that.level
-			&& gilded == that.gilded
-			&& Double.compare(xpProgress, that.xpProgress) == 0
-			&& rarity == that.rarity
+		return rarity == that.rarity
 			&& type == that.type
 			&& Objects.equals(name, that.name)
-			&& Objects.equals(nickname, that.nickname)
 			&& npcId == that.npcId
-			&& hearts == that.hearts
-			&& moves.equals(that.moves)
-			&& pending.equals(that.pending)
-			&& Objects.equals(evolvesWhen, that.evolvesWhen)
-			&& Objects.equals(nextForm, that.nextForm)
 			&& caughtAtMs == that.caughtAtMs
 			&& rolls.equals(that.rolls);
 	}

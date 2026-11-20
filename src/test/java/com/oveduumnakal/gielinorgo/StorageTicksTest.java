@@ -30,7 +30,7 @@ public class StorageTicksTest
 		});
 		for (int level = 3; level < 6; level++)
 		{
-			Creature stored = new Creature("goblin", level, now);
+			Creature stored = new Creature("goblin", level, now - level);
 			stored.hpFraction = 0.2;
 			game.data().storage.add(stored);
 		}
