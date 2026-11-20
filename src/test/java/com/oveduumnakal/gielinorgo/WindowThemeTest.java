@@ -5,6 +5,8 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.awt.Color;
+import java.util.EnumSet;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -18,6 +20,11 @@ import static org.junit.Assert.assertTrue;
 /** Checks both window styles: every colour is filled, text is readable, and the layout is the same in both. */
 public class WindowThemeTest
 {
+	/** The colours the steel blue border swaps from orange to silver. */
+	private static final Set<ThemeColor> ACCENTS = EnumSet.of(ThemeColor.ACCENT, ThemeColor.XP_FILL,
+		ThemeColor.CHIP_ACCENT, ThemeColor.CHIP_ACCENT_TEXT, ThemeColor.LEAD_ROW, ThemeColor.LEAD_BORDER,
+		ThemeColor.LEAD_TEXT, ThemeColor.SELECTION);
+
 	private static final double READABLE = 4.5;
 
 	private static final ThemeColor[][] TEXT_ON =
@@ -111,9 +118,14 @@ public class WindowThemeTest
 		{
 			assertEquals(name.toString(), WindowTheme.RUNELITE_DARK.color(name),
 				WindowTheme.RUNELITE_GLASS.color(name));
-			assertEquals(name.toString(), WindowTheme.RUNELITE_DARK.color(name),
-				WindowTheme.RUNELITE_GLASS_STEEL.color(name));
+			if (!ACCENTS.contains(name))
+				assertEquals(name.toString(), WindowTheme.RUNELITE_DARK.color(name),
+					WindowTheme.RUNELITE_GLASS_STEEL.color(name));
 		}
+
+		for (ThemeColor name : ACCENTS)
+			assertTrue(name.toString(), !WindowTheme.RUNELITE_DARK.color(name)
+				.equals(WindowTheme.RUNELITE_GLASS_STEEL.color(name)));
 	}
 
 	@Test

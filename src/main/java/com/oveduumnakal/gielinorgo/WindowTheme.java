@@ -18,16 +18,17 @@ import java.util.Map;
 public enum WindowTheme
 {
 	/** RuneLite's own grey and orange, with an amber lead row, painted as solid fills. */
-	RUNELITE_DARK("RuneLite dark", runeLitePalette(), false, GlassBorder.BRONZE),
+	RUNELITE_DARK("RuneLite dark", runeLitePalette(GlassBorder.BRONZE), false, GlassBorder.BRONZE),
 
 	/**
 	 * The same colours as {@link #RUNELITE_DARK}, painted as tinted glass the game shows through
 	 * (#324). Switched on by the Glass look setting.
 	 */
-	RUNELITE_GLASS("RuneLite glass", runeLitePalette(), true, GlassBorder.BRONZE),
+	RUNELITE_GLASS("RuneLite glass", runeLitePalette(GlassBorder.BRONZE), true, GlassBorder.BRONZE),
 
 	/** {@link #RUNELITE_GLASS} with the steel blue border, for the Glass border setting. */
-	RUNELITE_GLASS_STEEL("RuneLite glass, steel border", runeLitePalette(), true, GlassBorder.STEEL_BLUE);
+	RUNELITE_GLASS_STEEL("RuneLite glass, steel border", runeLitePalette(GlassBorder.STEEL_BLUE), true,
+		GlassBorder.STEEL_BLUE);
 
 	private final String label;
 	private final Map<ThemeColor, Color> colors;
@@ -162,7 +163,7 @@ public enum WindowTheme
 		return (int) Math.round(from + (to - from) * t);
 	}
 
-	private static Palette runeLitePalette()
+	private static Palette runeLitePalette(GlassBorder metal)
 	{
 		return new Palette()
 		.put(ThemeColor.WINDOW, 0x1E1E1E, 240)
@@ -177,9 +178,9 @@ public enum WindowTheme
 		.put(ThemeColor.ROW, 0x282828)
 		.put(ThemeColor.ROW_BORDER, 0x404040)
 		.put(ThemeColor.ROW_TEXT, 0xFFFFFF)
-		.put(ThemeColor.LEAD_ROW, 0xFFB000)
-		.put(ThemeColor.LEAD_BORDER, 0xFFD466)
-		.put(ThemeColor.LEAD_TEXT, 0x1E1400)
+		.put(ThemeColor.LEAD_ROW, metal.leadRgb())
+		.put(ThemeColor.LEAD_BORDER, metal.leadEdgeRgb())
+		.put(ThemeColor.LEAD_TEXT, metal.accentTextRgb())
 		.put(ThemeColor.PORTRAIT_BACKDROP, 0x181818)
 		.put(ThemeColor.TEXT, 0xEBEBEB)
 		.put(ThemeColor.SUBTEXT, 0xB4B4B4)
@@ -187,10 +188,10 @@ public enum WindowTheme
 		.put(ThemeColor.HP_WARNING, 0xE6BE3C)
 		.put(ThemeColor.HP_DANGER, 0xE64646)
 		.put(ThemeColor.HP_TRACK, 0x101010)
-		.put(ThemeColor.XP_FILL, 0xDC8A00)
+		.put(ThemeColor.XP_FILL, metal.accentMid().getRGB())
 		.put(ThemeColor.JAR_FILL, 0x7FD3F0)
 		.put(ThemeColor.XP_TRACK, 0x101010)
-		.put(ThemeColor.ACCENT, 0xDC8A00)
+		.put(ThemeColor.ACCENT, metal.accentMid().getRGB())
 		.put(ThemeColor.PANEL_BOX, 0x262626)
 		.put(ThemeColor.PANEL_BORDER, 0x3C3C3C)
 		.put(ThemeColor.TOOLTIP, 0x141414, 245)
@@ -199,15 +200,15 @@ public enum WindowTheme
 		.put(ThemeColor.NOTICE_TEXT, 0xFFFFFF)
 		.put(ThemeColor.CHIP, 0x3A3A3A)
 		.put(ThemeColor.CHIP_TEXT, 0xF0F0F0)
-		.put(ThemeColor.CHIP_ACCENT, 0xDC8A00)
-		.put(ThemeColor.CHIP_ACCENT_TEXT, 0x1E1400)
+		.put(ThemeColor.CHIP_ACCENT, metal.accentMid().getRGB())
+		.put(ThemeColor.CHIP_ACCENT_TEXT, metal.accentTextRgb())
 		.put(ThemeColor.HOVER_SHADE, 0xFFFFFF, 26)
 		.put(ThemeColor.PRESS_SHADE, 0x000000, 60)
 		.put(ThemeColor.SHADOW, 0x000000, 90)
 		.put(ThemeColor.FOCUS_RING, 0xFFB000)
 		.put(ThemeColor.PARTY_HIGHLIGHT, 0x4FC3F7)
 		.put(ThemeColor.INPUT, 0x141414)
-		.put(ThemeColor.SELECTION, 0xDC8A00, 110)
+		.put(ThemeColor.SELECTION, metal.accentMid().getRGB(), 110)
 		.put(ThemeColor.SCRIM, 0x000000, 150)
 		.put(ThemeColor.SCROLL_TRACK, 0x101010, 160)
 		.put(ThemeColor.SCROLL_THUMB, 0x6E6E6E)

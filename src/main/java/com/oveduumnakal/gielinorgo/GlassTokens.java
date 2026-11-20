@@ -38,6 +38,39 @@ final class GlassTokens
 	/** Where the middle colour of the border sits, from the top (0) to the bottom (1). */
 	static final double BORDER_MIDDLE = 0.45;
 
+	/** How opaque the accent metal is; a metal reads as solid, so it is far less see-through than plain glass. */
+	static final double METAL_ALPHA = 0.96;
+
+	/** Where the body colour of the accent metal sits, from the top (0) to the bottom (1). */
+	static final double METAL_MIDDLE = 0.5;
+
+	/** The opacity of the bright sheen over the top half of the accent metal. */
+	static final double METAL_SHEEN = 0.18;
+
+	/** How much a pressed accent element darkens. */
+	static final double METAL_PRESSED_SHADE = 0.16;
+
+	/** The metal of an earned bond heart: light, body and dark red. */
+	static final Color[] HEART_RED = {new Color(0xFF8F86), new Color(0xD32F2F), new Color(0x7C1717)};
+
+	/** The metal of an earned bond heart when the bond is complete: light, body and dark gold. */
+	static final Color[] HEART_GOLD = {new Color(0xFFE59A), new Color(0xFFCC33), new Color(0xA67C00)};
+
+	/** The dull metal red border of an empty bond heart: light, body and dark. */
+	static final Color[] HEART_DULL = {new Color(0x9C6464), new Color(0x6F3B3B), new Color(0x452424)};
+
+	/** The grey fill of an empty bond heart. */
+	static final Color EMPTY_HEART = new Color(0x4A, 0x4A, 0x4A, 0xE6);
+
+	/** The metal outlines of a move's pill by the kind of attack: light, body and dark. */
+	static final Color[] OUTLINE_MELEE = {new Color(0xFF9A92), new Color(0xD84040), new Color(0x7E1C1C)};
+
+	/** The metal outline of a ranged move's pill. */
+	static final Color[] OUTLINE_RANGED = {new Color(0xA8E6A5), new Color(0x43A047), new Color(0x1E5B22)};
+
+	/** The metal outline of a magic move's pill. */
+	static final Color[] OUTLINE_MAGIC = {new Color(0xA9D3FF), new Color(0x2F7DE0), new Color(0x163E7C)};
+
 	/** The opacity of the white sheen at the top edge. */
 	static final double SHEEN_TOP = 0.08;
 
@@ -170,26 +203,11 @@ final class GlassTokens
 	/** The blur radius of a groove's inner shadows. */
 	static final int GROOVE_BLUR = 1;
 
-	/** The top colour of an experience bar's fill. */
-	static final Color XP_TOP = new Color(0xEFA22A);
-
-	/** The bottom colour of an experience bar's fill. */
-	static final Color XP_BOTTOM = new Color(0xB86F00);
-
 	/** How much white is mixed into the top of a health bar's fill. */
 	static final double HP_TOP_LIGHT = 0.25;
 
-	/** The fill of an accented element (the primary button, an accent chip). */
-	static final Color ACCENT = new Color(0xDC8A00);
-
-	/** The opacity of an accented element's fill. */
-	static final double ACCENT_ALPHA = 0.85;
-
 	/** The text colour on an accented element. */
 	static final Color ACCENT_TEXT = new Color(0x1E1400);
-
-	/** The label colour of the active tab. */
-	static final Color ACTIVE_TAB_TEXT = new Color(0xF2A933);
 
 	/** The opacity of the bubble colour laid over the bubble's tint. */
 	static final double BUBBLE_TINT = 0.38;

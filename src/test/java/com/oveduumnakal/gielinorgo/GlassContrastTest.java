@@ -100,7 +100,7 @@ public class GlassContrastTest
 	{
 		check("inactive tab", ThemeColor.TAB_TEXT, null, 4.5, (g, st, box) -> st.tab(g, box, "", false, false, 0));
 		check("hovered tab", ThemeColor.TAB_TEXT, null, 3.5, (g, st, box) -> st.tab(g, box, "", false, false, 1));
-		check("active tab", ThemeColor.TAB_ACTIVE_TEXT, GlassTokens.ACTIVE_TAB_TEXT, 4.5,
+		check("active tab", ThemeColor.TAB_ACTIVE_TEXT, WindowTheme.RUNELITE_GLASS.border().accentHigh(), 4.5,
 			(g, st, box) -> st.tab(g, box, "", true, false, 0));
 		check("disabled tab", ThemeColor.TAB_DISABLED_TEXT, null, 1.3,
 			(g, st, box) -> st.tab(g, box, "", false, true, 0));

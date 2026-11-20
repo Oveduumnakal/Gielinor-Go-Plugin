@@ -5,6 +5,7 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -267,6 +268,21 @@ final class SummaryPainter
 		}
 	}
 
+	/**
+	 * Gives the metal outline of a move's pill by the kind of attack: red for melee (stab, slash and crush all share it
+	 * for now), green for ranged, blue for magic.
+	 *
+	 * @param style the move's combat style
+	 * @return the three colours of the outline, light, middle and dark
+	 */
+	static Color[] moveOutline(CombatType style)
+	{
+		if (style == CombatType.RANGED)
+			return GlassTokens.OUTLINE_RANGED;
+
+		return style == CombatType.MAGIC ? GlassTokens.OUTLINE_MAGIC : GlassTokens.OUTLINE_MELEE;
+	}
+
 	private void bond(Graphics2D g, PageContext ctx, SummaryLayout layout, SummaryContent content)
 	{
 		Rectangle box = layout.bond;
@@ -285,19 +301,7 @@ final class SummaryPainter
 		int y = box.y + (box.height - size) / 2;
 		boolean full = content.hearts() >= hearts;
 		for (int i = 0; i < hearts; i++)
-		{
-			Shape heart = Icons.heart(x + i * (size + between), y, size);
-			if (i < content.hearts())
-			{
-				g.setColor(st.color(full ? ThemeColor.GOLD : ThemeColor.HP_DANGER));
-				g.fill(heart);
-			}
-			else
-			{
-				g.setColor(st.color(ThemeColor.PANEL_BORDER));
-				g.draw(heart);
-			}
-		}
+			st.heart(g, Icons.heart(x + i * (size + between), y, size), i < content.hearts(), full);
 	}
 
 	private void description(Graphics2D g, PageContext ctx, SummaryLayout layout, SummaryContent content)
@@ -360,7 +364,11 @@ final class SummaryPainter
 			g.translate(-pill.getCenterX(), -pill.getCenterY());
 			Shape shape = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(pill.x, pill.y, pill.width,
 				pill.height));
-			st.chipBody(g, shape);
+			if (pendingPill || i >= moves.size())
+				st.chipBody(g, shape);
+			else
+				st.chipBody(g, shape, moveOutline(moves.get(i).style()));
+
 			int icon = Math.max(4, pill.height * 6 / 10);
 			int inset = Math.max(3, (pill.height - icon) / 2 + 2);
 			double iconY = pill.y + (pill.height - icon) / 2.0;

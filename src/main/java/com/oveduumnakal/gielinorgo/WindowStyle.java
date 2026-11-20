@@ -383,9 +383,15 @@ final class WindowStyle
 	void windowStill(Graphics2D g, Rectangle box, boolean overWash)
 	{
 		if (theme.glass())
-			GlassPanel.still(g, outline(Kind.FRAME, box), this, overWash);
+		{
+			Shape frame = outline(Kind.FRAME, box);
+			GlassPanel.still(g, frame, this, overWash);
+			GlassStyle.border(g, frame, this, 1.0);
+		}
 		else
+		{
 			body(g, Kind.FRAME, box, null);
+		}
 	}
 
 	/**
@@ -405,7 +411,11 @@ final class WindowStyle
 	{
 		if (theme.glass())
 		{
-			GlassPanel.paint(g, outline(kind, box), this, wash, Readability.BODY);
+			Shape glass = outline(kind, box);
+			GlassPanel.paint(g, glass, this, wash, Readability.BODY);
+			if (kind == Kind.FRAME)
+				GlassStyle.border(g, glass, this, 1.0);
+
 			return;
 		}
 
@@ -630,6 +640,70 @@ final class WindowStyle
 		g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
 		g.draw(shape);
 		g.setStroke(saved);
+	}
+
+	/**
+	 * Paints a move's pill: a raised chip whose metal outline has the colours of the kind of attack. The solid look
+	 * paints a plain chip.
+	 *
+	 * @param g the graphics
+	 * @param shape the pill's outline
+	 * @param outline the three colours (light, middle, dark) of the outline, from {@link GlassTokens}
+	 */
+	void chipBody(Graphics2D g, Shape shape, Color[] outline)
+	{
+		if (theme.glass())
+			GlassStyle.chip(g, shape, this, false, outline);
+		else
+			chipBody(g, shape, false);
+	}
+
+	/**
+	 * Paints a bond heart: raised metal in the glass look, a flat fill in the solid look; an empty one is pressed in
+	 * with a dull red border in the glass look and an outline in the solid look.
+	 *
+	 * @param g the graphics
+	 * @param shape the heart's outline
+	 * @param filled whether the heart is earned
+	 * @param gold whether the bond is complete
+	 */
+	void heart(Graphics2D g, Shape shape, boolean filled, boolean gold)
+	{
+		if (theme.glass())
+		{
+			GlassStyle.heart(g, shape, this, filled, gold);
+			return;
+		}
+
+		if (filled)
+		{
+			g.setColor(color(gold ? ThemeColor.GOLD : ThemeColor.HP_DANGER));
+			g.fill(shape);
+		}
+		else
+		{
+			g.setColor(color(ThemeColor.PANEL_BORDER));
+			g.draw(shape);
+		}
+	}
+
+	/**
+	 * Fills a shape with the accent: the accent metal in the glass look (orange, or silver with the steel border), the
+	 * flat accent colour in the solid look.
+	 *
+	 * @param g the graphics
+	 * @param shape the shape to fill
+	 */
+	void fillAccent(Graphics2D g, Shape shape)
+	{
+		if (theme.glass())
+		{
+			GlassStyle.metalFill(g, shape, theme.border(), GlassTokens.METAL_ALPHA);
+			return;
+		}
+
+		g.setColor(color(ThemeColor.ACCENT));
+		g.fill(shape);
 	}
 
 	/**
@@ -866,7 +940,7 @@ final class WindowStyle
 		{
 			GlassStyle.tab(g, shape, this, active, disabled, hover);
 			if (active && !disabled)
-				text = GlassTokens.ACTIVE_TAB_TEXT;
+				text = theme.border().accentHigh();
 		}
 		else
 		{
@@ -953,7 +1027,6 @@ final class WindowStyle
 		if (theme.glass())
 		{
 			GlassStyle.button(g, shape, this, primary, disabled, hover, press);
-			GlassStyle.border(g, shape, this, disabled ? GlassTokens.BORDER_DISABLED : 1.0);
 		}
 		else
 		{

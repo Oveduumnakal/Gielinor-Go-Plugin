@@ -34,6 +34,10 @@ final class GlassStyle
 	private static final int KIND_RAISED = 1;
 	private static final int KIND_PRESSED = 2;
 	private static final int KIND_GROOVE = 3;
+	private static final int KIND_METAL = 4;
+	private static final int KIND_METAL_PRESSED = 5;
+	private static final int KIND_HEART = 6;
+	private static final int KIND_HEART_EMPTY = 7;
 
 	private static final Map<SpriteKey, BufferedImage> SPRITES = new LinkedHashMap<SpriteKey, BufferedImage>(257,
 		0.75f, true)
@@ -308,14 +312,17 @@ final class GlassStyle
 		{
 			g.setColor(GlassTokens.white(GlassTokens.FLAT_FILL));
 			g.fill(shape);
+			border(g, shape, style, GlassTokens.BORDER_DISABLED);
 		}
 		else if (active)
 		{
 			pressed(g, shape, style, GlassTokens.black(GlassTokens.PRESSED_TAB_FILL));
+			borderInset(g, shape, style, 1.0);
 		}
 		else
 		{
 			raisedSmall(g, shape, style, raisedFill(hover), lift(hover));
+			border(g, shape, style, 1.0);
 		}
 	}
 
@@ -338,15 +345,23 @@ final class GlassStyle
 		{
 			g.setColor(GlassTokens.white(GlassTokens.FLAT_FILL));
 			g.fill(shape);
+			border(g, shape, style, GlassTokens.BORDER_DISABLED);
 		}
 		else if (press >= 0.5)
 		{
-			pressed(g, shape, style, primary ? GlassTokens.of(GlassTokens.ACCENT, GlassTokens.ACCENT_ALPHA * 0.8)
-				: GlassTokens.white(GlassTokens.PRESSED_BUTTON_FILL));
+			if (primary)
+			{
+				pressedMetal(g, shape, style);
+			}
+			else
+			{
+				pressed(g, shape, style, GlassTokens.white(GlassTokens.PRESSED_BUTTON_FILL));
+				borderInset(g, shape, style, 1.0);
+			}
 		}
 		else if (primary)
 		{
-			raisedSmall(g, shape, style, GlassTokens.of(GlassTokens.ACCENT, GlassTokens.ACCENT_ALPHA), lift(hover));
+			raisedMetal(g, shape, style, lift(hover));
 			if (hover > 0)
 			{
 				g.setColor(GlassTokens.white(0.10 * clamp(hover)));
@@ -356,12 +371,13 @@ final class GlassStyle
 		else
 		{
 			raisedSmall(g, shape, style, raisedFill(hover), lift(hover));
+			border(g, shape, style, 1.0);
 		}
 	}
 
 	/**
-	 * Strokes the thin metal border of the style's theme round a shape: a 1 pixel line that fades from the light metal
-	 * at the top edge to the dark at the bottom.
+	 * Strokes the thin metal border of the style's theme round a raised element: a 1 pixel line that fades from the
+	 * light metal at the top edge to the dark at the bottom.
 	 *
 	 * @param g the graphics; its paint and stroke are put back
 	 * @param shape the outline of the button or pop-up
@@ -370,13 +386,49 @@ final class GlassStyle
 	 */
 	static void border(Graphics2D g, Shape shape, WindowStyle style, double strength)
 	{
+		GlassBorder metal = style.theme().border();
+		stroke(g, shape, style, strength, false, metal.high(), metal.middle(), metal.low());
+	}
+
+	/**
+	 * Strokes the metal border of a pressed-in element: the same metal with the light and the dark swapped, so the
+	 * edge reads as sunk into the surface.
+	 *
+	 * @param g the graphics; its paint and stroke are put back
+	 * @param shape the outline
+	 * @param style the style
+	 * @param strength how much of the border shows, from 0 to 1
+	 */
+	static void borderInset(Graphics2D g, Shape shape, WindowStyle style, double strength)
+	{
+		GlassBorder metal = style.theme().border();
+		stroke(g, shape, style, strength, true, metal.high(), metal.middle(), metal.low());
+	}
+
+	/**
+	 * Strokes a metal outline in any three colours (light, middle, dark), raised or inset.
+	 *
+	 * @param g the graphics; its paint and stroke are put back
+	 * @param shape the outline
+	 * @param style the style, for the scale
+	 * @param strength how much of the outline shows, from 0 to 1
+	 * @param inset whether the element is pressed in, which swaps the light and the dark
+	 * @param high the light colour
+	 * @param middle the middle colour
+	 * @param low the dark colour
+	 */
+	static void stroke(Graphics2D g, Shape shape, WindowStyle style, double strength, boolean inset, Color high,
+		Color middle, Color low)
+	{
 		Rectangle2D b = shape.getBounds2D();
 		if (b.getHeight() <= 0 || strength <= 0)
 			return;
 
-		GlassBorder metal = style.theme().border();
-		Color[] colors = {GlassTokens.of(metal.high(), strength), GlassTokens.of(metal.middle(), strength),
-			GlassTokens.of(metal.low(), strength)};
+		Color[] colors = inset
+			? new Color[] {GlassTokens.of(low, strength), GlassTokens.of(middle, strength),
+				GlassTokens.of(high, strength)}
+			: new Color[] {GlassTokens.of(high, strength), GlassTokens.of(middle, strength),
+				GlassTokens.of(low, strength)};
 		float[] stops = {0f, (float) GlassTokens.BORDER_MIDDLE, 1f};
 		Paint savedPaint = g.getPaint();
 		Stroke savedStroke = g.getStroke();
@@ -385,6 +437,131 @@ final class GlassStyle
 		g.draw(shape);
 		g.setStroke(savedStroke);
 		g.setPaint(savedPaint);
+	}
+
+	/**
+	 * Paints a small raised element filled with the accent metal: light at the top, dark at the bottom, with shadows
+	 * outside and a bevel inside. It has no border of its own, the metal is its edge.
+	 *
+	 * @param g the graphics
+	 * @param shape the outline
+	 * @param style the style
+	 * @param lift how lifted it is: 1 for resting, {@link GlassTokens#LIFT} when hovered
+	 */
+	static void raisedMetal(Graphics2D g, Shape shape, WindowStyle style, double lift)
+	{
+		GlassBorder metal = style.theme().border();
+		int pad = px(style, 3 * GlassTokens.SMALL_DARK_BLUR * lift + GlassTokens.SMALL_DARK_DY * lift + 2);
+		sprite(g, shape, style, KIND_METAL, metal.accentMid().getRGB(), (int) Math.round(lift * 100), pad,
+			(sg, local) ->
+			{
+				shadowsSmall(sg, local, style, lift);
+				metalFill(sg, local, metal, GlassTokens.METAL_ALPHA);
+				bevel(sg, local, style, GlassTokens.SMALL_BEVEL, GlassTokens.SMALL_BEVEL_LIGHT,
+					GlassTokens.SMALL_BEVEL_DARK);
+			});
+	}
+
+	/**
+	 * Paints a pressed-in element filled with the accent metal, a little darker, with inner shadows.
+	 *
+	 * @param g the graphics
+	 * @param shape the outline
+	 * @param style the style
+	 */
+	static void pressedMetal(Graphics2D g, Shape shape, WindowStyle style)
+	{
+		GlassBorder metal = style.theme().border();
+		sprite(g, shape, style, KIND_METAL_PRESSED, metal.accentMid().getRGB(), 0, 0, (sg, local) ->
+		{
+			metalFill(sg, local, metal, GlassTokens.METAL_ALPHA * 0.9);
+			sg.setColor(GlassTokens.black(GlassTokens.METAL_PRESSED_SHADE));
+			sg.fill(local);
+			SoftShadows.inner(sg, local, GlassTokens.black(GlassTokens.PRESSED_DARK),
+				px(style, GlassTokens.PRESSED_DARK_OFFSET), px(style, GlassTokens.PRESSED_DARK_OFFSET),
+				Math.max(1, px(style, GlassTokens.PRESSED_DARK_BLUR)));
+			SoftShadows.inner(sg, local, GlassTokens.white(GlassTokens.PRESSED_LIGHT),
+				px(style, GlassTokens.PRESSED_LIGHT_OFFSET), px(style, GlassTokens.PRESSED_LIGHT_OFFSET),
+				Math.max(1, px(style, GlassTokens.PRESSED_LIGHT_BLUR)));
+		});
+	}
+
+	/**
+	 * Fills a shape with the accent metal: a vertical gradient of the light, body and dark colours with a thin bright
+	 * line along the top.
+	 *
+	 * @param g the graphics
+	 * @param shape the shape
+	 * @param metal the metal
+	 * @param opacity how opaque the metal is, from 0 to 1
+	 */
+	static void metalFill(Graphics2D g, Shape shape, GlassBorder metal, double opacity)
+	{
+		metalFill(g, shape, metal.accentHigh(), metal.accentMid(), metal.accentLow(), opacity);
+	}
+
+	/**
+	 * Fills a shape with a metal of any three colours: a vertical gradient with a thin bright sheen over its top half.
+	 *
+	 * @param g the graphics
+	 * @param shape the shape
+	 * @param high the light colour at the top
+	 * @param middle the body colour half way down
+	 * @param low the dark colour at the bottom
+	 * @param opacity how opaque the metal is, from 0 to 1
+	 */
+	static void metalFill(Graphics2D g, Shape shape, Color high, Color middle, Color low, double opacity)
+	{
+		Rectangle2D b = shape.getBounds2D();
+		Color[] colors = {GlassTokens.of(high, opacity), GlassTokens.of(middle, opacity),
+			GlassTokens.of(low, opacity)};
+		float[] stops = {0f, (float) GlassTokens.METAL_MIDDLE, 1f};
+		Paint saved = g.getPaint();
+		g.setPaint(new LinearGradientPaint(0f, (float) b.getY(), 0f, (float) b.getMaxY(), stops, colors));
+		g.fill(shape);
+		g.setPaint(new GradientPaint(0f, (float) b.getY(), GlassTokens.white(GlassTokens.METAL_SHEEN), 0f,
+			(float) (b.getY() + b.getHeight() * 0.5), GlassTokens.white(0)));
+		g.fill(shape);
+		g.setPaint(saved);
+	}
+
+	/**
+	 * Paints a bond heart. A full one is raised metal, red or gold when the bond is complete, with a shadow, a bevel
+	 * and a bright rim. An empty one keeps a grey fill and is pressed in, with a dull metal red border.
+	 *
+	 * @param g the graphics
+	 * @param shape the heart's outline
+	 * @param style the style
+	 * @param filled whether this heart is earned
+	 * @param gold whether the bond is complete, so the earned hearts are gold
+	 */
+	static void heart(Graphics2D g, Shape shape, WindowStyle style, boolean filled, boolean gold)
+	{
+		int pad = px(style, 3 * GlassTokens.SMALL_DARK_BLUR + GlassTokens.SMALL_DARK_DY + 2);
+		if (filled)
+		{
+			Color[] metal = gold ? GlassTokens.HEART_GOLD : GlassTokens.HEART_RED;
+			sprite(g, shape, style, KIND_HEART, metal[1].getRGB(), 100, pad, (sg, local) ->
+			{
+				shadowsSmall(sg, local, style, 1.0);
+				metalFill(sg, local, metal[0], metal[1], metal[2], 1.0);
+				bevel(sg, local, style, GlassTokens.SMALL_BEVEL, GlassTokens.SMALL_BEVEL_LIGHT,
+					GlassTokens.SMALL_BEVEL_DARK);
+				stroke(sg, local, style, 0.9, false, metal[0], metal[1], metal[2]);
+			});
+			return;
+		}
+
+		sprite(g, shape, style, KIND_HEART_EMPTY, 0, 0, 0, (sg, local) ->
+		{
+			sg.setColor(GlassTokens.EMPTY_HEART);
+			sg.fill(local);
+			SoftShadows.inner(sg, local, GlassTokens.black(GlassTokens.PRESSED_DARK),
+				px(style, GlassTokens.PRESSED_DARK_OFFSET), px(style, GlassTokens.PRESSED_DARK_OFFSET),
+				Math.max(1, px(style, GlassTokens.PRESSED_DARK_BLUR)));
+			Color[] dull = GlassTokens.HEART_DULL;
+			stroke(sg, local, style, 1.0, true, dull[0], dull[1], dull[2]);
+		});
 	}
 
 	/**
@@ -397,8 +574,31 @@ final class GlassStyle
 	 */
 	static void chip(Graphics2D g, Shape shape, WindowStyle style, boolean accent)
 	{
-		raisedSmall(g, shape, style, accent ? GlassTokens.of(GlassTokens.ACCENT, GlassTokens.ACCENT_ALPHA)
-			: raisedFill(0), 1.0);
+		chip(g, shape, style, accent, null);
+	}
+
+	/**
+	 * Paints a chip whose metal outline has its own colours, such as a move's pill coloured by the kind of attack.
+	 *
+	 * @param g the graphics
+	 * @param shape the chip's outline
+	 * @param style the style
+	 * @param accent whether it stands out
+	 * @param outline the three colours (light, middle, dark) of the outline, or null for the theme's border
+	 */
+	static void chip(Graphics2D g, Shape shape, WindowStyle style, boolean accent, Color[] outline)
+	{
+		if (accent)
+		{
+			raisedMetal(g, shape, style, 1.0);
+			return;
+		}
+
+		raisedSmall(g, shape, style, raisedFill(0), 1.0);
+		if (outline == null)
+			border(g, shape, style, 1.0);
+		else
+			stroke(g, shape, style, 1.0, false, outline[0], outline[1], outline[2]);
 	}
 
 	/**
@@ -416,12 +616,12 @@ final class GlassStyle
 	{
 		if (lead)
 		{
-			raisedSmall(g, shape, style, GlassTokens.of(style.color(ThemeColor.LEAD_ROW), GlassTokens.ACCENT_ALPHA),
-				lift(hover));
+			raisedMetal(g, shape, style, lift(hover));
 		}
 		else
 		{
 			pressed(g, shape, style, GlassTokens.black(GlassTokens.INSET_FILL));
+			borderInset(g, shape, style, 1.0);
 		}
 
 		if (hover > 0)
@@ -456,11 +656,12 @@ final class GlassStyle
 		double in = Math.max(1, style.scale());
 		Rectangle2D inner = new Rectangle2D.Double(box.getX() + in, box.getY() + in, box.getWidth() - 2 * in,
 			box.getHeight() - 2 * in);
+		GlassBorder metal = style.theme().border();
 		Color bottom = style.color(fill);
-		Color top = fill == ThemeColor.XP_FILL ? GlassTokens.XP_TOP
+		Color top = fill == ThemeColor.XP_FILL ? metal.accentHigh()
 			: WindowTheme.mix(bottom, Color.WHITE, GlassTokens.HP_TOP_LIGHT);
 		if (fill == ThemeColor.XP_FILL)
-			bottom = GlassTokens.XP_BOTTOM;
+			bottom = metal.accentLow();
 
 		gradientFill(g, style.filled(inner, skew, fraction), top, bottom);
 	}
