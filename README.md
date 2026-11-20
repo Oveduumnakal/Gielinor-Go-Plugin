@@ -102,8 +102,9 @@ Then replace this comment with:
 
 - **Eggs and gilded creatures**
 
-  Battle wins sometimes drop an egg, which hatches once you have walked far enough. One wild creature in 500 is
-  gilded, with a gold outline and a gold name.
+  Battle wins sometimes drop an egg, which hatches once you have walked far enough. Skilling helps slowly: each XP
+  drop in a skill that is not a combat skill counts as one step, up to 1,200 an hour (setting "Skilling hatches
+  eggs"). One wild creature in 500 is gilded, with a gold outline and a gold name.
 
 <!--
 IMAGE 04 · docs/img/04-team-tab.png · about 45% width (the panel is narrow), sits beside IMAGE 05

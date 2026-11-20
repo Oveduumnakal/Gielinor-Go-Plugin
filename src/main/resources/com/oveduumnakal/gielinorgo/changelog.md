@@ -209,6 +209,10 @@ A Creature Log, daily tasks and daily events give you goals.
   every window size. Esc and Backspace still work. (#320)
 - **Sharper creature pictures.** Creatures in the Party, Summary, Storage and pinned boxes are drawn at over four
   times the old detail and scaled down to fit, so the large Summary picture is no longer pixelated. (#286)
+- **Skilling hatches eggs.** An XP drop in a skill that is not a combat skill counts as one step for the eggs you
+  carry, at most one a game tick and 1,200 an hour, so players who do not walk can still hatch eggs. Walking is much
+  faster and is the only thing that pays jars, walk tasks and bond. Settings > Skilling hatches eggs turns it off.
+  (#323)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes

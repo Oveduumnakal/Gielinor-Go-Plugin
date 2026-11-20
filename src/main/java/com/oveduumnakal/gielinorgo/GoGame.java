@@ -670,13 +670,45 @@ final class GoGame
 			tell(foundJars(JarType.BRONZE, 1, null), Tone.FIND, JarType.BRONZE);
 		}
 
+		countForEggs(tiles);
+	}
+
+	/** @return whether the player carries at least one egg, so an action step would count toward something */
+	boolean carriesEgg()
+	{
+		return !data.eggs.isEmpty();
+	}
+
+	/**
+	 * Counts actions that are not walking toward the eggs: skilling. Unlike {@link #addSteps} it touches nothing but
+	 * the eggs, so it pays no jars, walk tasks or bond, and the caller has already limited how many there are
+	 * ({@link ActionSteps}).
+	 *
+	 * @param steps action steps since the last call
+	 */
+	void addActionSteps(int steps)
+	{
+		if (steps <= 0 || data.eggs.isEmpty())
+			return;
+
+		dirty = true;
+		countForEggs(steps);
+	}
+
+	/**
+	 * Takes steps off every carried egg and hatches the ones that are done.
+	 *
+	 * @param steps the tiles walked or action steps taken
+	 */
+	private void countForEggs(int steps)
+	{
 		walking = true;
 		Iterator<Egg> carried = data.eggs.iterator();
 		while (carried.hasNext())
 		{
 			Egg egg = carried.next();
 			boolean wasReady = egg.tilesLeft <= 0;
-			egg.tilesLeft = Math.max(0, egg.tilesLeft - tiles);
+			egg.tilesLeft = Math.max(0, egg.tilesLeft - steps);
 			if (egg.tilesLeft > 0)
 				continue;
 
