@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 /** Checks both window styles: every colour is filled, text is readable, and the layout is the same in both. */
 public class WindowThemeTest
 {
-	/** The colours the steel blue border swaps from orange to silver. */
+	/** The colours that follow the metal: the solid look's orange, bronze with the bronze border, silver with steel. */
 	private static final Set<ThemeColor> ACCENTS = EnumSet.of(ThemeColor.ACCENT, ThemeColor.XP_FILL,
 		ThemeColor.CHIP_ACCENT, ThemeColor.CHIP_ACCENT_TEXT, ThemeColor.LEAD_ROW, ThemeColor.LEAD_BORDER,
 		ThemeColor.LEAD_TEXT, ThemeColor.SELECTION);
@@ -116,16 +116,24 @@ public class WindowThemeTest
 	{
 		for (ThemeColor name : ThemeColor.values())
 		{
+			if (ACCENTS.contains(name))
+				continue;
+
 			assertEquals(name.toString(), WindowTheme.RUNELITE_DARK.color(name),
 				WindowTheme.RUNELITE_GLASS.color(name));
-			if (!ACCENTS.contains(name))
-				assertEquals(name.toString(), WindowTheme.RUNELITE_DARK.color(name),
-					WindowTheme.RUNELITE_GLASS_STEEL.color(name));
+			assertEquals(name.toString(), WindowTheme.RUNELITE_DARK.color(name),
+				WindowTheme.RUNELITE_GLASS_STEEL.color(name));
 		}
 
 		for (ThemeColor name : ACCENTS)
+		{
 			assertTrue(name.toString(), !WindowTheme.RUNELITE_DARK.color(name)
 				.equals(WindowTheme.RUNELITE_GLASS_STEEL.color(name)));
+			assertTrue(name.toString(), !WindowTheme.RUNELITE_GLASS.color(name)
+				.equals(WindowTheme.RUNELITE_GLASS_STEEL.color(name)));
+		}
+
+		assertEquals(0xDC8A00, WindowTheme.RUNELITE_DARK.color(ThemeColor.ACCENT).getRGB() & 0xFFFFFF);
 	}
 
 	@Test

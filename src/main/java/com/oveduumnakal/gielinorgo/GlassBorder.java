@@ -10,13 +10,13 @@ import java.awt.Color;
  * The metal of the Glass look, chosen with the Glass border setting. It sets two things: the thin border round raised
  * and pressed-in elements and pop-ups, three colours of one metal (light, middle, dark) so a 1 pixel line reads as
  * polished metal; and the accent metal that stands for "active" in place of a flat orange (the primary button, the
- * lead row, experience bars, the active tab's label and underline). Bronze keeps the orange accent, steel blue has a
+ * lead row, experience bars, the active tab's label and underline). Bronze has a bronze accent, steel blue has a
  * silver one. Holds no RuneLite types beyond what the setting needs.
  */
 public enum GlassBorder
 {
-	/** Warm brass with the orange accent: the default, close to the game's own palette. */
-	BRONZE("Bronze", new int[] {0xF0CE86, 0xB8832F, 0x6A4719}, new int[] {0xF5B03A, 0xDC8A00, 0x9C5C00},
+	/** Warm brass, with a bronze accent of the same metal as its border: the default. */
+	BRONZE("Bronze", new int[] {0xF0CE86, 0xB8832F, 0x6A4719}, new int[] {0xE8BC6E, 0xB8832F, 0x7A5220},
 		0xFFB000, 0xFFD466, 0x1E1400),
 
 	/**
