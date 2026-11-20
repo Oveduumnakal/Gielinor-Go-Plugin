@@ -113,12 +113,29 @@ final class GlassPanel
 	static synchronized void paint(Graphics2D g, Shape outline, WindowStyle style, BufferedImage wash,
 		List<Readability.Need> needs)
 	{
+		paint(g, outline, style, wash, needs, GlassTokens.TINT_SOLID);
+	}
+
+	/**
+	 * Paints the body with its own tint where there is no wash under it, for a surface that must be more solid than
+	 * the rest, such as a tooltip or a menu.
+	 *
+	 * @param g the graphics
+	 * @param outline the body's outline, on whole pixels
+	 * @param style the style the body is drawn in
+	 * @param wash the scene wash behind the body, or null for none
+	 * @param needs the text colours that sit on the body
+	 * @param solidTint the opacity of the window colour when there is no wash, from 0 to 1
+	 */
+	static synchronized void paint(Graphics2D g, Shape outline, WindowStyle style, BufferedImage wash,
+		List<Readability.Need> needs, double solidTint)
+	{
 		Rectangle2D b = outline.getBounds2D();
 		if (b.getWidth() <= 0 || b.getHeight() <= 0)
 			return;
 
 		wash(g, outline, style, wash, needs);
-		still(g, outline, style, wash != null);
+		still(g, outline, style, wash != null, solidTint);
 	}
 
 	/**
@@ -172,12 +189,27 @@ final class GlassPanel
 	 */
 	static synchronized void still(Graphics2D g, Shape outline, WindowStyle style, boolean overWash)
 	{
+		still(g, outline, style, overWash, GlassTokens.TINT_SOLID);
+	}
+
+	/**
+	 * Paints only the still layer of a body, with its own tint where there is no wash.
+	 *
+	 * @param g the graphics
+	 * @param outline the body's outline, on whole pixels
+	 * @param style the style the body is drawn in
+	 * @param overWash whether a wash lies under it, which makes the tint thinner
+	 * @param solidTint the opacity of the window colour when there is no wash, from 0 to 1
+	 */
+	static synchronized void still(Graphics2D g, Shape outline, WindowStyle style, boolean overWash,
+		double solidTint)
+	{
 		Rectangle2D b = outline.getBounds2D();
 		if (b.getWidth() <= 0 || b.getHeight() <= 0)
 			return;
 
 		int pad = pad(style);
-		g.drawImage(still(outline, b, style, overWash, pad), (int) Math.round(b.getX()) - pad,
+		g.drawImage(still(outline, b, style, overWash, solidTint, pad), (int) Math.round(b.getX()) - pad,
 			(int) Math.round(b.getY()) - pad, null);
 	}
 
@@ -276,9 +308,11 @@ final class GlassPanel
 		return paints;
 	}
 
-	private static BufferedImage still(Shape outline, Rectangle2D b, WindowStyle style, boolean overWash, int pad)
+	private static BufferedImage still(Shape outline, Rectangle2D b, WindowStyle style, boolean overWash,
+		double solidTint, int pad)
 	{
-		Key wanted = new Key(Shapes.formKey(outline), Math.round(style.scale() * 1000), style.theme(), overWash);
+		Key wanted = new Key(Shapes.formKey(outline), Math.round(style.scale() * 1000), style.theme(), overWash,
+			(int) Math.round(solidTint * 1000));
 		BufferedImage cached = STILLS.get(wanted);
 		if (cached != null)
 			return cached;
@@ -291,7 +325,7 @@ final class GlassPanel
 		{
 			WindowStyle.prepare(g);
 			g.translate(pad - b.getX(), pad - b.getY());
-			paintStill(g, outline, style, overWash);
+			paintStill(g, outline, style, overWash, solidTint);
 		}
 		finally
 		{
@@ -303,10 +337,10 @@ final class GlassPanel
 		return image;
 	}
 
-	private static void paintStill(Graphics2D g, Shape body, WindowStyle style, boolean overWash)
+	private static void paintStill(Graphics2D g, Shape body, WindowStyle style, boolean overWash, double solidTint)
 	{
 		GlassStyle.raisedLarge(g, body, style);
-		g.setColor(tint(style, overWash ? GlassTokens.TINT_OVER_WASH : GlassTokens.TINT_SOLID));
+		g.setColor(tint(style, overWash ? GlassTokens.TINT_OVER_WASH : solidTint));
 		g.fill(body);
 		Rectangle2D b = body.getBounds2D();
 		g.setPaint(new GradientPaint(0, (float) b.getY(), GlassTokens.white(GlassTokens.SHEEN_TOP), 0,
@@ -323,13 +357,15 @@ final class GlassPanel
 		private final long scale;
 		private final WindowTheme theme;
 		private final boolean overWash;
+		private final int solidTint;
 
-		Key(int[] form, long scale, WindowTheme theme, boolean overWash)
+		Key(int[] form, long scale, WindowTheme theme, boolean overWash, int solidTint)
 		{
 			this.form = form;
 			this.scale = scale;
 			this.theme = theme;
 			this.overWash = overWash;
+			this.solidTint = solidTint;
 		}
 
 		@Override
@@ -339,13 +375,15 @@ final class GlassPanel
 				return false;
 
 			Key k = (Key) o;
-			return scale == k.scale && theme == k.theme && overWash == k.overWash && Arrays.equals(form, k.form);
+			return scale == k.scale && theme == k.theme && overWash == k.overWash && solidTint == k.solidTint
+				&& Arrays.equals(form, k.form);
 		}
 
 		@Override
 		public int hashCode()
 		{
-			return Arrays.hashCode(form) * 31 + (int) scale * 7 + theme.hashCode() + (overWash ? 1 : 0);
+			return Arrays.hashCode(form) * 31 + (int) scale * 7 + theme.hashCode() + (overWash ? 1 : 0)
+				+ solidTint * 13;
 		}
 	}
 
