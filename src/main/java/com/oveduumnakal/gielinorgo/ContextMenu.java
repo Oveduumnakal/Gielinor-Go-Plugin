@@ -642,9 +642,8 @@ final class ContextMenu
 			Rectangle box = boxes.get(i);
 			if (i == highlight)
 			{
-				g.setColor(style.color(ThemeColor.SELECTION));
-				g.fill(style.outline(WindowStyle.Kind.BUTTON, new Rectangle2D.Double(box.x + style.metrics().border,
-					box.y, box.width - 2 * style.metrics().border, box.height)));
+				style.select(g, style.outline(WindowStyle.Kind.BUTTON, new Rectangle2D.Double(
+					box.x + style.metrics().border, box.y, box.width - 2 * style.metrics().border, box.height)));
 			}
 
 			if (item.separator)

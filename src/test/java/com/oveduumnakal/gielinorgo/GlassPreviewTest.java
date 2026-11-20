@@ -98,4 +98,55 @@ public class GlassPreviewTest
 				"card-" + names[i]);
 		}
 	}
+
+	/**
+	 * Paints the main window on every page over the screenshot, in glass.
+	 */
+	@Test
+	public void theMainWindowOnEveryPage()
+	{
+		BufferedImage scene = scene();
+		BufferedImage clean = copy(scene);
+		WindowStyle.share((name, box) -> RingWash.wash(clean, box));
+		try
+		{
+			for (WindowTab tab : WindowTab.values())
+			{
+				PartyRig rig = new PartyRig();
+				rig.theme = WindowTheme.RUNELITE_GLASS;
+				rig.width = 760;
+				rig.height = 500;
+				rig.publish(PartyRig.state(PartyRig.team(6)), true);
+				rig.open();
+				rig.shell.showTab(tab, rig.now);
+				rig.now += 1_000;
+				BufferedImage canvas = copy(scene);
+				Graphics2D g = WidgetKit.graphics(canvas);
+				g.translate(560, 140);
+				rig.shell.paint(g, rig.width, rig.height, rig.now);
+				g.dispose();
+				write(canvas, new Rectangle(490, 70, 900, 640), "window-" + tab.name().toLowerCase());
+			}
+		}
+		finally
+		{
+			WindowStyle.share(null);
+		}
+	}
+
+	/**
+	 * Paints the sheet of every primitive in glass at scales 1.0, 1.5 and 2.0.
+	 */
+	@Test
+	public void everyPrimitiveAtThreeScales()
+	{
+		folder();
+		for (double scale : new double[] {1.0, 1.5, 2.0})
+		{
+			BufferedImage sheet = LookSheet.primitives(WindowTheme.RUNELITE_GLASS, scale);
+			write(sheet, new Rectangle(0, 0, sheet.getWidth(), sheet.getHeight()), "primitives-" + scale);
+			BufferedImage card = LookSheet.card(WindowTheme.RUNELITE_GLASS, scale);
+			write(card, new Rectangle(0, 0, card.getWidth(), card.getHeight()), "card-sheet-" + scale);
+		}
+	}
 }

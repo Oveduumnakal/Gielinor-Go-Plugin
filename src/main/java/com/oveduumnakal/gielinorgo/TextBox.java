@@ -528,15 +528,28 @@ final class TextBox
 		FontMetrics fm = g.getFontMetrics(font);
 		layout(box, fm, style.metrics().pad);
 		Rectangle2D field = new Rectangle2D.Double(box.x, box.y, box.width, box.height);
-		g.setColor(style.color(ThemeColor.INPUT));
-		g.fill(style.outline(WindowStyle.Kind.FIELD, field));
 		boolean refused = !text.toString().isEmpty() && !valid();
 		ThemeColor outline = refused ? ThemeColor.HP_DANGER : focused ? ThemeColor.ACCENT : ThemeColor.PANEL_BORDER;
-		g.setColor(style.color(outline));
-		g.setStroke(new BasicStroke(style.metrics().border));
-		g.draw(style.outline(WindowStyle.Kind.FIELD, new Rectangle2D.Double(box.x + style.metrics().border / 2.0,
-			box.y + style.metrics().border / 2.0, box.width - style.metrics().border,
-			box.height - style.metrics().border)));
+		Shape fieldShape = style.outline(WindowStyle.Kind.FIELD, field);
+		if (style.theme().glass())
+		{
+			style.groove(g, fieldShape);
+		}
+		else
+		{
+			g.setColor(style.color(ThemeColor.INPUT));
+			g.fill(fieldShape);
+		}
+
+		if (!style.theme().glass() || refused || focused)
+		{
+			g.setColor(style.color(outline));
+			g.setStroke(new BasicStroke(style.metrics().border));
+			g.draw(style.outline(WindowStyle.Kind.FIELD, new Rectangle2D.Double(box.x + style.metrics().border / 2.0,
+				box.y + style.metrics().border / 2.0, box.width - style.metrics().border,
+				box.height - style.metrics().border)));
+		}
+
 		Font small = style.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
 		FontMetrics smallFm = g.getFontMetrics(small);
 		String count = text.length() + "/" + maxLength;

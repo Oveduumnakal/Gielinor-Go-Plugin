@@ -14,6 +14,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
@@ -488,6 +489,93 @@ final class WindowStyle
 		}
 
 		box(g, box, Kind.PANEL, ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER);
+	}
+
+	/**
+	 * Paints a card on a page: a slanted shape with a panel fill and a border in the solid look, pressed in in the
+	 * glass look. The caller gives the outline, so the card has the shape of its element.
+	 *
+	 * @param g the graphics
+	 * @param shape the card's outline
+	 */
+	void card(Graphics2D g, Shape shape)
+	{
+		if (theme.glass())
+		{
+			GlassStyle.pressed(g, shape, this, GlassTokens.black(GlassTokens.INSET_FILL));
+			return;
+		}
+
+		g.setColor(color(ThemeColor.PANEL_BOX));
+		g.fill(shape);
+		Stroke saved = g.getStroke();
+		g.setColor(color(ThemeColor.PANEL_BORDER));
+		g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
+		g.draw(shape);
+		g.setStroke(saved);
+	}
+
+	/**
+	 * Paints the body of a small label that stands apart: a chip fill and a border in the solid look, a raised chip in
+	 * the glass look.
+	 *
+	 * @param g the graphics
+	 * @param shape the label's outline
+	 */
+	void chipBody(Graphics2D g, Shape shape)
+	{
+		chipBody(g, shape, false);
+	}
+
+	/**
+	 * Paints the body of a small label that stands out, such as a badge: the accent colour.
+	 *
+	 * @param g the graphics
+	 * @param shape the label's outline
+	 */
+	void accentChip(Graphics2D g, Shape shape)
+	{
+		chipBody(g, shape, true);
+	}
+
+	private void chipBody(Graphics2D g, Shape shape, boolean accent)
+	{
+		if (theme.glass())
+		{
+			GlassStyle.chip(g, shape, this, accent);
+			return;
+		}
+
+		g.setColor(color(accent ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP));
+		g.fill(shape);
+		Stroke saved = g.getStroke();
+		g.setColor(color(ThemeColor.PANEL_BORDER));
+		g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
+		g.draw(shape);
+		g.setStroke(saved);
+	}
+
+	/**
+	 * Paints a groove: the track of a scroll bar, in the glass look pressed into the surface.
+	 *
+	 * @param g the graphics
+	 * @param shape the groove's outline
+	 */
+	void groove(Graphics2D g, Shape shape)
+	{
+		GlassStyle.groove(g, shape, this);
+	}
+
+	/**
+	 * Fills the highlighted entry of a list, such as a menu row.
+	 *
+	 * @param g the graphics
+	 * @param shape the entry's outline
+	 */
+	void select(Graphics2D g, Shape shape)
+	{
+		g.setColor(theme.glass() ? GlassTokens.white(GlassTokens.LIFTED_FILL) : color(ThemeColor.SELECTION));
+		g.fill(shape);
 	}
 
 	/**

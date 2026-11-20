@@ -314,13 +314,22 @@ final class ScrollList
 			return;
 
 		Rectangle track = trackBounds();
-		g.setColor(style.color(ThemeColor.SCROLL_TRACK));
-		g.fill(style.outline(WindowStyle.Kind.FIELD, new Rectangle2D.Double(track.x, track.y, track.width,
-			track.height)));
+		Shape trackShape = style.outline(WindowStyle.Kind.FIELD, new Rectangle2D.Double(track.x, track.y,
+			track.width, track.height));
 		Rectangle thumb = thumbBounds();
+		Shape thumbShape = style.outline(WindowStyle.Kind.FIELD, new Rectangle2D.Double(thumb.x, thumb.y,
+			thumb.width, thumb.height));
+		if (style.theme().glass())
+		{
+			style.groove(g, trackShape);
+			style.chipBody(g, thumbShape);
+			return;
+		}
+
+		g.setColor(style.color(ThemeColor.SCROLL_TRACK));
+		g.fill(trackShape);
 		g.setColor(style.color(ThemeColor.SCROLL_THUMB));
-		g.fill(style.outline(WindowStyle.Kind.FIELD, new Rectangle2D.Double(thumb.x, thumb.y, thumb.width,
-			thumb.height)));
+		g.fill(thumbShape);
 	}
 
 	/** @return the bar's groove, or an empty box when nothing scrolls */

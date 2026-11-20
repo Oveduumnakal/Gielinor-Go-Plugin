@@ -160,13 +160,21 @@ final class PartyPainter
 		Composite saved = PageContext.fade(g, 0.55);
 		Shape shape = st.outline(WindowStyle.Kind.ROW, new Rectangle2D.Double(row.x, row.y, row.width, row.height));
 		g.setColor(st.color(ThemeColor.PANEL_BOX));
-		g.fill(shape);
-		Stroke stroke = g.getStroke();
-		g.setColor(st.color(ThemeColor.PANEL_BORDER));
-		g.setStroke(new BasicStroke(st.metrics().border, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f,
-			new float[] {6f, 5f}, 0f));
-		g.draw(shape);
-		g.setStroke(stroke);
+		if (st.theme().glass())
+		{
+			st.card(g, shape);
+		}
+		else
+		{
+			g.fill(shape);
+			Stroke stroke = g.getStroke();
+			g.setColor(st.color(ThemeColor.PANEL_BORDER));
+			g.setStroke(new BasicStroke(st.metrics().border, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f,
+				new float[] {6f, 5f}, 0f));
+			g.draw(shape);
+			g.setStroke(stroke);
+		}
+
 		g.setComposite(saved);
 		PageText text = new PageText(st, sink);
 		int slant = st.metrics().slant;

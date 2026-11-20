@@ -779,8 +779,7 @@ final class StoragePage
 		int gap = Math.max(2, m.pad / 3);
 		Rectangle inner = new Rectangle(box.x + m.pad / 2, box.y + gap / 2, box.width - m.pad, box.height - gap);
 		Shape shape = st.outline(WindowStyle.Kind.PANEL, rect(inner));
-		g.setColor(st.color(ThemeColor.PANEL_BOX));
-		g.fill(shape);
+		st.card(g, shape);
 		if (selecting)
 			st.shade(g, shape, ctx.hoverOf(id), ctx.pressOf(id));
 
@@ -789,9 +788,6 @@ final class StoragePage
 		g.clip(shape);
 		g.fillRect(inner.x, inner.y, Math.max(2, st.px(PortraitFrame.STRIPE_UNITS)), inner.height);
 		g.setClip(savedClip);
-		g.setColor(st.color(ThemeColor.PANEL_BORDER));
-		g.setStroke(new BasicStroke(Math.max(1f, m.border)));
-		g.draw(shape);
 		int x = inner.x + st.px(PortraitFrame.STRIPE_UNITS) + m.pad;
 		if (selecting)
 		{

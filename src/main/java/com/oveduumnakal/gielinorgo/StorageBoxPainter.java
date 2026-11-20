@@ -138,14 +138,22 @@ final class StorageBoxPainter
 	{
 		Composite saved = PageContext.fade(g, 0.55);
 		Shape shape = st.outline(WindowStyle.Kind.PANEL, rect(box));
-		g.setColor(st.color(ThemeColor.PANEL_BOX));
-		g.fill(shape);
-		Stroke stroke = g.getStroke();
-		g.setColor(st.color(ThemeColor.PANEL_BORDER));
-		g.setStroke(new BasicStroke(st.metrics().border, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f,
-			new float[] {6f, 5f}, 0f));
-		g.draw(shape);
-		g.setStroke(stroke);
+		if (st.theme().glass())
+		{
+			st.card(g, shape);
+		}
+		else
+		{
+			g.setColor(st.color(ThemeColor.PANEL_BOX));
+			g.fill(shape);
+			Stroke stroke = g.getStroke();
+			g.setColor(st.color(ThemeColor.PANEL_BORDER));
+			g.setStroke(new BasicStroke(st.metrics().border, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f,
+				new float[] {6f, 5f}, 0f));
+			g.draw(shape);
+			g.setStroke(stroke);
+		}
+
 		g.setComposite(saved);
 		if (target)
 			st.focusRing(g, shape);
