@@ -37,6 +37,17 @@ public enum WindowTheme
 		this.glass = glass;
 	}
 
+	/**
+	 * The one place the Glass look setting picks a style, so the window and its overlays always agree.
+	 *
+	 * @param glass the Glass look setting
+	 * @return {@link #RUNELITE_GLASS} when on, {@link #RUNELITE_DARK} when off
+	 */
+	static WindowTheme of(boolean glass)
+	{
+		return glass ? RUNELITE_GLASS : RUNELITE_DARK;
+	}
+
 	/** @return true when the window is painted as frosted glass, false for the solid fills */
 	public boolean glass()
 	{

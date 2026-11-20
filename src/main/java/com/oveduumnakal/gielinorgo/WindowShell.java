@@ -352,6 +352,12 @@ final class WindowShell
 		this.host = host;
 	}
 
+	/** @return the style the window paints with this frame, as the host's settings give it */
+	WindowTheme theme()
+	{
+		return host.theme();
+	}
+
 	/**
 	 * Sets the page actions.
 	 *
