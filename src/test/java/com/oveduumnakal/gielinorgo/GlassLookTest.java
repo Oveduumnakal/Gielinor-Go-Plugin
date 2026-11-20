@@ -18,7 +18,10 @@ public class GlassLookTest
 	private static final String FOLDER = "glass-look";
 	private static final double[] SCALES = {1.0, 1.5};
 
-	/** Soft gradients and shadows round a few levels apart on another machine (text edges, gradient steps); that is not a change of look. */
+	/**
+	 * Soft gradients and shadows round a few levels apart on another machine (text edges, gradient steps); that is
+	 * not a change of look.
+	 */
 	private static final int NOISE = 4;
 
 	/** Starts every test from empty caches, so the pictures do not depend on what other tests painted first. */
