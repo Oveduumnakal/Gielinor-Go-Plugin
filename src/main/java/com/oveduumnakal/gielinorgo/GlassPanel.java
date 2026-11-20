@@ -88,7 +88,6 @@ final class GlassPanel
 	private final Key[] keys = new Key[2];
 	private final BufferedImage[] stills = new BufferedImage[2];
 	private int paints;
-	private Look look;
 	private BufferedImage rawBackdrop;
 	private WindowTheme tamedTheme;
 	private BufferedImage tamedBackdrop;
@@ -232,12 +231,6 @@ final class GlassPanel
 		if (box.width <= 0 || box.height <= 0)
 			return;
 
-		if (look != null)
-		{
-			look.paint(g, box, style, backdrop);
-			return;
-		}
-
 		if (backdrop != null)
 		{
 			Shape clip = g.getClip();
@@ -273,47 +266,6 @@ final class GlassPanel
 		}
 
 		return tamedBackdrop;
-	}
-
-	/**
-	 * Swaps in another background, so other glass styles can be compared on the same card. Spike only (#294): the
-	 * plugin never sets one.
-	 *
-	 * @param look the background to paint instead, or null for the frosted glass
-	 */
-	void look(Look look)
-	{
-		this.look = look;
-	}
-
-	/**
-	 * Paints a chip in the swapped-in style, if there is one.
-	 *
-	 * @param g the graphics
-	 * @param x the left edge
-	 * @param y the top edge
-	 * @param label the chip's text
-	 * @param accent whether it stands out
-	 * @param style the style the panel is drawn in
-	 * @return false when there is no other style, so the caller paints its own chip
-	 */
-	boolean chip(Graphics2D g, int x, int y, String label, boolean accent, WindowStyle style)
-	{
-		return look != null && look.chip(g, x, y, label, accent, style);
-	}
-
-	/**
-	 * Paints a bar in the swapped-in style, if there is one.
-	 *
-	 * @param g the graphics
-	 * @param box the bar's box
-	 * @param fraction the filled share, from 0 to 1
-	 * @param style the style the panel is drawn in
-	 * @return false when there is no other style, so the caller paints its own bar
-	 */
-	boolean bar(Graphics2D g, Rectangle2D box, double fraction, WindowStyle style)
-	{
-		return look != null && look.bar(g, box, fraction, style);
 	}
 
 	/** Forgets the cached still layers, so the next {@link #paint} paints it again. For the cost test. */
@@ -465,50 +417,6 @@ final class GlassPanel
 		}
 
 		return out;
-	}
-
-	/** A whole panel background painted instead of the frosted glass, for comparing styles (#294 spike). */
-	interface Look
-	{
-		/**
-		 * Paints the background.
-		 *
-		 * @param g the graphics
-		 * @param box the panel bounds
-		 * @param style the style the panel is drawn in
-		 * @param backdrop the scene backdrop as given, not yet darkened, or null
-		 */
-		void paint(Graphics2D g, Rectangle box, WindowStyle style, BufferedImage backdrop);
-
-		/**
-		 * Paints a chip in this style.
-		 *
-		 * @param g the graphics
-		 * @param x the left edge
-		 * @param y the top edge
-		 * @param label the chip's text
-		 * @param accent whether it stands out
-		 * @param style the style the panel is drawn in
-		 * @return false to let the caller paint its own chip
-		 */
-		default boolean chip(Graphics2D g, int x, int y, String label, boolean accent, WindowStyle style)
-		{
-			return false;
-		}
-
-		/**
-		 * Paints a bar in this style.
-		 *
-		 * @param g the graphics
-		 * @param box the bar's box
-		 * @param fraction the filled share, from 0 to 1
-		 * @param style the style the panel is drawn in
-		 * @return false to let the caller paint its own bar
-		 */
-		default boolean bar(Graphics2D g, Rectangle2D box, double fraction, WindowStyle style)
-		{
-			return false;
-		}
 	}
 
 	/** What the cached still layer was painted for. */

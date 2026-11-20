@@ -458,11 +458,19 @@ final class BubblePainter
 		g.scale(s, s);
 		g.translate(-ax, -ay);
 		alpha(g, card.alpha());
-		Rectangle footprint = new Rectangle(box.x, box.y, box.width,
-			box.height + Math.max(0, style.metrics().shadow));
-		Shape onScreen = g.getTransform().createTransformedShape(footprint);
-		Rectangle screen = onScreen.getBounds();
-		glass.paint(g, box, style, backdrop.behind(screen));
+		if (style.theme().glass())
+		{
+			Rectangle footprint = new Rectangle(box.x, box.y, box.width,
+				box.height + Math.max(0, style.metrics().shadow));
+			Shape onScreen = g.getTransform().createTransformedShape(footprint);
+			Rectangle screen = onScreen.getBounds();
+			glass.paint(g, box, style, backdrop.behind(screen));
+		}
+		else
+		{
+			style.window(g, box);
+		}
+
 		if (card.pinned())
 			style.focusRing(g, box);
 
@@ -490,9 +498,7 @@ final class BubblePainter
 			int w = style.chipWidth(g, chip.label());
 			if (cx + w <= left + inner)
 			{
-				if (!glass.chip(g, cx, y, chip.label(), chip.style(), style))
-					style.chip(g, cx, y, chip.label(), chip.style());
-
+				style.chip(g, cx, y, chip.label(), chip.style());
 				cx += w + gap;
 			}
 		}
@@ -554,8 +560,7 @@ final class BubblePainter
 			if (barW > 0)
 			{
 				Rectangle2D bar = new Rectangle2D.Double(barX, y + (first.height - barH) / 2.0, barW, barH);
-				if (!glass.bar(g, bar, row.fraction(), style))
-					style.xpBar(g, bar, row.fraction());
+				style.xpBar(g, bar, row.fraction());
 			}
 
 			y += first.height;

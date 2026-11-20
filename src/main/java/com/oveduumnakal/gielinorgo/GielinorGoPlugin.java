@@ -3227,10 +3227,10 @@ public class GielinorGoPlugin extends Plugin
 			window.applyPreset(config.windowSize());
 	}
 
-	/** @return the one style the painted window and its overlays use */
+	/** @return the style the painted window and its overlays use: glass, or solid when the Glass look is off */
 	private WindowTheme windowStyle()
 	{
-		return WindowTheme.RUNELITE_DARK;
+		return config.glassLook() ? WindowTheme.RUNELITE_GLASS : WindowTheme.RUNELITE_DARK;
 	}
 
 	/** Creates the painted window, its toggle, its notice and their input, and registers them. */

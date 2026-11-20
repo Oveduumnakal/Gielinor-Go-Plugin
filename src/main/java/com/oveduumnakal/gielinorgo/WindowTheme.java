@@ -17,63 +17,30 @@ import java.util.Map;
  */
 public enum WindowTheme
 {
-	/** RuneLite's own grey and orange, with an amber lead row. */
-	RUNELITE_DARK("RuneLite dark", new Palette()
-		.put(ThemeColor.WINDOW, 0x1E1E1E, 240)
-		.put(ThemeColor.FRAME, 0x464646)
-		.put(ThemeColor.HEADER, 0x151515)
-		.put(ThemeColor.TAB, 0x282828)
-		.put(ThemeColor.TAB_ACTIVE, 0x3E3E3E)
-		.put(ThemeColor.TAB_DISABLED, 0x1A1A1A)
-		.put(ThemeColor.TAB_TEXT, 0xDCDCDC)
-		.put(ThemeColor.TAB_ACTIVE_TEXT, 0xFFFFFF)
-		.put(ThemeColor.TAB_DISABLED_TEXT, 0x6E6E6E)
-		.put(ThemeColor.ROW, 0x282828)
-		.put(ThemeColor.ROW_BORDER, 0x404040)
-		.put(ThemeColor.ROW_TEXT, 0xFFFFFF)
-		.put(ThemeColor.LEAD_ROW, 0xFFB000)
-		.put(ThemeColor.LEAD_BORDER, 0xFFD466)
-		.put(ThemeColor.LEAD_TEXT, 0x1E1400)
-		.put(ThemeColor.PORTRAIT_BACKDROP, 0x181818)
-		.put(ThemeColor.TEXT, 0xEBEBEB)
-		.put(ThemeColor.SUBTEXT, 0xB4B4B4)
-		.put(ThemeColor.HP_FILL, 0x50C878)
-		.put(ThemeColor.HP_WARNING, 0xE6BE3C)
-		.put(ThemeColor.HP_DANGER, 0xE64646)
-		.put(ThemeColor.HP_TRACK, 0x101010)
-		.put(ThemeColor.XP_FILL, 0xDC8A00)
-		.put(ThemeColor.JAR_FILL, 0x7FD3F0)
-		.put(ThemeColor.XP_TRACK, 0x101010)
-		.put(ThemeColor.ACCENT, 0xDC8A00)
-		.put(ThemeColor.PANEL_BOX, 0x262626)
-		.put(ThemeColor.PANEL_BORDER, 0x3C3C3C)
-		.put(ThemeColor.TOOLTIP, 0x141414, 245)
-		.put(ThemeColor.TOOLTIP_TEXT, 0xF0F0F0)
-		.put(ThemeColor.NOTICE, 0x141414, 235)
-		.put(ThemeColor.NOTICE_TEXT, 0xFFFFFF)
-		.put(ThemeColor.CHIP, 0x3A3A3A)
-		.put(ThemeColor.CHIP_TEXT, 0xF0F0F0)
-		.put(ThemeColor.CHIP_ACCENT, 0xDC8A00)
-		.put(ThemeColor.CHIP_ACCENT_TEXT, 0x1E1400)
-		.put(ThemeColor.HOVER_SHADE, 0xFFFFFF, 26)
-		.put(ThemeColor.PRESS_SHADE, 0x000000, 60)
-		.put(ThemeColor.SHADOW, 0x000000, 90)
-		.put(ThemeColor.FOCUS_RING, 0xFFB000)
-		.put(ThemeColor.PARTY_HIGHLIGHT, 0x4FC3F7)
-		.put(ThemeColor.INPUT, 0x141414)
-		.put(ThemeColor.SELECTION, 0xDC8A00, 110)
-		.put(ThemeColor.SCRIM, 0x000000, 150)
-		.put(ThemeColor.SCROLL_TRACK, 0x101010, 160)
-		.put(ThemeColor.SCROLL_THUMB, 0x6E6E6E)
-		.put(ThemeColor.GOLD, 0xFFCC33));
+	/** RuneLite's own grey and orange, with an amber lead row, painted as solid fills. */
+	RUNELITE_DARK("RuneLite dark", runeLitePalette(), false),
+
+	/**
+	 * The same colours as {@link #RUNELITE_DARK}, painted as frosted glass that takes its colours from the game scene
+	 * round each surface (#324). Switched on by the Glass look setting.
+	 */
+	RUNELITE_GLASS("RuneLite glass", runeLitePalette(), true);
 
 	private final String label;
 	private final Map<ThemeColor, Color> colors;
+	private final boolean glass;
 
-	WindowTheme(String label, Palette palette)
+	WindowTheme(String label, Palette palette, boolean glass)
 	{
 		this.label = label;
 		this.colors = palette.colors;
+		this.glass = glass;
+	}
+
+	/** @return true when the window is painted as frosted glass, false for the solid fills */
+	public boolean glass()
+	{
+		return glass;
 	}
 
 	/**
@@ -166,6 +133,58 @@ public enum WindowTheme
 	private static int channel(int from, int to, double t)
 	{
 		return (int) Math.round(from + (to - from) * t);
+	}
+
+	private static Palette runeLitePalette()
+	{
+		return new Palette()
+		.put(ThemeColor.WINDOW, 0x1E1E1E, 240)
+		.put(ThemeColor.FRAME, 0x464646)
+		.put(ThemeColor.HEADER, 0x151515)
+		.put(ThemeColor.TAB, 0x282828)
+		.put(ThemeColor.TAB_ACTIVE, 0x3E3E3E)
+		.put(ThemeColor.TAB_DISABLED, 0x1A1A1A)
+		.put(ThemeColor.TAB_TEXT, 0xDCDCDC)
+		.put(ThemeColor.TAB_ACTIVE_TEXT, 0xFFFFFF)
+		.put(ThemeColor.TAB_DISABLED_TEXT, 0x6E6E6E)
+		.put(ThemeColor.ROW, 0x282828)
+		.put(ThemeColor.ROW_BORDER, 0x404040)
+		.put(ThemeColor.ROW_TEXT, 0xFFFFFF)
+		.put(ThemeColor.LEAD_ROW, 0xFFB000)
+		.put(ThemeColor.LEAD_BORDER, 0xFFD466)
+		.put(ThemeColor.LEAD_TEXT, 0x1E1400)
+		.put(ThemeColor.PORTRAIT_BACKDROP, 0x181818)
+		.put(ThemeColor.TEXT, 0xEBEBEB)
+		.put(ThemeColor.SUBTEXT, 0xB4B4B4)
+		.put(ThemeColor.HP_FILL, 0x50C878)
+		.put(ThemeColor.HP_WARNING, 0xE6BE3C)
+		.put(ThemeColor.HP_DANGER, 0xE64646)
+		.put(ThemeColor.HP_TRACK, 0x101010)
+		.put(ThemeColor.XP_FILL, 0xDC8A00)
+		.put(ThemeColor.JAR_FILL, 0x7FD3F0)
+		.put(ThemeColor.XP_TRACK, 0x101010)
+		.put(ThemeColor.ACCENT, 0xDC8A00)
+		.put(ThemeColor.PANEL_BOX, 0x262626)
+		.put(ThemeColor.PANEL_BORDER, 0x3C3C3C)
+		.put(ThemeColor.TOOLTIP, 0x141414, 245)
+		.put(ThemeColor.TOOLTIP_TEXT, 0xF0F0F0)
+		.put(ThemeColor.NOTICE, 0x141414, 235)
+		.put(ThemeColor.NOTICE_TEXT, 0xFFFFFF)
+		.put(ThemeColor.CHIP, 0x3A3A3A)
+		.put(ThemeColor.CHIP_TEXT, 0xF0F0F0)
+		.put(ThemeColor.CHIP_ACCENT, 0xDC8A00)
+		.put(ThemeColor.CHIP_ACCENT_TEXT, 0x1E1400)
+		.put(ThemeColor.HOVER_SHADE, 0xFFFFFF, 26)
+		.put(ThemeColor.PRESS_SHADE, 0x000000, 60)
+		.put(ThemeColor.SHADOW, 0x000000, 90)
+		.put(ThemeColor.FOCUS_RING, 0xFFB000)
+		.put(ThemeColor.PARTY_HIGHLIGHT, 0x4FC3F7)
+		.put(ThemeColor.INPUT, 0x141414)
+		.put(ThemeColor.SELECTION, 0xDC8A00, 110)
+		.put(ThemeColor.SCRIM, 0x000000, 150)
+		.put(ThemeColor.SCROLL_TRACK, 0x101010, 160)
+		.put(ThemeColor.SCROLL_THUMB, 0x6E6E6E)
+		.put(ThemeColor.GOLD, 0xFFCC33);
 	}
 
 	/** Collects the colours of one theme while its constant is built. */

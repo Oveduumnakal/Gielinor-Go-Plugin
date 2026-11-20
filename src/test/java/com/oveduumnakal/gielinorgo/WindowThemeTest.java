@@ -9,6 +9,7 @@ import java.awt.Color;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -79,10 +80,21 @@ public class WindowThemeTest
 	}
 
 	@Test
-	public void theOnlyStyleIsRuneLiteDark()
+	public void theStylesAreRuneLiteDarkAndRuneLiteGlass()
 	{
-		assertEquals(1, WindowTheme.values().length);
+		assertEquals(2, WindowTheme.values().length);
 		assertEquals("RuneLite dark", WindowTheme.RUNELITE_DARK.toString());
+		assertEquals("RuneLite glass", WindowTheme.RUNELITE_GLASS.toString());
+		assertTrue(WindowTheme.RUNELITE_GLASS.glass());
+		assertFalse(WindowTheme.RUNELITE_DARK.glass());
+	}
+
+	@Test
+	public void theGlassStyleHasTheSamePaletteAsTheSolidOne()
+	{
+		for (ThemeColor name : ThemeColor.values())
+			assertEquals(name.toString(), WindowTheme.RUNELITE_DARK.color(name),
+				WindowTheme.RUNELITE_GLASS.color(name));
 	}
 
 	@Test
