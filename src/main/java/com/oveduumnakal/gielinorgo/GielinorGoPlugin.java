@@ -259,6 +259,7 @@ public class GielinorGoPlugin extends Plugin
 	private boolean unsaved;
 	private String saveProfileKey;
 	private int ticks;
+	private final ActionSteps actionSteps = new ActionSteps();
 
 	/**
 	 * Supplies the plugin's settings.
@@ -379,6 +380,7 @@ public class GielinorGoPlugin extends Plugin
 		lastLevel.clear();
 		ledger.reset();
 		stepCounter.reset();
+		actionSteps.reset();
 	}
 
 	/**
@@ -501,6 +503,7 @@ public class GielinorGoPlugin extends Plugin
 		game.setBankOpen(false);
 		candidates.clear();
 		stepCounter.reset();
+		actionSteps.reset();
 		noticeBoard.clear();
 		if (state == GameState.LOGIN_SCREEN)
 		{
@@ -604,9 +607,25 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		game.addSkillXp(skill.name(), event.getXp() - previousXp);
+		actionStep(skill.name(), event.getXp() - previousXp);
 		skillingEncounter(skill.name(), event.getXp() - previousXp, event.getLevel());
 		if (event.getLevel() > previousLevel)
 			game.onLevelUp();
+	}
+
+	/**
+	 * Counts an XP drop in a skill that is not a combat skill as one step toward the eggs carried, within the limits
+	 * of {@link ActionSteps}. Nothing happens with the setting off, or with no egg carried, so the hour is not spent.
+	 *
+	 * @param skill the skill's name in capitals
+	 * @param xpGained OSRS XP in the drop
+	 */
+	private void actionStep(String skill, int xpGained)
+	{
+		if (!config.skillingHatchesEggs() || !ActionSteps.counts(skill, xpGained) || !game.carriesEgg())
+			return;
+
+		game.addActionSteps(actionSteps.take(ticks, System.currentTimeMillis()));
 	}
 
 	/**

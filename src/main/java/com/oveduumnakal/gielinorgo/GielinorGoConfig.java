@@ -614,6 +614,24 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Whether skilling counts toward hatching eggs.
+	 *
+	 * @return true when an XP drop in a skill that is not a combat skill counts as one step for the eggs
+	 */
+	@ConfigItem(
+		keyName = "skillingHatchesEggs",
+		name = "Skilling hatches eggs",
+		description = "An XP drop in a skill that is not a combat skill counts as one step for the eggs you carry."
+			+ "\nAt most one a game tick and 1,200 an hour; walking is much faster and still counts for jars, tasks"
+			+ " and bond.\nOff: only walking hatches eggs.",
+		position = 36
+	)
+	default boolean skillingHatchesEggs()
+	{
+		return true;
+	}
+
+	/**
 	 * The share of the game screen's width the painted window takes. It follows the game window. Set by dragging the
 	 * window's edge and by the size presets; not shown in the settings.
 	 *
