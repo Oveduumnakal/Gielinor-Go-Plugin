@@ -207,6 +207,8 @@ A Creature Log, daily tasks and daily events give you goals.
   boxes are rectangles with soft corners. (#321)
 - **X buttons.** Close, and the change log's Back (now in its top left corner), are drawn as an X that stays sharp at
   every window size. Esc and Backspace still work. (#320)
+- **Sharper creature pictures.** Creatures in the Party, Summary, Storage and pinned boxes are drawn at over four
+  times the old detail and scaled down to fit, so the large Summary picture is no longer pixelated. (#286)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
