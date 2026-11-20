@@ -217,6 +217,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 ### Fixes
 
+- **Tooltips and menus.** In the Glass look, tooltips and popup menus are nearly solid (94%) so their text reads over
+  any scene. (#331)
 - **Rename box.** Typing in the rename box now shows the letters, digits and spaces you type. (#316)
 - **Party refresh.** Gaining XP no longer replays the Party window's enter animation or closes the Summary, and
   renaming a creature keeps its Summary open. (#318)

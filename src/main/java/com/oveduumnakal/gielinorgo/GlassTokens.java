@@ -23,6 +23,12 @@ final class GlassTokens
 	/** The opacity of the window colour when there is no wash yet; high enough that text reads over white. */
 	static final double TINT_SOLID = 0.78;
 
+	/**
+	 * The opacity of the window colour on tooltips and popup menus when there is no wash: nearly solid, so their text
+	 * reads over any scene, with a hint of glass left (#331).
+	 */
+	static final double POPUP_TINT = 0.94;
+
 	/** The opacity of the white sheen at the top edge. */
 	static final double SHEEN_TOP = 0.08;
 

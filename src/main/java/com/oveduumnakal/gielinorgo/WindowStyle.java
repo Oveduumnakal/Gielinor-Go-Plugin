@@ -463,12 +463,29 @@ final class WindowStyle
 		return washes.wash(surface, toScreen.createTransformedShape(footprint).getBounds());
 	}
 
-	private void paintPopup(Graphics2D g, Shape body, String surface, BufferedImage wash, List<Readability.Need> needs)
+	private void paintPopup(Graphics2D g, Shape body, String surface, BufferedImage wash,
+		List<Readability.Need> needs)
+	{
+		double solid = firm(surface) ? GlassTokens.POPUP_TINT : GlassTokens.TINT_SOLID;
+		paintPopup(g, body, surface, wash, needs, solid);
+	}
+
+	/**
+	 * Tells whether a pop-up is one that must read over any scene: a tooltip or a popup menu. A dialog keeps the tint
+	 * of the window.
+	 */
+	private static boolean firm(String surface)
+	{
+		return "tooltip".equals(surface) || "menu".equals(surface);
+	}
+
+	private void paintPopup(Graphics2D g, Shape body, String surface, BufferedImage wash,
+		List<Readability.Need> needs, double solid)
 	{
 		if (wash == null)
 		{
 			FADES.remove(surface);
-			GlassPanel.paint(g, body, this, null, needs);
+			GlassPanel.paint(g, body, this, null, needs, solid);
 			return;
 		}
 
@@ -477,16 +494,16 @@ final class WindowStyle
 		double t = Math.min(1.0, since / (double) GlassTokens.WASH_FADE_MS);
 		if (t >= 1.0)
 		{
-			GlassPanel.paint(g, body, this, wash, needs);
+			GlassPanel.paint(g, body, this, wash, needs, solid);
 			return;
 		}
 
 		Composite saved = g.getComposite();
 		float alpha = saved instanceof AlphaComposite ? ((AlphaComposite) saved).getAlpha() : 1f;
 		g.setComposite(AlphaComposite.SrcOver.derive(alpha * (float) (1.0 - t)));
-		GlassPanel.paint(g, body, this, null, needs);
+		GlassPanel.paint(g, body, this, null, needs, solid);
 		g.setComposite(AlphaComposite.SrcOver.derive(alpha * (float) t));
-		GlassPanel.paint(g, body, this, wash, needs);
+		GlassPanel.paint(g, body, this, wash, needs, solid);
 		g.setComposite(saved);
 	}
 
