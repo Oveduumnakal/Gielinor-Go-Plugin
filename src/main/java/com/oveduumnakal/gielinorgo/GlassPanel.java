@@ -61,6 +61,18 @@ final class GlassPanel
 		}
 	};
 
+	private static final Map<BakedKey, BufferedImage> BAKED = new LinkedHashMap<BakedKey, BufferedImage>(17, 0.75f,
+		true)
+	{
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		protected boolean removeEldestEntry(Map.Entry<BakedKey, BufferedImage> eldest)
+		{
+			return size() > 12;
+		}
+	};
+
 	private static int paints;
 
 	private GlassPanel()
@@ -130,7 +142,7 @@ final class GlassPanel
 		if (wash == null || b.getWidth() <= 0 || b.getHeight() <= 0)
 			return;
 
-		drawWash(g, outline, footprint(b, pad(style)), tamed(wash, style, needs));
+		drawWash(g, outline, tamed(wash, style, needs), pad(style));
 	}
 
 	/**
@@ -151,7 +163,7 @@ final class GlassPanel
 		if (wash == null || b.getWidth() <= 0 || b.getHeight() <= 0)
 			return;
 
-		drawWash(g, outline, footprint(b, pad), tamed(wash, style, needs));
+		drawWash(g, outline, tamed(wash, style, needs), pad);
 	}
 
 	/**
@@ -193,28 +205,52 @@ final class GlassPanel
 			b.getHeight() + 2 * pad);
 	}
 
-	private static void drawWash(Graphics2D g, Shape outline, Rectangle2D b, BufferedImage tamed)
+	private static void drawWash(Graphics2D g, Shape outline, BufferedImage tamed, int pad)
 	{
-		Shape clip = g.getClip();
-		Object interpolation = g.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
-		Composite composite = g.getComposite();
-		try
+		Rectangle2D body = outline.getBounds2D();
+		BakedKey key = new BakedKey(tamed, Shapes.formKey(outline), pad);
+		BufferedImage baked = BAKED.get(key);
+		if (baked == null)
 		{
-			g.clip(outline);
-			float alpha = composite instanceof AlphaComposite ? ((AlphaComposite) composite).getAlpha() : 1f;
-			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER,
-				alpha * (float) GlassTokens.WASH_ALPHA));
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-			g.drawImage(tamed, (int) Math.round(b.getX()), (int) Math.round(b.getY()), (int) Math.round(b.getWidth()),
-				(int) Math.round(b.getHeight()), null);
+			baked = bake(outline, body, tamed, pad);
+			BAKED.put(key, baked);
 		}
-		finally
+
+		g.drawImage(baked, (int) Math.round(body.getX()), (int) Math.round(body.getY()), null);
+	}
+
+	/**
+	 * Bakes a wash into the picture that is drawn each frame: the tamed wash stretched over the footprint, cut to the
+	 * outline with soft edges, at {@link GlassTokens#WASH_ALPHA}. A plain picture draws far faster than a stretched,
+	 * clipped one, and a wash changes only a few times a second.
+	 */
+	private static BufferedImage bake(Shape outline, Rectangle2D body, BufferedImage tamed, int pad)
+	{
+		int w = (int) Math.ceil(body.getWidth());
+		int h = (int) Math.ceil(body.getHeight());
+		BufferedImage stretched = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D sg = stretched.createGraphics();
+		sg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		sg.drawImage(tamed, -pad, -pad, w + 2 * pad, h + 2 * pad, null);
+		sg.dispose();
+		BufferedImage mask = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D mg = mask.createGraphics();
+		WindowStyle.prepare(mg);
+		mg.translate(-body.getX(), -body.getY());
+		mg.setColor(Color.WHITE);
+		mg.fill(outline);
+		mg.dispose();
+		int[] color = stretched.getRGB(0, 0, w, h, null, 0, w);
+		int[] cut = mask.getRGB(0, 0, w, h, null, 0, w);
+		for (int i = 0; i < color.length; i++)
 		{
-			g.setComposite(composite);
-			g.setClip(clip);
-			if (interpolation != null)
-				g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, interpolation);
+			int alpha = (int) Math.round((cut[i] >>> 24) * GlassTokens.WASH_ALPHA);
+			color[i] = alpha << 24 | color[i] & 0xFFFFFF;
 		}
+
+		BufferedImage baked = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		baked.setRGB(0, 0, w, h, color, 0, w);
+		return baked;
 	}
 
 	private static BufferedImage tamed(BufferedImage wash, WindowStyle style, List<Readability.Need> needs)
@@ -235,6 +271,7 @@ final class GlassPanel
 	{
 		STILLS.clear();
 		TAMED.clear();
+		BAKED.clear();
 	}
 
 	/** @return how many times a still layer has been painted since the start; for tests */
@@ -396,6 +433,37 @@ final class GlassPanel
 		public int hashCode()
 		{
 			return Arrays.hashCode(form) * 31 + (int) scale * 7 + theme.hashCode() + (overWash ? 1 : 0);
+		}
+	}
+
+	/** What a baked wash was made from: the tamed wash picture itself, the outline's form and the footprint room. */
+	private static final class BakedKey
+	{
+		private final BufferedImage tamed;
+		private final int[] form;
+		private final int pad;
+
+		BakedKey(BufferedImage tamed, int[] form, int pad)
+		{
+			this.tamed = tamed;
+			this.form = form;
+			this.pad = pad;
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			if (!(o instanceof BakedKey))
+				return false;
+
+			BakedKey k = (BakedKey) o;
+			return tamed == k.tamed && pad == k.pad && Arrays.equals(form, k.form);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return System.identityHashCode(tamed) * 31 + Arrays.hashCode(form) + pad;
 		}
 	}
 

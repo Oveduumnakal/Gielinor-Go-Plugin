@@ -14,11 +14,15 @@ import java.awt.RadialGradientPaint;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The drawing of the glass look's elements (#324): a raised surface with two soft outer shadows and a bevel, a lifted
@@ -28,6 +32,22 @@ import java.awt.image.BufferedImage;
  */
 final class GlassStyle
 {
+	private static final int KIND_RAISED = 1;
+	private static final int KIND_PRESSED = 2;
+	private static final int KIND_GROOVE = 3;
+
+	private static final Map<SpriteKey, BufferedImage> SPRITES = new LinkedHashMap<SpriteKey, BufferedImage>(257,
+		0.75f, true)
+	{
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		protected boolean removeEldestEntry(Map.Entry<SpriteKey, BufferedImage> eldest)
+		{
+			return size() > 256;
+		}
+	};
+
 	private GlassStyle()
 	{
 	}
@@ -72,11 +92,15 @@ final class GlassStyle
 	 */
 	static void raisedSmall(Graphics2D g, Shape shape, WindowStyle style, Color fill, double lift)
 	{
-		shadowsSmall(g, shape, style, lift);
-		g.setColor(fill);
-		g.fill(shape);
-		bevel(g, shape, style, GlassTokens.SMALL_BEVEL, GlassTokens.SMALL_BEVEL_LIGHT,
-			GlassTokens.SMALL_BEVEL_DARK);
+		int pad = px(style, 3 * GlassTokens.SMALL_DARK_BLUR * lift + GlassTokens.SMALL_DARK_DY * lift + 2);
+		sprite(g, shape, style, KIND_RAISED, fill.getRGB(), (int) Math.round(lift * 100), pad, (sg, local) ->
+		{
+			shadowsSmall(sg, local, style, lift);
+			sg.setColor(fill);
+			sg.fill(local);
+			bevel(sg, local, style, GlassTokens.SMALL_BEVEL, GlassTokens.SMALL_BEVEL_LIGHT,
+				GlassTokens.SMALL_BEVEL_DARK);
+		});
 	}
 
 	/**
@@ -107,14 +131,17 @@ final class GlassStyle
 	 */
 	static void pressed(Graphics2D g, Shape shape, WindowStyle style, Color fill)
 	{
-		g.setColor(fill);
-		g.fill(shape);
-		SoftShadows.inner(g, shape, GlassTokens.black(GlassTokens.PRESSED_DARK),
-			px(style, GlassTokens.PRESSED_DARK_OFFSET), px(style, GlassTokens.PRESSED_DARK_OFFSET),
-			Math.max(1, px(style, GlassTokens.PRESSED_DARK_BLUR)));
-		SoftShadows.inner(g, shape, GlassTokens.white(GlassTokens.PRESSED_LIGHT),
-			px(style, GlassTokens.PRESSED_LIGHT_OFFSET), px(style, GlassTokens.PRESSED_LIGHT_OFFSET),
-			Math.max(1, px(style, GlassTokens.PRESSED_LIGHT_BLUR)));
+		sprite(g, shape, style, KIND_PRESSED, fill.getRGB(), 0, 0, (sg, local) ->
+		{
+			sg.setColor(fill);
+			sg.fill(local);
+			SoftShadows.inner(sg, local, GlassTokens.black(GlassTokens.PRESSED_DARK),
+				px(style, GlassTokens.PRESSED_DARK_OFFSET), px(style, GlassTokens.PRESSED_DARK_OFFSET),
+				Math.max(1, px(style, GlassTokens.PRESSED_DARK_BLUR)));
+			SoftShadows.inner(sg, local, GlassTokens.white(GlassTokens.PRESSED_LIGHT),
+				px(style, GlassTokens.PRESSED_LIGHT_OFFSET), px(style, GlassTokens.PRESSED_LIGHT_OFFSET),
+				Math.max(1, px(style, GlassTokens.PRESSED_LIGHT_BLUR)));
+		});
 	}
 
 	/**
@@ -126,13 +153,100 @@ final class GlassStyle
 	 */
 	static void groove(Graphics2D g, Shape shape, WindowStyle style)
 	{
-		g.setColor(GlassTokens.black(GlassTokens.GROOVE_FILL));
-		g.fill(shape);
-		SoftShadows.inner(g, shape, GlassTokens.black(GlassTokens.GROOVE_DARK), px(style, GlassTokens.GROOVE_OFFSET),
-			px(style, GlassTokens.GROOVE_OFFSET), Math.max(1, px(style, GlassTokens.GROOVE_BLUR)));
-		SoftShadows.inner(g, shape, GlassTokens.white(GlassTokens.GROOVE_LIGHT),
-			-px(style, GlassTokens.GROOVE_OFFSET), -px(style, GlassTokens.GROOVE_OFFSET),
-			Math.max(1, px(style, GlassTokens.GROOVE_BLUR)));
+		sprite(g, shape, style, KIND_GROOVE, 0, 0, 0, (sg, local) ->
+		{
+			sg.setColor(GlassTokens.black(GlassTokens.GROOVE_FILL));
+			sg.fill(local);
+			SoftShadows.inner(sg, local, GlassTokens.black(GlassTokens.GROOVE_DARK),
+				px(style, GlassTokens.GROOVE_OFFSET), px(style, GlassTokens.GROOVE_OFFSET),
+				Math.max(1, px(style, GlassTokens.GROOVE_BLUR)));
+			SoftShadows.inner(sg, local, GlassTokens.white(GlassTokens.GROOVE_LIGHT),
+				-px(style, GlassTokens.GROOVE_OFFSET), -px(style, GlassTokens.GROOVE_OFFSET),
+				Math.max(1, px(style, GlassTokens.GROOVE_BLUR)));
+		});
+	}
+
+	private static void sprite(Graphics2D g, Shape shape, WindowStyle style, int kind, int rgba, int lift, int pad,
+		Sprite painter)
+	{
+		Rectangle2D b = shape.getBounds2D();
+		SpriteKey key = new SpriteKey(Shapes.formKey(shape), kind, rgba, lift, (int) Math.round(style.scale() * 1000));
+		BufferedImage image;
+		synchronized (SPRITES)
+		{
+			image = SPRITES.get(key);
+			if (image == null)
+			{
+				image = new BufferedImage((int) Math.ceil(b.getWidth()) + 2 * pad,
+					(int) Math.ceil(b.getHeight()) + 2 * pad, BufferedImage.TYPE_INT_ARGB);
+				Graphics2D sg = image.createGraphics();
+				WindowStyle.prepare(sg);
+				Shape local = AffineTransform.getTranslateInstance(pad - b.getX(), pad - b.getY())
+					.createTransformedShape(shape);
+				painter.paint(sg, local);
+				sg.dispose();
+				SPRITES.put(key, image);
+			}
+		}
+
+		g.drawImage(image, (int) Math.round(b.getX()) - pad, (int) Math.round(b.getY()) - pad, null);
+	}
+
+	/** Forgets every cached element picture; for tests. */
+	static void clearSprites()
+	{
+		synchronized (SPRITES)
+		{
+			SPRITES.clear();
+		}
+	}
+
+	/** Paints one element into its own picture. */
+	private interface Sprite
+	{
+		/**
+		 * Paints the element.
+		 *
+		 * @param g the picture's graphics
+		 * @param shape the outline, moved so the picture holds it
+		 */
+		void paint(Graphics2D g, Shape shape);
+	}
+
+	/** What a cached element picture was painted for. */
+	private static final class SpriteKey
+	{
+		private final int[] form;
+		private final int kind;
+		private final int rgba;
+		private final int lift;
+		private final int scale;
+
+		SpriteKey(int[] form, int kind, int rgba, int lift, int scale)
+		{
+			this.form = form;
+			this.kind = kind;
+			this.rgba = rgba;
+			this.lift = lift;
+			this.scale = scale;
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			if (!(o instanceof SpriteKey))
+				return false;
+
+			SpriteKey k = (SpriteKey) o;
+			return kind == k.kind && rgba == k.rgba && lift == k.lift && scale == k.scale
+				&& Arrays.equals(form, k.form);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Arrays.hashCode(form) * 31 + ((kind * 31 + rgba) * 31 + lift) * 31 + scale;
+		}
 	}
 
 	/**
