@@ -213,8 +213,11 @@ A Creature Log, daily tasks and daily events give you goals.
   carry, at most one a game tick and 1,200 an hour, so players who do not walk can still hatch eggs. Walking is much
   faster and is the only thing that pays jars, walk tasks and bond. Settings > Skilling hatches eggs turns it off.
   (#323)
-- **Glass border.** Glass buttons, tooltips, menus and dialogs have a thin metal edge, light at the top and dark at
-  the bottom. Settings > Glass border picks Bronze (the default) or Steel blue. (#333)
+- **Glass border and metal accent.** In the Glass look, raised buttons, tabs and chips, tooltips, menus, the window
+  and the pinned boxes have a thin metal edge, and pressed-in ones have it sunk. The orange of the active parts
+  (primary buttons, the lead row, experience bars) is metal, and bond hearts and move pills are metal too: a move's
+  outline is red for melee, green for ranged and blue for magic. Settings > Glass border picks Bronze (orange accent,
+  the default) or Steel blue (silver accent). (#333)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
