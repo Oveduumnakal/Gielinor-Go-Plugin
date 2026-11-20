@@ -50,7 +50,7 @@ final class PortraitFrame
 	static void paint(Graphics2D g, WindowStyle style, PortraitCache pictures, RowModel row, Rectangle2D box,
 		double skew, double bob, long now, MotionMode mode)
 	{
-		Shape clip = Slant.shape(box, skew);
+		Shape clip = style.slant(box, skew);
 		g.setColor(style.color(ThemeColor.PORTRAIT_BACKDROP));
 		g.fill(clip);
 		Shape savedClip = g.getClip();
@@ -77,7 +77,7 @@ final class PortraitFrame
 			Stroke stroke = g.getStroke();
 			g.setColor(style.color(ThemeColor.GOLD));
 			g.setStroke(new BasicStroke(Math.max(2f, style.metrics().border)));
-			g.draw(Slant.shape(new Rectangle2D.Double(box.getX() + 1, box.getY() + 1, box.getWidth() - 2,
+			g.draw(style.slant(new Rectangle2D.Double(box.getX() + 1, box.getY() + 1, box.getWidth() - 2,
 				box.getHeight() - 2), skew));
 			g.setStroke(stroke);
 		}

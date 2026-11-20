@@ -338,6 +338,7 @@ public class GielinorGoPlugin extends Plugin
 		stopTracker();
 		stopBubbles();
 		stopControls();
+		WindowStyle.share(null);
 		stopWindow();
 		keyManager.unregisterKeyListener(hotkeys);
 		choiceOpen = false;
@@ -1028,7 +1029,8 @@ public class GielinorGoPlugin extends Plugin
 	{
 		bubblesFailed = false;
 		bubbles = new WildBubbles();
-		bubbleOverlay = new WildBubbleOverlay(client, bodies, bubbles, new BubblePainter(() -> combatSprite),
+		bubbleOverlay = new WildBubbleOverlay(client, bodies, bubbles, new BubblePainter(() -> combatSprite,
+			WashSource.NONE),
 			this::windowStyle, config::windowAnimations, config::windowFraction, () -> loaded && bubblesOn(),
 			System::currentTimeMillis, this::bubblesBroke);
 		bubbleInput = new BubbleInput(bubbleOverlay::hits, dragKey, bubbleSink());
@@ -3222,10 +3224,10 @@ public class GielinorGoPlugin extends Plugin
 			window.applyPreset(config.windowSize());
 	}
 
-	/** @return the one style the painted window and its overlays use */
+	/** @return the style the painted window and its overlays use: glass, or solid when the Glass look is off */
 	private WindowTheme windowStyle()
 	{
-		return WindowTheme.RUNELITE_DARK;
+		return WindowTheme.of(config.glassLook());
 	}
 
 	/** Creates the painted window, its toggle, its notice and their input, and registers them. */

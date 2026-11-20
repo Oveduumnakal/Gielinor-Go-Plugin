@@ -13,9 +13,7 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
 import java.util.List;
 
 /**
@@ -115,8 +113,8 @@ final class SummaryPainter
 		header(g, ctx, layout, content);
 		chips(g, ctx, layout, content);
 		if (ctx.focused && WindowPages.ID_SUMMARY_MENU.equals(ctx.highlight))
-			st.focusRing(g, Slant.shape(new Rectangle2D.Double(layout.left.x, layout.left.y, layout.left.width,
-				layout.left.height), st.metrics().slant / 2.0));
+			st.focusRing(g, st.outline(WindowStyle.Kind.PANEL, new Rectangle2D.Double(layout.left.x, layout.left.y,
+				layout.left.width, layout.left.height)));
 	}
 
 	private static Rectangle shrunk(Rectangle target)
@@ -135,15 +133,11 @@ final class SummaryPainter
 		WindowStyle st = ctx.style;
 		PageText text = new PageText(st, sink);
 		int d = box.height;
-		RoundRectangle2D pill = new RoundRectangle2D.Double(box.x + d / 2.0, box.y, Math.max(0, box.width - d / 2.0),
-			box.height, box.height, box.height);
-		g.setColor(st.color(ThemeColor.PANEL_BOX));
-		g.fill(pill);
-		outline(g, st, pill);
-		Ellipse2D badge = new Ellipse2D.Double(box.x, box.y, d, d);
-		g.setColor(st.color(ThemeColor.CHIP_ACCENT));
-		g.fill(badge);
-		outline(g, st, badge);
+		Shape pill = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(box.x + d / 2.0, box.y,
+			Math.max(0, box.width - d / 2.0), box.height));
+		st.card(g, pill);
+		Shape badge = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(box.x, box.y, d, d));
+		st.accentChip(g, badge);
 		double icon = d * 0.62;
 		g.setColor(st.color(ThemeColor.CHIP_ACCENT_TEXT));
 		Icons.style(g, content.style(), box.x + (d - icon) / 2.0, box.y + (d - icon) / 2.0, icon);
@@ -174,15 +168,6 @@ final class SummaryPainter
 		if (!content.subtitle().isEmpty() && levelX - pad - x > 0)
 			text.draw(g, content.subtitle(), new Rectangle(x, box.y, levelX - pad - x, box.height), small,
 				ThemeColor.SUBTEXT, PageText.Align.LEFT);
-	}
-
-	private static void outline(Graphics2D g, WindowStyle st, Shape shape)
-	{
-		Stroke saved = g.getStroke();
-		g.setStroke(new BasicStroke((float) Math.max(1.0, st.metrics().border)));
-		g.setColor(st.color(ThemeColor.PANEL_BORDER));
-		g.draw(shape);
-		g.setStroke(saved);
 	}
 
 	private void chips(Graphics2D g, PageContext ctx, SummaryLayout layout, SummaryContent content)
@@ -289,11 +274,8 @@ final class SummaryPainter
 			return;
 
 		WindowStyle st = ctx.style;
-		RoundRectangle2D pill = new RoundRectangle2D.Double(box.x, box.y, box.width, box.height, box.height,
-			box.height);
-		g.setColor(st.color(ThemeColor.PANEL_BOX));
-		g.fill(pill);
-		outline(g, st, pill);
+		Shape pill = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(box.x, box.y, box.width, box.height));
+		st.card(g, pill);
 		int hearts = BondRules.MAX_HEARTS;
 		int between = 2;
 		int size = Math.max(4, Math.min(box.height - 2 * Math.max(1, layout.pad / 2),
@@ -351,7 +333,8 @@ final class SummaryPainter
 
 		PageText text = new PageText(st, sink);
 		if (ctx.focused && WindowPages.ID_MOVES.equals(ctx.highlight))
-			st.focusRing(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height));
+			st.focusRing(g, st.outline(WindowStyle.Kind.PANEL, new Rectangle2D.Double(box.x, box.y, box.width,
+				box.height)));
 
 		Font regular = st.font(WindowFonts.Face.REGULAR, WindowFonts.BODY_UNITS);
 		Font small = st.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
@@ -375,11 +358,9 @@ final class SummaryPainter
 			g.translate(pill.getCenterX(), pill.getCenterY());
 			g.scale(pop, pop);
 			g.translate(-pill.getCenterX(), -pill.getCenterY());
-			RoundRectangle2D shape = new RoundRectangle2D.Double(pill.x, pill.y, pill.width, pill.height, pill.height,
-				pill.height);
-			g.setColor(st.color(ThemeColor.CHIP));
-			g.fill(shape);
-			outline(g, st, shape);
+			Shape shape = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(pill.x, pill.y, pill.width,
+				pill.height));
+			st.chipBody(g, shape);
 			int icon = Math.max(4, pill.height * 6 / 10);
 			int inset = Math.max(3, (pill.height - icon) / 2 + 2);
 			double iconY = pill.y + (pill.height - icon) / 2.0;
@@ -422,7 +403,7 @@ final class SummaryPainter
 			Rectangle2D shape = new Rectangle2D.Double(b.x, b.y, b.width, b.height);
 			st.button(g, shape, labels[i], i == 0, !enabled[i], ctx.hoverOf(id), ctx.pressOf(id));
 			if (ctx.focused && id.equals(ctx.highlight))
-				st.focusRing(g, Slant.shape(shape, st.metrics().chipSlant));
+				st.focusRing(g, st.outline(WindowStyle.Kind.BUTTON, shape));
 		}
 	}
 }

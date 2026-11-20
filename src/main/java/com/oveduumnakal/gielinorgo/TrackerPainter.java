@@ -64,7 +64,7 @@ final class TrackerPainter
 	{
 		PageText text = new PageText(style, sink);
 		Dimension size = size(style, lines.size());
-		style.window(g, new Rectangle(size));
+		style.pinnedOn(g, new Rectangle(size), "tracker");
 		Font small = style.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
 		int pad = style.metrics().pad;
 		int inner = Math.max(0, size.width - 2 * pad);

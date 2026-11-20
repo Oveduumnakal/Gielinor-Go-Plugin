@@ -127,7 +127,7 @@ final class ChangelogPage
 		Rectangle2D shape = new Rectangle2D.Double(back.x, back.y, back.width, back.height);
 		st.button(g, shape, "Back", false, false, ctx.hoverOf(ID_BACK), ctx.pressOf(ID_BACK));
 		if (ctx.focused && ID_BACK.equals(ctx.highlight))
-			st.focusRing(g, Slant.shape(shape, st.metrics().chipSlant));
+			st.focusRing(g, st.outline(WindowStyle.Kind.BUTTON, shape));
 
 		Font title = st.font(WindowFonts.Face.BOLD, WindowFonts.TITLE_UNITS);
 		FontMetrics tm = g.getFontMetrics(title);

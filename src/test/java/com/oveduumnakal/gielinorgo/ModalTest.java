@@ -348,7 +348,7 @@ public class ModalTest
 		modal.paint(g, STYLE, AREA, MotionMode.OFF, 1_000);
 		g.dispose();
 
-		int dimmed = image.getRGB(5, 5);
+		int dimmed = image.getRGB(30, 5);
 		assertEquals(STYLE.color(ThemeColor.SCRIM).getRGB(), dimmed);
 		Rectangle dialog = modal.dialogBounds();
 		assertEquals(STYLE.color(ThemeColor.PANEL_BOX).getRGB(), image.getRGB(dialog.x + dialog.width - 6,
@@ -387,7 +387,7 @@ public class ModalTest
 		modal.paint(g, STYLE, AREA, MotionMode.FULL, 500);
 		g.dispose();
 
-		assertTrue((start.getRGB(5, 5) >>> 24) < (done.getRGB(5, 5) >>> 24));
+		assertTrue((start.getRGB(30, 5) >>> 24) < (done.getRGB(30, 5) >>> 24));
 	}
 
 	@Test

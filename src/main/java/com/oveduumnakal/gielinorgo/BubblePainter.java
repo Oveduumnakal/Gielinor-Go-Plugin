@@ -28,9 +28,10 @@ import java.util.function.Supplier;
 
 /**
  * Paints a {@link BubbleFrame}: the round action bubbles above a wild creature and the abbreviated card beside them.
- * It draws exactly what the frame says, in its position, size and opacity, and keeps no state between frames. The
- * bubbles are world objects and have their own fixed colours ({@link JarPalette}); the card follows the window theme
- * of the {@link WindowStyle} it is given. Everything is drawn with vector shapes, bundled pictures and the kit's
+ * It draws exactly what the frame says, in its position, size and opacity; the only state it keeps between frames is
+ * the card's glass background ({@link GlassPanel}, cached). The bubbles are world objects and have their own fixed
+ * colours ({@link JarPalette}); the card follows the window theme of the {@link WindowStyle} it is given, on tinted
+ * glass. Everything is drawn with vector shapes, bundled pictures and the kit's
  * fonts, and the graphics are left exactly as they were found. Holds no RuneLite types.
  */
 final class BubblePainter
@@ -89,6 +90,7 @@ final class BubblePainter
 	};
 
 	private final Supplier<BufferedImage> combatSprite;
+	private final WashSource washes;
 
 	/** Creates a painter that draws its own crossed swords on the Battle bubble. */
 	BubblePainter()
@@ -97,14 +99,28 @@ final class BubblePainter
 	}
 
 	/**
-	 * Creates a painter. It holds nothing but the sprite lookup, so one can be kept for the whole session.
+	 * Creates a painter. It holds the sprite lookup and the card's cached glass, so one can be kept for the whole
+	 * session.
 	 *
 	 * @param combatSprite the game's combat tab picture for the Battle bubble, or a supplier of null while it is not
 	 *        loaded, in which case the painter draws its own crossed swords
 	 */
 	BubblePainter(Supplier<BufferedImage> combatSprite)
 	{
+		this(combatSprite, WashSource.NONE);
+	}
+
+	/**
+	 * Creates a painter whose glass card takes its colours from the scene round it.
+	 *
+	 * @param combatSprite the game's combat tab picture for the Battle bubble, or a supplier of null while it is not
+	 *        loaded, in which case the painter draws its own crossed swords
+	 * @param washes gives the wash of the scene round the card; {@link WashSource#NONE} for none
+	 */
+	BubblePainter(Supplier<BufferedImage> combatSprite, WashSource washes)
+	{
 		this.combatSprite = combatSprite;
+		this.washes = washes;
 	}
 
 	/**
@@ -220,10 +236,15 @@ final class BubblePainter
 		Color fill = d.disabled() ? WindowTheme.mix(base, GREY, 0.75) : base;
 		double opacity = d.alpha() * (d.disabled() ? DISABLED_ALPHA : 1.0);
 		alpha(g, opacity);
-		Area shadow = new Area(circle(cx, cy + 2, r));
-		shadow.subtract(new Area(circle(cx, cy, r)));
-		g.setColor(new Color(0, 0, 0, 77));
-		g.fill(shadow);
+		boolean glass = style.theme().glass();
+		if (!glass)
+		{
+			Area shadow = new Area(circle(cx, cy + 2, r));
+			shadow.subtract(new Area(circle(cx, cy, r)));
+			g.setColor(new Color(0, 0, 0, 77));
+			g.fill(shadow);
+		}
+
 		if (d.pulse() > 0)
 		{
 			double p = clamp(d.pulse());
@@ -232,18 +253,26 @@ final class BubblePainter
 			g.draw(circle(cx, cy, r + 2 + 3 * p));
 		}
 
-		Area band = new Area(circle(cx, cy, r));
-		band.subtract(new Area(circle(cx, cy, r * INNER_RATIO)));
-		g.setColor(fill);
-		g.fill(band);
-		g.setColor(withAlpha(WindowTheme.mix(fill, Color.WHITE, 0.35), 0.6));
-		g.setStroke(new BasicStroke(1f));
-		g.draw(circle(cx, cy, Math.max(0.5, r - 1.25)));
-		g.setColor(withAlpha(OUTLINE, 0.85));
-		g.setStroke(new BasicStroke(2f));
-		g.draw(circle(cx, cy, r));
-		g.setColor(withAlpha(d.disabled() ? WindowTheme.mix(INNER, GREY, 0.3) : INNER, INNER_OPACITY));
-		g.fill(circle(cx, cy, r * INNER_RATIO));
+		if (glass)
+		{
+			GlassStyle.disc(g, style, cx, cy, r, fill, discWash(g, d, cx, cy, r, style));
+		}
+		else
+		{
+			Area band = new Area(circle(cx, cy, r));
+			band.subtract(new Area(circle(cx, cy, r * INNER_RATIO)));
+			g.setColor(fill);
+			g.fill(band);
+			g.setColor(withAlpha(WindowTheme.mix(fill, Color.WHITE, 0.35), 0.6));
+			g.setStroke(new BasicStroke(1f));
+			g.draw(circle(cx, cy, Math.max(0.5, r - 1.25)));
+			g.setColor(withAlpha(OUTLINE, 0.85));
+			g.setStroke(new BasicStroke(2f));
+			g.draw(circle(cx, cy, r));
+			g.setColor(withAlpha(d.disabled() ? WindowTheme.mix(INNER, GREY, 0.3) : INNER, INNER_OPACITY));
+			g.fill(circle(cx, cy, r * INNER_RATIO));
+		}
+
 		if (jar)
 			jarFace(g, d, fill, opacity, style);
 		else if (d.kind() == BubbleKind.BATTLE)
@@ -268,6 +297,17 @@ final class BubblePainter
 
 		if (jar && d.count() > 0)
 			badge(g, d);
+	}
+
+	private BufferedImage discWash(Graphics2D g, BubbleFrame.Disc d, double cx, double cy, double r,
+		WindowStyle style)
+	{
+		int pad = GlassStyle.discPad(style);
+		Rectangle2D footprint = new Rectangle2D.Double(cx - r - pad, cy - r - pad, 2 * (r + pad), 2 * (r + pad));
+		AffineTransform toScreen = g.getTransform();
+		Rectangle onScreen = toScreen.createTransformedShape(footprint).getBounds();
+		String jar = d.jar() == null ? "" : ":" + d.jar();
+		return washes.wash("bubble:" + d.kind() + jar, onScreen);
 	}
 
 	private void jarFace(Graphics2D g, BubbleFrame.Disc d, Color fill, double opacity, WindowStyle style)
@@ -435,9 +475,21 @@ final class BubblePainter
 		g.scale(s, s);
 		g.translate(-ax, -ay);
 		alpha(g, card.alpha());
-		style.window(g, box);
+		if (style.theme().glass())
+			style.window(g, box, style.withWashes(washes).washFor(g, "card", rect(box)));
+		else
+			style.window(g, box);
+
 		if (card.pinned())
-			style.focusRing(g, box);
+		{
+			style.focusRing(g, style.outline(WindowStyle.Kind.BODY, rect(box)));
+		}
+		else
+		{
+			g.setColor(JarPalette.INFO_BASE);
+			g.setStroke(new BasicStroke((float) Math.max(1.0, style.scale())));
+			g.draw(style.outline(WindowStyle.Kind.BODY, rect(box)));
+		}
 
 		PageText text = new PageText(style, PageText.Sink.NONE);
 		int pad = style.px(8);
@@ -495,6 +547,11 @@ final class BubblePainter
 				PageText.Align.LEFT);
 	}
 
+	private static Rectangle2D rect(Rectangle box)
+	{
+		return new Rectangle2D.Double(box.x, box.y, box.width, box.height);
+	}
+
 	private static WildRecord.Kind recordKind(String label)
 	{
 		for (WildRecord.Kind kind : WildRecord.Kind.values())
@@ -523,8 +580,10 @@ final class BubblePainter
 			int barW = Math.max(0, value.x - gap - barX);
 			int barH = Math.max(3, style.metrics().bar * 3 / 4);
 			if (barW > 0)
-				style.xpBar(g, new Rectangle2D.Double(barX, y + (first.height - barH) / 2.0, barW, barH),
-					row.fraction());
+			{
+				Rectangle2D bar = new Rectangle2D.Double(barX, y + (first.height - barH) / 2.0, barW, barH);
+				style.xpBar(g, bar, row.fraction());
+			}
 
 			y += first.height;
 		}

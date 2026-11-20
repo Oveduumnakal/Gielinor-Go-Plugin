@@ -10,6 +10,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.event.KeyEvent;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -777,17 +778,16 @@ final class StoragePage
 		String id = GROUP_PREFIX + index;
 		int gap = Math.max(2, m.pad / 3);
 		Rectangle inner = new Rectangle(box.x + m.pad / 2, box.y + gap / 2, box.width - m.pad, box.height - gap);
-		Rectangle2D shape = rect(inner);
-		g.setColor(st.color(ThemeColor.PANEL_BOX));
-		g.fill(shape);
+		Shape shape = st.outline(WindowStyle.Kind.PANEL, rect(inner));
+		st.card(g, shape);
 		if (selecting)
 			st.shade(g, shape, ctx.hoverOf(id), ctx.pressOf(id));
 
 		g.setColor(PortraitFrame.rarity(item.rarity()));
+		Shape savedClip = g.getClip();
+		g.clip(shape);
 		g.fillRect(inner.x, inner.y, Math.max(2, st.px(PortraitFrame.STRIPE_UNITS)), inner.height);
-		g.setColor(st.color(ThemeColor.PANEL_BORDER));
-		g.setStroke(new BasicStroke(Math.max(1f, m.border)));
-		g.draw(shape);
+		g.setClip(savedClip);
 		int x = inner.x + st.px(PortraitFrame.STRIPE_UNITS) + m.pad;
 		if (selecting)
 		{

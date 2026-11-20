@@ -4,14 +4,13 @@
  */
 package com.oveduumnakal.gielinorgo;
 
-import java.awt.BasicStroke;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.geom.RoundRectangle2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Objects;
 
 /**
@@ -161,16 +160,8 @@ final class Tooltip
 		Rectangle box = bounds(style, fm, canvas);
 		int pad = style.metrics().pad;
 		TextLayout layout = TextLayout.plain(text, fm, box.width - 2 * pad, 0);
-		int corner = style.metrics().corner;
-		g.setColor(style.color(ThemeColor.SHADOW));
-		g.fill(new RoundRectangle2D.Double(box.x, box.y + style.metrics().shadow, box.width, box.height,
-			corner * 2, corner * 2));
-		g.setColor(style.color(ThemeColor.TOOLTIP));
-		g.fill(new RoundRectangle2D.Double(box.x, box.y, box.width, box.height, corner * 2, corner * 2));
-		g.setColor(style.color(ThemeColor.PANEL_BORDER));
-		g.setStroke(new BasicStroke(style.metrics().border));
-		g.draw(new RoundRectangle2D.Double(box.x + 0.5, box.y + 0.5, box.width - 1, box.height - 1,
-			corner * 2, corner * 2));
+		style.popup(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height), "tooltip", ThemeColor.TOOLTIP,
+			ThemeColor.PANEL_BORDER, true, Readability.TOOLTIP);
 		layout.paint(g, style, box.x + pad, box.y + pad / 2, ThemeColor.TOOLTIP_TEXT);
 		return box;
 	}

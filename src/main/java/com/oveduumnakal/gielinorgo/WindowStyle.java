@@ -14,11 +14,15 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.RoundRectangle2D;
+import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The paint kit of the window: the slanted row, the health and experience bars, a tab with a disabled state, a chip,
@@ -36,15 +40,43 @@ final class WindowStyle
 	/** The share of a health bar under which it turns to the danger colour. */
 	static final double HP_DANGER_BELOW = 0.20;
 
+	private static volatile WashSource shared = WashSource.NONE;
+
+	private static final Map<String, Long> FADES = new ConcurrentHashMap<>();
+
 	private final WindowTheme theme;
 	private final double scale;
 	private final Metrics metrics;
+	private final WashSource washes;
 
-	private WindowStyle(WindowTheme theme, double scale)
+	private WindowStyle(WindowTheme theme, double scale, WashSource washes)
 	{
 		this.theme = theme;
 		this.scale = scale;
 		this.metrics = new Metrics(scale);
+		this.washes = washes;
+	}
+
+	/**
+	 * Sets the wash source every style made from now on uses for its glass surfaces. The plugin sets it once, to its
+	 * {@link Backdrops}, when it starts, and clears it when it stops.
+	 *
+	 * @param source the source, or null for none
+	 */
+	static void share(WashSource source)
+	{
+		shared = source == null ? WashSource.NONE : source;
+	}
+
+	/**
+	 * Gives a style like this one that takes its washes from another source, for a test or a preview.
+	 *
+	 * @param source the source
+	 * @return the style
+	 */
+	WindowStyle withWashes(WashSource source)
+	{
+		return new WindowStyle(theme, scale, source);
 	}
 
 	/**
@@ -54,7 +86,7 @@ final class WindowStyle
 	 */
 	static WindowStyle of(WindowTheme theme, double scale)
 	{
-		return new WindowStyle(theme, scale);
+		return new WindowStyle(theme, scale, shared);
 	}
 
 	/** @return the theme this style paints in */
@@ -157,6 +189,136 @@ final class WindowStyle
 		return ThemeColor.HP_FILL;
 	}
 
+	/** The kinds of element in the window. Each kind has one slant, so every element of a kind has the same shape. */
+	enum Kind
+	{
+		/** A card, modal, menu, tooltip or notice: the large slanted shapes. */
+		BODY,
+		/** The main window and the pinned boxes: plain rectangles with soft corners, the only shapes without a lean. */
+		FRAME,
+		/** A boxed section inside a window. */
+		PANEL,
+		/** A party row, a portrait frame or a pin button. */
+		ROW,
+		/** A tab. */
+		TAB,
+		/** A button. */
+		BUTTON,
+		/** A small label such as a style or a trait. */
+		CHIP,
+		/** A health, experience or time bar. */
+		BAR,
+		/** A search box or the thumb of a scroll bar. */
+		FIELD
+	}
+
+	/**
+	 * Gives how far the sides of an element lean.
+	 *
+	 * @param kind the kind of element
+	 * @return the lean in pixels
+	 */
+	int skew(Kind kind)
+	{
+		switch (kind)
+		{
+			case FRAME:
+				return 0;
+			case BODY:
+				return metrics.slant;
+			case PANEL:
+				return metrics.slant / 2;
+			case ROW:
+				return metrics.slant;
+			case TAB:
+				return metrics.tabSlant;
+			case BUTTON:
+			case CHIP:
+				return metrics.chipSlant;
+			default:
+				return metrics.barSlant;
+		}
+	}
+
+	/**
+	 * Gives the box a body is drawn over: a body is drawn wider than its content box by its lean (half on each side),
+	 * so the content stays inside the slanted sides. Other kinds are drawn over their box.
+	 *
+	 * @param kind the kind of element
+	 * @param box the element's content box
+	 * @return the box to draw the outline over
+	 */
+	Rectangle2D drawn(Kind kind, Rectangle2D box)
+	{
+		if (kind != Kind.BODY)
+			return box;
+
+		double half = skew(kind) / 2.0;
+		return new Rectangle2D.Double(box.getX() - half, box.getY(), box.getWidth() + 2 * half, box.getHeight());
+	}
+
+	/**
+	 * Gives the outline of an element. Every fill, border, shadow, clip and highlight of the element uses this one
+	 * outline, so nothing is painted as a plain rectangle. The solid look has sharp slants; the glass look rounds the
+	 * tips by {@link GlassTokens#TIP_ROUND} of the element's height (at most {@link GlassTokens#TIP_MAX} pixels).
+	 *
+	 * @param kind the kind of element
+	 * @param box the element's box
+	 * @return the outline
+	 */
+	Shape outline(Kind kind, Rectangle2D box)
+	{
+		if (kind == Kind.FRAME)
+			return Shapes.roundedSlant(box, 0, GlassTokens.TIP_MAX * scale);
+
+		return slant(drawn(kind, box), skew(kind));
+	}
+
+	/**
+	 * Gives the slanted outline of a box at a lean of the caller's choice: sharp in the solid look, with soft tips in
+	 * the glass look.
+	 *
+	 * @param box the box the outline fits in
+	 * @param skew how far the sides lean, in pixels
+	 * @return the outline
+	 */
+	Shape slant(Rectangle2D box, double skew)
+	{
+		if (!theme.glass())
+			return Slant.shape(box, skew);
+
+		double radius = Math.min(box.getHeight() * GlassTokens.TIP_ROUND, GlassTokens.TIP_MAX * scale);
+		return Shapes.roundedSlant(box, skew, radius);
+	}
+
+	/**
+	 * Gives the filled part of a slanted bar, still slanted the same way: sharp in the solid look, with soft tips in
+	 * the glass look.
+	 *
+	 * @param box the box of the whole bar
+	 * @param skew how far the sides lean, in pixels
+	 * @param fraction the filled share, from 0 to 1
+	 * @return the outline of the filled part
+	 */
+	Shape filled(Rectangle2D box, double skew, double fraction)
+	{
+		if (!theme.glass())
+			return Slant.filled(box, skew, fraction);
+
+		double radius = Math.min(box.getHeight() * GlassTokens.TIP_ROUND, GlassTokens.TIP_MAX * scale);
+		return Shapes.roundedFilled(box, skew, fraction, radius);
+	}
+
+	/**
+	 * Gives how far a body's paint reaches beyond its content box on every side: its lean, and its shadows.
+	 *
+	 * @return the room in pixels
+	 */
+	int bodyPad()
+	{
+		return theme.glass() ? GlassPanel.pad(this) : metrics.slant / 2 + metrics.shadow + 1;
+	}
+
 	/**
 	 * Paints the window: a soft shadow, the body and the frame.
 	 *
@@ -165,14 +327,93 @@ final class WindowStyle
 	 */
 	void window(Graphics2D g, Rectangle box)
 	{
-		RoundRectangle2D body = round(box, metrics.corner);
+		window(g, box, null);
+	}
+
+	/**
+	 * Paints a window-like body that has a wash source of its own surface name: the tracker, the party box or the
+	 * battle controls.
+	 *
+	 * @param g the graphics, painting on the screen's own pixels
+	 * @param box the body's bounds
+	 * @param surface the surface's name, for its wash
+	 */
+	void windowOn(Graphics2D g, Rectangle box, String surface)
+	{
+		body(g, Kind.BODY, box, washFor(g, surface, new Rectangle2D.Double(box.x, box.y, box.width, box.height)));
+	}
+
+	/**
+	 * Paints a pinned box, the tracker or the party box: the window's body as a plain rectangle with soft corners.
+	 *
+	 * @param g the graphics, painting on the screen's own pixels
+	 * @param box the box's bounds
+	 * @param surface the surface's name, for its wash
+	 */
+	void pinnedOn(Graphics2D g, Rectangle box, String surface)
+	{
+		body(g, Kind.FRAME, box, washFor(g, surface, new Rectangle2D.Double(box.x, box.y, box.width, box.height)));
+	}
+
+	/**
+	 * Paints the wash under a window, inside its outline, for a caller that caches the rest (see
+	 * {@link #windowStill}). Nothing is painted in the solid look.
+	 *
+	 * @param g the graphics, painting on the screen's own pixels
+	 * @param box the window bounds
+	 * @param wash the scene wash, or null
+	 */
+	void washUnder(Graphics2D g, Rectangle box, BufferedImage wash)
+	{
+		if (theme.glass())
+			GlassPanel.wash(g, outline(Kind.FRAME, box), this, wash, Readability.BODY);
+	}
+
+	/**
+	 * Paints the window without its wash: the solid window as it is, or the glass window's still layer (shadows, tint,
+	 * sheen and bevel), which is the same every frame and so can be cached.
+	 *
+	 * @param g the graphics
+	 * @param box the window bounds
+	 * @param overWash whether a wash is drawn under it, which makes the glass tint thinner
+	 */
+	void windowStill(Graphics2D g, Rectangle box, boolean overWash)
+	{
+		if (theme.glass())
+			GlassPanel.still(g, outline(Kind.FRAME, box), this, overWash);
+		else
+			body(g, Kind.FRAME, box, null);
+	}
+
+	/**
+	 * Paints the window over a wash: in the glass look the wash of the scene round it is drawn inside its outline,
+	 * under the glass; in the solid look the wash is ignored.
+	 *
+	 * @param g the graphics
+	 * @param box the window bounds
+	 * @param wash the scene wash, stretched over the window and its shadow room, or null
+	 */
+	void window(Graphics2D g, Rectangle box, BufferedImage wash)
+	{
+		body(g, Kind.BODY, box, wash);
+	}
+
+	private void body(Graphics2D g, Kind kind, Rectangle box, BufferedImage wash)
+	{
+		if (theme.glass())
+		{
+			GlassPanel.paint(g, outline(kind, box), this, wash, Readability.BODY);
+			return;
+		}
+
+		Shape body = outline(kind, box);
 		g.setColor(color(ThemeColor.SHADOW));
-		g.fill(round(new Rectangle2D.Double(box.x, box.y + metrics.shadow, box.width, box.height), metrics.corner));
+		g.fill(outline(kind, new Rectangle2D.Double(box.x, box.y + metrics.shadow, box.width, box.height)));
 		g.setColor(color(ThemeColor.WINDOW));
 		g.fill(body);
 		g.setColor(color(ThemeColor.FRAME));
 		g.setStroke(new BasicStroke(metrics.border));
-		g.draw(inset(box, metrics.border / 2.0));
+		g.draw(outline(kind, inset(box, metrics.border / 2.0)));
 	}
 
 	/**
@@ -183,8 +424,98 @@ final class WindowStyle
 	 */
 	void header(Graphics2D g, Rectangle2D box)
 	{
+		if (theme.glass())
+		{
+			g.setColor(GlassTokens.white(GlassTokens.RAISED_FILL * 0.7));
+			g.fill(box);
+			GlassStyle.bevel(g, box, this, GlassTokens.SMALL_BEVEL, GlassTokens.SMALL_BEVEL_LIGHT * 0.7,
+				GlassTokens.SMALL_BEVEL_DARK * 0.7);
+			return;
+		}
+
 		g.setColor(color(ThemeColor.HEADER));
 		g.fill(box);
+	}
+
+	/**
+	 * Gives the wash a glass surface lies on: the surface's footprint (its body and the room its shadows take),
+	 * measured on the screen through the graphics' transform, is asked of the wash source. The graphics must paint on
+	 * the screen's own pixels, not into a cached layer.
+	 *
+	 * @param g the graphics
+	 * @param surface the surface's name, one wash is kept per name
+	 * @param box the surface's content box
+	 * @return the wash, or null in the solid look or when there is none yet
+	 */
+	BufferedImage washFor(Graphics2D g, String surface, Rectangle2D box)
+	{
+		if (!theme.glass())
+			return null;
+
+		int pad = bodyPad();
+		Rectangle2D over = drawn(Kind.BODY, box);
+		Rectangle2D footprint = new Rectangle2D.Double(over.getX() - pad, over.getY() - pad, over.getWidth() + 2 * pad,
+			over.getHeight() + 2 * pad);
+		AffineTransform toScreen = g.getTransform();
+		return washes.wash(surface, toScreen.createTransformedShape(footprint).getBounds());
+	}
+
+	private void paintPopup(Graphics2D g, Shape body, String surface, BufferedImage wash, List<Readability.Need> needs)
+	{
+		if (wash == null)
+		{
+			FADES.remove(surface);
+			GlassPanel.paint(g, body, this, null, needs);
+			return;
+		}
+
+		long now = System.currentTimeMillis();
+		long since = now - FADES.computeIfAbsent(surface, name -> now);
+		double t = Math.min(1.0, since / (double) GlassTokens.WASH_FADE_MS);
+		if (t >= 1.0)
+		{
+			GlassPanel.paint(g, body, this, wash, needs);
+			return;
+		}
+
+		Composite saved = g.getComposite();
+		float alpha = saved instanceof AlphaComposite ? ((AlphaComposite) saved).getAlpha() : 1f;
+		g.setComposite(AlphaComposite.SrcOver.derive(alpha * (float) (1.0 - t)));
+		GlassPanel.paint(g, body, this, null, needs);
+		g.setComposite(AlphaComposite.SrcOver.derive(alpha * (float) t));
+		GlassPanel.paint(g, body, this, wash, needs);
+		g.setComposite(saved);
+	}
+
+	/**
+	 * Paints a pop-up box: a tooltip, the right-click menu or a modal's dialog. The solid look has an optional shadow
+	 * and a fill with a border; the glass look has a raised glass body over its own wash.
+	 *
+	 * @param g the graphics
+	 * @param box the box
+	 * @param surface the surface's name, for its wash
+	 * @param fill the colour name of the solid fill
+	 * @param border the colour name of the solid border
+	 * @param shadow whether the solid look drops a shadow
+	 * @param needs the text colours that sit on it, for the readability guard
+	 */
+	void popup(Graphics2D g, Rectangle2D box, String surface, ThemeColor fill, ThemeColor border, boolean shadow,
+		List<Readability.Need> needs)
+	{
+		if (theme.glass())
+		{
+			paintPopup(g, outline(Kind.BODY, box), surface, washFor(g, surface, box), needs);
+			return;
+		}
+
+		if (shadow)
+		{
+			g.setColor(color(ThemeColor.SHADOW));
+			g.fill(outline(Kind.BODY, new Rectangle2D.Double(box.getX(), box.getY() + metrics.shadow, box.getWidth(),
+				box.getHeight())));
+		}
+
+		box(g, box, Kind.BODY, fill, border);
 	}
 
 	/**
@@ -195,7 +526,7 @@ final class WindowStyle
 	 */
 	Shape panelShape(Rectangle2D box)
 	{
-		return round(box, metrics.corner);
+		return outline(Kind.PANEL, box);
 	}
 
 	/**
@@ -206,12 +537,119 @@ final class WindowStyle
 	 */
 	void panel(Graphics2D g, Rectangle2D box)
 	{
-		RoundRectangle2D shape = round(box, metrics.corner);
+		if (theme.glass())
+		{
+			GlassStyle.pressed(g, outline(Kind.PANEL, box), this, GlassTokens.black(GlassTokens.INSET_FILL));
+			return;
+		}
+
+		box(g, box, Kind.PANEL, ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER);
+	}
+
+	/**
+	 * Paints a card on a page: a slanted shape with a panel fill and a border in the solid look, pressed in in the
+	 * glass look. The caller gives the outline, so the card has the shape of its element.
+	 *
+	 * @param g the graphics
+	 * @param shape the card's outline
+	 */
+	void card(Graphics2D g, Shape shape)
+	{
+		if (theme.glass())
+		{
+			GlassStyle.pressed(g, shape, this, GlassTokens.black(GlassTokens.INSET_FILL));
+			return;
+		}
+
 		g.setColor(color(ThemeColor.PANEL_BOX));
 		g.fill(shape);
+		Stroke saved = g.getStroke();
 		g.setColor(color(ThemeColor.PANEL_BORDER));
+		g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
+		g.draw(shape);
+		g.setStroke(saved);
+	}
+
+	/**
+	 * Paints the body of a small label that stands apart: a chip fill and a border in the solid look, a raised chip in
+	 * the glass look.
+	 *
+	 * @param g the graphics
+	 * @param shape the label's outline
+	 */
+	void chipBody(Graphics2D g, Shape shape)
+	{
+		chipBody(g, shape, false);
+	}
+
+	/**
+	 * Paints the body of a small label that stands out, such as a badge: the accent colour.
+	 *
+	 * @param g the graphics
+	 * @param shape the label's outline
+	 */
+	void accentChip(Graphics2D g, Shape shape)
+	{
+		chipBody(g, shape, true);
+	}
+
+	private void chipBody(Graphics2D g, Shape shape, boolean accent)
+	{
+		if (theme.glass())
+		{
+			GlassStyle.chip(g, shape, this, accent);
+			return;
+		}
+
+		g.setColor(color(accent ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP));
+		g.fill(shape);
+		Stroke saved = g.getStroke();
+		g.setColor(color(ThemeColor.PANEL_BORDER));
+		g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
+		g.draw(shape);
+		g.setStroke(saved);
+	}
+
+	/**
+	 * Paints a groove: the track of a scroll bar, in the glass look pressed into the surface.
+	 *
+	 * @param g the graphics
+	 * @param shape the groove's outline
+	 */
+	void groove(Graphics2D g, Shape shape)
+	{
+		GlassStyle.groove(g, shape, this);
+	}
+
+	/**
+	 * Fills the highlighted entry of a list, such as a menu row.
+	 *
+	 * @param g the graphics
+	 * @param shape the entry's outline
+	 */
+	void select(Graphics2D g, Shape shape)
+	{
+		g.setColor(theme.glass() ? GlassTokens.white(GlassTokens.LIFTED_FILL) : color(ThemeColor.SELECTION));
+		g.fill(shape);
+	}
+
+	/**
+	 * Paints a slanted box: a fill and a border on the outline of its kind. The panel, the menu and the modal's dialog
+	 * are painted by this.
+	 *
+	 * @param g the graphics
+	 * @param box the box
+	 * @param kind the kind of element, which sets the lean
+	 * @param fill the colour name of the fill
+	 * @param border the colour name of the border
+	 */
+	void box(Graphics2D g, Rectangle2D box, Kind kind, ThemeColor fill, ThemeColor border)
+	{
+		g.setColor(color(fill));
+		g.fill(outline(kind, box));
+		g.setColor(color(border));
 		g.setStroke(new BasicStroke(metrics.border));
-		g.draw(round(inset(box, metrics.border / 2.0), metrics.corner));
+		g.draw(outline(kind, inset(box, metrics.border / 2.0)));
 	}
 
 	/**
@@ -227,13 +665,19 @@ final class WindowStyle
 	 */
 	Shape row(Graphics2D g, Rectangle2D box, boolean lead, double hover, double press)
 	{
-		Shape shape = Slant.shape(box, metrics.slant);
+		Shape shape = outline(Kind.ROW, box);
+		if (theme.glass())
+		{
+			GlassStyle.row(g, shape, this, lead, hover, press);
+			return shape;
+		}
+
 		g.setColor(color(lead ? ThemeColor.LEAD_ROW : ThemeColor.ROW));
 		g.fill(shape);
 		shade(g, shape, hover, press);
 		g.setColor(color(lead ? ThemeColor.LEAD_BORDER : ThemeColor.ROW_BORDER));
 		g.setStroke(new BasicStroke(metrics.border));
-		g.draw(Slant.shape(inset(box, metrics.border / 2.0), metrics.slant));
+		g.draw(outline(Kind.ROW, inset(box, metrics.border / 2.0)));
 		return shape;
 	}
 
@@ -255,6 +699,12 @@ final class WindowStyle
 	 */
 	void grip(Graphics2D g, Rectangle2D box, double active)
 	{
+		if (theme.glass())
+		{
+			GlassStyle.grip(g, this, box, active);
+			return;
+		}
+
 		Color base = color(ThemeColor.SUBTEXT);
 		g.setColor(WindowTheme.mix(base, color(ThemeColor.ACCENT), active));
 		g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
@@ -275,6 +725,12 @@ final class WindowStyle
 	 */
 	void shade(Graphics2D g, Shape shape, double hover, double press)
 	{
+		if (theme.glass())
+		{
+			GlassStyle.shade(g, shape, hover, press);
+			return;
+		}
+
 		if (hover > 0)
 		{
 			g.setColor(WindowTheme.fade(color(ThemeColor.HOVER_SHADE), hover));
@@ -308,6 +764,12 @@ final class WindowStyle
 	 */
 	void focusRing(Graphics2D g, Shape shape, ThemeColor ring)
 	{
+		if (theme.glass())
+		{
+			GlassStyle.focus(g, shape, this, color(ring));
+			return;
+		}
+
 		g.setColor(color(ring));
 		g.setStroke(new BasicStroke(Math.max(2f, metrics.border)));
 		g.draw(shape);
@@ -324,12 +786,18 @@ final class WindowStyle
 	 */
 	void bar(Graphics2D g, Rectangle2D box, double fraction, ThemeColor fill, ThemeColor track)
 	{
+		if (theme.glass())
+		{
+			GlassStyle.bar(g, this, box, fraction, fill);
+			return;
+		}
+
 		g.setColor(color(track));
-		g.fill(Slant.shape(box, metrics.barSlant));
+		g.fill(outline(Kind.BAR, box));
 		if (fraction > 0)
 		{
 			g.setColor(color(fill));
-			g.fill(Slant.filled(box, metrics.barSlant, fraction));
+			g.fill(filled(box, metrics.barSlant, fraction));
 		}
 	}
 
@@ -369,14 +837,23 @@ final class WindowStyle
 	 */
 	void tab(Graphics2D g, Rectangle2D box, String label, boolean active, boolean disabled, double hover)
 	{
-		Shape shape = Slant.shape(box, metrics.tabSlant);
-		ThemeColor body = disabled ? ThemeColor.TAB_DISABLED : active ? ThemeColor.TAB_ACTIVE : ThemeColor.TAB;
-		ThemeColor text = disabled ? ThemeColor.TAB_DISABLED_TEXT
-			: active ? ThemeColor.TAB_ACTIVE_TEXT : ThemeColor.TAB_TEXT;
-		g.setColor(color(body));
-		g.fill(shape);
-		if (!disabled)
-			shade(g, shape, active ? 0 : hover, 0);
+		Shape shape = outline(Kind.TAB, box);
+		Color text = color(disabled ? ThemeColor.TAB_DISABLED_TEXT
+			: active ? ThemeColor.TAB_ACTIVE_TEXT : ThemeColor.TAB_TEXT);
+		if (theme.glass())
+		{
+			GlassStyle.tab(g, shape, this, active, disabled, hover);
+			if (active && !disabled)
+				text = GlassTokens.ACTIVE_TAB_TEXT;
+		}
+		else
+		{
+			ThemeColor body = disabled ? ThemeColor.TAB_DISABLED : active ? ThemeColor.TAB_ACTIVE : ThemeColor.TAB;
+			g.setColor(color(body));
+			g.fill(shape);
+			if (!disabled)
+				shade(g, shape, active ? 0 : hover, 0);
+		}
 
 		Font font = fitted(g, WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS, label,
 			(int) box.getWidth() - 2 * metrics.tabSlant);
@@ -405,14 +882,21 @@ final class WindowStyle
 		g.translate(box.getCenterX(), box.getCenterY());
 		g.scale(shrink, shrink);
 		g.translate(-box.getCenterX(), -box.getCenterY());
-		Shape shape = Slant.shape(box, metrics.chipSlant);
+		Shape shape = outline(Kind.BUTTON, box);
 		ThemeColor body = disabled ? ThemeColor.TAB_DISABLED : primary ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP;
 		ThemeColor text = disabled ? ThemeColor.TAB_DISABLED_TEXT
 			: primary ? ThemeColor.CHIP_ACCENT_TEXT : ThemeColor.CHIP_TEXT;
-		g.setColor(color(body));
-		g.fill(shape);
-		if (!disabled)
-			shade(g, shape, hover, press);
+		if (theme.glass())
+		{
+			GlassStyle.button(g, shape, this, primary, disabled, hover, press);
+		}
+		else
+		{
+			g.setColor(color(body));
+			g.fill(shape);
+			if (!disabled)
+				shade(g, shape, hover, press);
+		}
 
 		Font font = fitted(g, WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS, label,
 			(int) box.getWidth() - 2 * metrics.chipSlant);
@@ -449,8 +933,16 @@ final class WindowStyle
 	{
 		int w = chipWidth(g, label);
 		Rectangle2D box = new Rectangle2D.Double(x, y, w, metrics.chipHeight);
-		g.setColor(color(accent ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP));
-		g.fill(Slant.shape(box, metrics.chipSlant));
+		if (theme.glass())
+		{
+			GlassStyle.chip(g, outline(Kind.CHIP, box), this, accent);
+		}
+		else
+		{
+			g.setColor(color(accent ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP));
+			g.fill(outline(Kind.CHIP, box));
+		}
+
 		Font font = font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
 		text(g, label, x + metrics.chipPad, baseline(box, g.getFontMetrics(font)), font,
 			accent ? ThemeColor.CHIP_ACCENT_TEXT : ThemeColor.CHIP_TEXT);
@@ -483,11 +975,22 @@ final class WindowStyle
 		g.scale(grow, grow);
 		g.setComposite(AlphaComposite.SrcOver.derive((float) Math.max(0.0, Math.min(1.0, opacity))));
 		Rectangle2D box = new Rectangle2D.Double(-w / 2.0, -h / 2.0, w, h);
-		g.setColor(color(ThemeColor.NOTICE));
-		g.fill(round(box, metrics.corner));
-		g.setColor(color(ThemeColor.FRAME));
-		g.setStroke(new BasicStroke(metrics.border));
-		g.draw(round(inset(box, metrics.border / 2.0), metrics.corner));
+		if (theme.glass())
+		{
+			Shape pill = outline(Kind.BODY, box);
+			GlassStyle.shadowsSmall(g, pill, this, 1.0);
+			BufferedImage wash = washFor(g, "notice", box);
+			GlassPanel.wash(g, pill, this, wash, Readability.NOTICE);
+			g.setColor(GlassPanel.tint(this, wash != null ? GlassTokens.TINT_OVER_WASH : GlassTokens.TINT_SOLID));
+			g.fill(pill);
+			GlassStyle.bevel(g, pill, this, GlassTokens.SMALL_BEVEL, GlassTokens.SMALL_BEVEL_LIGHT,
+				GlassTokens.SMALL_BEVEL_DARK);
+		}
+		else
+		{
+			this.box(g, box, Kind.BODY, ThemeColor.NOTICE, ThemeColor.FRAME);
+		}
+
 		text(g, message, (int) Math.round(-fm.stringWidth(message) / 2.0), baseline(box, fm), font,
 			ThemeColor.NOTICE_TEXT);
 		g.setTransform(saved);
@@ -553,12 +1056,6 @@ final class WindowStyle
 	private static int baseline(Rectangle2D box, FontMetrics fm)
 	{
 		return (int) Math.round(box.getCenterY() + (fm.getAscent() - fm.getDescent()) / 2.0);
-	}
-
-	private static RoundRectangle2D round(Rectangle2D box, double corner)
-	{
-		return new RoundRectangle2D.Double(box.getX(), box.getY(), box.getWidth(), box.getHeight(), corner * 2,
-			corner * 2);
 	}
 
 	private static Rectangle2D inset(Rectangle2D box, double by)

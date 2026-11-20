@@ -597,6 +597,23 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Whether the plugin's windows, boxes and bubbles are painted as frosted glass.
+	 *
+	 * @return true for the glass look, false for the solid look
+	 */
+	@ConfigItem(
+		keyName = "glassLook",
+		name = "Glass look",
+		description = "Shows the windows, boxes and bubbles as tinted glass the game shows through."
+			+ "\nOff: the solid look.",
+		position = 35
+	)
+	default boolean glassLook()
+	{
+		return true;
+	}
+
+	/**
 	 * The share of the game screen's width the painted window takes. It follows the game window. Set by dragging the
 	 * window's edge and by the size presets; not shown in the settings.
 	 *

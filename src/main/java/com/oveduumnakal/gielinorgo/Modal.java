@@ -10,6 +10,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.Shape;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
@@ -458,9 +459,13 @@ final class Modal
 			g.setComposite(AlphaComposite.SrcOver.derive(Math.max(0f, Math.min(1f, alpha))));
 		}
 
+		Shape savedClip = g.getClip();
+		g.clip(style.outline(WindowStyle.Kind.BODY, new Rectangle2D.Double(area.x, area.y, area.width, area.height)));
 		g.setColor(style.color(ThemeColor.SCRIM));
 		g.fillRect(area.x, area.y, area.width, area.height);
-		style.panel(g, new Rectangle2D.Double(dialog.x, dialog.y, dialog.width, dialog.height));
+		g.setClip(savedClip);
+		style.popup(g, new Rectangle2D.Double(dialog.x, dialog.y, dialog.width, dialog.height), "modal",
+			ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER, false, Readability.BODY);
 		int pad = style.metrics().pad;
 		style.text(g, title, dialog.x + pad, dialog.y + pad + bold.getAscent(), boldFont, ThemeColor.TEXT);
 		int textTop = dialog.y + pad + bold.getHeight() + pad;
@@ -476,7 +481,7 @@ final class Modal
 			style.button(g, shape, buttons.get(i), i == confirmIndex && field != null || i == selected,
 				false, i == hovered ? 1.0 : 0.0, i == pressed ? 1.0 : 0.0);
 			if (i == selected && field == null)
-				style.focusRing(g, shape);
+				style.focusRing(g, style.outline(WindowStyle.Kind.BUTTON, shape));
 		}
 
 		g.setComposite(saved);

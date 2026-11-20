@@ -178,7 +178,7 @@ final class BagPainter
 		text.draw(g, name, layout.titleLine, regular, titled ? ThemeColor.GOLD : ThemeColor.TEXT,
 			PageText.Align.LEFT);
 		if (ctx.focused && ID_TITLE.equals(ctx.highlight))
-			st.focusRing(g, rect(layout.titleLine));
+			st.focusRing(g, st.outline(WindowStyle.Kind.CHIP, rect(layout.titleLine)));
 
 		int won = state.battlesWon();
 		text.draw(g, won + (won == 1 ? " battle won" : " battles won"), layout.winsLine, small, ThemeColor.SUBTEXT,

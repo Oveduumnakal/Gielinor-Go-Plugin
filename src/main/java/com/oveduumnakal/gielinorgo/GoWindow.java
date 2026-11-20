@@ -80,7 +80,7 @@ final class GoWindow extends Overlay
 			@Override
 			public WindowTheme theme()
 			{
-				return WindowTheme.RUNELITE_DARK;
+				return WindowTheme.of(config.glassLook());
 			}
 
 			@Override

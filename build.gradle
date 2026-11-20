@@ -33,6 +33,13 @@ tasks.withType(JavaCompile).configureEach {
 	options.compilerArgs << '-Xlint:deprecation'
 }
 
+test {
+	maxHeapSize = '1g'
+	testLogging {
+		exceptionFormat 'full'
+	}
+}
+
 def pythonExecutable = org.gradle.internal.os.OperatingSystem.current().isWindows()
 		? 'python'
 		: 'python3'

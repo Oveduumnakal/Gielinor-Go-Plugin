@@ -67,7 +67,7 @@ final class PartyBoxPainter
 	{
 		PageText text = new PageText(style, sink);
 		Dimension size = size(style, rows.size());
-		style.window(g, new Rectangle(size));
+		style.pinnedOn(g, new Rectangle(size), "partybox");
 		Font small = style.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
 		FontMetrics sm = g.getFontMetrics(small);
 		int pad = style.metrics().pad;

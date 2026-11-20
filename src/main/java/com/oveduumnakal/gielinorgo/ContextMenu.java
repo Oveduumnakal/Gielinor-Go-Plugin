@@ -633,7 +633,8 @@ final class ContextMenu
 		g.translate(anchor.x, anchor.y);
 		g.scale(scale, scale);
 		g.translate(-anchor.x, -anchor.y);
-		style.panel(g, new Rectangle2D.Double(bounds.x, bounds.y, bounds.width, bounds.height));
+		style.popup(g, new Rectangle2D.Double(bounds.x, bounds.y, bounds.width, bounds.height), "menu",
+			ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER, false, Readability.BODY);
 		int pad = style.metrics().pad;
 		for (int i = 0; i < items.size(); i++)
 		{
@@ -641,8 +642,8 @@ final class ContextMenu
 			Rectangle box = boxes.get(i);
 			if (i == highlight)
 			{
-				g.setColor(style.color(ThemeColor.SELECTION));
-				g.fillRect(box.x + style.metrics().border, box.y, box.width - 2 * style.metrics().border, box.height);
+				style.select(g, style.outline(WindowStyle.Kind.BUTTON, new Rectangle2D.Double(
+					box.x + style.metrics().border, box.y, box.width - 2 * style.metrics().border, box.height)));
 			}
 
 			if (item.separator)

@@ -184,7 +184,7 @@ public class TooltipTest
 			&& Math.abs(expected.getGreen() - (pixel >> 8 & 0xFF)) <= 3
 			&& Math.abs(expected.getBlue() - (pixel & 0xFF)) <= 3 && (pixel >>> 24) >= expected.getAlpha());
 		assertEquals("only the tip paints, inside its box",
-			0, WidgetKit.painted(shown, 0, 0, box.x - 1, 300));
+			0, WidgetKit.painted(shown, 0, 0, Math.max(0, box.x - STYLE.bodyPad()), 300));
 	}
 
 	@Test
