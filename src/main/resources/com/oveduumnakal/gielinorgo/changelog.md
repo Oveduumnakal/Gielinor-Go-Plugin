@@ -213,6 +213,8 @@ A Creature Log, daily tasks and daily events give you goals.
   carry, at most one a game tick and 1,200 an hour, so players who do not walk can still hatch eggs. Walking is much
   faster and is the only thing that pays jars, walk tasks and bond. Settings > Skilling hatches eggs turns it off.
   (#323)
+- **Glass border.** Glass buttons, tooltips, menus and dialogs have a thin metal edge, light at the top and dark at
+  the bottom. Settings > Glass border picks Bronze (the default) or Steel blue. (#333)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
