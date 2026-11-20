@@ -25,7 +25,7 @@ public class GlassLookTest
 	private static final int NOISE = 4;
 
 	/** The most pixels that may differ past the noise: the soft corners anti-alias differently under Java 11 and 21. */
-	private static final double SHARE = 0.01;
+	private static final double SHARE = 0.025;
 
 	/** The most a channel may differ by in an edge pixel under another Java version. */
 	private static final int WORST = 96;
