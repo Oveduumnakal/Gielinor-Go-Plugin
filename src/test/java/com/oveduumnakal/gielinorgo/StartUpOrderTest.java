@@ -35,6 +35,8 @@ public class StartUpOrderTest
 	{
 		String source = new String(Files.readAllBytes(
 			Paths.get("src/main/java/com/oveduumnakal/gielinorgo/GielinorGoPlugin.java")), StandardCharsets.UTF_8);
+		// A Windows checkout can be CRLF, so normalize before the \n-based patterns below.
+		source = source.replace("\r\n", "\n");
 		int start = source.indexOf("protected void startUp()");
 		int end = source.indexOf("\n\t}\n", start);
 		String[] lines = source.substring(start, end).split("\n");
