@@ -123,7 +123,7 @@ public class SolidLookTest
 			}
 		}
 
-		String where = " in " + box[0] + "," + box[1] + " to " + box[2] + "," + box[3] + first;
+		String where = " (worst " + worst + ") in " + box[0] + "," + box[1] + " to " + box[2] + "," + box[3] + first;
 		assertTrue(file + ": " + share * 100 + "% of the pixels differ" + where, share <= MAX_DIFFERING);
 		assertTrue(file + ": a channel differs by " + worst, worst <= MAX_LEVELS);
 	}
