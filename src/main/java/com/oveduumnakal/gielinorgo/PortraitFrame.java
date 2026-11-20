@@ -62,9 +62,7 @@ final class PortraitFrame
 			Composite saved = PageContext.fade(g, alpha);
 			BufferedImage shown = row.desaturated() ? grey(image) : image;
 			double side = Math.min(box.getWidth(), box.getHeight());
-			g.drawImage(shown, (int) Math.round(box.getCenterX() - side / 2.0),
-				(int) Math.round(box.getCenterY() - side / 2.0 - bob), (int) Math.round(side), (int) Math.round(side),
-				null);
+			CrispImages.draw(g, shown, box.getCenterX() - side / 2.0, box.getCenterY() - side / 2.0 - bob, side);
 			g.setComposite(saved);
 		}
 

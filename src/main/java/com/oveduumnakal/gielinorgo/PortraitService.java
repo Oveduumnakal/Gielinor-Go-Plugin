@@ -29,11 +29,18 @@ final class PortraitService implements PortraitSource
 {
 	private static final Logger log = LoggerFactory.getLogger(PortraitService.class);
 
-	/** Width and height of a portrait, in pixels. */
-	static final int SIZE = 40;
+	/**
+	 * Width and height of a portrait, in pixels. It is drawn well above the size it is shown at (a Party row is about
+	 * 40 pixels, the Summary's picture several times that), and {@link CrispImages} scales it down to the exact size,
+	 * so no window size stretches a small picture into blocks.
+	 */
+	static final int SIZE = 192;
 
-	/** Most portraits drawn in one game tick, so a full team never stalls a frame. */
-	static final int PER_TICK = 2;
+	/**
+	 * Most portraits drawn in one game tick, so a full team never stalls a frame: one portrait this size takes about
+	 * 17 ms to draw, and each is drawn only once.
+	 */
+	static final int PER_TICK = 1;
 
 	/** A picture someone is waiting for. */
 	private static final class Request
