@@ -62,8 +62,14 @@ final class GlassTokens
 	/** The grey fill of an empty bond heart. */
 	static final Color EMPTY_HEART = new Color(0x4A, 0x4A, 0x4A, 0xE6);
 
-	/** The metal outlines of a move's pill by the kind of attack: light, body and dark. */
-	static final Color[] OUTLINE_MELEE = {new Color(0xFF9A92), new Color(0xD84040), new Color(0x7E1C1C)};
+	/** The metal outline of a stab move's pill: light, body and dark, an orange-red. */
+	static final Color[] OUTLINE_STAB = {new Color(0xFFC9A0), new Color(0xFF6A2E), new Color(0xA03A10)};
+
+	/** The metal outline of a slash move's pill: a true red. */
+	static final Color[] OUTLINE_SLASH = {new Color(0xFF9A92), new Color(0xD84040), new Color(0x7E1C1C)};
+
+	/** The metal outline of a crush move's pill: a magenta-crimson. */
+	static final Color[] OUTLINE_CRUSH = {new Color(0xF0A0C0), new Color(0xB02060), new Color(0x560C30)};
 
 	/** The metal outline of a ranged move's pill. */
 	static final Color[] OUTLINE_RANGED = {new Color(0xA8E6A5), new Color(0x43A047), new Color(0x1E5B22)};

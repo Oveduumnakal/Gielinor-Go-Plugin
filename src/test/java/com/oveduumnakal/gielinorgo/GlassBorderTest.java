@@ -273,15 +273,45 @@ public class GlassBorderTest
 	}
 
 	@Test
-	public void movePillsAreOutlinedRedForMeleeGreenForRangedAndBlueForMagic()
+	public void movePillsAreOutlinedByHueForEachMeleeStyleAndRedGreenBlueByFamily()
 	{
-		assertEquals(GlassTokens.OUTLINE_MELEE, SummaryPainter.moveOutline(CombatType.STAB));
-		assertEquals(GlassTokens.OUTLINE_MELEE, SummaryPainter.moveOutline(CombatType.SLASH));
-		assertEquals(GlassTokens.OUTLINE_MELEE, SummaryPainter.moveOutline(CombatType.CRUSH));
+		assertEquals(GlassTokens.OUTLINE_STAB, SummaryPainter.moveOutline(CombatType.STAB));
+		assertEquals(GlassTokens.OUTLINE_SLASH, SummaryPainter.moveOutline(CombatType.SLASH));
+		assertEquals(GlassTokens.OUTLINE_CRUSH, SummaryPainter.moveOutline(CombatType.CRUSH));
 		assertEquals(GlassTokens.OUTLINE_RANGED, SummaryPainter.moveOutline(CombatType.RANGED));
 		assertEquals(GlassTokens.OUTLINE_MAGIC, SummaryPainter.moveOutline(CombatType.MAGIC));
-		assertTrue(GlassTokens.OUTLINE_MELEE[1].getRed() > GlassTokens.OUTLINE_MELEE[1].getGreen() + 80);
+		float stab = hue(GlassTokens.OUTLINE_STAB[1]);
+		float slash = hue(GlassTokens.OUTLINE_SLASH[1]);
+		float crush = hue(GlassTokens.OUTLINE_CRUSH[1]);
+		assertTrue("stab is orange-red " + stab, stab > 0.01 && stab < 0.07);
+		assertTrue("slash is red " + slash, slash < 0.02 || slash > 0.98);
+		assertTrue("crush is magenta-crimson " + crush, crush > 0.88 && crush < 0.97);
 		assertTrue(GlassTokens.OUTLINE_RANGED[1].getGreen() > GlassTokens.OUTLINE_RANGED[1].getRed() + 40);
 		assertTrue(GlassTokens.OUTLINE_MAGIC[1].getBlue() > GlassTokens.OUTLINE_MAGIC[1].getRed() + 80);
+	}
+
+	private static float hue(Color c)
+	{
+		return Color.RGBtoHSB(c.getRed(), c.getGreen(), c.getBlue(), null)[0];
+	}
+
+	@Test
+	public void insetPanelsCardsAndFieldsWearAnInsetBorder()
+	{
+		for (int kind = 0; kind < 2; kind++)
+		{
+			BufferedImage canvas = WidgetKit.canvas(240, 140);
+			Graphics2D g = WidgetKit.graphics(canvas);
+			WindowStyle st = style(WindowTheme.RUNELITE_GLASS);
+			if (kind == 0)
+				st.panel(g, BOX);
+			else
+				st.card(g, st.outline(WindowStyle.Kind.CHIP, BOX));
+
+			g.dispose();
+			double[] edge = edgeLuminance(canvas, 120, true);
+			assertTrue("kind " + kind + " found " + edge[0], edge[0] > 0);
+			assertTrue("kind " + kind + " inset " + edge[0] + " " + edge[1], edge[0] < edge[1]);
+		}
 	}
 }

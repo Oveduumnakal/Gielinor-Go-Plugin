@@ -70,6 +70,9 @@ final class PortraitFrame
 			sweep(g, style, box, now);
 
 		g.setClip(savedClip);
+		if (style.theme().glass() && !row.gilded())
+			GlassStyle.borderInset(g, clip, style, 1.0);
+
 		if (row.gilded())
 		{
 			Stroke stroke = g.getStroke();

@@ -571,7 +571,9 @@ final class WindowStyle
 	{
 		if (theme.glass())
 		{
-			GlassStyle.pressed(g, outline(Kind.PANEL, box), this, GlassTokens.black(GlassTokens.INSET_FILL));
+			Shape panel = outline(Kind.PANEL, box);
+			GlassStyle.pressed(g, panel, this, GlassTokens.black(GlassTokens.INSET_FILL));
+			GlassStyle.borderInset(g, panel, this, 1.0);
 			return;
 		}
 
@@ -590,6 +592,7 @@ final class WindowStyle
 		if (theme.glass())
 		{
 			GlassStyle.pressed(g, shape, this, GlassTokens.black(GlassTokens.INSET_FILL));
+			GlassStyle.borderInset(g, shape, this, 1.0);
 			return;
 		}
 

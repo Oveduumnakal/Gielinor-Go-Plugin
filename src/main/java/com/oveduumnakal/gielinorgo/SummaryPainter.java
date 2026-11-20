@@ -269,18 +269,27 @@ final class SummaryPainter
 	}
 
 	/**
-	 * Gives the metal outline of a move's pill by the kind of attack: red for melee (stab, slash and crush all share it
-	 * for now), green for ranged, blue for magic.
+	 * Gives the metal outline of a move's pill by the kind of attack. Melee is a red family, a hue for each style: an
+	 * orange-red for stab, red for slash, a magenta-crimson for crush. Ranged is green and magic is blue.
 	 *
 	 * @param style the move's combat style
 	 * @return the three colours of the outline, light, middle and dark
 	 */
 	static Color[] moveOutline(CombatType style)
 	{
-		if (style == CombatType.RANGED)
-			return GlassTokens.OUTLINE_RANGED;
-
-		return style == CombatType.MAGIC ? GlassTokens.OUTLINE_MAGIC : GlassTokens.OUTLINE_MELEE;
+		switch (style)
+		{
+			case STAB:
+				return GlassTokens.OUTLINE_STAB;
+			case CRUSH:
+				return GlassTokens.OUTLINE_CRUSH;
+			case RANGED:
+				return GlassTokens.OUTLINE_RANGED;
+			case MAGIC:
+				return GlassTokens.OUTLINE_MAGIC;
+			default:
+				return GlassTokens.OUTLINE_SLASH;
+		}
 	}
 
 	private void bond(Graphics2D g, PageContext ctx, SummaryLayout layout, SummaryContent content)
