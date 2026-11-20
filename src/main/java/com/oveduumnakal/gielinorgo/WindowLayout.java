@@ -31,8 +31,8 @@ final class WindowLayout
 	/** The gap between tabs, in layout units. */
 	static final double TAB_GAP_UNITS = 2;
 
-	/** The width of the Close button, in layout units. */
-	static final double CLOSE_UNITS = 78;
+	/** The width of the Close button, an X, in layout units. */
+	static final double CLOSE_UNITS = 56;
 
 	/** The least width of the resize strip along an edge, in pixels, however small the window. */
 	static final int EDGE_MIN_PX = 4;

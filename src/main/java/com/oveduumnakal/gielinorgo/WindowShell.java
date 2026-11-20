@@ -1008,7 +1008,7 @@ final class WindowShell
 		g.fill(style.slant(new Rectangle2D.Double(Math.round(barX), active.y + active.height + barH / 2, barW, barH),
 			style.metrics().tabSlant * (double) barH / active.height));
 		Rectangle2D close = rect(layout.close);
-		style.button(g, close, "Close", false, false, hoverOf(ID_CLOSE), pressOf(ID_CLOSE));
+		style.closeButton(g, close, hoverOf(ID_CLOSE), pressOf(ID_CLOSE));
 		ringIf(g, ID_CLOSE, style.outline(WindowStyle.Kind.BUTTON, close));
 	}
 

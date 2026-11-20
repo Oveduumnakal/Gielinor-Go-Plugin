@@ -16,10 +16,10 @@ import java.util.regex.Pattern;
 
 /**
  * The change log inside the painted window: every release, newest first, as wrapped text in a {@link ScrollList}
- * with a Back button above it. It replaces the page area while it is open, so it is a shell-level page, not a tab.
- * An issue number such as {@code #17} is a link to that issue on GitHub; pressing a link and releasing on the same
- * link hands its address to the opener once, and a press that turned into a scroll opens nothing. Holds no RuneLite
- * types.
+ * with a Back button, an X, in its top left corner. It replaces the page area while it is open, so it is a
+ * shell-level page, not a tab. An issue number such as {@code #17} is a link to that issue on GitHub; pressing a link
+ * and releasing on the same link hands its address to the opener once, and a press that turned into a scroll opens
+ * nothing. Holds no RuneLite types.
  */
 final class ChangelogPage
 {
@@ -31,7 +31,7 @@ final class ChangelogPage
 
 	private static final Pattern ISSUE = Pattern.compile("(?<![\\w&\\[#])#(\\d+)");
 	private static final String ISSUES = IssueLinks.NEW_ISSUE.replace("/issues/new", "/issues/");
-	private static final double BACK_UNITS = 90;
+	private static final double BACK_UNITS = 56;
 	private static final double TOP_UNITS = 36;
 
 	private final String markup;
@@ -125,7 +125,7 @@ final class ChangelogPage
 		st.panel(g, new Rectangle2D.Double(body.x, body.y, body.width, body.height));
 		Rectangle back = backBox(st, body);
 		Rectangle2D shape = new Rectangle2D.Double(back.x, back.y, back.width, back.height);
-		st.button(g, shape, "Back", false, false, ctx.hoverOf(ID_BACK), ctx.pressOf(ID_BACK));
+		st.closeButton(g, shape, ctx.hoverOf(ID_BACK), ctx.pressOf(ID_BACK));
 		if (ctx.focused && ID_BACK.equals(ctx.highlight))
 			st.focusRing(g, st.outline(WindowStyle.Kind.BUTTON, shape));
 

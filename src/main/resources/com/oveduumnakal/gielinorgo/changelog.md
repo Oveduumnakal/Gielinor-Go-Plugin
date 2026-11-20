@@ -205,10 +205,15 @@ A Creature Log, daily tasks and daily events give you goals.
   turns it off for the solid look. (#324)
 - **One shape everywhere.** Every part of the window now has the slanted shape; the window itself and the pinned
   boxes are rectangles with soft corners. (#321)
+- **X buttons.** Close, and the change log's Back (now in its top left corner), are drawn as an X that stays sharp at
+  every window size. Esc and Backspace still work. (#320)
 <!-- Add one line per issue above this comment: - **Title.** One sentence. (#N) -->
 
 ### Fixes
 
+- **Rename box.** Typing in the rename box now shows the letters, digits and spaces you type. (#316)
+- **Party refresh.** Gaining XP no longer replays the Party window's enter animation or closes the Summary, and
+  renaming a creature keeps its Summary open. (#318)
 - **Highlight shape.** The highlight on slanted buttons was a gold rectangle; it now follows the button's shape.
   (#322)
 - **Start-up.** The plugin starts again, and the client no longer stops near a wild creature. (#152)

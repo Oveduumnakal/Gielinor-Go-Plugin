@@ -228,6 +228,26 @@ final class Icons
 	}
 
 	/**
+	 * Draws an X: two crossing strokes with round ends. Drawn as vectors, so it stays sharp at every window size.
+	 *
+	 * @param g the graphics, with the colour set
+	 * @param x the left edge of the square
+	 * @param y the top edge
+	 * @param size the side of the square; the strokes stay inside it
+	 */
+	static void cross(Graphics2D g, double x, double y, double size)
+	{
+		Stroke saved = g.getStroke();
+		float width = (float) Math.max(1.5, size / 6.0);
+		g.setStroke(new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		double inset = width / 2.0 + size * 0.1;
+		double far = size - inset;
+		g.draw(new Line2D.Double(x + inset, y + inset, x + far, y + far));
+		g.draw(new Line2D.Double(x + inset, y + far, x + far, y + inset));
+		g.setStroke(saved);
+	}
+
+	/**
 	 * Draws two crossed swords, each a blade, a cross guard and a short grip, in the current colour. Used on the
 	 * Battle bubble. Everything stays inside the square.
 	 *
