@@ -112,4 +112,23 @@ public class SummaryLayoutTest
 
 		assertTrue(big.description.contains(big.growsLine()));
 	}
+
+	@Test
+	public void theButtonsStandInTwoRowsOfThreeWithBackAtTheBottomRight()
+	{
+		SummaryLayout l = at(1.0, 760, 400);
+		Rectangle back = l.buttons[0];
+		assertEquals("Back", l.labels()[0]);
+		for (int i = 1; i < l.buttons.length; i++)
+		{
+			assertTrue(l.buttons[i].y < back.y == i < 4);
+			assertFalse(l.buttons[i].intersects(back));
+		}
+
+		assertTrue(l.buttons[1].x < l.buttons[2].x && l.buttons[2].x < l.buttons[3].x);
+		assertTrue(l.buttons[4].x < l.buttons[5].x && l.buttons[5].x < back.x);
+		assertEquals(l.buttons[3].x, back.x);
+		assertEquals(40 + 400, back.y + back.height);
+		assertTrue(l.moves.y + l.moves.height <= l.buttons[1].y);
+	}
 }
