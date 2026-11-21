@@ -67,11 +67,22 @@ final class PageText
 	}
 
 	/**
+	 * Gives the room every page keeps clear between a box's left and right edges and the text drawn in it, so the
+	 * words never touch the edge.
+	 *
+	 * @return the inset in pixels, at least 2
+	 */
+	int inset()
+	{
+		return Math.max(2, style.metrics().pad / 3);
+	}
+
+	/**
 	 * Draws a line of text in a box.
 	 *
 	 * @param g the graphics
 	 * @param text the text
-	 * @param box the box; the text is cut to its width
+	 * @param box the box; the text is cut to its width; it keeps the {@link #inset()} from the edges unless that would cut it
 	 * @param font the font
 	 * @param colour the colour name
 	 * @param align where in the box the text sits
@@ -87,7 +98,7 @@ final class PageText
 	 *
 	 * @param g the graphics
 	 * @param text the text
-	 * @param box the box; the text is cut to its width
+	 * @param box the box; the text is cut to its width; it keeps the {@link #inset()} from the edges unless that would cut it
 	 * @param font the font
 	 * @param colour the colour
 	 * @param align where in the box the text sits
@@ -96,9 +107,11 @@ final class PageText
 	String draw(Graphics2D g, String text, Rectangle box, Font font, Color colour, Align align)
 	{
 		FontMetrics fm = g.getFontMetrics(font);
-		String shown = WindowStyle.ellipsize(text, fm, box.width);
+		String shown = fm.stringWidth(text) <= box.width ? text
+			: WindowStyle.ellipsize(text, fm, Math.max(0, box.width - 2 * inset()));
 		int w = fm.stringWidth(shown);
-		int x = align == Align.LEFT ? box.x : align == Align.RIGHT ? box.x + box.width - w
+		int inset = Math.max(0, Math.min(inset(), (box.width - w) / 2));
+		int x = align == Align.LEFT ? box.x + inset : align == Align.RIGHT ? box.x + box.width - inset - w
 			: box.x + (box.width - w) / 2;
 		int baseline = box.y + (box.height + fm.getAscent() - fm.getDescent()) / 2;
 		if (!shown.isEmpty())
