@@ -82,7 +82,8 @@ final class PageText
 	 *
 	 * @param g the graphics
 	 * @param text the text
-	 * @param box the box; the text is cut to its width; it keeps the {@link #inset()} from the edges unless that would cut it
+	 * @param box the box; the text is cut to its width, and keeps the {@link #inset()} from the edges unless that
+	 *        would cut it
 	 * @param font the font
 	 * @param colour the colour name
 	 * @param align where in the box the text sits
@@ -98,7 +99,8 @@ final class PageText
 	 *
 	 * @param g the graphics
 	 * @param text the text
-	 * @param box the box; the text is cut to its width; it keeps the {@link #inset()} from the edges unless that would cut it
+	 * @param box the box; the text is cut to its width, and keeps the {@link #inset()} from the edges unless that
+	 *        would cut it
 	 * @param font the font
 	 * @param colour the colour
 	 * @param align where in the box the text sits
