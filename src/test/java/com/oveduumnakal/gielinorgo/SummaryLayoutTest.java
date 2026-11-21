@@ -74,7 +74,8 @@ public class SummaryLayoutTest
 			for (Rectangle r : new Rectangle[] {l.header, l.chips, l.portrait, l.stats, l.nature, l.bond, l.moves})
 				assertTrue(where + " " + r, body.contains(r) && r.width > 0 && r.height > 0);
 
-			assertTrue(where, l.left.contains(l.header) && l.portrait.contains(l.chips) && l.portrait.contains(l.chipsBottom));
+			assertTrue(where, l.left.contains(l.header) && l.left.contains(l.portrait));
+			assertTrue(where, l.portrait.contains(l.chips) && l.portrait.contains(l.chipsBottom));
 			assertTrue(where, l.right.contains(l.stats) && l.right.contains(l.nature) && l.right.contains(l.moves));
 			assertFalse(where, l.stats.intersects(l.nature));
 			assertFalse(where, l.stats.intersects(l.moves));
