@@ -7,8 +7,8 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.Rectangle;
 
 /**
- * Where everything on the Summary page sits, in two columns. Left: a header pill with the style badge, the chips, a
- * large image box and the Description box. Right: the Stats box with the Nature box beside it and the bond pill under
+ * Where everything on the Summary page sits, in two columns. Left: a header pill with the style badge, a
+ * large image box with the chips along its top and bottom edges, and the Description box. Right: the Stats box with the Nature box beside it and the bond pill under
  * that, and the Moves box under both. A row of action buttons runs along the foot. It is worked out from the page
  * area, the window scale and the height of one line of text, so the boxes hold the text at every size the window can
  * have. The Description box takes what the image box can spare and has no height when there is not room for its
@@ -37,8 +37,11 @@ final class SummaryLayout
 	/** The header pill; the round style badge takes its left end, as tall as the pill. */
 	final Rectangle header;
 
-	/** The row of chips under the header. */
+	/** The top strip of the portrait box, where the chips sit; the row has no height when it does not fit. */
 	final Rectangle chips;
+
+	/** The bottom strip of the portrait box, where the chips that did not fit the top strip sit. */
+	final Rectangle chipsBottom;
 
 	/** The large image box the creature portrait fills. */
 	final Rectangle portrait;
@@ -92,9 +95,7 @@ final class SummaryLayout
 		left = new Rectangle(body.x, body.y, leftW, mainH);
 		int headerH = Math.max(m.chipHeight, lineH * 3 / 2);
 		header = new Rectangle(left.x, left.y, leftW, Math.min(headerH, mainH));
-		int chipsY = header.y + header.height + gap;
-		chips = new Rectangle(left.x, chipsY, leftW, Math.max(0, Math.min(m.chipHeight, left.y + mainH - chipsY)));
-		int imageY = chips.y + chips.height + gap;
+		int imageY = header.y + header.height + gap;
 		int avail = Math.max(0, left.y + mainH - imageY);
 		int imageMin = Math.max(2 * lineH, 24);
 		int descWant = 2 * pad + headingH + 4 * smallH;
@@ -105,6 +106,10 @@ final class SummaryLayout
 
 		int imageH = Math.max(0, avail - (descH > 0 ? descH + gap : 0));
 		portrait = new Rectangle(left.x, imageY, leftW, imageH);
+		int inset = Math.max(2, m.pad / 3);
+		int chipH = Math.max(0, Math.min(m.chipHeight, (imageH - 3 * inset) / 2));
+		chips = new Rectangle(left.x, portrait.y + inset, leftW, chipH);
+		chipsBottom = new Rectangle(left.x, portrait.y + imageH - inset - chipH, leftW, chipH);
 		description = new Rectangle(left.x, imageY + imageH + (descH > 0 ? gap : 0), leftW, descH);
 
 		right = new Rectangle(body.x + leftW + gap, body.y, Math.max(0, body.width - leftW - gap), mainH);

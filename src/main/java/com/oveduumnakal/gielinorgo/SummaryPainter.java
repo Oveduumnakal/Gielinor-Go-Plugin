@@ -173,18 +173,31 @@ final class SummaryPainter
 
 	private void chips(Graphics2D g, PageContext ctx, SummaryLayout layout, SummaryContent content)
 	{
-		Rectangle box = layout.chips;
 		WindowStyle st = ctx.style;
-		int x = box.x + st.metrics().chipSlant;
 		int gap = Math.max(2, st.metrics().pad / 3);
+		int slant = st.metrics().chipSlant;
+		Rectangle[] strips = {layout.chips, layout.chipsBottom};
+		int strip = 0;
+		int x = strips[0].x + gap + slant;
 		for (SummaryContent.Chip chip : content.chipRow())
 		{
 			int w = st.chipWidth(g, chip.label());
-			if (box.height < st.metrics().chipHeight || x + w > box.x + box.width)
+			if (strips[strip].height < st.metrics().chipHeight)
 				return;
 
-			st.chip(g, x, box.y, chip.label(), chip.style());
-			x += w + gap + st.metrics().chipSlant;
+			if (x + w > strips[strip].x + strips[strip].width - gap)
+			{
+				if (strip == 1 || x == strips[0].x + gap + slant)
+					return;
+
+				strip = 1;
+				x = strips[1].x + gap + slant;
+				if (x + w > strips[1].x + strips[1].width - gap)
+					return;
+			}
+
+			st.chip(g, x, strips[strip].y, chip.label(), chip.style());
+			x += w + gap + slant;
 		}
 	}
 

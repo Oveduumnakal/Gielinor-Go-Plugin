@@ -440,7 +440,7 @@ public class PartyRenderSmokeTest
 				int small = WidgetKit.metrics(style, WindowFonts.Face.SMALL).getHeight();
 				SummaryLayout layout = SummaryLayout.of(window.body, style.metrics(), line, small);
 				String where = size.width + "x" + size.height;
-				List<Rectangle> parts = new ArrayList<>(Arrays.asList(layout.header, layout.chips,
+				List<Rectangle> parts = new ArrayList<>(Arrays.asList(layout.header,
 					layout.portrait, layout.stats, layout.nature, layout.moves, layout.bond));
 				if (layout.description.height > 0)
 					parts.add(layout.description);
@@ -456,7 +456,8 @@ public class PartyRenderSmokeTest
 
 				assertTrue(where, layout.left.contains(layout.portrait));
 				assertTrue(where, layout.left.contains(layout.header));
-				assertTrue(where, layout.left.contains(layout.chips));
+				assertTrue(where, layout.portrait.contains(layout.chips));
+				assertTrue(where, layout.portrait.contains(layout.chipsBottom));
 				assertTrue(where, layout.right.contains(layout.moves));
 			}
 	}
