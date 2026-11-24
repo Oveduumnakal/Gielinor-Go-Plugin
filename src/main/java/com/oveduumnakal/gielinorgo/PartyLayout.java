@@ -20,7 +20,7 @@ final class PartyLayout
 	static final int SLOTS = SaveData.TEAM_SIZE;
 
 	/** The gap between rows, and between the page's parts, in layout units. */
-	static final double GAP_UNITS = 4;
+	static final double GAP_UNITS = 6;
 
 	/** The share of the page width the right column takes. */
 	static final double SIDE_SHARE = 0.30;

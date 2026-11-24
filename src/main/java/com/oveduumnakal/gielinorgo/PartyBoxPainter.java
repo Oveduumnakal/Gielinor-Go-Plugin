@@ -23,7 +23,7 @@ final class PartyBoxPainter
 	static final double WIDTH_UNITS = 220;
 
 	private static final double ROW_UNITS = 34;
-	private static final double GAP_UNITS = 4;
+	private static final double GAP_UNITS = 6;
 
 	private final PortraitCache pictures;
 	private final PageText.Sink sink;

@@ -89,7 +89,7 @@ final class SummaryLayout
 		this.labels = labels.clone();
 		this.lineH = lineH;
 		this.smallH = smallH;
-		gap = Math.max(2, m.pad / 3);
+		gap = Math.max(3, m.pad / 2);
 		pad = Math.max(3, m.pad / 3);
 		headingH = smallH + pad;
 		int buttonH = Math.max(m.chipHeight, lineH + pad);
