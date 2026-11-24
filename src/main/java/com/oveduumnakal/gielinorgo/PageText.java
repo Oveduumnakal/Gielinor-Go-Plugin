@@ -51,6 +51,9 @@ final class PageText
 		void drawn(String text, int width, int height, Rectangle box);
 	}
 
+	/** The least room kept free at each side of a line of text, in pixels. */
+	static final int MIN_INSET = 2;
+
 	private final WindowStyle style;
 	private final Sink sink;
 
@@ -83,6 +86,20 @@ final class PageText
 	}
 
 	/**
+	 * Gives the room kept free at each side of a line of text, so it never touches the edge of its container: a
+	 * quarter of the window's padding, at least two pixels. Text that already fits the box whole only moves in by the
+	 * slack it has, so the inset never cuts a word short; a box too narrow to spare it keeps none.
+	 *
+	 * @param box the box the text is drawn in
+	 * @return the inset in pixels, for the left and for the right
+	 */
+	int inset(Rectangle box)
+	{
+		int inset = Math.max(MIN_INSET, style.metrics().pad / 4);
+		return box.width >= 8 * inset ? inset : 0;
+	}
+
+	/**
 	 * Draws a line of text in a box, in a plain colour that is not part of the theme, such as a rarity's.
 	 *
 	 * @param g the graphics
@@ -96,9 +113,12 @@ final class PageText
 	String draw(Graphics2D g, String text, Rectangle box, Font font, Color colour, Align align)
 	{
 		FontMetrics fm = g.getFontMetrics(font);
-		String shown = WindowStyle.ellipsize(text, fm, box.width);
+		String whole = WindowStyle.ellipsize(text, fm, box.width);
+		int inset = inset(box);
+		String shown = whole.equals(text) ? whole : WindowStyle.ellipsize(text, fm, box.width - 2 * inset);
 		int w = fm.stringWidth(shown);
-		int x = align == Align.LEFT ? box.x : align == Align.RIGHT ? box.x + box.width - w
+		inset = Math.min(inset, Math.max(0, (box.width - w) / 2));
+		int x = align == Align.LEFT ? box.x + inset : align == Align.RIGHT ? box.x + box.width - inset - w
 			: box.x + (box.width - w) / 2;
 		int baseline = box.y + (box.height + fm.getAscent() - fm.getDescent()) / 2;
 		if (!shown.isEmpty())
