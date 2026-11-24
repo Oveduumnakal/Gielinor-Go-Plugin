@@ -61,6 +61,17 @@ public class SummaryLayoutTest
 	}
 
 	@Test
+	public void boxesAreHalfAPadApartSoEachOneReadsAsItsOwnCard()
+	{
+		SummaryLayout l = at(1.0, 760, 400);
+
+		assertEquals(6, l.gap);
+		assertEquals(l.gap, l.right.x - (l.left.x + l.left.width));
+		assertEquals(l.gap, l.moves.y - (l.stats.y + l.stats.height));
+		assertEquals(l.gap, l.nature.x - (l.stats.x + l.stats.width));
+	}
+
+	@Test
 	public void theTwoColumnsHoldTheirBoxesAtSeveralSizes()
 	{
 		int[][] sizes = {{380, 210, 50}, {560, 300, 75}, {760, 400, 100}, {1100, 600, 150}, {1500, 800, 200}};
