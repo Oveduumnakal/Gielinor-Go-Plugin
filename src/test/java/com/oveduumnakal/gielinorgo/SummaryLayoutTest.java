@@ -71,17 +71,18 @@ public class SummaryLayoutTest
 			String where = size[0] + "x" + size[1];
 
 			assertTrue(where, l.left.x + l.left.width < l.right.x);
-			for (Rectangle r : new Rectangle[] {l.header, l.chips, l.portrait, l.stats, l.nature, l.bond, l.moves})
+			for (Rectangle r : new Rectangle[] {l.header, l.portrait, l.stats, l.nature, l.bond, l.moves})
 				assertTrue(where + " " + r, body.contains(r) && r.width > 0 && r.height > 0);
 
-			assertTrue(where, l.left.contains(l.header) && l.left.contains(l.chips) && l.left.contains(l.portrait));
+			assertTrue(where, l.left.contains(l.header) && l.left.contains(l.portrait));
 			assertTrue(where, l.right.contains(l.stats) && l.right.contains(l.nature) && l.right.contains(l.moves));
 			assertFalse(where, l.stats.intersects(l.nature));
 			assertFalse(where, l.stats.intersects(l.moves));
 			assertFalse(where, l.nature.intersects(l.bond));
 			assertFalse(where, l.bond.intersects(l.moves));
-			assertFalse(where, l.header.intersects(l.chips));
-			assertFalse(where, l.chips.intersects(l.portrait));
+			assertFalse(where, l.header.intersects(l.portrait));
+			assertTrue(where, l.chips.isEmpty() || l.portrait.contains(l.chips));
+			assertTrue(where, l.chips.y == l.portrait.y + l.gap && l.chips.x == l.portrait.x + l.gap);
 			assertTrue(where, l.nature.x >= l.stats.x + l.stats.width);
 			assertTrue(where, l.nature.y == l.stats.y);
 			assertTrue(where, l.bond.y > l.nature.y && l.bond.x == l.nature.x);

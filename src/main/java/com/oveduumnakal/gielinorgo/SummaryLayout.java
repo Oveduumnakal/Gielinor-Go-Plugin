@@ -7,12 +7,12 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.Rectangle;
 
 /**
- * Where everything on the Summary page sits, in two columns. Left: a header pill with the style badge, the chips, a
- * large image box and the Description box. Right: the Stats box with the Nature box beside it and the bond pill under
- * that, and the Moves box under both. Two rows of three action buttons run along the foot, Back at the bottom right.
- * It is worked out from the page area, the window scale and the height of one line of text, so the boxes hold the text
- * at every size the window can have. The Description box takes what the image box can spare and has no height when
- * there is not room for its heading and one line. Holds no RuneLite types.
+ * Where everything on the Summary page sits, in two columns. Left: a header pill with the style badge, a large image
+ * box with the chips along its top edge, and the Description box. Right: the Stats box with the Nature box beside it
+ * and the bond pill under that, and the Moves box under both. Two rows of three action buttons run along the foot,
+ * Back at the bottom right. It is worked out from the page area, the window scale and the height of one line of text,
+ * so the boxes hold the text at every size the window can have. The Description box takes what the image box can
+ * spare and has no height when there is not room for its heading and one line. Holds no RuneLite types.
  */
 final class SummaryLayout
 {
@@ -37,13 +37,13 @@ final class SummaryLayout
 	/** The labels of the action buttons along the foot of a stored creature's Summary, in order; the first is Back. */
 	static final String[] STORED_BUTTONS = {"Back", "Rename", "Moves", "To team", "Release", "Use item"};
 
-	/** The left column: header, chips, image and description. It is the creature's menu hit. */
+	/** The left column: header, image (with the chips in it) and description. It is the creature's menu hit. */
 	final Rectangle left;
 
 	/** The header pill; the round style badge takes its left end, as tall as the pill. */
 	final Rectangle header;
 
-	/** The row of chips under the header. */
+	/** The row of chips along the top edge inside the image box, one gap in from its edges. */
 	final Rectangle chips;
 
 	/** The large image box the creature portrait fills. */
@@ -98,9 +98,7 @@ final class SummaryLayout
 		left = new Rectangle(body.x, body.y, leftW, mainH);
 		int headerH = Math.max(m.chipHeight, lineH * 3 / 2);
 		header = new Rectangle(left.x, left.y, leftW, Math.min(headerH, mainH));
-		int chipsY = header.y + header.height + gap;
-		chips = new Rectangle(left.x, chipsY, leftW, Math.max(0, Math.min(m.chipHeight, left.y + mainH - chipsY)));
-		int imageY = chips.y + chips.height + gap;
+		int imageY = header.y + header.height + gap;
 		int avail = Math.max(0, left.y + mainH - imageY);
 		int imageMin = Math.max(2 * lineH, 24);
 		int descWant = 2 * pad + headingH + 4 * smallH;
@@ -111,6 +109,8 @@ final class SummaryLayout
 
 		int imageH = Math.max(0, avail - (descH > 0 ? descH + gap : 0));
 		portrait = new Rectangle(left.x, imageY, leftW, imageH);
+		int chipsH = Math.max(0, Math.min(m.chipHeight, imageH - 2 * gap));
+		chips = new Rectangle(portrait.x + gap, portrait.y + gap, Math.max(0, leftW - 2 * gap), chipsH);
 		description = new Rectangle(left.x, imageY + imageH + (descH > 0 ? gap : 0), leftW, descH);
 
 		right = new Rectangle(body.x + leftW + gap, body.y, Math.max(0, body.width - leftW - gap), mainH);

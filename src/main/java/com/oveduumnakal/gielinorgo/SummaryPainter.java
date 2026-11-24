@@ -19,11 +19,12 @@ import java.util.List;
 
 /**
  * Paints the Summary page of one creature, in two columns. Left: the header pill with the round style badge, the
- * chips, the image box and the Description box with its "Grows into..." line. Right: the Stats box, the Nature box
- * with the bond hearts under it, and the Moves box; the action buttons run along the foot. The words come from
- * {@link SummaryContent} and the boxes from {@link SummaryLayout}. In full motion the portrait grows out of the row
- * it was opened from, the stat bars fill one after another and the move pills pop in one by one; in the other modes
- * everything is simply there. All text is drawn through {@link PageText}. Holds no RuneLite types.
+ * image box with the chips along its top edge, and the Description box with its "Grows into..." line. Right: the
+ * Stats box, the Nature box with the bond hearts under it, and the Moves box; the action buttons run along the foot.
+ * The words come from {@link SummaryContent} and the boxes from {@link SummaryLayout}. In full motion the portrait
+ * grows out of the row it was opened from, the stat bars fill one after another and the move pills pop in one by
+ * one; in the other modes everything is simply there. All text is drawn through {@link PageText}. Holds no RuneLite
+ * types.
  */
 final class SummaryPainter
 {
