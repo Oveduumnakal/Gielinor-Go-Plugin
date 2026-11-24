@@ -442,6 +442,19 @@ public class WindowStyleTest
 	}
 
 	@Test
+	public void theGlassNoticeIsAsFirmAsATooltip()
+	{
+		WindowStyle style = WindowStyle.of(WindowTheme.RUNELITE_GLASS, 1.0);
+		BufferedImage shown = canvas();
+		Graphics2D g = graphics(shown);
+		style.notice(g, "Still loading your save.", 200, 150, 1.0, 1.0);
+		g.dispose();
+
+		int firm = (int) Math.round(GlassTokens.POPUP_TINT * 255) - 12;
+		assertTrue(at(shown, 200, 141).getAlpha() >= firm);
+	}
+
+	@Test
 	public void windowClassesWriteNoColourLiterals() throws IOException
 	{
 		File dir = new File("src/main/java/com/oveduumnakal/gielinorgo");

@@ -1087,8 +1087,8 @@ final class WindowStyle
 	}
 
 	/**
-	 * Paints the pop-up notice: a dark pill with the text in it, drawn around a centre point, so a pop that scales
-	 * the notice keeps it centred.
+	 * Paints the pop-up notice: a pill with the text in it, as firm and as bordered as a tooltip, drawn around a
+	 * centre point, so a pop that scales the notice keeps it centred.
 	 *
 	 * @param g the graphics
 	 * @param message the notice text
@@ -1118,10 +1118,11 @@ final class WindowStyle
 			GlassStyle.shadowsSmall(g, pill, this, 1.0);
 			BufferedImage wash = washFor(g, "notice", box);
 			GlassPanel.wash(g, pill, this, wash, Readability.NOTICE);
-			g.setColor(GlassPanel.tint(this, wash != null ? GlassTokens.TINT_OVER_WASH : GlassTokens.TINT_SOLID));
+			g.setColor(GlassPanel.tint(this, wash != null ? GlassTokens.TINT_OVER_WASH : GlassTokens.POPUP_TINT));
 			g.fill(pill);
 			GlassStyle.bevel(g, pill, this, GlassTokens.SMALL_BEVEL, GlassTokens.SMALL_BEVEL_LIGHT,
 				GlassTokens.SMALL_BEVEL_DARK);
+			GlassStyle.border(g, pill, this, 1.0);
 		}
 		else
 		{
