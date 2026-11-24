@@ -9,10 +9,10 @@ import java.awt.Rectangle;
 /**
  * Where everything on the Summary page sits, in two columns. Left: a header pill with the style badge, the chips, a
  * large image box and the Description box. Right: the Stats box with the Nature box beside it and the bond pill under
- * that, and the Moves box under both. A row of action buttons runs along the foot. It is worked out from the page
- * area, the window scale and the height of one line of text, so the boxes hold the text at every size the window can
- * have. The Description box takes what the image box can spare and has no height when there is not room for its
- * heading and one line. Holds no RuneLite types.
+ * that, and the Moves box under both. Two rows of three action buttons run along the foot, Back at the bottom right.
+ * It is worked out from the page area, the window scale and the height of one line of text, so the boxes hold the text
+ * at every size the window can have. The Description box takes what the image box can spare and has no height when
+ * there is not room for its heading and one line. Holds no RuneLite types.
  */
 final class SummaryLayout
 {
@@ -25,7 +25,13 @@ final class SummaryLayout
 	/** The lines of the Stats box: health, experience, attack, defence and speed. */
 	static final int BAR_ROWS = 5;
 
-	/** The labels of the action buttons along the foot, in order; the first is Back. */
+	/** The buttons in a row of the foot. */
+	static final int COLUMNS = 3;
+
+	/**
+	 * The labels of the action buttons along the foot, in order; the first is Back. They stand in two rows of three,
+	 * the others in reading order and Back last, at the bottom right.
+	 */
 	static final String[] BUTTONS = {"Back", "Rename", "Moves", "Make lead", "Storage", "Use item"};
 
 	/** The labels of the action buttons along the foot of a stored creature's Summary, in order; the first is Back. */
@@ -87,7 +93,7 @@ final class SummaryLayout
 		pad = Math.max(3, m.pad / 3);
 		headingH = smallH + pad;
 		int buttonH = Math.max(m.chipHeight, lineH + pad);
-		int mainH = Math.max(0, body.height - buttonH - gap);
+		int mainH = Math.max(0, body.height - (2 * buttonH + gap) - gap);
 		int leftW = (int) Math.round(body.width * LEFT_SHARE);
 		left = new Rectangle(body.x, body.y, leftW, mainH);
 		int headerH = Math.max(m.chipHeight, lineH * 3 / 2);
@@ -124,9 +130,14 @@ final class SummaryLayout
 		moves = new Rectangle(right.x, movesY, right.width, Math.max(0, right.y + mainH - movesY));
 		buttons = new Rectangle[labels.length];
 		int n = labels.length;
-		int each = Math.max(1, (body.width - (n - 1) * gap) / n);
+		int each = Math.max(1, (body.width - (COLUMNS - 1) * gap) / COLUMNS);
 		for (int i = 0; i < n; i++)
-			buttons[i] = new Rectangle(body.x + i * (each + gap), body.y + body.height - buttonH, each, buttonH);
+		{
+			int slot = (i + n - 1) % n;
+			int row = slot / COLUMNS - (n - 1) / COLUMNS;
+			buttons[i] = new Rectangle(body.x + slot % COLUMNS * (each + gap),
+				body.y + body.height - buttonH + row * (buttonH + gap), each, buttonH);
+		}
 	}
 
 	/**
