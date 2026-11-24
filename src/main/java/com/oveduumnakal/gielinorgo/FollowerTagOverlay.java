@@ -106,16 +106,15 @@ final class FollowerTagOverlay extends Overlay
 	}
 
 	/**
-	 * Picks the text the tag shows for a creature with a bond: a heart in front of the name from the first heart.
+	 * Picks the text the tag shows for a creature: its name, then its level.
 	 *
 	 * @param nickname the creature's nickname, or null for none
 	 * @param species the creature's species name
-	 * @param hearts the creature's bond hearts
-	 * @return the name, with a heart in front of it when there is a bond
+	 * @param level the creature's level
+	 * @return the name with the level after it, for example {@code Nibbles Lv 12}
 	 */
-	static String nameFor(String nickname, String species, int hearts)
+	static String nameFor(String nickname, String species, int level)
 	{
-		String name = nameFor(nickname, species);
-		return hearts >= BondRules.TAG_HEARTS ? "\u2665 " + name : name;
+		return nameFor(nickname, species) + " Lv " + level;
 	}
 }

@@ -25,6 +25,13 @@ public class FollowerTagOverlayTest
 	}
 
 	@Test
+	public void showsTheLevelAfterTheNameWithNoHeart()
+	{
+		assertEquals("Rex Lv 12", FollowerTagOverlay.nameFor("Rex", "Imp", 12));
+		assertEquals("Imp Lv 1", FollowerTagOverlay.nameFor("", "Imp", 1));
+	}
+
+	@Test
 	public void tagIsHalfOpaque()
 	{
 		assertEquals(128, FollowerTagOverlay.TAG_ALPHA);
