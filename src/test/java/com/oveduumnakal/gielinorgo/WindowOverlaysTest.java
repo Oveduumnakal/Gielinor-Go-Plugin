@@ -24,11 +24,16 @@ public class WindowOverlaysTest
 
 	private WindowToggle toggle()
 	{
+		return toggle(WindowTheme.RUNELITE_DARK);
+	}
+
+	private WindowToggle toggle(WindowTheme look)
+	{
 		BufferedImage jar = new BufferedImage(18, 18, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = jar.createGraphics();
 		g.fillRect(2, 2, 14, 14);
 		g.dispose();
-		return new WindowToggle(() -> WindowTheme.RUNELITE_DARK, () -> motion, () -> now, jar);
+		return new WindowToggle(() -> look, () -> motion, () -> now, jar);
 	}
 
 	private static int opaque(BufferedImage image)
@@ -62,6 +67,35 @@ public class WindowOverlaysTest
 
 		assertEquals(new Dimension(WindowToggle.SIZE, WindowToggle.SIZE), render(toggle, image));
 		assertTrue(opaque(image) > WindowToggle.SIZE * WindowToggle.SIZE / 2);
+	}
+
+	private static int leftEdge(BufferedImage image, int y)
+	{
+		for (int x = 0; x < image.getWidth(); x++)
+			if (image.getRGB(x, y) >>> 24 >= 120)
+				return x;
+
+		return -1;
+	}
+
+	@Test
+	public void theToggleIsNotSlantedInEitherLookAndTheGlassOneHasABorder()
+	{
+		for (WindowTheme look : new WindowTheme[] {WindowTheme.RUNELITE_DARK, WindowTheme.RUNELITE_GLASS})
+		{
+			BufferedImage image = new BufferedImage(80, 80, BufferedImage.TYPE_INT_ARGB);
+			render(toggle(look), image);
+
+			int top = leftEdge(image, 8);
+			int bottom = leftEdge(image, WindowToggle.SIZE - 9);
+			assertTrue(top >= 0);
+			assertEquals(top, bottom);
+		}
+
+		BufferedImage glass = new BufferedImage(80, 80, BufferedImage.TYPE_INT_ARGB);
+		render(toggle(WindowTheme.RUNELITE_GLASS), glass);
+		int edge = leftEdge(glass, WindowToggle.SIZE / 2);
+		assertTrue(glass.getRGB(edge, WindowToggle.SIZE / 2) != glass.getRGB(edge + 3, WindowToggle.SIZE / 2));
 	}
 
 	@Test

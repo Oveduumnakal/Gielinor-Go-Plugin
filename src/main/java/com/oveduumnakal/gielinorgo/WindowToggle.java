@@ -173,10 +173,11 @@ final class WindowToggle extends Overlay
 			g.setComposite(AlphaComposite.SrcOver.derive(LOCKED_ALPHA));
 
 		WindowStyle style = WindowStyle.of(look, 1.0);
-		Shape box = style.outline(WindowStyle.Kind.BUTTON, new Rectangle2D.Double(1, 1, SIZE - 2, SIZE - 2));
+		Shape box = style.slant(new Rectangle2D.Double(1, 1, SIZE - 2, SIZE - 2), 0);
 		if (look.glass())
 		{
 			GlassStyle.raisedSmall(g, box, style, GlassPanel.tint(style, GlassTokens.TINT_SOLID), 1.0);
+			GlassStyle.border(g, box, style, 1.0);
 		}
 		else
 		{
