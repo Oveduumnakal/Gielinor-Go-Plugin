@@ -9,10 +9,10 @@ import java.awt.Rectangle;
 /**
  * Where everything on the Summary page sits, in two columns. Left: a header pill with the style badge, the chips, a
  * large image box and the Description box. Right: the Stats box with the Nature box beside it and the bond pill under
- * that, and the Moves box under both. Two rows of three action buttons run along the foot, Back at the bottom right. It is worked out from the page
- * area, the window scale and the height of one line of text, so the boxes hold the text at every size the window can
- * have. The Description box takes what the image box can spare and has no height when there is not room for its
- * heading and one line. Holds no RuneLite types.
+ * that, and the Moves box under both. Two rows of three action buttons run along the foot, Back at the bottom right.
+ * It is worked out from the page area, the window scale and the height of one line of text, so the boxes hold the text
+ * at every size the window can have. The Description box takes what the image box can spare and has no height when
+ * there is not room for its heading and one line. Holds no RuneLite types.
  */
 final class SummaryLayout
 {
