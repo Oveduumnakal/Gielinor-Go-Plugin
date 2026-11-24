@@ -22,9 +22,6 @@ final class BondRules
 	/** Bond points for a City Champion or Elite win with the lead on the team. */
 	static final int CHAMPION_POINTS = 20;
 
-	/** Hearts from which the follower's name tag shows a small heart. */
-	static final int TAG_HEARTS = 1;
-
 	/** Bond points needed for hearts 1 to 5. */
 	private static final int[] POINTS_FOR_HEART = {100, 400, 1200, 3000, 6000};
 
