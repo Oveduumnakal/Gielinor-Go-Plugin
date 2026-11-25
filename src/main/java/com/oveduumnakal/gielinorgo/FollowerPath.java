@@ -8,6 +8,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -45,6 +46,12 @@ final class FollowerPath
 
 	/** Closer than this to a tile, in tiles, counts as standing on it. */
 	private static final double ARRIVED = 0.001;
+
+	/** A player this close, in tiles, to where they walked before has doubled back. */
+	private static final double LOOP_REACH = 0.25;
+
+	/** The shortest walk, in tiles, that counts as a loop to cut out of the trail. */
+	private static final double LOOP_LENGTH = 1.0;
 
 	/** Tiles tried, in order, when the follower is put down next to the player: south first, corners last. */
 	private static final int[][] NEIGHBOURS = {
@@ -102,6 +109,8 @@ final class FollowerPath
 	private int playerY;
 	private double drawnX;
 	private double drawnY;
+	private double steppedX;
+	private double steppedY;
 	private int plane;
 	private double x;
 	private double y;
@@ -194,6 +203,7 @@ final class FollowerPath
 			trail.add(new double[]{drawnX, drawnY});
 			drawnX = x;
 			drawnY = y;
+			cutLoop();
 		}
 
 		double behind = behind();
@@ -236,10 +246,12 @@ final class FollowerPath
 		}
 
 		double excess = behind();
-		boolean go = pace.moving(excess, playerMoving);
-		double budget = go ? Math.min(excess, (double) MAX_SPEED / CLIENT_TICKS) : 0;
+		double playerStep = Math.max(Math.abs(drawnX - steppedX), Math.abs(drawnY - steppedY));
+		steppedX = drawnX;
+		steppedY = drawnY;
+		double budget = pace.step(excess, playerStep);
 		boolean moved = budget > ARRIVED;
-		if (go && excess - budget <= ARRIVED)
+		if (moved && !playerMoving && excess - budget <= ARRIVED)
 			pace.caughtUp();
 
 		while (budget > 0)
@@ -717,6 +729,8 @@ final class FollowerPath
 		playerY = py;
 		drawnX = drawn;
 		drawnY = drawnAt;
+		steppedX = drawn;
+		steppedY = drawnAt;
 		plane = level;
 		x = px;
 		y = py;
@@ -739,6 +753,42 @@ final class FollowerPath
 	 *
 	 * @return the tiles the follower may still walk, or 0 when it is that close or closer
 	 */
+	/**
+	 * Cuts out of the trail the walk the player undid by coming back to where they were, so the follower does not walk
+	 * out to a turning point and back again.
+	 */
+	private void cutLoop()
+	{
+		double length = 0;
+		double fromX = drawnX;
+		double fromY = drawnY;
+		int walkedSince = 0;
+		int cut = 0;
+		for (Iterator<double[]> back = trail.descendingIterator(); back.hasNext();)
+		{
+			double[] point = back.next();
+			length += Math.max(Math.abs(point[0] - fromX), Math.abs(point[1] - fromY));
+			fromX = point[0];
+			fromY = point[1];
+			if (length > LOOP_LENGTH && near(point[0], point[1]))
+				cut = walkedSince;
+
+			walkedSince++;
+		}
+
+		length += Math.max(Math.abs(x - fromX), Math.abs(y - fromY));
+		if (length > LOOP_LENGTH && near(x, y))
+			cut = trail.size();
+
+		for (int i = 0; i < cut; i++)
+			trail.removeLast();
+	}
+
+	private boolean near(double atX, double atY)
+	{
+		return Math.max(Math.abs(atX - drawnX), Math.abs(atY - drawnY)) <= LOOP_REACH;
+	}
+
 	private double behind()
 	{
 		double length = 0;
