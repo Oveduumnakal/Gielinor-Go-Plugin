@@ -23,19 +23,16 @@ import java.util.Random;
 final class SpeciesGender
 {
 	private static final List<String> FEMALE = Collections.unmodifiableList(Arrays.asList(
-		"Woman", "Gnome woman", "Ice troll female", "Frenzied ice troll female", "Witch", "Ogress Shaman",
-		"Ogress Warrior", "Ice Queen", "Kalphite Queen", "Queen spawn", "Penance Queen", "Sea Troll Queen",
-		"Drink troll queen", "Branda the Fire Queen", "The Maiden of Sugadinti", "Dagannoth mother",
-		"Gelatinnoth Mother", "Mother", "Cow", "Banshee", "Twisted Banshee", "Screaming banshee",
-		"Screaming twisted banshee", "Bloodthirsty banshee", "Bloodthirsty twisted banshee", "Siren"));
+		"Woman", "Gnome woman", "Ice troll female", "Frenzied ice troll female", "Ogress Shaman",
+		"Ogress Warrior", "Ice Queen", "Kalphite Queen", "Queen spawn", "Penance Queen", "Drink troll queen",
+		"Branda the Fire Queen", "The Maiden of Sugadinti", "Cow", "Banshee", "Twisted Banshee",
+		"Screaming banshee", "Screaming twisted banshee"));
 
 	private static final List<String> MALE = Collections.unmodifiableList(Arrays.asList(
-		"Man", "Drunken man", "Ice troll male", "Frenzied ice troll male", "King Black Dragon", "Ice Troll King",
-		"King Roald", "King kurask", "King Scorpion", "King Sand Crab", "King Snagwort", "Maggot King",
-		"Eldric the Ice King", "Duke", "Duke Sucellus", "Count Draynor", "Prince Itzla Arkan", "Slug Prince",
-		"Sir Bedivere", "Sir Carl", "Sir Gawain", "Sir Harry", "Sir Jerro", "Sir Kay", "Sir Lancelot", "Sir Leye",
-		"Sir Lucan", "Sir Mordred", "Sir Palomedes", "Sir Pelleas", "Sir Tristram", "Cuthbert, Lord of Dread",
-		"Bull", "Ram", "Rooster", "Dad"));
+		"Man", "Drunken man", "Ice troll male", "Frenzied ice troll male", "King Black Dragon", "King Roald",
+		"King kurask", "King Scorpion", "King Sand Crab", "Maggot King", "Eldric the Ice King", "Duke Sucellus",
+		"Sir Bedivere", "Sir Carl", "Sir Gawain", "Sir Harry", "Sir Jerro", "Sir Kay", "Sir Lancelot", "Sir Lucan",
+		"Sir Mordred", "Sir Palomedes", "Sir Pelleas", "Sir Tristram", "Bull", "Ram", "Rooster"));
 
 	private static final Map<String, Gender> FIXED = new HashMap<>();
 

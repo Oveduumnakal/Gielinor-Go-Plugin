@@ -29,7 +29,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class StoragePageSummaryTest
 {
-	private static final String[] NAMES = {"Goblin", "Cow", "Imp", "Bloodthirsty banshee", "Man", "Rat"};
+	private static final String[] NAMES = {"Goblin", "Cow", "Imp", "Bruise Blamish Snail", "Man", "Rat"};
 
 	private static List<CreatureView> stored(int count)
 	{

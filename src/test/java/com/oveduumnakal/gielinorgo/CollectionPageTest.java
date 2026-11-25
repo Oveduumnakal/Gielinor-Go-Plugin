@@ -275,8 +275,8 @@ public class CollectionPageTest
 		assertEquals(1, CollectionPage.menuItems(log.get(0), name ->
 		{
 		}).size());
-		assertEquals("https://oldschool.runescape.wiki/w/Bloodthirsty_banshee",
-			WikiLinks.urlFor("Bloodthirsty banshee"));
+		assertEquals("https://oldschool.runescape.wiki/w/Bruise_Blamish_Snail",
+			WikiLinks.urlFor("Bruise Blamish Snail"));
 	}
 
 	@Test

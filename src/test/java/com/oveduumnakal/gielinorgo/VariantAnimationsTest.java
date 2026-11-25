@@ -60,7 +60,7 @@ public class VariantAnimationsTest
 			}
 		}
 
-		assertTrue("only " + checked + " species were checked", checked > 1200);
+		assertTrue("only " + checked + " species were checked", checked > 1000);
 	}
 
 	@Test

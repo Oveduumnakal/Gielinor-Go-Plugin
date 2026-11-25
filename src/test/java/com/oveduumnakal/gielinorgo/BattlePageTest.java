@@ -523,7 +523,7 @@ public class BattlePageTest
 	{
 		RivalView rival = new RivalView(RivalView.Mode.READY, "Bryn", 3,
 			"You again? I have been training with a very long list of creatures since we last met", "Goblin 9, Cow 11, "
-			+ "Giant rat 12, Imp 14, Bloodthirsty banshee 20, Man 3", "2 Iron jars", "Ready when you are", null);
+			+ "Giant rat 12, Imp 14, Bruise Blamish Snail 20, Man 3", "2 Iron jars", "Ready when you are", null);
 		return state(PartyRig.team(3), champions(8, 3), elite(EliteView.Mode.RUNNING, true), rival);
 	}
 
@@ -531,7 +531,7 @@ public class BattlePageTest
 	{
 		return new FriendsState(true, Arrays.asList(
 			friend(ANN, "Ann With A Really Long Display Name", false, false,
-				"gilded Imp (Lv 20) for your Bloodthirsty banshee (Lv 20) and a long tail of words"),
+				"gilded Imp (Lv 20) for your Bruise Blamish Snail (Lv 20) and a long tail of words"),
 			friend(33L, "Cat", true, true, "")));
 	}
 }
