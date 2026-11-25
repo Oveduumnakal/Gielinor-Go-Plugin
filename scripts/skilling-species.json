@@ -10,7 +10,6 @@
         {"species": "Sand Crab", "minLevel": 15},
         {"species": "Big frog", "minLevel": 20},
         {"species": "Crab", "minLevel": 25},
-        {"species": "Shark", "minLevel": 40},
         {"species": "Mogre", "minLevel": 55},
         {"species": "Lobstrosity", "minLevel": 65},
         {"species": "Giant frog", "minLevel": 80}

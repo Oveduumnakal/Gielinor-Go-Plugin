@@ -249,6 +249,7 @@ final class GoGame
 	void load(SaveData loaded)
 	{
 		data = loaded.sanitized();
+		dropRemovedSpecies();
 		pinNews.clear();
 		settleMoves();
 		log = null;
@@ -259,6 +260,24 @@ final class GoGame
 		run = null;
 		milestonesDue = true;
 		settleMilestones();
+	}
+
+	/**
+	 * Silently removes everything of a species the table no longer has, so a species that was cut from the game
+	 * leaves no ghost behind: its creatures on the team and in Storage, and its Creature Log keys (caught, seen and
+	 * gilded). Nothing is refunded or told to the player. Milestones already paid stay paid. It does nothing while
+	 * the table is empty, which only happens when the species list failed to load, so a bad read never wipes a save.
+	 */
+	private void dropRemovedSpecies()
+	{
+		if (species.all().isEmpty())
+			return;
+
+		data.team.removeIf(creature -> species.find(creature.species) == null);
+		data.storage.removeIf(creature -> species.find(creature.species) == null);
+		data.caught.keySet().removeIf(key -> species.find(key) == null);
+		data.seen.removeIf(key -> species.find(key) == null);
+		data.gilded.removeIf(key -> species.find(key) == null);
 	}
 
 	/**

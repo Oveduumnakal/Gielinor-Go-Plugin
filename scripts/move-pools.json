@@ -120,7 +120,7 @@
   },
   "rules": [
     {"pool": "dragon", "names": ["Adamant dragon", "Black dragon", "Blue dragon", "Bronze dragon",
-      "Brutal black dragon", "Brutal blue dragon", "Brutal green dragon", "Brutal red dragon", "Elvarg",
+      "Brutal black dragon", "Brutal blue dragon", "Brutal green dragon", "Brutal red dragon",
       "Frost dragon", "Galvek", "Green dragon", "Iron dragon", "King Black Dragon", "Lava dragon",
       "Mithril dragon", "Red dragon", "Rune dragon", "Steel dragon", "Vorkath"]},
     {"pool": "wyvern", "names": ["Ancient Wyvern", "Long-tailed Wyvern", "Spitting Wyvern", "Taloned Wyvern"]},
