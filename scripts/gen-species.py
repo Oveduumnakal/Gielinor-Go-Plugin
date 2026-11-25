@@ -10,12 +10,13 @@ scripts/species-melee-style.txt; a line there also wins over the wiki. A species
 Stats (issue #86): the per-species stat factors live in the "stats" field, written by scripts/gen-species-stats.py,
 which reads species.json and evolutions.json. This script keeps the field of every species it already has.
 
-Quest monsters (issue #50): a species whose every wiki row sits on a page of Category:Quest_monsters (read through the
-MediaWiki API, list=categorymembers) gets "quest": true. scripts/species-quest-add.txt lists names to flag although the
-wiki does not, scripts/species-quest-keep.txt names to keep catchable although it does. The flagged names are written
-to src/test/resources/quest-species.txt so they can be reviewed. examine.json (species key to the wiki's examine line,
-issue #93) is written beside species.json and kept apart from it. A flagged species stays in species.json, so a creature
-already owned keeps its species, but it never turns wild and does not count toward the Creature Log.
+Quest monsters (issue #50, dropped in issue #353): a species whose every wiki row sits on a page of
+Category:Quest_monsters (read through the MediaWiki API, list=categorymembers) is left out of species.json and
+examine.json, so it never exists in the plugin. scripts/species-quest-add.txt lists names to drop although the wiki does
+not flag them, scripts/species-quest-keep.txt names to keep catchable although it does. No "quest" field and no
+quest-species.txt are written any more. examine.json (species key to the wiki's examine line, issue #93) is written
+beside species.json and kept apart from it. Non-obtainable species the wiki does not flag are listed in
+scripts/species-blocklist.txt.
 
 The wiki lists the NPC ids of only some of the NPCs that carry a monster's name (the Goblin page lists 43 of about 150;
 the small Monkey Guard is missing). A wild monster is matched to its species by NAME, so any NPC with the name and a
@@ -42,7 +43,6 @@ MELEE_STYLE_NAMES = ("STAB", "SLASH", "CRUSH")
 QUEST_ADD = "scripts/species-quest-add.txt"
 QUEST_KEEP = "scripts/species-quest-keep.txt"
 EXAMINE_OUT = "src/main/resources/com/oveduumnakal/gielinorgo/examine.json"
-QUEST_LIST = "src/test/resources/quest-species.txt"
 QUEST_CATEGORY = "Category:Quest_monsters"
 HUNTER = "scripts/species-hunter.json"
 UA = "species-data-script/1.0"
@@ -217,8 +217,6 @@ def record(entry, stats=None):
         data["ids"] = ids
     if len(entry) > 6 and entry[6]:
         data["hunter"] = True
-    if len(entry) > 5 and entry[5]:
-        data["quest"] = True
     if stats:
         data["stats"] = stats
     return data
@@ -369,7 +367,8 @@ def main():
             best[key] = best[key][:4] + (merge_ids(best[key][4], row_ids),)
     entries = sorted(best.values(), key=lambda e: e[0].lower())
     entries = resolve_styles(entries)
-    entries = [e + (is_quest(e[0].lower(), row_pages, quest_titles, quest_add, quest_keep),) for e in entries]
+    entries = [e for e in entries if not is_quest(e[0].lower(), row_pages, quest_titles, quest_add, quest_keep)]
+    entries = [e + (False,) for e in entries]
     if len(sys.argv) > 1:
         extra = dump_ids(sys.argv[1])
         entries = [e[:4] + (merge_ids(e[4], extra.get(e[0].lower(), [])),) + e[5:] for e in entries]
@@ -386,15 +385,10 @@ def main():
         f.write(",\n".join(json.dumps(e[0].lower(), ensure_ascii=False) + ":" + json.dumps(
             examines[e[0].lower()], ensure_ascii=False) for e in entries if e[0].lower() in examines))
         f.write("\n}\n")
-    quest = [e[0] for e in entries if e[5]]
-    with open(QUEST_LIST, "w", encoding="utf-8") as f:
-        f.write("# Species flagged quest-only by gen-species.py (see scripts/species-quest-*.txt). Generated.\n")
-        f.write("".join(name + "\n" for name in quest))
-    print("quest species:", len(quest))
     print("species:", len(entries))
     print("with examine:", sum(1 for e in entries if e[0].lower() in examines))
     for s in ("STAB", "SLASH", "CRUSH", "RANGED", "MAGIC"):
-        print(s, sum(1 for e in entries if e[2] == s), "(catchable:", sum(1 for e in entries if e[2] == s and not e[5]) , ")")
+        print(s, sum(1 for e in entries if e[2] == s), "")
     print("from the melee style file:", sum(1 for e in entries if e[0].lower() in load_melee_styles()))
     for t in TRAIT_ORDER:
         print(t, sum(1 for e in entries if t in e[3]))
