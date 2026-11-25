@@ -90,6 +90,17 @@ public class BagPageTest
 					.filter(d -> d.text.equals(String.valueOf(count)))
 					.count();
 				assertTrue(canvas[0] + " count " + count, whole >= JarType.values().length + ItemType.values().length);
+				for (Hit cell : rig.shell.hits())
+				{
+					if (!cell.id().startsWith("bag:jar:") && !cell.id().startsWith("bag:item:"))
+						continue;
+
+					Rectangle bounds = cell.bounds();
+					for (PartyRig.Drawn d : rig.drawn)
+						if (d.text.equals(String.valueOf(count)) && bounds.contains(d.box))
+							assertTrue(canvas[0] + " " + cell.id() + " count touches the right side",
+								bounds.x + bounds.width - (d.box.x + d.box.width) >= 4);
+				}
 			}
 	}
 

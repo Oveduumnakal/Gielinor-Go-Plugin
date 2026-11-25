@@ -42,6 +42,18 @@ final class BagPainter
 
 	/** The smallest gap around a cell's picture and count, in pixels. */
 	private static final int MIN_CELL_PAD = 2;
+
+	/** The room kept clear between a count and its cell's slanted right side, in layout units. */
+	private static final double COUNT_MARGIN_UNITS = 8;
+
+	/** The least of that room, in pixels. */
+	private static final int MIN_COUNT_MARGIN = 4;
+
+	/** The smallest picture a very long count may leave, in pixels. */
+	private static final int MIN_ICON = 8;
+
+	/** The gap around a cell's picture when a very long count leaves no room for more, in pixels. */
+	private static final int SQUEEZED_PAD = 1;
 	private static final double DIM = 0.4;
 
 	private final PageText.Sink sink;
@@ -251,19 +263,23 @@ final class BagPainter
 		int full = (int) Math.round(box.height * ICON_SHARE);
 		int floor = (int) Math.round(box.height * ICON_FLOOR);
 		int pad = Math.max(MIN_CELL_PAD, (box.height - full) / 2);
-		int room = box.width - st.metrics().slant / 2 - 3 * pad;
+		int right = st.metrics().slant / 2 + Math.max(MIN_COUNT_MARGIN, st.px(COUNT_MARGIN_UNITS));
+		int room = box.width - st.metrics().slant / 2 - 2 * pad - right;
 		Font font = regular;
 		if (room - g.getFontMetrics(font).stringWidth(widest) < floor)
 			font = st.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
 
+		int least = floor;
 		if (room - g.getFontMetrics(font).stringWidth(widest) < floor)
 		{
-			pad = MIN_CELL_PAD;
-			room = box.width - st.metrics().slant / 2 - 3 * pad;
+			pad = SQUEEZED_PAD;
+			right = st.metrics().slant / 2 + MIN_COUNT_MARGIN;
+			room = box.width - st.metrics().slant / 2 - 2 * pad - right;
+			least = Math.min(MIN_ICON, floor);
 		}
 
-		int size = Math.max(floor, Math.min(full, room - g.getFontMetrics(font).stringWidth(widest)));
-		return new CountFit(size, pad, font);
+		int size = Math.max(least, Math.min(full, room - g.getFontMetrics(font).stringWidth(widest)));
+		return new CountFit(size, pad, right, font);
 	}
 
 	private void cell(Graphics2D g, PageContext ctx, PageText text, Rectangle box, String id, boolean selected,
@@ -284,7 +300,7 @@ final class BagPainter
 		CrispImages.draw(g, icon, box.x + pad + st.metrics().slant / 2, box.y + (box.height - size) / 2.0, size);
 		g.setComposite(saved);
 		int textX = box.x + pad + st.metrics().slant / 2 + size + pad;
-		Rectangle words = new Rectangle(textX, box.y, Math.max(0, box.x + box.width - textX - pad), box.height);
+		Rectangle words = new Rectangle(textX, box.y, Math.max(0, box.x + box.width - textX - fit.right), box.height);
 		ThemeColor ink = bright ? WindowStyle.rowText(selected) : ThemeColor.SUBTEXT;
 		text.draw(g, label, words, fit.font, ink, PageText.Align.LEFT);
 	}
@@ -340,12 +356,14 @@ final class BagPainter
 	{
 		private final int size;
 		private final int pad;
+		private final int right;
 		private final Font font;
 
-		private CountFit(int size, int pad, Font font)
+		private CountFit(int size, int pad, int right, Font font)
 		{
 			this.size = size;
 			this.pad = pad;
+			this.right = right;
 			this.font = font;
 		}
 	}
