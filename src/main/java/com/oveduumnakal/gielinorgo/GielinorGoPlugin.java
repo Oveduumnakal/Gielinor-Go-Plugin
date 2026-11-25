@@ -234,6 +234,7 @@ public class GielinorGoPlugin extends Plugin
 	private WindowInput controlsInput;
 	private TrackerOverlay trackerOverlay;
 	private PartyBoxOverlay partyBoxOverlay;
+	private PartyBoxInput partyBoxInput;
 	private TrackerModel trackerModel;
 	private TrackerView lastTracker = TrackerView.NONE;
 	private BattleHotkeys hotkeys;
@@ -3345,18 +3346,43 @@ public class GielinorGoPlugin extends Plugin
 		overlayManager.add(trackerOverlay);
 	}
 
-	/** Creates the pinned party box and registers it. It takes no mouse input, so every click goes to the game. */
+	/** Creates the pinned party box and the mouse input that reorders the party from it, and registers both. */
 	private void startPartyBox()
 	{
 		partyBoxOverlay = new PartyBoxOverlay(windowPortraits, this::windowStyle, config::windowFraction,
 			client::getCanvasWidth, client::getCanvasHeight, config::pinParty, director::active, () -> loaded,
 			System::currentTimeMillis);
+		partyBoxInput = new PartyBoxInput(partyBoxOverlay::draggableRows, dragKey,
+			point -> bubbleOverlay != null && bubbleOverlay.hits().at(point.x, point.y) != null,
+			(from, onto) -> onGameThread(() -> swapTeam(from, onto)));
+		partyBoxOverlay.reorder(this::mayReorderParty, partyBoxInput);
 		overlayManager.add(partyBoxOverlay);
+		mouseManager.registerMouseListener(partyBoxInput);
+	}
+
+	/**
+	 * @return whether the pinned box may reorder the party now: not in a Go battle or real combat, where a click is
+	 *     meant for something else, and not while the game's menu is open
+	 */
+	private boolean mayReorderParty()
+	{
+		return loaded && saveLive() && !battleOn() && !client.isMenuOpen()
+			&& !combatWatch.inCombat(System.currentTimeMillis());
+	}
+
+	private void swapTeam(int from, int onto)
+	{
+		if (!mayReorderParty())
+			return;
+
+		game.swapTeam(from, onto);
+		refreshPanel();
 	}
 
 	/** Unregisters the pinned party box. */
 	private void stopPartyBox()
 	{
+		mouseManager.unregisterMouseListener(partyBoxInput);
 		overlayManager.remove(partyBoxOverlay);
 		partyBoxOverlay.publish(Collections.emptyList());
 	}

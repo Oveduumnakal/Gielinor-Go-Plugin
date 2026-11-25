@@ -63,6 +63,38 @@ final class PartyBoxPainter
 	 * @param rows what to paint
 	 * @param now the time in milliseconds, for a picture that fades in
 	 */
+	/**
+	 * @param style the style the box is drawn in
+	 * @param place the row's place, 0 for the first
+	 * @return the row's box, from the pinned box's top left
+	 */
+	static Rectangle rowBounds(WindowStyle style, int place)
+	{
+		int pad = style.metrics().pad;
+		int rowH = style.px(ROW_UNITS);
+		int width = style.px(WIDTH_UNITS);
+		return new Rectangle(pad, pad + place * (rowH + style.px(GAP_UNITS)), Math.max(0, width - 2 * pad), rowH);
+	}
+
+	/**
+	 * Rings the row being dragged and the row it would be dropped on.
+	 *
+	 * @param g the graphics, with the box at its origin
+	 * @param style the style the box is drawn in
+	 * @param rows how many rows the box shows
+	 * @param from the dragged row's place, or -1 for no drag
+	 * @param over the place the drag is over, or -1
+	 */
+	void paintDrag(Graphics2D g, WindowStyle style, int rows, int from, int over)
+	{
+		if (from < 0 || from >= rows)
+			return;
+
+		style.focusRing(g, rowBounds(style, from));
+		if (over >= 0 && over < rows && over != from)
+			style.focusRing(g, rowBounds(style, over));
+	}
+
 	void paint(Graphics2D g, WindowStyle style, List<RowModel> rows, long now)
 	{
 		PageText text = new PageText(style, sink);
