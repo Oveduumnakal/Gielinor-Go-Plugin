@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
@@ -141,6 +142,7 @@ final class GoGame
 	private Consumer<Cue> cues = cue ->
 	{
 	};
+	private BooleanSupplier autoPinEggs = () -> false;
 	private SaveData data = SaveData.fresh();
 	private List<LogEntry> log;
 	private long xpCarry;
@@ -2295,6 +2297,30 @@ final class GoGame
 		return free > tradeLocks.reservedCreatureSlots();
 	}
 
+	/**
+	 * Sets whether a newly acquired egg is pinned to the on-screen tracker. Without this call none is.
+	 *
+	 * @param enabled asked each time an egg arrives
+	 */
+	void autoPinEggs(BooleanSupplier enabled)
+	{
+		this.autoPinEggs = enabled;
+	}
+
+	/**
+	 * Adds a newly acquired egg, pinned when the player wants that and the tracker has room. A full tracker keeps
+	 * what it has and says nothing.
+	 *
+	 * @param egg the egg
+	 */
+	private void addEgg(Egg egg)
+	{
+		if (autoPinEggs.getAsBoolean() && PinRules.canPin(pinCount(), false, false) == null)
+			egg.pinned = true;
+
+		data.eggs.add(egg);
+	}
+
 	/** @return whether the player can carry one more egg, past the room trades will need */
 	boolean hasRoomForEgg()
 	{
@@ -2355,7 +2381,7 @@ final class GoGame
 		if (!hasRoomForEgg())
 			return false;
 
-		data.eggs.add(egg);
+		addEgg(egg);
 		dirty = true;
 		return true;
 	}
@@ -3067,7 +3093,7 @@ final class GoGame
 			if (boss == null)
 				continue;
 
-			data.eggs.add(new Egg(boss));
+			addEgg(new Egg(boss));
 			data.bossKills.add(boss.key());
 			dirty = true;
 			tell("You found a " + boss.name() + " egg!", Tone.FIND);
@@ -3148,7 +3174,7 @@ final class GoGame
 
 			if (reward.egg() != null)
 			{
-				data.eggs.add(new Egg(reward.egg()));
+				addEgg(new Egg(reward.egg()));
 				parts.add("+1 " + reward.egg().label() + " egg");
 			}
 
@@ -3554,7 +3580,7 @@ final class GoGame
 	{
 		if (hasRoomForEgg())
 		{
-			data.eggs.add(new Egg(rarity));
+			addEgg(new Egg(rarity));
 			return "+1 " + rarity.label() + " egg";
 		}
 
@@ -3672,7 +3698,7 @@ final class GoGame
 		if (entry.roaming())
 			rarity = rarity.next();
 
-		data.eggs.add(new Egg(rarity));
+		addEgg(new Egg(rarity));
 		tell("+1 " + rarity.label() + " egg (battle win)", Tone.FIND);
 		rollWinItems();
 	}

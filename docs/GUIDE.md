@@ -707,6 +707,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   progress; the day's task pins end when the day does and the weekly pin when the week does, while egg pins stay. The
   box hides during a Gielinor Go battle but not during real combat. It has no buttons of its own, so clicks on it go
   through to the game; hold RuneLite's drag key and drag to move it. The **Pinned tracker** setting turns it off.
+  Turn on **Auto Pin Eggs** to pin each new egg by itself while the box has room.
 
 - **Starting over**
 
