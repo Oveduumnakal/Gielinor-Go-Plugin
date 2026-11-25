@@ -81,22 +81,16 @@ Each move is followed by the level it is learned at.
 |---|---|---|---|---|
 | Aberrant spectre | 96 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Abhorrent spectre | 253 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Abomination | 149 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Abyssal antibody | 30 | CRUSH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Abyssal demon | 124 | STAB | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Abyssal guardian | 59 | STAB | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Abyssal leech | 41 | SLASH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Abyssal Sire | 350 | SLASH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Abyssal walker | 81 | CRUSH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Acidic Araxyte | 114 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Acidic Bloodveld | 56 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Adala | 49 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Adamant dragon | 338 | SLASH | dragon | Bite 1, Dragon claw 10, Dragonfire 20, Inferno 40 |
 | Afflicted | 37 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Agile Scarab | 53 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Agile Warrior | 96 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Agrith Naar | 100 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Agrith-Na-Na | 146 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Ahrim the Blighted | 98 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Air elemental | 34 | STAB | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Air wizard | 13 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
@@ -107,22 +101,16 @@ Each move is followed by the level it is learned at.
 | Albino bat | 52 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
 | Alchemical Hydra | 426 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Alexis | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Alomone | 13 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Alrik | 1 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Ammonite Crab | 25 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Amoxliatl | 263 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Ancient Custodian | 239 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Ancient feral vyre | 117 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Ancient Guardian | 25 | CRUSH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Ancient Wizard | 112 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Ancient Wyvern | 210 | SLASH | wyvern | Bite 1, Dragon claw 10, Icy breath 20, Blizzard 40 |
 | Ancient Zygomite | 109 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Angry barbarian spirit | 166 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Angry bear | 47 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Angry giant rat | 47 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Angry goblin | 47 | STAB | goblin | Punch 1, Stab 6, Club swing 14, Smash 30 |
 | Angry tortugan | 81 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Angry unicorn | 47 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Animated Adamant Armour | 113 | CRUSH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Animated Black Armour | 69 | STAB | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Animated Bronze Armour | 11 | CRUSH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
@@ -133,7 +121,6 @@ Each move is followed by the level it is learned at.
 | Animated Steel Armour | 46 | STAB | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Anja | 2 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Ankou | 98 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Apparition | 81 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Aquanite | 145 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Araxxor | 890 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Araxyte | 146 | CRUSH | spider | Bite 1, Venom bite 10, Leap 22, Lunge 36 |
@@ -142,16 +129,9 @@ Each move is followed by the level it is learned at.
 | Archive Guardian | 984 | CRUSH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Arianwyn | 212 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Armadylean guard | 97 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Armoured Foe | 820 | SLASH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Armoured kraken | 180 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Armoured zombie | 105 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
-| Arrav | 339 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Arrg | 113 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Artio | 320 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Arzinian Avatar of Magic | 125 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Arzinian Avatar of Ranging | 125 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Arzinian Avatar of Strength | 125 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Assassin | 262 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Asyn Shade | 100 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Asyn shadow | 110 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Augur Metzli | 396 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
@@ -169,34 +149,24 @@ Each move is followed by the level it is learned at.
 | Baby blue dragon | 48 | SLASH | lesser_dragon | Bite 1, Claw 8, Tail whip 18, Maul 32 |
 | Baby green dragon | 48 | SLASH | lesser_dragon | Bite 1, Claw 8, Tail whip 18, Maul 32 |
 | Baby impling | 17 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Baby leviathan | 90 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Baby red dragon | 48 | SLASH | lesser_dragon | Bite 1, Claw 8, Tail whip 18, Maul 32 |
-| Baby Roc | 75 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Baby sea kraken | 60 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Baby tanglefoot | 45 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Balance Elemental | 524 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Balfrug Kreeyath | 151 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Bandit | 130 | STAB | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Bandit champion | 70 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Bandosian guard | 125 | STAB | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Banshee | 23 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Barb-tailed kebbit | 33 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Barbarian | 17 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Barbarian Warlord | 91 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Bark Blamish Snail | 15 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Barrelchest | 190 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Basilisk | 61 | SLASH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Basilisk Knight | 204 | SLASH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Basilisk Sentinel | 358 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Basilisk Youngling | 57 | SLASH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Bat | 6 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
 | Battle mage | 54 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Bear Cub | 15 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Bedabin Nomad Fighter | 56 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Bee Swarm | 1420 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Berry | 71 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Berserk barbarian spirit | 166 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Big Evil Chicken | 1047 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Big frog | 24 | CRUSH | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Big Snake | 84 | STAB | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Big Wolf | 73 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
@@ -207,55 +177,23 @@ Each move is followed by the level it is learned at.
 | Black demon | 188 | SLASH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Black dragon | 247 | SLASH | dragon | Bite 1, Dragon claw 10, Dragonfire 20, Inferno 40 |
 | Black Eye Bethel | 191 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Black golem | 75 | CRUSH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Black Guard | 48 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Black Guard Berserker | 66 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Black Heather | 34 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Black jaguar | 67 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Black Knight | 33 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Black Knight Titan | 120 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Black salamander | 67 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Black unicorn | 27 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Black unicorn Foal | 22 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Black warlock | 45 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Blessed giant rat | 9 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Blessed spider | 39 | CRUSH | spider | Bite 1, Venom bite 10, Leap 22, Lunge 36 |
-| Blink | 126 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Blood Blamish Snail | 20 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Blood jaguar | 40 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Blood Moon | 329 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Blood Reaver | 174 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Blood spawn | 55 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Blood-starved venator | 246 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Bloodthirst rockslug& | 86 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Bloodthirsty abomination | 206 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty abyssal demon | 513 | STAB | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
-| Bloodthirsty banshee | 70 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty basilisk | 202 | SLASH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
-| Bloodthirsty Basilisk Sentinel | 537 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty Bloodveld | 303 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty choke devil | 396 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Bloodthirsty Cockathrice | 133 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Bloodthirsty Crawler | 68 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Bloodthirsty Drake | 576 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Bloodthirsty gargoyle | 349 | SLASH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
-| Bloodthirsty hand | 45 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Bloodthirsty Hydra | 501 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty Infernal pyrelord | 201 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty Jelly | 309 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty kurask | 295 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Bloodthirsty Mage | 162 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
-| Bloodthirsty mutated Bloodveld | 417 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty Nechryarch | 450 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Bloodthirsty Night beast | 561 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Bloodthirsty pyrelord | 145 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty Repugnant spectre | 335 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty Shadow Wyrm | 400 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty smoke devil | 420 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty spectre | 253 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty Turoth | 366 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Bloodthirsty twisted banshee | 144 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Bloodthirsty Warped Jelly | 361 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Bloodveld | 81 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Bloodworm | 52 | STAB | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Bloody Jack | 77 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
@@ -268,7 +206,6 @@ Each move is followed by the level it is learned at.
 | Boris | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Bork | 871 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Borrokar | 48 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Bouncer | 137 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Branda the Fire Queen | 350 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Brassican Mage | 140 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Brawler | 158 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
@@ -300,7 +237,6 @@ Each move is followed by the level it is learned at.
 | Captain Ruban Acer | 95 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Carnivorous chinchompa | 2 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Catablepon | 68 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Catherby monodon | 41 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Cave abomination | 206 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Cave bug | 96 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Cave crawler | 23 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
@@ -314,7 +250,6 @@ Each move is followed by the level it is learned at.
 | Ceolburg | 4 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Cerberus | 318 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Cerulean twitch | 11 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
-| Champion of Scabaras | 379 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Chaos druid | 13 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Chaos druid warrior | 37 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Chaos dwarf | 48 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
@@ -329,10 +264,8 @@ Each move is followed by the level it is learned at.
 | Chinchompa | 1 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Choke devil | 264 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Chompy bird | 6 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
-| Chronozon | 170 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Chuck up | 98 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | City guard | 83 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Clivet | 13 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Cockathrice | 89 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Cockatrice | 37 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Colonel Radick | 38 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
@@ -355,14 +288,12 @@ Each move is followed by the level it is learned at.
 | Corrupted Unicorn | 61 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Corrupted Wolf | 97 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Corsair Traitor | 35 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Count Draynor | 34 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Cow | 2 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Cow calf | 2 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Crab | 23 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Crandor shark | 31 | SLASH | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Crawling Hand | 12 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Crazy archaeologist | 204 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Crimson sanguisphera | 34 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Crimson swift | 1 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
 | Crocodile | 63 | SLASH | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Cruor | 285 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
@@ -381,24 +312,17 @@ Each move is followed by the level it is learned at.
 | Crystalline Unicorn | 45 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Crystalline Wolf | 69 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Cuffs | 3 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Culinaromancer | 75 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Cultist | 34 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Cursed Baboon | 77 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Cuthbert, Lord of Dread | 1 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Cyclops | 106 | CRUSH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
-| Dad | 101 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Daddy's special water | 125 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Dagannoth | 92 | STAB | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Dagannoth fledgeling | 70 | STAB | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
-| Dagannoth mother | 100 | STAB | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Dagannoth Prime | 303 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Dagannoth Rex | 303 | SLASH | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Dagannoth spawn | 42 | STAB | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Dagannoth Supreme | 303 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Dagon'hai Elder | 427 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Dagon'hai Monk | 427 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Damien Leucurte | 204 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Damis | 174 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Dark Ankou | 95 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Dark beast | 182 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Dark energy core | 75 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
@@ -406,40 +330,28 @@ Each move is followed by the level it is learned at.
 | Dark warrior | 145 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Dark wizard | 23 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Dashing kebbit | 69 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Dave | 126 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Dawn | 228 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Deadly red spider | 34 | STAB | spider | Bite 1, Venom bite 10, Leap 22, Lunge 36 |
 | Death spawn | 46 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Death wing | 83 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Defiler | 97 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Definitely Not Dusk | 248 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Delrith | 27 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Demon | 82 | CRUSH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
-| Demon of Balance | 202 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Demon of Darkness | 202 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Demon of Light | 202 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Demonic Brutus | 1224 | CRUSH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Demonic gorilla | 275 | CRUSH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Deranged archaeologist | 276 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Derwen | 235 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Desert Lizard | 24 | CRUSH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Desert Wolf | 27 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Dessourt | 121 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Dessous | 139 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Deviant spectre | 169 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Dharok the Wretched | 115 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Dire bat | 142 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
 | Dire gryphon | 209 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Dire Wolf | 88 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Dire Wolf Alpha | 113 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Disciple of Iban | 13 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Dolphin | 22 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Don't Know What | 163 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Donny the lad | 34 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Doom of Mokhaiotl | 908 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Doomion | 91 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Double agent | 141 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Double Decimation Daryl | 126 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Dragon impling | 83 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Drake | 192 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Dreadborn Araxyte | 281 | CRUSH | spider | Bite 1, Venom bite 10, Leap 22, Lunge 36 |
@@ -450,13 +362,11 @@ Each move is followed by the level it is learned at.
 | Drunken man | 3 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Duck | 1 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Duckling | 1 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Duke | 149 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Duke Sucellus | 1099 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Dungeon rat | 12 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Dusk | 328 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Dust devil | 110 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Dwarf | 20 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Dwarf gang member | 49 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Eadburg | 4 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Eagle ray | 44 | SLASH | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
 | Earth elemental | 35 | CRUSH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
@@ -481,14 +391,10 @@ Each move is followed by the level it is learned at.
 | Elite Dark Ranger | 96 | RANGED | archer | Arrow shot 1, Aimed shot 10, Rapid fire 20, Piercing bolt 34 |
 | Elite Dark Warrior | 96 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Elite Khazard Guard | 95 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Elvarg | 83 | SLASH | dragon | Bite 1, Dragon claw 10, Dragonfire 20, Inferno 40 |
 | Embertailed jerboa | 2 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Emissary Acolyte | 34 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Emissary Archer | 71 | RANGED | archer | Arrow shot 1, Aimed shot 10, Rapid fire 20, Piercing bolt 34 |
 | Emissary Ascended | 117 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Emissary Brawler | 86 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Emissary Chosen | 76 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Emissary Conjurer | 71 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Emissary Enforcer | 196 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Enclave guard | 83 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Ennius Tullus | 306 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
@@ -499,15 +405,11 @@ Each move is followed by the level it is learned at.
 | Entrana firebird | 2 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
 | Essence impling | 42 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Essyllt | 236 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Evelot | 148 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Evil Chicken | 159 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Evil Creature | 1 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Evil spirit | 150 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Experiment | 51 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Experiment No.2 | 109 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Ezekiel | 984 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Famished shark | 16 | SLASH | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
-| Fareed | 167 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Farmer | 7 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Fear reaper | 55 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Feral Vampyre | 130 | SLASH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
@@ -515,11 +417,9 @@ Each move is followed by the level it is learned at.
 | Fever spider | 49 | STAB | spider | Bite 1, Venom bite 10, Leap 22, Lunge 36 |
 | Fire elemental | 35 | SLASH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Fire giant | 109 | SLASH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
-| Fire Warrior of Lesarkus | 84 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Fire wizard | 13 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Fiyr Shade | 120 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Fiyr Shadow | 120 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Flambeed | 149 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Flaming pyrelord | 97 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Flawed Golem | 13 | STAB | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Flesh Crawler | 41 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
@@ -547,18 +447,14 @@ Each move is followed by the level it is learned at.
 | Frost dragon | 202 | SLASH | dragon | Bite 1, Dragon claw 10, Dragonfire 20, Inferno 40 |
 | Frost Nagua | 104 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Fumus | 285 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Gadderanks | 35 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Galina | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Galvek | 608 | SLASH | dragon | Bite 1, Dragon claw 10, Dragonfire 20, Inferno 40 |
 | Gang boss | 83 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Gangster | 50 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Gardener | 4 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Gargoyle | 111 | SLASH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
-| Gelatinnoth Mother | 130 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Gemstone Crab | 160 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
-| General Danknuck | 90 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | General Graardor | 624 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| General Khazard | 142 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Georgy | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Ghast | 139 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Ghost | 77 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
@@ -571,22 +467,17 @@ Each move is followed by the level it is learned at.
 | Giant crypt rat | 76 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Giant crypt spider | 79 | STAB | spider | Bite 1, Venom bite 10, Leap 22, Lunge 36 |
 | Giant frog | 99 | CRUSH | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
-| Giant goblin | 1022 | CRUSH | goblin | Punch 1, Stab 6, Club swing 14, Smash 30 |
 | Giant Lobster | 45 | STAB | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Giant Mole | 230 | CRUSH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
 | Giant mosquito | 13 | CRUSH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
 | Giant rat | 26 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Giant Roc | 172 | CRUSH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
 | Giant Rock Crab | 137 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Giant rockslug | 86 | CRUSH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
-| Giant Scarab | 191 | STAB | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
-| Giant Sea Snake | 149 | CRUSH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Giant skeleton | 100 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Giant snail | 139 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Giant spider | 50 | STAB | spider | Bite 1, Venom bite 10, Leap 22, Lunge 36 |
 | Giant wasp | 28 | STAB | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Glacies | 285 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Glod | 138 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Glough | 431 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Gnome | 3 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Gnome Archer | 5 | RANGED | archer | Arrow shot 1, Aimed shot 10, Rapid fire 20, Piercing bolt 34 |
@@ -600,12 +491,8 @@ Each move is followed by the level it is learned at.
 | Goblin | 13 | CRUSH | goblin | Punch 1, Stab 6, Club swing 14, Smash 30 |
 | Goblin Champion | 24 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Goblin guard | 42 | STAB | goblin | Punch 1, Stab 6, Club swing 14, Smash 30 |
-| Goblin lieutenant | 75 | CRUSH | goblin | Punch 1, Stab 6, Club swing 14, Smash 30 |
-| Goblin priest | 50 | CRUSH | goblin | Punch 1, Stab 6, Club swing 14, Smash 30 |
-| Goblin raider | 50 | CRUSH | goblin | Punch 1, Stab 6, Club swing 14, Smash 30 |
 | Golden warbler | 5 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
 | Golem | 64 | CRUSH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
-| Golem guard | 141 | CRUSH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Gorad | 68 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Gorak | 149 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Gourmet impling | 28 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
@@ -617,8 +504,6 @@ Each move is followed by the level it is learned at.
 | Greater Nechryael | 200 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Greater Skeleton Hellhound | 231 | CRUSH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Green dragon | 88 | SLASH | dragon | Bite 1, Dragon claw 10, Dragonfire 20, Inferno 40 |
-| Green Guard | 19 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Grey golem | 75 | CRUSH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Grimy Lizard | 50 | CRUSH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Grip | 22 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Grizzly bear | 42 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
@@ -633,15 +518,12 @@ Each move is followed by the level it is learned at.
 | Guardian of Armadyl | 45 | SLASH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Gunthor the brave | 29 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Guthan the Infested | 115 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| H.A.M. Archer | 30 | RANGED | archer | Arrow shot 1, Aimed shot 10, Rapid fire 20, Piercing bolt 34 |
 | H.A.M. Guard | 22 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| H.A.M. Mage | 30 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Halla | 1 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Hammerhead shark | 90 | SLASH | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Harpie Bug Swarm | 46 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Head | 140 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Head Guard | 84 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Head Menaphite Guard | 174 | STAB | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Head Thief | 26 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Headless Beast | 82 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Hellhound | 136 | STAB | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
@@ -655,7 +537,6 @@ Each move is followed by the level it is learned at.
 | Hobgoblin | 47 | CRUSH | goblin | Punch 1, Stab 6, Club swing 14, Smash 30 |
 | Hobgoblin Champion | 56 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Hole in the wall | 49 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Holthion | 91 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Hoop Snake | 19 | CRUSH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Hopeless creature | 71 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Horned graahk | 41 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
@@ -665,8 +546,6 @@ Each move is followed by the level it is learned at.
 | Husk | 48 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Hydra | 194 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Hygd | 4 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| I DSCIM YOU | 495 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Ice block | 15 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Ice elemental | 37 | STAB | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Ice giant | 67 | SLASH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
 | Ice Queen | 111 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
@@ -674,7 +553,6 @@ Each move is followed by the level it is learned at.
 | Ice troll | 124 | CRUSH | troll | Punch 1, Club swing 8, Headbutt 14, Boulder smash 30 |
 | Ice troll female | 82 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Ice troll grunt | 100 | CRUSH | troll | Punch 1, Club swing 8, Headbutt 14, Boulder smash 30 |
-| Ice Troll King | 122 | CRUSH | troll | Punch 1, Club swing 8, Headbutt 14, Boulder smash 30 |
 | Ice troll male | 82 | CRUSH | troll | Punch 1, Club swing 8, Headbutt 14, Boulder smash 30 |
 | Ice troll runt | 74 | CRUSH | troll | Punch 1, Club swing 8, Headbutt 14, Boulder smash 30 |
 | Ice warrior | 57 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
@@ -694,7 +572,6 @@ Each move is followed by the level it is learned at.
 | Iorwerth Warrior | 108 | STAB | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Irina | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Iron dragon | 215 | SLASH | dragon | Bite 1, Dragon claw 10, Dragonfire 20, Inferno 40 |
-| Irvig Senay | 100 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Ithoi the Navigator | 35 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Jackal | 21 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Jaguar | 67 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
@@ -719,7 +596,6 @@ Each move is followed by the level it is learned at.
 | Jelly | 78 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Jennella | 48 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Jerboa | 1 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Jhallan | 491 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Jogre | 58 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Jogre Champion | 107 | STAB | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Jonny the Beard | 2 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
@@ -727,7 +603,6 @@ Each move is followed by the level it is learned at.
 | Jubbly bird | 9 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
 | Jubster | 87 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Judge of Yama | 168 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Jungle Demon | 195 | SLASH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Jungle horror | 70 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Jungle spider | 44 | STAB | spider | Bite 1, Venom bite 10, Leap 22, Lunge 36 |
 | Jungle Wolf | 64 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
@@ -738,33 +613,20 @@ Each move is followed by the level it is learned at.
 | Kalphite Queen | 333 | STAB | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Kalphite Soldier | 85 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Kalphite Worker | 28 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
-| Kalrag | 89 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Kamil | 154 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Karamel | 136 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Karamjan tiger shark | 25 | SLASH | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Karil the Tainted | 98 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Kasonde | 231 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Kasonde the Craven | 221 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Kebbit | 13 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Keef | 178 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Kephri | 341 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Ket-Zek | 360 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Ketla the Unworthy | 236 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Kharazi monodon | 64 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Khazard commander | 48 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Khazard Guard | 23 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Khazard Ogre | 63 | CRUSH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
-| Khazard Scorpion | 44 | STAB | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Khazard trooper | 19 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Khazard warlord | 112 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Killerwatt | 55 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Kinetic Katara | 126 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | King Black Dragon | 276 | STAB | dragon | Bite 1, Dragon claw 10, Dragonfire 20, Inferno 40 |
 | King kurask | 295 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | King Roald | 47 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | King Sand Crab | 107 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | King Scorpion | 32 | STAB | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
-| King Snagwort | 100 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Knight of Ardougne | 46 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Knight of Saradomin | 103 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Knight of Varlamore | 46 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
@@ -773,14 +635,11 @@ Each move is followed by the level it is learned at.
 | Kraka | 91 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Kraken | 291 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Kree'arra | 580 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Kroy | 133 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Kruk | 207 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Ksenia | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Kurask | 106 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Lanzig | 48 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Large chicken | 16 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
 | Large mosquito | 13 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Large reef shark | 50 | STAB | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Lava dragon | 252 | SLASH | dragon | Bite 1, Dragon claw 10, Dragonfire 20, Inferno 40 |
 | Lava Strykewyrm | 116 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Leech | 52 | STAB | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
@@ -801,7 +660,6 @@ Each move is followed by the level it is learned at.
 | Locust rider | 106 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Long-tailed Wyvern | 152 | SLASH | wyvern | Bite 1, Dragon claw 10, Icy breath 20, Blizzard 40 |
 | Lost barbarian | 132 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Lowerniel Drakan | 1063 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Lucien | 14 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Lucius | 160 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Lucky impling | 89 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
@@ -810,7 +668,6 @@ Each move is followed by the level it is learned at.
 | Mad Angel | 588 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Maggot King | 741 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Magic axe | 42 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Magic Mark | 967 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Magma strykewyrm | 249 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Magpie impling | 65 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Malevolent Mage | 162 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
@@ -824,15 +681,10 @@ Each move is followed by the level it is learned at.
 | Market Guard | 48 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Mature custodian stalker | 117 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Maxilla beast | 194 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Me | 79 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Melzar the Mad | 43 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Menaphite Akh | 351 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Menaphite Shadow | 147 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Menaphite Thug | 55 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Mercenary | 45 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Mercenary axeman | 131 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Mercenary Captain | 47 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Mercenary mage | 112 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Milla | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Mind Golem | 30 | STAB | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Minotaur | 27 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
@@ -854,35 +706,27 @@ Each move is followed by the level it is learned at.
 | Moonlight moth | 75 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Mosquito swarm | 20 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Moss giant | 48 | CRUSH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
-| Moss Guardian | 84 | CRUSH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
-| Mosschin | 88 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Mother | 198 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Mountain troll | 71 | CRUSH | troll | Punch 1, Club swing 8, Headbutt 14, Boulder smash 30 |
 | Mounted terrorbird gnome | 49 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
 | Mourner | 108 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Mouse | 95 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Mr Hyde | 159 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Mudskipper | 31 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Mugger | 6 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Mummy | 103 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
-| Mutant tarn | 69 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Mutated Bloodveld | 123 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Mutated Terrorbird | 178 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Mutated Tortoise | 247 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Mute Jack | 77 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Myre Blamish Snail | 10 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Mysterious Figure | 271 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Nail beast | 141 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Narf | 2 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Narwhal | 111 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Nature impling | 58 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Nazastarool | 93 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Nechryael | 115 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Nechryarch | 300 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Necromancer | 26 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Newtroost | 19 | STAB | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Nex | 1001 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Nezikchened | 187 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Night beast | 374 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Nikita | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Nikolai | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
@@ -903,7 +747,6 @@ Each move is followed by the level it is learned at.
 | Ochre Blamish Snail | 15 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Ogre | 63 | CRUSH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
 | Ogre chieftain | 81 | CRUSH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
-| Ogre monodon | 79 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Ogre shaman | 113 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Ogress Shaman | 82 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Ogress Warrior | 82 | CRUSH | giant | Punch 1, Club swing 8, Stomp 20, Boulder smash 34 |
@@ -915,12 +758,10 @@ Each move is followed by the level it is learned at.
 | Ork | 107 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Oryx | 15 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Osprey | 63 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Othainian | 91 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Otherworldly being | 64 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Ouhai | 149 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Outlaw | 32 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Padulah | 149 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Painted Goblin | 11 | CRUSH | goblin | Punch 1, Stab 6, Club swing 14, Smash 30 |
 | Paladin | 62 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Palmer | 37 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Parasite | 86 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
@@ -931,10 +772,8 @@ Each move is followed by the level it is learned at.
 | Penance Ranger | 72 | RANGED | archer | Arrow shot 1, Aimed shot 10, Rapid fire 20, Piercing bolt 34 |
 | Penda | 5 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Penguin | 2 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Persten the Deceitful | 264 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Pestilent Bloat | 1044 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Pete Kayer | 126 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Phantom Hand | 47 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Phantom Muspah | 741 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Pheasant | 3 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Phosani's Nightmare | 1024 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
@@ -951,11 +790,9 @@ Each move is followed by the level it is learned at.
 | Porazdir | 235 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Porcupine | 4 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Possessed pickaxe | 50 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Possessed Priest | 91 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Praying mantis | 14 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Prickly kebbit | 37 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Prifddinas guard | 1337 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Prince Itzla Arkan | 167 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Pygmy kraken | 93 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Pyre fox | 57 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Pyrefiend | 48 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
@@ -963,20 +800,15 @@ Each move is followed by the level it is learned at.
 | Queen spawn | 63 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Rabbit | 2 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Radat | 21 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Radiant sanguisphera | 34 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Ragnar | 1 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Ragnvald | 2 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Ram | 2 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Ranalph Devere | 92 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Ranging Ro | 973 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Ranis Drakan | 233 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Rannveig | 2 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Rat | 1 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Ravager | 106 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Reanimated demon spawn | 87 | SLASH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Red dragon | 152 | SLASH | dragon | Bite 1, Dragon claw 10, Dragonfire 20, Inferno 40 |
 | Red salamander | 59 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Redeyes | 121 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Reef snake | 147 | STAB | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Renegade knight | 37 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Repugnant spectre | 335 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
@@ -995,7 +827,6 @@ Each move is followed by the level it is learned at.
 | River troll | 159 | CRUSH | troll | Punch 1, Club swing 8, Headbutt 14, Boulder smash 30 |
 | Riyl Shade | 80 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Riyl Shadow | 80 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Robert the Strong | 224 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Rock | 127 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Rock Crab | 13 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Rock Golem | 154 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
@@ -1005,7 +836,6 @@ Each move is followed by the level it is learned at.
 | Rocnar | 97 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Rogue | 135 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Rooster | 3 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Rowdy Guard | 43 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Rowdy slave | 10 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Rubble | 70 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Ruby harvest | 15 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
@@ -1016,7 +846,6 @@ Each move is followed by the level it is learned at.
 | Sabre-toothed kebbit | 51 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Sabre-toothed kyatt | 55 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Salarin the twisted | 70 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| San Tojalon | 106 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Sand Crab | 15 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Sand Snake | 36 | CRUSH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Sandy Boulder | 107 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
@@ -1026,16 +855,10 @@ Each move is followed by the level it is learned at.
 | Sarachnis | 318 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Saradomin priest | 113 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Saradomin wizard | 108 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| SAS Member | 11 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Scarab | 56 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Scarab Mage | 119 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Scarab Swarm | 98 | SLASH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Scarabs | 92 | SLASH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
-| Scarred black demon | 176 | SLASH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
-| Scarred greater demon | 113 | SLASH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
-| Scarred hellhound | 101 | STAB | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
-| Scarred imp | 19 | STAB | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
-| Scarred lesser demon | 121 | CRUSH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Scion | 93 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Scorpia | 225 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Scorpia's guardian | 47 | STAB | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
@@ -1044,14 +867,9 @@ Each move is followed by the level it is learned at.
 | Screaming banshee | 70 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Screaming twisted banshee | 144 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Scurrius | 250 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Sea hawk | 59 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
-| Sea monodon | 196 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Sea Snake Hatchling | 62 | CRUSH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Sea Snake Young | 90 | CRUSH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
-| Sea troll | 101 | CRUSH | troll | Punch 1, Club swing 8, Headbutt 14, Boulder smash 30 |
-| Sea Troll Queen | 170 | CRUSH | troll | Punch 1, Club swing 8, Headbutt 14, Boulder smash 30 |
 | Seagull | 3 | CRUSH | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
-| Seal | 20 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Sergeant | 84 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Sergeant Grimspike | 142 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Sergeant Steelwill | 142 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
@@ -1061,18 +879,15 @@ Each move is followed by the level it is learned at.
 | Shade | 159 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Shadow | 73 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Shadow Hound | 63 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Shadow Keeper | 131 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Shadow spider | 52 | STAB | spider | Bite 1, Venom bite 10, Leap 22, Lunge 36 |
 | Shadow warrior | 48 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Shadow Wyrm | 259 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Shaeded Beast | 186 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Shantay Guard | 22 | STAB | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Shark | 57 | SLASH | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Shellbane gryphon | 235 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Shifter | 104 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Shipyard worker | 11 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Shockwave Colossus | 239 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Sigmund | 64 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Sir Bedivere | 110 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Sir Carl | 62 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Sir Gawain | 122 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
@@ -1080,13 +895,11 @@ Each move is followed by the level it is learned at.
 | Sir Jerro | 62 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Sir Kay | 124 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Sir Lancelot | 127 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Sir Leye | 20 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Sir Lucan | 120 | STAB | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Sir Mordred | 39 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Sir Palomedes | 118 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Sir Pelleas | 112 | STAB | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Sir Tristram | 115 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Siren | 53 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Skeletal miner | 42 | STAB | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Skeletal Wyvern | 140 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Skeleton | 45 | SLASH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
@@ -1094,27 +907,20 @@ Each move is followed by the level it is learned at.
 | Skeleton Champion | 40 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Skeleton fremennik | 60 | SLASH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Skeleton heavy | 130 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
-| Skeleton Hellhound | 97 | CRUSH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Skeleton hero | 146 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Skeleton Mage | 83 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Skeleton thug | 130 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Skeleton warlord | 132 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
-| Skoblin | 29 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Skogre | 44 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Skotizo | 321 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Skraeling | 2 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Slagilith | 92 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Slash Bash | 111 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Sleepwalker | 3 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Slug Prince | 62 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Small Lizard | 12 | CRUSH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Small scarab | 41 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Smoke devil | 160 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Smokedevil | 93 | SLASH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
 | Snailfeet | 56 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Snake | 5 | STAB | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Snakeling | 90 | STAB | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
-| Snothead | 32 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Snowy knight | 35 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Sofiya | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Sol Heredit | 1563 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
@@ -1127,7 +933,6 @@ Each move is followed by the level it is learned at.
 | Sparring partner | 126 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Spawn | 55 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Spawn of Sarachnis | 107 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Spawn sharhai | 253 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Speedy Keith | 34 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Spider | 24 | STAB | spider | Bite 1, Venom bite 10, Leap 22, Lunge 36 |
 | Spidine | 42 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
@@ -1147,19 +952,14 @@ Each move is followed by the level it is learned at.
 | Spotted kebbit | 43 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Stag | 15 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Starlight | 149 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Starved horror | 70 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Steel dragon | 274 | SLASH | dragon | Bite 1, Dragon claw 10, Dragonfire 20, Inferno 40 |
 | Stick | 104 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Stingray | 92 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Stone Guardian | 124 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Strange Creature | 368 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Stranger | 95 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Strangled | 149 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Strangled Bear | 197 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Strangled Boar | 166 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Strangled Lynx | 182 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Strong Warrior | 96 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Strongbones | 184 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Suit of armour | 19 | SLASH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Sulphur Lizard | 50 | CRUSH | snake | Bite 1, Venom bite 8, Constrict 18, Lunge 32 |
 | Sulphur Nagua | 98 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
@@ -1167,7 +967,6 @@ Each move is followed by the level it is learned at.
 | Sunlight antelope | 72 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Sunlight Moth | 65 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Suqah | 111 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Surok Magis | 265 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Suspicious water | 34 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Svetlana | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Swamp Crab | 55 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
@@ -1177,26 +976,15 @@ Each move is followed by the level it is learned at.
 | Swampy log | 55 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Swordchick | 46 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Taloned Wyvern | 147 | SLASH | wyvern | Bite 1, Dragon claw 10, Icy breath 20, Blizzard 40 |
-| Tanglefoot | 111 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Tar Monster | 132 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Target | 1 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Tarik | 21 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Tarn | 69 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Tecu salamander | 79 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Temple Guardian | 30 | STAB | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Temple Spider | 75 | CRUSH | spider | Bite 1, Venom bite 10, Leap 22, Lunge 36 |
 | Tentacle | 99 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Tern | 20 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Terror dog | 110 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Terrorbird | 28 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
-| The Draugen | 69 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| The Everlasting | 223 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| The Forsaken Assassin | 252 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | The Hueycoatl | 642 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| The Illusive | 108 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| The Inadequacy | 343 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| The Jormungand | 363 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| The Kendal | 70 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | The Leviathan | 1157 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | The Maiden of Sugadinti | 1128 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | The Mimic | 186 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
@@ -1204,7 +992,6 @@ Each move is followed by the level it is learned at.
 | The rocks | 154 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | The Shaikahan | 83 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | The Smorks | 640 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| The Untouchable | 274 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | The Whisperer | 1146 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Thermonuclear smoke devil | 301 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Thief | 21 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
@@ -1218,7 +1005,6 @@ Each move is followed by the level it is learned at.
 | Thug | 10 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Tiger shark | 125 | SLASH | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Tok-Xil | 90 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Tolna | 46 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Torag the Corrupted | 115 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Torcher | 92 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Tormented Demon | 450 | SLASH | demon | Swipe 1, Flame lash 12, Rend 24, Hellfire 40 |
@@ -1227,12 +1013,10 @@ Each move is followed by the level it is learned at.
 | Tortoise | 92 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Tortured gorilla | 142 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Tortured soul | 59 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Tough Guy | 75 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Tower Archer | 64 | RANGED | archer | Arrow shot 1, Aimed shot 10, Rapid fire 20, Piercing bolt 34 |
 | Tower guard | 28 | STAB | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Trapped Soul | 30 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Tree spirit | 159 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Treus Dayth | 95 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Tribesman | 32 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Tribeswoman | 32 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Troll | 91 | CRUSH | troll | Punch 1, Club swing 8, Headbutt 14, Boulder smash 30 |
@@ -1244,7 +1028,6 @@ Each move is followed by the level it is learned at.
 | Turoth | 89 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Twig | 71 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Twisted Banshee | 89 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Typhor | 218 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Tyras guard | 110 | STAB | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Tz-Kek | 45 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Tz-Kih | 22 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
@@ -1254,11 +1037,8 @@ Each move is followed by the level it is learned at.
 | TzHaar-Xil | 133 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | TzKal-Zuk | 1400 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | TzTok-Jad | 702 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| TzTok-Jad-Rek | 186 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Ugthanki | 42 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Ulfric | 100 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Umbra | 285 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Unbound JalTok-Jad | 1350 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Undead binder | 135 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Undead chicken | 1 | STAB | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Undead cow | 2 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
@@ -1266,12 +1046,9 @@ Each move is followed by the level it is learned at.
 | Undead Lumberjack | 70 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Undead one | 73 | SLASH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Undead Zealot | 34 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
-| Underwater horror | 70 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
-| Ungadulu | 169 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Unicorn | 15 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Unicorn Foal | 12 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Unicow | 25 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Unusual Chicken | 1 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
 | Uodai | 149 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Ur-maggot larvae | 65 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Urium Shade | 140 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
@@ -1282,7 +1059,6 @@ Each move is followed by the level it is learned at.
 | Vampyre Juvinate | 119 | SLASH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Vampyre kraken | 211 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Vampyre Snail | 346 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
-| Vanstrom Klause | 459 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Vardorvis | 1136 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Veiled kraken | 210 | CRUSH | aquatic | Bite 1, Tentacle lash 10, Crush 22, Wave crash 36 |
 | Venator | 246 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
@@ -1295,7 +1071,6 @@ Each move is followed by the level it is learned at.
 | Vitreous Chilled Jelly | 241 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Vitreous Jelly | 206 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Vitreous Warped Jelly | 241 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Viyeldi | 79 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Void Augmenter | 138 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Void Flare | 130 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Void Rift | 138 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
@@ -1311,48 +1086,34 @@ Each move is followed by the level it is learned at.
 | Warped Terrorbird | 138 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Warped Tortoise | 121 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Warrior | 48 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
-| Warrior of Murahs | 21 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Watchman | 33 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Water elemental | 34 | STAB | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | Water wizard | 13 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Waterfiend | 115 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Weaponsmaster | 23 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Webbed-winged Crow | 98 | STAB | bird | Peck 1, Claw 8, Dive 20, Rend 34 |
-| Well-armed Foe | 820 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Werewolf | 93 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Whale | 196 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Whirlpool | 127 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| White golem | 75 | CRUSH | golem | Bash 1, Rock smash 12, Crush 24, Smash 38 |
 | White jaguar | 67 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | White Knight | 42 | SLASH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | White wolf | 38 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Wighted Leech | 96 | STAB | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
 | Wild dog | 63 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Wild kebbit | 23 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Wilson | 37 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Wingman Skree | 143 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Witch | 25 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
-| Witch's experiment | 19 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Wizard | 9 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Wolf | 64 | STAB | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Wolfman | 88 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
-| Wolfwoman | 88 | SLASH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Woman | 2 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Wormbrain | 2 | CRUSH | crawler | Pincer 1, Sting 9, Shell bash 20, Lunge 34 |
-| Wuss | 897 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Wyrd | 564 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Wyrm | 97 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Wyrmling | 55 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Xamphur | 239 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
 | Xarpus | 1160 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Xarth | 912 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Xx I DBOW I xX | 126 | STAB | default_stab | Stab 1, Jab 8, Thrust 20, Impale 35 |
 | Yadviga | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Yak | 22 | CRUSH | beast | Bite 1, Claw 8, Pounce 18, Maul 32 |
 | Yama | 1238 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
-| Yeti | 58 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Young impling | 22 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Yrsa | 1 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Yt-HurKot | 141 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Yt-MejKot | 180 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Yuri | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
@@ -1364,8 +1125,6 @@ Each move is followed by the level it is learned at.
 | Zamorak warrior | 85 | CRUSH | warrior | Sword slash 1, Shield bash 8, Power strike 20, Whirlwind 34 |
 | Zamorak wizard | 65 | MAGIC | wizard | Wind strike 1, Bind 8, Fire blast 20, Earth surge 36 |
 | Zebak | 371 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
-| Zemouregal | 984 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
-| Zemouregal Summon | 163 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Zogre | 44 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Zoja | 24 | CRUSH | default_crush | Punch 1, Kick 8, Slam 20, Smash 35 |
 | Zombie | 24 | SLASH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
@@ -1373,6 +1132,5 @@ Each move is followed by the level it is learned at.
 | Zombie rat | 3 | STAB | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Zombie swab | 55 | CRUSH | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
 | Zombies& | 51 | STAB | undead | Rusty slash 1, Bone crush 10, Grave chill 20, Rend 34 |
-| Zombified Spawn | 64 | SLASH | default_slash | Slash 1, Slice 8, Cleave 20, Eviscerate 35 |
 | Zulrah | 725 | RANGED | default_ranged | Throw 1, Aimed shot 10, Rapid fire 22, Piercing bolt 38 |
 | Zygomite | 86 | MAGIC | default_magic | Magic bolt 1, Hex 8, Arcane blast 20, Arcane surge 38 |
