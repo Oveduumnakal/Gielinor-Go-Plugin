@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,9 +24,8 @@ import static org.junit.Assert.assertTrue;
 /** Checks the examine lines the Creature Log shows. */
 public class ExamineTableTest
 {
-	/** Species the wiki's monster box gives no examine line for. */
-	private static final Set<String> WITHOUT = new HashSet<>(Arrays.asList("goblin lieutenant", "goblin priest",
-		"goblin raider", "king snagwort", "spawn sharhai", "starved horror", "underwater horror", "whale"));
+	/** Species keys the wiki's monster box gives no examine line for. None is left since the species cut of #353. */
+	private static final Set<String> WITHOUT = new HashSet<>();
 
 	private final Gson gson = new Gson();
 

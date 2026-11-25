@@ -215,7 +215,7 @@ def record(entry, stats=None):
         data["traits"] = traits
     if ids:
         data["ids"] = ids
-    if len(entry) > 6 and entry[6]:
+    if len(entry) > 5 and entry[5]:
         data["hunter"] = True
     if stats:
         data["stats"] = stats
@@ -234,7 +234,7 @@ def hunter_entries(taken, path=HUNTER):
     clash = sorted(r["name"] for r in rows if r["name"].lower() in taken)
     if clash:
         raise SystemExit("%s names species the wiki already lists: %s" % (path, clash))
-    return [(r["name"], r["level"], r["style"], r.get("traits", []), r["ids"], False, True) for r in rows]
+    return [(r["name"], r["level"], r["style"], r.get("traits", []), r["ids"], True) for r in rows]
 
 
 def kept_stats(path=OUT):
@@ -368,7 +368,6 @@ def main():
     entries = sorted(best.values(), key=lambda e: e[0].lower())
     entries = resolve_styles(entries)
     entries = [e for e in entries if not is_quest(e[0].lower(), row_pages, quest_titles, quest_add, quest_keep)]
-    entries = [e + (False,) for e in entries]
     if len(sys.argv) > 1:
         extra = dump_ids(sys.argv[1])
         entries = [e[:4] + (merge_ids(e[4], extra.get(e[0].lower(), [])),) + e[5:] for e in entries]
@@ -388,7 +387,7 @@ def main():
     print("species:", len(entries))
     print("with examine:", sum(1 for e in entries if e[0].lower() in examines))
     for s in ("STAB", "SLASH", "CRUSH", "RANGED", "MAGIC"):
-        print(s, sum(1 for e in entries if e[2] == s), "")
+        print(s, sum(1 for e in entries if e[2] == s))
     print("from the melee style file:", sum(1 for e in entries if e[0].lower() in load_melee_styles()))
     for t in TRAIT_ORDER:
         print(t, sum(1 for e in entries if t in e[3]))
