@@ -63,6 +63,41 @@ public class EggPinGameTest
 	}
 
 	@Test
+	public void aNewEggIsPinnedOnlyWhenAutoPinIsOn()
+	{
+		game.data().eggs.remove(2);
+		game.data().eggs.remove(1);
+		assertTrue(game.receive(new Egg(Rarity.RARE)));
+		assertFalse(egg(1).pinned);
+
+		game.autoPinEggs(() -> true);
+		assertTrue(game.receive(new Egg(Rarity.RARE)));
+
+		assertTrue(egg(2).pinned);
+		assertFalse("eggs already carried are left as they are", egg(0).pinned);
+		assertEquals(1, game.pinCount());
+	}
+
+	@Test
+	public void autoPinLeavesAFullTrackerAsItIs()
+	{
+		game.data().eggs.remove(2);
+		for (int slot = 0; slot <= TaskCalendar.DAILY_COUNT; slot++)
+			assertTrue(game.pinTask(slot));
+
+		assertTrue(game.pinEgg(egg(0)));
+		assertEquals(PinRules.MAX_PINS, game.pinCount());
+		messages.clear();
+
+		game.autoPinEggs(() -> true);
+		assertTrue(game.receive(new Egg(Rarity.RARE)));
+
+		assertEquals(PinRules.MAX_PINS, game.pinCount());
+		assertFalse(egg(2).pinned);
+		assertTrue(messages.isEmpty());
+	}
+
+	@Test
 	public void aPinnedEggShowsItsStepsLeft()
 	{
 		egg(0).tilesLeft = 1000;

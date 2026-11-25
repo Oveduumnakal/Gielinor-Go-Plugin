@@ -170,7 +170,7 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Wandering lead.** When you stand still your lead creature wanders around within 3 tiles of you, and walks back
   to your trail when you set off. A setting turns it off. (#208)
 - **Pinned tracker.** Pin daily and weekly tasks and carried eggs to a small box on the game screen with live
-  progress. (#216)
+  progress. A setting pins each new egg by itself. (#216, #363)
 - **Storage views.** Switch Storage between a list, a Box grid you can rearrange by dragging, and a list grouped
   by species. (#211)
 - **XP while you are away.** XP you gain on mobile, in another client or with the plugin off trains your team the next

@@ -562,6 +562,23 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Whether a newly acquired egg is pinned to the on-screen tracker.
+	 *
+	 * @return true to pin new eggs while the tracker has room
+	 */
+	@ConfigItem(
+		keyName = "autoPinEggs",
+		name = "Auto Pin Eggs",
+		description = "Pins each new egg to the Pinned tracker, while it has room.\n"
+			+ "Eggs you already carry are left as they are.",
+		position = 38
+	)
+	default boolean autoPinEggs()
+	{
+		return false;
+	}
+
+	/**
 	 * Whether the party box shows on the game screen.
 	 *
 	 * @return true to pin the party to the game screen

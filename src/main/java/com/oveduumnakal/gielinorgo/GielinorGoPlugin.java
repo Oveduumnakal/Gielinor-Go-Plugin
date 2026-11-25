@@ -284,6 +284,7 @@ public class GielinorGoPlugin extends Plugin
 		game.milestones(loadMilestones(species));
 		game.bosses(loadBosses(species));
 		game.setCues(this::playCue);
+		game.autoPinEggs(config::autoPinEggs);
 		game.teamTowns(loadTeamTowns());
 		bankWatch = new BankWatch(client, bankSpots);
 		game.elite(loadElite(species));
