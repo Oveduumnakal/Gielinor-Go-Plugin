@@ -450,7 +450,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   jars and a Rare egg; 5 Dragon jars and an Epic egg; the **Gilded charm**; 10 Dragon jars and a Legendary egg; 10
   Dragon jars and an Epic egg; then 3 of every specialty jar and a Legendary egg. The charm
   is not an item: from then on gilded creatures turn up twice as often (1 in 250 instead of 1 in 500), in the wild
-  and from eggs. A **complete Log** (every species that is not quest only) pays a Legendary egg and the title
+  and from eggs. A **complete Log** (every species) pays a Legendary egg and the title
   **Master Collector**. Completing a family, such as every goblin or every dragon, pays 3 jars of the family's specialty
   type and an egg of the rarest creature in it. Milestones you had already reached are paid when you log in. When
   your egg bag is full an egg reward waits until you have a free slot.
@@ -467,12 +467,11 @@ Every feature and every number, in detail. For the short version, see the [READM
   them. The one you pick is saved; until you pick, the header shows the one you earned last of the two in that
   order (Master Collector).
 
-- **Quest-only monsters**
+- **Species that are not in the game**
 
-  A monster that only exists during a quest (a quest boss, a cutscene fight) never turns wild, never hatches from an
-  egg, is never featured or evolved into, and is not in the Creature Log total or in a family, so every species you
-  are asked to catch can be met by a player who has finished every quest. A creature of such a species that you
-  already own stays yours and is listed in the Log as quest only, outside the total. Milestones already paid stay paid.
+  A monster that a player cannot actually meet in the live game, that only existed for a limited time (an event, a
+  beta, a league or Deadman Mode), or that only exists during a quest, is not in the species list at all. Every
+  species in the Log can be met by a player who has finished every quest.
 
 ### City Champions
 
