@@ -481,6 +481,21 @@ final class GoGame
 		MoveLearning.settle(creature, found, moves);
 	}
 
+	/**
+	 * @param creature a creature
+	 * @return its place in the team, 0 for the lead, or -1 when it is not in the team
+	 */
+	int teamPlace(Creature creature)
+	{
+		for (int i = 0; i < data.team.size(); i++)
+		{
+			if (data.team.get(i) == creature)
+				return i;
+		}
+
+		return -1;
+	}
+
 	/** @return whether the save changed since the last call; calling this clears the flag */
 	boolean takeDirty()
 	{

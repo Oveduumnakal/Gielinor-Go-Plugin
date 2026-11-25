@@ -207,6 +207,20 @@ final class CreatureView
 	}
 
 	/**
+	 * Replaces the health, for a battle that is still being shown. No health left marks the creature fainted.
+	 *
+	 * @param fraction the share of full health, from 0 to 1
+	 * @return a copy of this view with that health
+	 */
+	CreatureView withHealthNow(double fraction)
+	{
+		CreatureView copy = copyExtras(new CreatureView(name, level, xpProgress, fraction, rarity, type, gilded,
+			nickname, rolls, npcId, moves, pending, hearts, evolvesWhen, species));
+		copy.fainted = fainted || fraction <= 0;
+		return copy;
+	}
+
+	/**
 	 * Attaches the time the creature was caught, which the Storage sort by date caught reads.
 	 *
 	 * @param ms the catch time in epoch milliseconds, or 0 when unknown

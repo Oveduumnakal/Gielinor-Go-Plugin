@@ -208,6 +208,9 @@ public class GielinorGoPlugin extends Plugin
 	private int spriteTries;
 	private WildBodies bodies;
 	private final NoticeBoard noticeBoard = new NoticeBoard();
+
+	/** The health the pinned party box shows while a battle that played itself is still being shown. */
+	private final LiveHealth liveHealth = new LiveHealth();
 	private final CueGate cueGate = new CueGate();
 	private List<Notice> heldNotices;
 
@@ -698,7 +701,10 @@ public class GielinorGoPlugin extends Plugin
 		watchCombat();
 		steering();
 		battleScene();
-		noticeBoard.tick(System.currentTimeMillis());
+		Notice due = noticeBoard.tick(System.currentTimeMillis());
+		if (due != null && liveHealth.show(due.health()))
+			refreshPanel();
+
 		portraits.tick();
 		countSteps();
 		updateFollower();
@@ -1521,7 +1527,7 @@ public class GielinorGoPlugin extends Plugin
 		publishWindow(state);
 		lastTracker = state.tracker();
 		trackerOverlay.publish(trackerModel.frame(lastTracker, System.currentTimeMillis()));
-		partyBoxOverlay.publish(PartyBoxModel.rows(state.team()));
+		partyBoxOverlay.publish(PartyBoxModel.rows(liveHealth.over(state.team())));
 	}
 
 	/**
@@ -2324,6 +2330,7 @@ public class GielinorGoPlugin extends Plugin
 		BattleResult result = game.battleDeferred(entry);
 		pendingBattle = result == null ? null : result.pending();
 		pendingAge = 0;
+		liveHealth.follow(pendingBattle);
 		List<BattleLine> lines = result == null ? null : result.playbackSummary(BATTLE_LINES);
 		boolean staged = false;
 		if (result != null && config.battleAnimations() && !arena.active() && !stage.active())
@@ -2423,6 +2430,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		BattleSession owed = pendingBattle;
 		pendingBattle = null;
+		liveHealth.follow(null);
 		if (owed == null || game == null || !game.finishDeferred(owed))
 			return false;
 
@@ -2583,7 +2591,8 @@ public class GielinorGoPlugin extends Plugin
 	{
 		List<Notice> after = HeldNotices.close(heldNotices);
 		heldNotices = null;
-		if (lines == null || !config.showResults())
+		boolean follows = pendingBattle != null && config.pinParty();
+		if (lines == null || !config.showResults() && !follows)
 		{
 			after.forEach(this::announce);
 			return;
@@ -2595,17 +2604,25 @@ public class GielinorGoPlugin extends Plugin
 			if (line.kind() == BattleLine.Kind.OPENING)
 				continue;
 
+			Notice notice;
 			if (staged && wildId != Notice.PLAYER && line.overPlayer())
-				queue.add(Notice.stageLead(line.text(), line.tone()));
+				notice = Notice.stageLead(line.text(), line.tone());
 			else if (staged && wildId != Notice.PLAYER)
-				queue.add(Notice.stageFoe(wildId, line.text(), line.tone()));
+				notice = Notice.stageFoe(wildId, line.text(), line.tone());
 			else if (line.overPlayer() || wildId == Notice.PLAYER)
-				queue.add(Notice.player(line.text(), line.tone()));
+				notice = Notice.player(line.text(), line.tone());
 			else
-				queue.add(Notice.creature(wildId, line.text(), line.tone()));
+				notice = Notice.creature(wildId, line.text(), line.tone());
+
+			notice = withLiveHealth(notice, line);
+			queue.add(config.showResults() ? notice : notice.unseen());
 		}
 
-		queue.addAll(after);
+		if (config.showResults())
+			queue.addAll(after);
+		else
+			after.forEach(this::announce);
+
 		noticeBoard.enqueue(queue, staged);
 
 		if (!config.chatMessages())
@@ -2613,6 +2630,23 @@ public class GielinorGoPlugin extends Plugin
 
 		for (Notice notice : after)
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", notice.text(), null);
+	}
+
+	/**
+	 * Gives a battle line's notice the health it leaves, when the line is of the battle that is still being shown.
+	 *
+	 * @param notice the line's notice
+	 * @param line the line
+	 * @return the notice, with the health when there is one
+	 */
+	private Notice withLiveHealth(Notice notice, BattleLine line)
+	{
+		BattleSession battle = pendingBattle;
+		if (battle == null || line.minePlace() < 0 || line.minePlace() >= battle.fighters().size())
+			return notice;
+
+		int place = game.teamPlace(battle.fighters().get(line.minePlace()));
+		return place < 0 ? notice : notice.withHealth(new LiveHealth.Step(battle, place, line.mineHealth()));
 	}
 
 	/**

@@ -390,6 +390,7 @@ final class BattleState
 			inflicted = rollStatus(attacker, defender, move);
 		}
 
+		line = stamped(line);
 		turn.hits.add(line);
 		turn.lines.add(line);
 		duelHits.add(line);
@@ -429,6 +430,12 @@ final class BattleState
 		return playersCreature == mode.mineFirstWording;
 	}
 
+	/** @return the line with the health the player's creature in the fight has now */
+	private BattleLine stamped(BattleLine line)
+	{
+		return line.withMineHealth(myIndex, mine().hpFraction());
+	}
+
 	/**
 	 * Records a line about a status. It is acted out as a beat of its own and carries the status each side has once
 	 * it has happened, so a scene can show the tags.
@@ -442,8 +449,8 @@ final class BattleState
 	{
 		Status mineShows = aboutMine ? shown : mine().status();
 		Status foeShows = aboutMine ? foe().status() : shown;
-		BattleLine tagged = mode.mineFirstWording ? line.withTags(mineShows, foeShows)
-			: line.withTags(foeShows, mineShows);
+		BattleLine tagged = stamped(mode.mineFirstWording ? line.withTags(mineShows, foeShows)
+			: line.withTags(foeShows, mineShows));
 		turn.hits.add(tagged);
 		turn.lines.add(tagged);
 		duelHits.add(tagged);
@@ -723,7 +730,7 @@ final class BattleState
 		BattleLine out = null;
 		if (mode.knockOutLines)
 		{
-			out = BattleSim.knockOutLine(fighter, opponent, won);
+			out = stamped(BattleSim.knockOutLine(fighter, opponent, won));
 			turn.lines.add(out);
 			turn.duel = new Duel(fighter, myIndex, opponent, foeIndex, duelHits, out, won);
 		}
