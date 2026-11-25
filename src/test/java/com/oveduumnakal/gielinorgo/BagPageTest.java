@@ -62,6 +62,38 @@ public class BagPageTest
 	}
 
 	@Test
+	public void noCountIsCutToAnEllipsisAtAnySize()
+	{
+		for (int[] canvas : CANVASES)
+			for (int count : new int[] {9, 99, 999, 9999})
+			{
+				Map<JarType, Integer> jars = new EnumMap<>(JarType.class);
+				for (JarType type : JarType.values())
+					jars.put(type, count);
+
+				Map<ItemType, Integer> items = new EnumMap<>(ItemType.class);
+				for (ItemType type : ItemType.values())
+					items.put(type, count);
+
+				PartyRig rig = new PartyRig();
+				rig.width = canvas[0];
+				rig.height = canvas[1];
+				rig.publish(new PanelState(7, 0.4, 5, jars, JarType.SLASH, 40, Collections.emptyList(),
+					Collections.emptyList(), Collections.emptyList(), 0, 0, Collections.emptyList(),
+					Collections.emptyList(), TodayView.NONE, null, items), true);
+				rig.open();
+				rig.shell.showTab(WindowTab.BAG, rig.now);
+				rig.drawn.clear();
+				rig.paint();
+
+				long whole = rig.drawn.stream()
+					.filter(d -> d.text.equals(String.valueOf(count)))
+					.count();
+				assertTrue(canvas[0] + " count " + count, whole >= JarType.values().length + ItemType.values().length);
+			}
+	}
+
+	@Test
 	public void clickingAJarSelectsIt()
 	{
 		PartyRig rig = bag(state(0, false));

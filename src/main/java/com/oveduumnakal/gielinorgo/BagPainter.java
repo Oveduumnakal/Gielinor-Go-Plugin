@@ -36,6 +36,12 @@ final class BagPainter
 	static final String PIN_PREFIX = "bag:pin:";
 
 	private static final double ICON_SHARE = 0.72;
+
+	/** The smallest share of a cell's height its picture shrinks to before the count takes the small font. */
+	private static final double ICON_FLOOR = 0.4;
+
+	/** The smallest gap around a cell's picture and count, in pixels. */
+	private static final int MIN_CELL_PAD = 2;
 	private static final double DIM = 0.4;
 
 	private final PageText.Sink sink;
@@ -193,30 +199,75 @@ final class BagPainter
 	private void jars(Graphics2D g, PageContext ctx, PageText text, BagLayout layout, PanelState state, Font regular)
 	{
 		List<JarType> shown = BagText.jarsShown(state);
-		for (int i = 0; i < shown.size() && i < layout.jarCells.length; i++)
+		int cells = Math.min(shown.size(), layout.jarCells.length);
+		if (cells == 0)
+			return;
+
+		int most = 0;
+		for (int i = 0; i < cells; i++)
+			most = Math.max(most, count(state.jars(), shown.get(i)));
+
+		CountFit fit = fit(g, ctx.style, layout.jarCells[0], String.valueOf(most), regular);
+		for (int i = 0; i < cells; i++)
 		{
 			JarType type = shown.get(i);
 			String id = jarId(i);
 			boolean selected = type == state.selectedJar();
 			int count = count(state.jars(), type);
 			cell(g, ctx, text, layout.jarCells[i], id, selected, JarIcons.source(type), String.valueOf(count),
-				count > 0 || selected, regular);
+				count > 0 || selected, fit);
 		}
 	}
 
 	private void items(Graphics2D g, PageContext ctx, PageText text, BagLayout layout, PanelState state, Font regular)
 	{
 		ItemType[] types = ItemType.values();
+		int most = 0;
+		for (ItemType type : types)
+			most = Math.max(most, count(state.items(), type));
+
+		CountFit fit = fit(g, ctx.style, layout.itemCells[0], String.valueOf(most), regular);
 		for (int i = 0; i < types.length; i++)
 		{
 			int count = count(state.items(), types[i]);
 			cell(g, ctx, text, layout.itemCells[i], ITEM_PREFIX + i, false, ItemIcons.source(types[i]),
-				String.valueOf(count), count > 0, regular);
+				String.valueOf(count), count > 0, fit);
 		}
 	}
 
+	/**
+	 * Sizes a grid of cells so its longest count is never cut: the pictures shrink to make room, past their smallest
+	 * size the counts take the small font, then the gaps close up. Every cell of a grid gets the same answer.
+	 *
+	 * @param g the graphics
+	 * @param st the style
+	 * @param box one cell of the grid
+	 * @param widest the longest count in the grid
+	 * @param regular the font the counts are drawn in when there is room
+	 * @return the picture size and the font
+	 */
+	private static CountFit fit(Graphics2D g, WindowStyle st, Rectangle box, String widest, Font regular)
+	{
+		int full = (int) Math.round(box.height * ICON_SHARE);
+		int floor = (int) Math.round(box.height * ICON_FLOOR);
+		int pad = Math.max(MIN_CELL_PAD, (box.height - full) / 2);
+		int room = box.width - st.metrics().slant / 2 - 3 * pad;
+		Font font = regular;
+		if (room - g.getFontMetrics(font).stringWidth(widest) < floor)
+			font = st.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
+
+		if (room - g.getFontMetrics(font).stringWidth(widest) < floor)
+		{
+			pad = MIN_CELL_PAD;
+			room = box.width - st.metrics().slant / 2 - 3 * pad;
+		}
+
+		int size = Math.max(floor, Math.min(full, room - g.getFontMetrics(font).stringWidth(widest)));
+		return new CountFit(size, pad, font);
+	}
+
 	private void cell(Graphics2D g, PageContext ctx, PageText text, Rectangle box, String id, boolean selected,
-		BufferedImage icon, String label, boolean bright, Font regular)
+		BufferedImage icon, String label, boolean bright, CountFit fit)
 	{
 		WindowStyle st = ctx.style;
 		boolean pressable = id.startsWith(JAR_PREFIX);
@@ -224,8 +275,8 @@ final class BagPainter
 		if (ctx.focused && id.equals(ctx.highlight))
 			st.focusRing(g, shape);
 
-		int size = (int) Math.round(box.height * ICON_SHARE);
-		int pad = Math.max(2, (box.height - size) / 2);
+		int size = fit.size;
+		int pad = fit.pad;
 		Composite saved = g.getComposite();
 		if (!bright)
 			g.setComposite(AlphaComposite.SrcOver.derive((float) DIM));
@@ -235,7 +286,7 @@ final class BagPainter
 		int textX = box.x + pad + st.metrics().slant / 2 + size + pad;
 		Rectangle words = new Rectangle(textX, box.y, Math.max(0, box.x + box.width - textX - pad), box.height);
 		ThemeColor ink = bright ? WindowStyle.rowText(selected) : ThemeColor.SUBTEXT;
-		text.draw(g, label, words, regular, ink, PageText.Align.LEFT);
+		text.draw(g, label, words, fit.font, ink, PageText.Align.LEFT);
 	}
 
 	private void eggs(Graphics2D g, PageContext ctx, PageText text, BagLayout layout, PanelState state, Font regular,
@@ -282,5 +333,20 @@ final class BagPainter
 	private static Rectangle2D rect(Rectangle r)
 	{
 		return new Rectangle2D.Double(r.x, r.y, r.width, r.height);
+	}
+
+	/** How big a grid of cells draws its pictures and counts. */
+	private static final class CountFit
+	{
+		private final int size;
+		private final int pad;
+		private final Font font;
+
+		private CountFit(int size, int pad, Font font)
+		{
+			this.size = size;
+			this.pad = pad;
+			this.font = font;
+		}
 	}
 }
