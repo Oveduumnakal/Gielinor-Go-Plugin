@@ -88,15 +88,21 @@ public class WindowRulesTest
 	@Test
 	public void aDeferredResultWaitsForTheSceneAndTheLines()
 	{
-		assertFalse(WindowRules.deferredDue(10, 300, true, true));
-		assertFalse(WindowRules.deferredDue(10, 300, false, false));
-		assertTrue(WindowRules.deferredDue(10, 300, false, true));
+		assertFalse(WindowRules.deferredDue(10, 300, true, true, false));
+		assertFalse(WindowRules.deferredDue(10, 300, false, false, false));
+		assertTrue(WindowRules.deferredDue(10, 300, false, true, false));
+	}
+
+	@Test
+	public void aDeferredResultIsWrittenAsSoonAsTheWildCreatureIsDown()
+	{
+		assertTrue(WindowRules.deferredDue(10, 300, true, false, true));
 	}
 
 	@Test
 	public void aDeferredResultIsWrittenAfterTheLimitEvenIfTheSceneNeverEnds()
 	{
-		assertFalse(WindowRules.deferredDue(300, 300, true, false));
-		assertTrue(WindowRules.deferredDue(301, 300, true, false));
+		assertFalse(WindowRules.deferredDue(300, 300, true, false, false));
+		assertTrue(WindowRules.deferredDue(301, 300, true, false, false));
 	}
 }
