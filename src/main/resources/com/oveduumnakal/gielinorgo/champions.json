@@ -1,6 +1,6 @@
 [
 {"id":"lumbridge","city":"Lumbridge","minX":3201,"minY":3200,"maxX":3260,"maxY":3250,"team":[{"species":"Goblin","level":4},{"species":"Cow","level":5},{"species":"Giant rat","level":6}],"jar":"IRON","jars":2},
-{"id":"draynor-village","city":"Draynor Village","minX":3072,"minY":3230,"maxX":3112,"maxY":3280,"team":[{"species":"Highwayman","level":9},{"species":"Dark wizard","level":10},{"species":"Count Draynor","level":12}],"jar":"IRON","jars":3},
+{"id":"draynor-village","city":"Draynor Village","minX":3072,"minY":3230,"maxX":3112,"maxY":3280,"team":[{"species":"Highwayman","level":9},{"species":"Dark wizard","level":10},{"species":"Mugger","level":12}],"jar":"IRON","jars":3},
 {"id":"al-kharid","city":"Al Kharid","minX":3262,"minY":3150,"maxX":3325,"maxY":3200,"team":[{"species":"Al Kharid warrior","level":14},{"species":"Scorpion","level":16},{"species":"Desert Lizard","level":18}],"jar":"IRON","jars":3},
 {"id":"varrock","city":"Varrock","minX":3175,"minY":3380,"maxX":3270,"maxY":3470,"team":[{"species":"Guard","level":22},{"species":"Dark wizard","level":24},{"species":"Black Knight","level":26}],"jar":"RUNE","jars":3},
 {"id":"falador","city":"Falador","minX":2935,"minY":3335,"maxX":3030,"maxY":3400,"team":[{"species":"White Knight","level":32},{"species":"Dwarf","level":34},{"species":"Black Knight","level":36}],"jar":"RUNE","jars":4},
