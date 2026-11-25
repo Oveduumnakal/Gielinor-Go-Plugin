@@ -152,26 +152,29 @@ final class NoticeBoard
 	 * once the previous one has finished shows at once; the next one {@link #LINE_TICKS} ticks later.
 	 *
 	 * @param nowMs the current wall-clock time in milliseconds
+	 * @return the line whose turn came on this call, drawn or not, or null for none
 	 */
-	void tick(long nowMs)
+	Notice tick(long nowMs)
 	{
 		if (queued.isEmpty())
 		{
 			wait = 0;
-			return;
+			return null;
 		}
 
 		if (wait > 0)
 		{
 			wait--;
-			return;
+			return null;
 		}
 
 		Notice next = queued.poll();
+		if (!next.silent())
+			show(next, nowMs);
 
-		show(next, nowMs);
 		wait = LINE_TICKS - 1 + owed;
 		owed = 0;
+		return next;
 	}
 
 	/** Removes every line, shown, queued or held. */

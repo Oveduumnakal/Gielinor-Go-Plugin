@@ -47,6 +47,8 @@ final class BattleLine
 	private boolean tagged;
 	private Status mineStatus;
 	private Status foeStatus;
+	private int minePlace = -1;
+	private double mineHealth;
 
 	BattleLine(String text, Tone tone, boolean overPlayer)
 	{
@@ -148,7 +150,40 @@ final class BattleLine
 		copy.tagged = true;
 		copy.mineStatus = mine;
 		copy.foeStatus = foe;
+		copy.minePlace = minePlace;
+		copy.mineHealth = mineHealth;
 		return copy;
+	}
+
+	/**
+	 * Copies the line with the health the player's creature in the fight has once it has happened, so the pinned
+	 * party box can follow a battle line by line.
+	 *
+	 * @param place the creature's place in the battle team
+	 * @param health the share of full health it has left, from 0 to 1
+	 * @return the copy
+	 */
+	BattleLine withMineHealth(int place, double health)
+	{
+		BattleLine copy = new BattleLine(text, tone, overPlayer, kind, special, style, icy, miss, move);
+		copy.tagged = tagged;
+		copy.mineStatus = mineStatus;
+		copy.foeStatus = foeStatus;
+		copy.minePlace = place;
+		copy.mineHealth = health;
+		return copy;
+	}
+
+	/** @return the battle team place the line's health is of, or -1 when the line carries none */
+	int minePlace()
+	{
+		return minePlace;
+	}
+
+	/** @return the share of full health that creature has once the line has happened */
+	double mineHealth()
+	{
+		return mineHealth;
 	}
 
 	/** @return the id of the move that made an attack line, or null when it is not known */

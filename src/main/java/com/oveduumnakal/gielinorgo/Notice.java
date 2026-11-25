@@ -19,6 +19,8 @@ final class Notice
 	private final Anchor anchor;
 	private final JarType jar;
 	private final ItemType item;
+	private LiveHealth.Step health;
+	private boolean silent;
 
 	/** Where a notice floats: over the player's head, over a wild creature's body, or over a body on a stage. */
 	enum Anchor
@@ -150,6 +152,39 @@ final class Notice
 	}
 
 	/** @return the line */
+	/**
+	 * @param step the health the line leaves
+	 * @return a copy of this notice that hands over that health when it shows
+	 */
+	Notice withHealth(LiveHealth.Step step)
+	{
+		Notice copy = new Notice(text, tone, wildId, anchor, jar, item);
+		copy.health = step;
+		copy.silent = silent;
+		return copy;
+	}
+
+	/** @return a copy of this notice that keeps its turn in the queue but is never drawn */
+	Notice unseen()
+	{
+		Notice copy = new Notice(text, tone, wildId, anchor, jar, item);
+		copy.health = health;
+		copy.silent = true;
+		return copy;
+	}
+
+	/** @return the health the line leaves, or null for none */
+	LiveHealth.Step health()
+	{
+		return health;
+	}
+
+	/** @return whether the line only keeps time and is not drawn */
+	boolean silent()
+	{
+		return silent;
+	}
+
 	String text()
 	{
 		return text;
