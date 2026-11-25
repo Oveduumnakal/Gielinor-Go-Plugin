@@ -2625,7 +2625,7 @@ public class GielinorGoPlugin extends Plugin
 
 		noticeBoard.enqueue(queue, staged);
 
-		if (!config.chatMessages())
+		if (!config.showResults() || !config.chatMessages())
 			return;
 
 		for (Notice notice : after)
