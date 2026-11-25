@@ -113,9 +113,6 @@ public class GielinorGoPlugin extends Plugin
 	/** Game ticks between window refreshes while nothing changes, so resting health still creeps up. */
 	private static final int PANEL_TICKS = 5;
 
-	/** How many game ticks to keep asking for the combat tab picture before giving up. */
-	private static final int SPRITE_TRIES = 100;
-
 	/** Game ticks between saves of changed progress. */
 	private static final int SAVE_TICKS = 50;
 
@@ -205,7 +202,6 @@ public class GielinorGoPlugin extends Plugin
 	private BubbleInput bubbleInput;
 	private volatile boolean bubblesFailed;
 	private volatile BufferedImage combatSprite;
-	private int spriteTries;
 	private WildBodies bodies;
 	private final NoticeBoard noticeBoard = new NoticeBoard();
 
@@ -920,6 +916,7 @@ public class GielinorGoPlugin extends Plugin
 				return;
 			}
 
+			loadCombatSprite();
 			bubbles.pause(menuOpen);
 			if (menuOpen)
 				return;
@@ -1030,23 +1027,21 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
-	 * Fetches the game's combat tab picture for the Battle bubble. It runs on the client thread and tries again on
-	 * later ticks, up to a limit, until the game has the picture ready.
-	 *
-	 * @return true when the picture is stored or the tries ran out, so the client thread stops calling it
+	 * Fetches the game's combat tab picture for the Battle bubble, if it is not stored yet. It runs on the client
+	 * thread each time the bubbles tick until the game has the picture ready, which after a slow start can take a
+	 * while.
 	 */
-	private boolean loadCombatSprite()
+	private void loadCombatSprite()
 	{
-		BufferedImage sprite = spriteManager.getSprite(SpriteID.SideIcons._0, 0);
-		if (sprite != null)
-		{
-			combatSprite = sprite;
-			log.debug("Gielinor Go: combat tab picture is {}x{}", sprite.getWidth(), sprite.getHeight());
-			return true;
-		}
+		if (combatSprite != null)
+			return;
 
-		spriteTries++;
-		return spriteTries >= SPRITE_TRIES;
+		BufferedImage sprite = spriteManager.getSprite(SpriteID.SideIcons._0, 0);
+		if (sprite == null)
+			return;
+
+		combatSprite = sprite;
+		log.debug("Gielinor Go: combat tab picture is {}x{}", sprite.getWidth(), sprite.getHeight());
 	}
 
 	/** Creates the wild creature bubbles, their overlay and their mouse input, and registers them. */
@@ -1059,8 +1054,6 @@ public class GielinorGoPlugin extends Plugin
 			this::windowStyle, config::windowAnimations, config::windowFraction, () -> loaded && bubblesOn(),
 			System::currentTimeMillis, this::bubblesBroke);
 		bubbleInput = new BubbleInput(bubbleOverlay::hits, dragKey, bubbleSink());
-		spriteTries = 0;
-		clientThread.invokeLater(this::loadCombatSprite);
 		overlayManager.add(bubbleOverlay);
 		mouseManager.registerMouseListener(bubbleInput);
 	}
