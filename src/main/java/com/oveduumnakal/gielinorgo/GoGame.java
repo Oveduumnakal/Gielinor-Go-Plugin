@@ -1992,6 +1992,26 @@ final class GoGame
 	}
 
 	/**
+	 * Swaps two team members' places, so the one moved to the front becomes the lead. Nothing changes during an Elite
+	 * run or for a place outside the team.
+	 *
+	 * @param first one place in the team
+	 * @param second the other place
+	 */
+	void swapTeam(int first, int second)
+	{
+		if (eliteBusy())
+			return;
+
+		int size = data.team.size();
+		if (first == second || first < 0 || second < 0 || first >= size || second >= size)
+			return;
+
+		Collections.swap(data.team, first, second);
+		dirty = true;
+	}
+
+	/**
 	 * Checks that a creature a panel picked is still where the panel listed it. When it is not, says so and the
 	 * caller does nothing.
 	 *

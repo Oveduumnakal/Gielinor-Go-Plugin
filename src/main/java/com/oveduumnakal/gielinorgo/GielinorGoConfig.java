@@ -571,6 +571,7 @@ public interface GielinorGoConfig extends Config
 		name = "Pin Party to UI",
 		description = "Shows your team, with portraits, names, levels and health, in a box on the game screen.\n"
 			+ "The Party page has a Pin Party to UI button too.\n"
+			+ "Drag one creature onto another in the box to swap them.\n"
 			+ "Hold RuneLite's drag key to move it.",
 		position = 34
 	)

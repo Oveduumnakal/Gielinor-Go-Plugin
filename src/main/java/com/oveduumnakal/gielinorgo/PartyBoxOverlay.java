@@ -10,9 +10,11 @@ import java.awt.Composite;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -31,9 +33,9 @@ import net.runelite.client.ui.overlay.OverlayPosition;
 /**
  * The pinned party as a RuneLite overlay on the game screen: a small box with the team's portraits, names, levels and
  * health. Like the pinned tracker it sits top left and RuneLite owns its place, so it moves with RuneLite's drag key
- * and the place is remembered by RuneLite. It takes no mouse input of its own, so every click goes through to the
- * game. It hides while a Go battle is on and while there is no team. What it shows is decided elsewhere: the plugin
- * publishes the rows from {@link PartyBoxModel} and this class only reads them.
+ * and the place is remembered by RuneLite. It handles no mouse input itself: it tells {@link PartyBoxInput} where its
+ * rows are while they may be dragged. It hides while a Go battle is on and while there is no team. What it shows is
+ * decided elsewhere: the plugin publishes the rows from {@link PartyBoxModel} and this class only reads them.
  */
 final class PartyBoxOverlay extends Overlay
 {
@@ -49,6 +51,9 @@ final class PartyBoxOverlay extends Overlay
 	private final BooleanSupplier loaded;
 	private final LongSupplier clock;
 	private volatile List<RowModel> frame = Collections.emptyList();
+	private volatile List<Rectangle> draggable = Collections.emptyList();
+	private BooleanSupplier reorderable = () -> false;
+	private PartyBoxInput input;
 
 	/**
 	 * Creates the box, showing nothing.
@@ -94,6 +99,24 @@ final class PartyBoxOverlay extends Overlay
 		frame = Collections.unmodifiableList(rows);
 	}
 
+	/**
+	 * Lets the rows be dragged to reorder the party.
+	 *
+	 * @param allowed asked each frame, on the game thread, whether the party may be reordered now
+	 * @param dragging the input whose drag the box shows
+	 */
+	void reorder(BooleanSupplier allowed, PartyBoxInput dragging)
+	{
+		this.reorderable = allowed;
+		this.input = dragging;
+	}
+
+	/** @return the canvas boxes of the rows that may be dragged now, in team order; empty for none */
+	List<Rectangle> draggableRows()
+	{
+		return draggable;
+	}
+
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
@@ -103,20 +126,42 @@ final class PartyBoxOverlay extends Overlay
 			boolean show = PartyBoxModel.visible(enabled.getAsBoolean(), battleOn.getAsBoolean(),
 				loaded.getAsBoolean(), rows.size());
 			if (!show)
+			{
+				draggable = Collections.emptyList();
 				return null;
+			}
 
 			Dimension window = WindowFit.sizeFor(fraction.getAsDouble(), canvasWidth.getAsInt(),
 				canvasHeight.getAsInt());
 			WindowStyle style = WindowStyle.of(theme.get(), TrackerRules.scale(WindowFit.scale(window.width,
 				window.height)));
 			paint(graphics, style, rows);
+			draggable = rowsOnCanvas(style, rows.size());
 			return PartyBoxPainter.size(style, rows.size());
 		}
 		catch (RuntimeException | AssertionError e)
 		{
 			log.debug("Gielinor Go: could not draw the party box", e);
+			draggable = Collections.emptyList();
 			return null;
 		}
+	}
+
+	private List<Rectangle> rowsOnCanvas(WindowStyle style, int rows)
+	{
+		if (rows < 2 || !reorderable.getAsBoolean())
+			return Collections.emptyList();
+
+		Rectangle box = getBounds();
+		List<Rectangle> boxes = new ArrayList<>(rows);
+		for (int i = 0; i < rows; i++)
+		{
+			Rectangle row = PartyBoxPainter.rowBounds(style, i);
+			row.translate(box.x, box.y);
+			boxes.add(row);
+		}
+
+		return Collections.unmodifiableList(boxes);
 	}
 
 	private void paint(Graphics2D g, WindowStyle style, List<RowModel> rows)
@@ -132,6 +177,8 @@ final class PartyBoxOverlay extends Overlay
 		try
 		{
 			painter.paint(g, style, rows, clock.getAsLong());
+			if (input != null)
+				painter.paintDrag(g, style, rows.size(), input.from(), input.over());
 		}
 		finally
 		{
