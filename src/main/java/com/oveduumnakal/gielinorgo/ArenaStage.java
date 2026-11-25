@@ -415,10 +415,12 @@ final class ArenaStage implements StageAnchors
 		switch (entry.kind())
 		{
 			case ENTER_FOE:
+				acting.showHealth(false, 1.0);
 				enterFoe(entry.species());
 				break;
 
 			case ENTER_MINE:
+				acting.showHealth(true, null);
 				follower.fadeTo(0.0);
 				follower.showAs(entry.species(), entry.npcId(), entry.gilded());
 				leadFade = new OpacityFade(0.0);
@@ -439,6 +441,7 @@ final class ArenaStage implements StageAnchors
 			default:
 				OpacityFade out = entry.side() == TeamScript.Side.MINE ? leadFade : foeFade;
 				out.moveAt(0.0, FADE_RATE);
+				acting.showHealth(entry.side() == TeamScript.Side.MINE, null);
 				break;
 		}
 	}
@@ -592,6 +595,18 @@ final class ArenaStage implements StageAnchors
 			return null;
 
 		return acting.tagOf(anchor == Notice.Anchor.STAGE_LEAD);
+	}
+
+	/**
+	 * @param anchor which body
+	 * @return the share of full health its bar shows, or null for no bar or when no scene is on stage
+	 */
+	Double healthOf(Notice.Anchor anchor)
+	{
+		if (run == null || (anchor != Notice.Anchor.STAGE_FOE && anchor != Notice.Anchor.STAGE_LEAD))
+			return null;
+
+		return acting.healthOf(anchor == Notice.Anchor.STAGE_LEAD);
 	}
 
 	/** Ends the scene, if any: the opposing body goes, the lead is itself again and walks back to the player. */

@@ -46,7 +46,7 @@ final class BattleSession
 		this.fighters = Collections.unmodifiableList(new ArrayList<>(fighters));
 		this.entry = entry;
 		this.champion = champion;
-		this.opening = opening;
+		this.opening = state.stamped(opening);
 		this.startHealth = new double[fighters.size()];
 		for (int i = 0; i < startHealth.length; i++)
 			startHealth[i] = fighter(i).hpFraction();

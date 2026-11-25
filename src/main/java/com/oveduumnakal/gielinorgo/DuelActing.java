@@ -196,6 +196,9 @@ final class DuelActing
 	private boolean impactOnLead;
 	private volatile Status leadTag;
 	private volatile Status foeTag;
+	private volatile Double leadHealth;
+	private volatile Double foeHealth;
+	private BattleHealth struck;
 
 	/**
 	 * Creates the helper with no turn in progress.
@@ -282,6 +285,7 @@ final class DuelActing
 		}
 
 		landBlow();
+		startHealth(step);
 		switch (step.beat())
 		{
 			case FACE_OFF:
@@ -408,6 +412,54 @@ final class DuelActing
 	 * @param onLead true for the lead creature, false for the other one
 	 * @return the status, or null for none
 	 */
+	/**
+	 * @param onLead whether to ask about the creature on the player's side
+	 * @return the share of full health the scene shows for it, or null while it is not known
+	 */
+	Double healthOf(boolean onLead)
+	{
+		return onLead ? leadHealth : foeHealth;
+	}
+
+	/**
+	 * Sets what the scene shows for one creature, as one comes in or leaves.
+	 *
+	 * @param onLead whether it is the creature on the player's side
+	 * @param share the share of full health, or null to show none
+	 */
+	void showHealth(boolean onLead, Double share)
+	{
+		if (onLead)
+			leadHealth = share;
+		else
+			foeHealth = share;
+	}
+
+	/**
+	 * Takes the health a beat starts with. An attack's own damage waits for the blow to land.
+	 */
+	private void startHealth(BattleTimeline.Step step)
+	{
+		if (step.beat() == BattleTimeline.Beat.LEAD_ENTERS)
+			leadHealth = null;
+
+		BattleHealth around = step.health();
+		if (around == null)
+			return;
+
+		if (isAttack(step))
+		{
+			leadHealth = around.leadBefore();
+			foeHealth = around.foeBefore();
+			struck = around;
+		}
+		else
+		{
+			leadHealth = around.lead();
+			foeHealth = around.foe();
+		}
+	}
+
 	Status tagOf(boolean onLead)
 	{
 		return onLead ? leadTag : foeTag;
@@ -513,6 +565,13 @@ final class DuelActing
 	/** Makes the target of the turn react, unless the attack missed, and takes the projectile away. */
 	private void landBlow()
 	{
+		if (struck != null)
+		{
+			leadHealth = struck.lead();
+			foeHealth = struck.foe();
+			struck = null;
+		}
+
 		if (!impactPending)
 			return;
 
@@ -547,6 +606,9 @@ final class DuelActing
 	{
 		leadTag = null;
 		foeTag = null;
+		leadHealth = null;
+		foeHealth = null;
+		struck = null;
 		impactPending = false;
 		turnAge = TurnMotion.TURN_TICKS;
 		lastAttack = null;

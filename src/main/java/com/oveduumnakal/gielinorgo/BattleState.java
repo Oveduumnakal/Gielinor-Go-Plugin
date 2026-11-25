@@ -375,6 +375,8 @@ final class BattleState
 			note(turn, BattleSim.shookOff(attacker, wordingOf(mineAttacks)), mineAttacks, null);
 
 		Move move = pick(attacker, defender, mineAttacks ? moveIndex : foeMoveChoice);
+		double mineBefore = mine().hpFraction();
+		double foeBefore = foe().hpFraction();
 		boolean wording = mineAttacks == mode.mineFirstWording;
 		BattleLine line;
 		Status inflicted = null;
@@ -390,7 +392,7 @@ final class BattleState
 			inflicted = rollStatus(attacker, defender, move);
 		}
 
-		line = stamped(line);
+		line = stamped(line, mineBefore, foeBefore);
 		turn.hits.add(line);
 		turn.lines.add(line);
 		duelHits.add(line);
@@ -430,10 +432,25 @@ final class BattleState
 		return playersCreature == mode.mineFirstWording;
 	}
 
-	/** @return the line with the health the player's creature in the fight has now */
-	private BattleLine stamped(BattleLine line)
+	/** @return the line with the health both creatures have now */
+	BattleLine stamped(BattleLine line)
 	{
-		return line.withMineHealth(myIndex, mine().hpFraction());
+		Combatant mineNow = mine();
+		Combatant foeNow = foe();
+		return stamped(line, mineNow.hpFraction(), foeNow.hpFraction());
+	}
+
+	/**
+	 * Copies a line with the health around it, turned so that the player's side of the scene comes first, as the
+	 * status tags are.
+	 */
+	private BattleLine stamped(BattleLine line, double mineBefore, double foeBefore)
+	{
+		double mineNow = mine().hpFraction();
+		double foeNow = foe().hpFraction();
+		return line.withHealth(mode.mineFirstWording
+			? new BattleHealth(myIndex, mineBefore, foeBefore, mineNow, foeNow)
+			: new BattleHealth(-1, foeBefore, mineBefore, foeNow, mineNow));
 	}
 
 	/**
