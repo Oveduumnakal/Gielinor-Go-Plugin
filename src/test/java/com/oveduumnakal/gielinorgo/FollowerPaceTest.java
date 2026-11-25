@@ -59,23 +59,60 @@ public class FollowerPaceTest
 	}
 
 	@Test
-	public void itLagsBehindThenCatchesUpInsteadOfMovingEveryStep()
+	public void itKeepsMovingWhileThePlayerKeepsRunning()
 	{
 		path.playerAt(drawn, 3200, 0, OPEN);
 		walk(2, 6 * TICKS);
-		int still = 0;
-		int moving = 0;
 		for (int i = 0; i < 10 * TICKS; i++)
 		{
 			walk(2, 1);
-			if (path.walking())
-				moving++;
-			else
-				still++;
+			assertTrue("stopped at client tick " + i, path.walking());
+		}
+	}
+
+	@Test
+	public void itWaitsForTheGapToGrowBeforeSettingOff()
+	{
+		path.playerAt(drawn, 3200, 0, OPEN);
+		double start = path.x();
+		walk(1, TICKS / 2);
+
+		assertEquals(start, path.x(), CLOSE);
+	}
+
+	@Test
+	public void itsSpeedNeverJumps()
+	{
+		path.playerAt(drawn, 3200, 0, OPEN);
+		double lastX = path.x();
+		double lastY = path.y();
+		double speed = 0;
+		for (int i = 0; i < 10 * TICKS; i++)
+		{
+			walk(2, 1);
+			double now = Math.max(Math.abs(path.x() - lastX), Math.abs(path.y() - lastY));
+			assertTrue("sped up by " + (now - speed), now - speed <= 0.1 / TICKS + 1e-6);
+			speed = now;
+			lastX = path.x();
+			lastY = path.y();
+		}
+	}
+
+	@Test
+	public void doublingBackDoesNotSendItOutToTheTurningPoint()
+	{
+		path.playerAt(drawn, 3200, 0, OPEN);
+		walk(2, 6 * TICKS);
+		double turn = drawn;
+		walk(-2, 2 * TICKS);
+		double farthest = path.x();
+		for (int i = 0; i < 2 * TICKS; i++)
+		{
+			stand(1);
+			farthest = Math.max(farthest, path.x());
 		}
 
-		assertTrue("stood still " + still, still > 0);
-		assertTrue("moved " + moving, moving > 0);
+		assertTrue("walked to " + farthest + " with the turn at " + turn, farthest < turn - 1);
 	}
 
 	@Test
