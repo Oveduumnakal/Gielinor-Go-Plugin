@@ -2403,7 +2403,7 @@ public class GielinorGoPlugin extends Plugin
 			pendingAge++;
 
 		if (pendingBattle != null && WindowRules.deferredDue(pendingAge, PENDING_MAX_TICKS,
-			stage.active() || arena.active(), noticeBoard.idle()))
+			stage.active() || arena.active(), noticeBoard.idle(), stage.wildDown()))
 		{
 			heldNotices = new ArrayList<>();
 			settlePending();
@@ -2414,8 +2414,8 @@ public class GielinorGoPlugin extends Plugin
 
 	/**
 	 * Writes the result of the battle that played itself to the save, once: the health, a faint, the rewards and the
-	 * tasks. Called when the last beat has shown, and at once when the player logs out, hops, switches save or turns
-	 * the plugin off, so the result is never lost and never written twice.
+	 * tasks. Called when the wild creature goes down or the last beat has shown, and at once when the player logs out,
+	 * hops, switches save or turns the plugin off, so the result is never lost and never written twice.
 	 *
 	 * @return whether a result was written
 	 */

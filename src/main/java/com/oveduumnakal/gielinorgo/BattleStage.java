@@ -210,6 +210,12 @@ final class BattleStage implements StageAnchors
 		return timeline != null;
 	}
 
+	/** @return whether the wild creature on stage has lost and lies knocked out */
+	boolean wildDown()
+	{
+		return timeline != null && timeline.knockedOut();
+	}
+
 	/**
 	 * @return whether the battle lines may start showing: one game tick after the first beat, so each line appears
 	 *     as its blow lands

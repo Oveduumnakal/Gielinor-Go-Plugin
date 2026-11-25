@@ -36,11 +36,12 @@ final class WindowRules
 	 * @param limit game ticks after which it is written whatever the scene does
 	 * @param sceneOn whether a battle scene is still acted out
 	 * @param linesShown whether every line of the battle has been shown
-	 * @return true once the scene and the lines are done, or the wait has passed the limit
+	 * @param wildDown whether the wild creature lies knocked out on the scene, which is when it can be caught
+	 * @return true once the wild creature is down, the scene and the lines are done, or the wait has passed the limit
 	 */
-	static boolean deferredDue(int age, int limit, boolean sceneOn, boolean linesShown)
+	static boolean deferredDue(int age, int limit, boolean sceneOn, boolean linesShown, boolean wildDown)
 	{
-		return age > limit || !sceneOn && linesShown;
+		return wildDown || age > limit || !sceneOn && linesShown;
 	}
 
 	/**
