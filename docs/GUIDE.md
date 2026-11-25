@@ -645,7 +645,7 @@ Every feature and every number, in detail. For the short version, see the [READM
   Up and Down move through the creatures you see, and the buttons along the foot rename it, show its moves, move it
   to your team, release it (with the usual confirmation) or use an item.
   **Collection** is the Creature Log of every species you can meet in the game
-  (1,139): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
+  (1,055): what you have caught, what you have only seen, how rare the missing ones are and what is featured today.
   Click a species you have seen or caught for its examine text, evolution line (stages you have not met show as
   `???`), how many you have caught and whether you own a gilded one, and right-click it for **Open wiki**. **Tasks**
   has your daily and weekly tasks, the login streak and the milestone list. **Battle** lists the City Champions, the
