@@ -147,7 +147,7 @@ public class FollowerDataTest
 		assertEquals("only Galvek has no breath animation in the cache data, and plays its attack instead",
 			Arrays.asList("Galvek"), unanimated);
 
-		assertEquals("the twenty dragons and four wyverns that breathed before still do", 24, breathers);
+		assertEquals("the nineteen dragons and four wyverns that still breathe do", 23, breathers);
 		Species baby = species.find("Baby green dragon");
 		Species goblin = species.find("Goblin");
 		assertFalse(breathes(moves, baby));

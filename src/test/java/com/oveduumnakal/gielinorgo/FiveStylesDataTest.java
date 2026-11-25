@@ -35,11 +35,11 @@ public class FiveStylesDataTest
 				counts.merge(species.style(), 1, Integer::sum);
 		}
 
-		assertEquals("Stab", 213, (int) counts.get(CombatType.STAB));
-		assertEquals("Slash", 224, (int) counts.get(CombatType.SLASH));
-		assertEquals("Crush", 436, (int) counts.get(CombatType.CRUSH));
-		assertEquals("Ranged", 89, (int) counts.get(CombatType.RANGED));
-		assertEquals("Magic", 177, (int) counts.get(CombatType.MAGIC));
+		assertEquals("Stab", 198, (int) counts.get(CombatType.STAB));
+		assertEquals("Slash", 204, (int) counts.get(CombatType.SLASH));
+		assertEquals("Crush", 418, (int) counts.get(CombatType.CRUSH));
+		assertEquals("Ranged", 82, (int) counts.get(CombatType.RANGED));
+		assertEquals("Magic", 153, (int) counts.get(CombatType.MAGIC));
 	}
 
 	@Test

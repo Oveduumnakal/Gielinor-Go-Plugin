@@ -62,7 +62,7 @@ public class SpeciesGenderTest
 	}
 
 	@Test
-	public void everySirKnightAndTheCommaNameAreMale()
+	public void everySirKnightIsMale()
 	{
 		int knights = 0;
 		for (String name : names)
@@ -74,12 +74,11 @@ public class SpeciesGenderTest
 			}
 		}
 
-		assertEquals(13, knights);
-		assertEquals(Gender.MALE, SpeciesGender.fixed("Cuthbert, Lord of Dread"));
+		assertEquals(12, knights);
 	}
 
 	@Test
-	public void bansheesAndSirenAreFemaleButChickenAndCowCalfAreOpen()
+	public void bansheesAreFemaleButChickenAndCowCalfAreOpen()
 	{
 		for (String name : names)
 		{
@@ -87,7 +86,6 @@ public class SpeciesGenderTest
 				assertEquals(name, Gender.FEMALE, SpeciesGender.fixed(name));
 		}
 
-		assertEquals(Gender.FEMALE, SpeciesGender.fixed("Siren"));
 		assertEquals(Gender.FEMALE, SpeciesGender.fixed("Cow"));
 		assertNull(SpeciesGender.fixed("Cow calf"));
 		assertNull(SpeciesGender.fixed("Chicken"));

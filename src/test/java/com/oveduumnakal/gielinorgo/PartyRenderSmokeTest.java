@@ -39,7 +39,7 @@ public class PartyRenderSmokeTest
 	private static CreatureView variety(int i)
 	{
 		Move spark = new Move("spark", "Spark", CombatType.MAGIC, 1.2, 0.9);
-		String[] species = {"Frenzied ice troll female", "Bloodthirsty banshee", "Man", "Cow", "Gelatinnoth Mother",
+		String[] species = {"Frenzied ice troll female", "Bruise Blamish Snail", "Man", "Cow", "Insatiable Bloodveld",
 			"Imp"};
 		String[] nicknames = {"WWWWWWWWWWWW", null, "Bob", null, "Mooooooooooo", "iiiiiiiiiiii"};
 		double[] health = {1.0, 0.18, 0.62, 1.0, 0.05, 0.99};
