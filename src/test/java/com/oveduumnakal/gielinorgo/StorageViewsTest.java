@@ -24,7 +24,7 @@ import static org.junit.Assert.assertTrue;
 public class StorageViewsTest
 {
 	private static final int[][] CANVASES = {{535, 348}, {765, 497}, {1344, 874}};
-	private static final String[] NAMES = {"Goblin", "Cow", "Imp", "Bloodthirsty banshee", "Man"};
+	private static final String[] NAMES = {"Goblin", "Cow", "Imp", "Bruise Blamish Snail", "Man"};
 
 	private static List<CreatureView> stored(int count)
 	{
@@ -361,7 +361,7 @@ public class StorageViewsTest
 					{
 						List<CreatureView> list = stored(count);
 						if (count > 0)
-							list.set(0, PartyRig.creature("Bloodthirsty banshee", 99, 0.1, "A very long nickname"));
+							list.set(0, PartyRig.creature("Bruise Blamish Snail", 99, 0.1, "A very long nickname"));
 
 						PartyRig rig = page(list, canvas[0], canvas[1]);
 						while (rig.pages.storagePage().mode() != mode)

@@ -239,7 +239,7 @@ final class PartyRig
 	 */
 	static List<CreatureView> team(int size)
 	{
-		String[] names = {"Goblin", "Cow", "Imp", "Bloodthirsty banshee", "Man", "Rat"};
+		String[] names = {"Goblin", "Cow", "Imp", "Bruise Blamish Snail", "Man", "Rat"};
 		List<CreatureView> team = new ArrayList<>();
 		for (int i = 0; i < size; i++)
 			team.add(creature(names[i], 5 + i * 7, 1.0 - i * 0.18, i == 1 ? "Moo" : null));

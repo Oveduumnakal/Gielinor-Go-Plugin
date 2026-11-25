@@ -6,3 +6,89 @@ xx i db0w i xx
 rat boss test npc
 a corpse
 a doubt
+# Audited in issue #353: league-only, removed events, discontinued or unused, Deadman-only, player spoofs,
+# Sailing alpha/beta ship-combat.
+armoured foe
+baby leviathan
+baby sea kraken
+bee swarm
+big evil chicken
+blink
+bloodthirst rockslug&
+bloodthirsty basilisk sentinel
+bloodthirsty bloodveld
+bloodthirsty cockathrice
+bloodthirsty crawler
+bloodthirsty drake
+bloodthirsty hydra
+bloodthirsty infernal pyrelord
+bloodthirsty jelly
+bloodthirsty mage
+bloodthirsty nechryarch
+bloodthirsty night beast
+bloodthirsty repugnant spectre
+bloodthirsty shadow wyrm
+bloodthirsty turoth
+bloodthirsty warped jelly
+bloodthirsty abomination
+bloodthirsty abyssal demon
+bloodthirsty banshee
+bloodthirsty basilisk
+bloodthirsty choke devil
+bloodthirsty gargoyle
+bloodthirsty hand
+bloodthirsty kurask
+bloodthirsty mutated bloodveld
+bloodthirsty pyrelord
+bloodthirsty smoke devil
+bloodthirsty spectre
+bloodthirsty twisted banshee
+catherby monodon
+dave
+definitely not dusk
+demon of balance
+demon of darkness
+demon of light
+double decimation daryl
+general danknuck
+giant goblin
+goblin lieutenant
+goblin priest
+goblin raider
+green guard
+i dscim you
+kharazi monodon
+kinetic katara
+king snagwort
+large reef shark
+magic mark
+mr hyde
+ogre monodon
+painted goblin
+ranging ro
+rowdy guard
+sas member
+sea hawk
+sea monodon
+seal
+shark
+siren
+smokedevil
+spawn sharhai
+starved horror
+tztok-jad-rek
+unbound jaltok-jad
+underwater horror
+unusual chicken
+warrior of murahs
+well-armed foe
+whale
+witch
+wolfman
+wolfwoman
+wuss
+xx i dbow i xx
+yeti
+yrsa
+zemouregal
+zemouregal summon

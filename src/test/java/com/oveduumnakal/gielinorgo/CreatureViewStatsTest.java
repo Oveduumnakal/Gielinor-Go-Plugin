@@ -13,6 +13,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /** Checks that a view carries the real stat numbers through every copy, and that the game computes them. */
 public class CreatureViewStatsTest
@@ -87,7 +88,7 @@ public class CreatureViewStatsTest
 	}
 
 	@Test
-	public void aSpeciesTheGameDoesNotKnowHasNoNumbers()
+	public void aCreatureOfASpeciesTheGameDoesNotKnowIsDroppedOnLoad()
 	{
 		GoGame game = new GoGame(new SpeciesTable(Arrays.asList(new Species("Cub", 5, CombatType.STAB))),
 			new Random(1), () -> 1L, notice ->
@@ -99,6 +100,6 @@ public class CreatureViewStatsTest
 
 		List<CreatureView> stored = game.snapshot().storage();
 
-		assertNull(stored.get(0).stats());
+		assertTrue(stored.isEmpty());
 	}
 }
