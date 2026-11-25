@@ -16,6 +16,7 @@ final class BodyCatch
 {
 	private final CatchOutcome outcome;
 	private final boolean lying;
+	private final boolean staysDown;
 	private int age;
 
 	/**
@@ -26,8 +27,19 @@ final class BodyCatch
 	 */
 	BodyCatch(CatchOutcome outcome, boolean lying)
 	{
+		this(outcome, lying, false);
+	}
+
+	/**
+	 * @param outcome what the throw led to
+	 * @param lying whether the body lay when the jar landed
+	 * @param beaten whether the creature was beaten in battle, so it does not get up when it breaks free
+	 */
+	BodyCatch(CatchOutcome outcome, boolean lying, boolean beaten)
+	{
 		this.outcome = outcome;
 		this.lying = lying;
+		this.staysDown = beaten && outcome == CatchOutcome.BROKE_FREE;
 	}
 
 	/**
@@ -85,6 +97,9 @@ final class BodyCatch
 	TargetScript.Step step()
 	{
 		TargetScript.Step step = TargetScript.stepAt(outcome, age);
+		if (staysDown)
+			return TargetScript.Step.NONE;
+
 		return step == TargetScript.Step.HIT && lying ? TargetScript.Step.NONE : step;
 	}
 
@@ -95,13 +110,14 @@ final class BodyCatch
 	 */
 	boolean getsUp()
 	{
-		return lying && age == TargetScript.ACT_TICK && TargetScript.turnOf(outcome) != TargetScript.Turn.NONE;
+		return lying && !staysDown && age == TargetScript.ACT_TICK
+			&& TargetScript.turnOf(outcome) != TargetScript.Turn.NONE;
 	}
 
 	/** @return how the body turns on this tick, or none: it turns when its second act starts */
 	TargetScript.Turn turn()
 	{
-		return age == TargetScript.ACT_TICK ? TargetScript.turnOf(outcome) : TargetScript.Turn.NONE;
+		return age == TargetScript.ACT_TICK && !staysDown ? TargetScript.turnOf(outcome) : TargetScript.Turn.NONE;
 	}
 
 	/** @return how big the body is drawn, from 1 down to 0; only a caught creature shrinks */

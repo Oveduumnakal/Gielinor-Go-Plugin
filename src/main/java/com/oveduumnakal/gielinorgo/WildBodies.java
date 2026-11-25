@@ -252,6 +252,9 @@ final class WildBodies
 			Math.abs(here.getY() - (int) Math.round(body.y())));
 		WildLife life = body.life();
 		life.update(nowMs, distance, samePlane);
+		if (body.entry().defeated() && !life.beaten() && life.state() != WildLife.State.IN_BATTLE)
+			body.layDefeated();
+
 		if (life.state() == WildLife.State.ROAMING && !body.walking())
 			life.endWander(nowMs);
 

@@ -34,6 +34,9 @@ final class WildLife
 	/** Most steps one wander takes. */
 	static final int WANDER_STEPS = 2;
 
+	/** The least time a beaten creature stays down before it leaves, however little of its stay was left. */
+	static final long DOWN_MIN_MS = 10_000L;
+
 	/** Shortest rest between two wanders. */
 	static final long WANDER_MIN_MS = 3_000L;
 
@@ -75,6 +78,7 @@ final class WildLife
 	private long stayLeftMs = STAY_MS;
 	private long nextWanderMs;
 	private long leaveMs;
+	private boolean beaten;
 
 	/**
 	 * Starts a life.
@@ -124,7 +128,7 @@ final class WildLife
 
 	private boolean paused()
 	{
-		return state == State.IN_BATTLE || state == State.KNOCKED_OUT || state == State.IN_CATCH;
+		return state == State.IN_BATTLE || state == State.IN_CATCH || state == State.KNOCKED_OUT && !beaten;
 	}
 
 	private void startLeaving(long nowMs)
@@ -235,13 +239,36 @@ final class WildLife
 	}
 
 	/**
-	 * Notes that the battle is over and the creature stands again.
+	 * Notes that the creature was beaten: it lies knocked out and does not get up. Its stay counts down again, with
+	 * at least {@link #DOWN_MIN_MS} left so there is time to throw a jar.
+	 *
+	 * @return false, changing nothing, while a jar plays on it or once it is leaving
+	 */
+	boolean defeat()
+	{
+		if (state == State.IN_CATCH || leaving())
+			return false;
+
+		state = State.KNOCKED_OUT;
+		beaten = true;
+		stayLeftMs = Math.max(stayLeftMs, DOWN_MIN_MS);
+		return true;
+	}
+
+	/** @return whether it was beaten and stays down */
+	boolean beaten()
+	{
+		return beaten;
+	}
+
+	/**
+	 * Notes that the battle is over and the creature stands again, unless it was beaten.
 	 *
 	 * @param nowMs the clock now, in milliseconds
 	 */
 	void endBattle(long nowMs)
 	{
-		if (state == State.IN_BATTLE || state == State.KNOCKED_OUT)
+		if (!beaten && (state == State.IN_BATTLE || state == State.KNOCKED_OUT))
 		{
 			state = State.IDLE;
 			nextWanderMs = nowMs + restMs();
@@ -280,7 +307,11 @@ final class WildLife
 		if (state != State.IN_CATCH)
 			return;
 
-		if (stays)
+		if (stays && beaten)
+		{
+			state = State.KNOCKED_OUT;
+		}
+		else if (stays)
 		{
 			state = State.IDLE;
 			nextWanderMs = nowMs + restMs();
