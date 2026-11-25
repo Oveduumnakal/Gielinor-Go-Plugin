@@ -103,7 +103,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Bandit | 130 | [Bandit](https://oldschool.runescape.wiki/w/Bandit) | [Bandit.png](https://oldschool.runescape.wiki/w/Special:FilePath/Bandit.png) | Wilderness | Town & Castle |
 | Bandosian guard | 125 | [Bandosian guard](https://oldschool.runescape.wiki/w/Bandosian_guard) | [Bandosian guard.png](https://oldschool.runescape.wiki/w/Special:FilePath/Bandosian_guard.png) | Otherworldly | Cave & Dungeon |
 | Banshee | 23 | [Banshee](https://oldschool.runescape.wiki/w/Banshee) | [Banshee.png](https://oldschool.runescape.wiki/w/Special:FilePath/Banshee.png) | Crypt & Haunted | - |
-| Barb-tailed kebbit | 33 | [Barb-tailed kebbit](https://oldschool.runescape.wiki/w/Barb-tailed_kebbit) | none on wiki | Forest & Woodland | Grassland & Farmland |
+| Barb-tailed kebbit | 33 | [Barb-tailed kebbit](https://oldschool.runescape.wiki/w/Barb-tailed_kebbit) | [Barb-tailed kebbit.png](https://oldschool.runescape.wiki/w/Special:FilePath/Barb-tailed_kebbit.png) | Forest & Woodland | Grassland & Farmland |
 | Barbarian | 17 | [Barbarian](https://oldschool.runescape.wiki/w/Barbarian) | [Barbarian (Wotan).png](https://oldschool.runescape.wiki/w/Special:FilePath/Barbarian_%28Wotan%29.png) | Town & Castle | Grassland & Farmland |
 | Bark Blamish Snail | 15 | [Bark Blamish Snail](https://oldschool.runescape.wiki/w/Bark_Blamish_Snail) | [Bark Blamish Snail.png](https://oldschool.runescape.wiki/w/Special:FilePath/Bark_Blamish_Snail.png) | Swamp & Jungle | - |
 | Basilisk | 61 | [Basilisk](https://oldschool.runescape.wiki/w/Basilisk) | [Basilisk.png](https://oldschool.runescape.wiki/w/Special:FilePath/Basilisk.png) | Cave & Dungeon | - |
@@ -130,10 +130,10 @@ Treat the biomes as a best-effort guide, not canon.
 | Black Heather | 34 | [Black Heather](https://oldschool.runescape.wiki/w/Black_Heather) | [Black Heather.png](https://oldschool.runescape.wiki/w/Special:FilePath/Black_Heather.png) | Wilderness | - |
 | Black jaguar | 67 | [Black jaguar](https://oldschool.runescape.wiki/w/Black_jaguar) | [Black jaguar.png](https://oldschool.runescape.wiki/w/Special:FilePath/Black_jaguar.png) | Forest & Woodland | Swamp & Jungle |
 | Black Knight | 33 | [Black Knight](https://oldschool.runescape.wiki/w/Black_Knight) | [Black Knight (female).png](https://oldschool.runescape.wiki/w/Special:FilePath/Black_Knight_%28female%29.png) | Town & Castle | - |
-| Black salamander | 67 | [Black salamander](https://oldschool.runescape.wiki/w/Black_salamander) | none on wiki | Desert | Wilderness |
+| Black salamander | 67 | [Black salamander](https://oldschool.runescape.wiki/w/Black_salamander) | [Black salamander detail.png](https://oldschool.runescape.wiki/w/Special:FilePath/Black_salamander_detail.png) | Desert | Wilderness |
 | Black unicorn | 27 | [Black unicorn](https://oldschool.runescape.wiki/w/Black_unicorn) | [Black unicorn.png](https://oldschool.runescape.wiki/w/Special:FilePath/Black_unicorn.png) | Wilderness | Forest & Woodland |
 | Black unicorn Foal | 22 | [Black unicorn Foal](https://oldschool.runescape.wiki/w/Black_unicorn_Foal) | [Black unicorn Foal.png](https://oldschool.runescape.wiki/w/Special:FilePath/Black_unicorn_Foal.png) | Forest & Woodland | - |
-| Black warlock | 45 | [Black warlock](https://oldschool.runescape.wiki/w/Black_warlock) | none on wiki | Forest & Woodland | - |
+| Black warlock | 45 | [Black warlock](https://oldschool.runescape.wiki/w/Black_warlock) | [Black warlock.png](https://oldschool.runescape.wiki/w/Special:FilePath/Black_warlock.png) | Forest & Woodland | - |
 | Blessed giant rat | 9 | [Blessed giant rat](https://oldschool.runescape.wiki/w/Blessed_giant_rat) | [Blessed giant rat (1).png](https://oldschool.runescape.wiki/w/Special:FilePath/Blessed_giant_rat_%281%29.png) | Cave & Dungeon | - |
 | Blessed spider | 39 | [Blessed spider](https://oldschool.runescape.wiki/w/Blessed_spider) | [Blessed spider.png](https://oldschool.runescape.wiki/w/Special:FilePath/Blessed_spider.png) | Cave & Dungeon | - |
 | Blood Blamish Snail | 20 | [Blood Blamish Snail](https://oldschool.runescape.wiki/w/Blood_Blamish_Snail) | [Blood Blamish Snail (pointed).png](https://oldschool.runescape.wiki/w/Special:FilePath/Blood_Blamish_Snail_%28pointed%29.png) | Swamp & Jungle | - |
@@ -197,7 +197,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Cave slime | 23 | [Cave slime](https://oldschool.runescape.wiki/w/Cave_slime) | [Cave slime.png](https://oldschool.runescape.wiki/w/Special:FilePath/Cave_slime.png) | Cave & Dungeon | Swamp & Jungle |
 | Ceolburg | 4 | [Ceolburg](https://oldschool.runescape.wiki/w/Ceolburg) | [Ceolburg.png](https://oldschool.runescape.wiki/w/Special:FilePath/Ceolburg.png) | Snow & Mountain | Town & Castle |
 | Cerberus | 318 | [Cerberus](https://oldschool.runescape.wiki/w/Cerberus) | [Cerberus.png](https://oldschool.runescape.wiki/w/Special:FilePath/Cerberus.png) | Cave & Dungeon | Volcano & Fire |
-| Cerulean twitch | 11 | [Cerulean twitch](https://oldschool.runescape.wiki/w/Cerulean_twitch) | none on wiki | Snow & Mountain | Forest & Woodland |
+| Cerulean twitch | 11 | [Cerulean twitch](https://oldschool.runescape.wiki/w/Cerulean_twitch) | [Cerulean twitch.png](https://oldschool.runescape.wiki/w/Special:FilePath/Cerulean_twitch.png) | Snow & Mountain | Forest & Woodland |
 | Chaos druid | 13 | [Chaos druid](https://oldschool.runescape.wiki/w/Chaos_druid) | [Chaos druid.png](https://oldschool.runescape.wiki/w/Special:FilePath/Chaos_druid.png) | Wilderness | - |
 | Chaos druid warrior | 37 | [Chaos druid warrior](https://oldschool.runescape.wiki/w/Chaos_druid_warrior) | [Chaos druid warrior.png](https://oldschool.runescape.wiki/w/Special:FilePath/Chaos_druid_warrior.png) | Wilderness | - |
 | Chaos dwarf | 48 | [Chaos dwarf](https://oldschool.runescape.wiki/w/Chaos_dwarf) | [Chaos dwarf.png](https://oldschool.runescape.wiki/w/Special:FilePath/Chaos_dwarf.png) | Wilderness | Cave & Dungeon |
@@ -221,7 +221,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Commander Zilyana | 596 | [Commander Zilyana](https://oldschool.runescape.wiki/w/Commander_Zilyana) | [Commander Zilyana.png](https://oldschool.runescape.wiki/w/Special:FilePath/Commander_Zilyana.png) | Otherworldly | Cave & Dungeon |
 | Confused barbarian | 132 | [Confused barbarian](https://oldschool.runescape.wiki/w/Confused_barbarian) | [Confused barbarian.png](https://oldschool.runescape.wiki/w/Special:FilePath/Confused_barbarian.png) | Town & Castle | Otherworldly |
 | Confusion beast | 63 | [Confusion beast](https://oldschool.runescape.wiki/w/Confusion_beast) | [Confusion beast.png](https://oldschool.runescape.wiki/w/Special:FilePath/Confusion_beast.png) | Cave & Dungeon | - |
-| Copper longtail | 9 | [Copper longtail](https://oldschool.runescape.wiki/w/Copper_longtail) | none on wiki | Forest & Woodland | Swamp & Jungle |
+| Copper longtail | 9 | [Copper longtail](https://oldschool.runescape.wiki/w/Copper_longtail) | [Copper longtail.png](https://oldschool.runescape.wiki/w/Special:FilePath/Copper_longtail.png) | Forest & Woodland | Swamp & Jungle |
 | Corporeal Beast | 785 | [Corporeal Beast](https://oldschool.runescape.wiki/w/Corporeal_Beast) | [Corporeal Beast.png](https://oldschool.runescape.wiki/w/Special:FilePath/Corporeal_Beast.png) | Wilderness | - |
 | Corpse | 89 | [Corpse (Xarth)](https://oldschool.runescape.wiki/w/Corpse_%28Xarth%29) | [Corpse (Xarth).png](https://oldschool.runescape.wiki/w/Special:FilePath/Corpse_%28Xarth%29.png) | Crypt & Haunted | Cave & Dungeon |
 | Corrupt Lizardman | 46 | [Corrupt Lizardman](https://oldschool.runescape.wiki/w/Corrupt_Lizardman) | [Corrupt Lizardman.png](https://oldschool.runescape.wiki/w/Special:FilePath/Corrupt_Lizardman.png) | Swamp & Jungle | Cave & Dungeon |
@@ -242,7 +242,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Crandor shark | 31 | [Crandor shark](https://oldschool.runescape.wiki/w/Crandor_shark) | [Crandor shark.png](https://oldschool.runescape.wiki/w/Special:FilePath/Crandor_shark.png) | Coast & Sea | Swamp & Jungle |
 | Crawling Hand | 12 | [Crawling Hand](https://oldschool.runescape.wiki/w/Crawling_Hand) | [Crawling Hand (level 8, 2).png](https://oldschool.runescape.wiki/w/Special:FilePath/Crawling_Hand_%28level_8,_2%29.png) | Crypt & Haunted | - |
 | Crazy archaeologist | 204 | [Crazy archaeologist](https://oldschool.runescape.wiki/w/Crazy_archaeologist) | [Crazy archaeologist.png](https://oldschool.runescape.wiki/w/Special:FilePath/Crazy_archaeologist.png) | Wilderness | - |
-| Crimson swift | 1 | [Crimson swift](https://oldschool.runescape.wiki/w/Crimson_swift) | none on wiki | Swamp & Jungle | Forest & Woodland |
+| Crimson swift | 1 | [Crimson swift](https://oldschool.runescape.wiki/w/Crimson_swift) | [Crimson swift.png](https://oldschool.runescape.wiki/w/Special:FilePath/Crimson_swift.png) | Swamp & Jungle | Forest & Woodland |
 | Crocodile | 63 | [Crocodile](https://oldschool.runescape.wiki/w/Crocodile) | [Crocodile.png](https://oldschool.runescape.wiki/w/Special:FilePath/Crocodile.png) | Desert | Coast & Sea |
 | Cruor | 285 | [Cruor](https://oldschool.runescape.wiki/w/Cruor) | [Cruor.png](https://oldschool.runescape.wiki/w/Special:FilePath/Cruor.png) | Otherworldly | Cave & Dungeon |
 | Crushing hand | 45 | [Crushing hand](https://oldschool.runescape.wiki/w/Crushing_hand) | [Crushing hand.png](https://oldschool.runescape.wiki/w/Special:FilePath/Crushing_hand.png) | Crypt & Haunted | - |
@@ -274,10 +274,10 @@ Treat the biomes as a best-effort guide, not canon.
 | Dark Ankou | 95 | [Dark Ankou](https://oldschool.runescape.wiki/w/Dark_Ankou) | [Dark Ankou.png](https://oldschool.runescape.wiki/w/Special:FilePath/Dark_Ankou.png) | Crypt & Haunted | Cave & Dungeon |
 | Dark beast | 182 | [Dark beast](https://oldschool.runescape.wiki/w/Dark_beast) | [Dark beast.png](https://oldschool.runescape.wiki/w/Special:FilePath/Dark_beast.png) | Cave & Dungeon | - |
 | Dark energy core | 75 | [Dark energy core](https://oldschool.runescape.wiki/w/Dark_energy_core) | [Dark energy core.png](https://oldschool.runescape.wiki/w/Special:FilePath/Dark_energy_core.png) | Wilderness | Cave & Dungeon |
-| Dark kebbit | 57 | [Dark kebbit](https://oldschool.runescape.wiki/w/Dark_kebbit) | none on wiki | Forest & Woodland | Grassland & Farmland |
+| Dark kebbit | 57 | [Dark kebbit](https://oldschool.runescape.wiki/w/Dark_kebbit) | [Dark kebbit.png](https://oldschool.runescape.wiki/w/Special:FilePath/Dark_kebbit.png) | Forest & Woodland | Grassland & Farmland |
 | Dark warrior | 145 | [Dark warrior](https://oldschool.runescape.wiki/w/Dark_warrior) | [Dark warrior.png](https://oldschool.runescape.wiki/w/Special:FilePath/Dark_warrior.png) | Town & Castle | Wilderness |
 | Dark wizard | 23 | [Dark wizard](https://oldschool.runescape.wiki/w/Dark_wizard) | [Dark wizard (red).png](https://oldschool.runescape.wiki/w/Special:FilePath/Dark_wizard_%28red%29.png) | Town & Castle | Wilderness |
-| Dashing kebbit | 69 | [Dashing kebbit](https://oldschool.runescape.wiki/w/Dashing_kebbit) | none on wiki | Forest & Woodland | Grassland & Farmland |
+| Dashing kebbit | 69 | [Dashing kebbit](https://oldschool.runescape.wiki/w/Dashing_kebbit) | [Dashing kebbit.png](https://oldschool.runescape.wiki/w/Special:FilePath/Dashing_kebbit.png) | Forest & Woodland | Grassland & Farmland |
 | Dawn | 228 | [Dawn](https://oldschool.runescape.wiki/w/Dawn) | [Dawn.png](https://oldschool.runescape.wiki/w/Special:FilePath/Dawn.png) | Crypt & Haunted | Cave & Dungeon |
 | Deadly red spider | 34 | [Deadly red spider](https://oldschool.runescape.wiki/w/Deadly_red_spider) | [Deadly red spider.png](https://oldschool.runescape.wiki/w/Special:FilePath/Deadly_red_spider.png) | Cave & Dungeon | Wilderness |
 | Death spawn | 46 | [Death spawn](https://oldschool.runescape.wiki/w/Death_spawn) | [Death spawn.png](https://oldschool.runescape.wiki/w/Special:FilePath/Death_spawn.png) | Crypt & Haunted | Cave & Dungeon |
@@ -439,7 +439,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Goblin | 13 | [Goblin](https://oldschool.runescape.wiki/w/Goblin) | [Goblin (level 5).png](https://oldschool.runescape.wiki/w/Special:FilePath/Goblin_%28level_5%29.png) | Grassland & Farmland | Cave & Dungeon |
 | Goblin Champion | 24 | [Goblin Champion](https://oldschool.runescape.wiki/w/Goblin_Champion) | [Goblin Champion.png](https://oldschool.runescape.wiki/w/Special:FilePath/Goblin_Champion.png) | Town & Castle | - |
 | Goblin guard | 42 | [Goblin guard](https://oldschool.runescape.wiki/w/Goblin_guard) | [Goblin guard.png](https://oldschool.runescape.wiki/w/Special:FilePath/Goblin_guard.png) | Grassland & Farmland | Town & Castle |
-| Golden warbler | 5 | [Golden warbler](https://oldschool.runescape.wiki/w/Golden_warbler) | none on wiki | Swamp & Jungle | Desert |
+| Golden warbler | 5 | [Golden warbler](https://oldschool.runescape.wiki/w/Golden_warbler) | [Golden warbler.png](https://oldschool.runescape.wiki/w/Special:FilePath/Golden_warbler.png) | Swamp & Jungle | Desert |
 | Golem | 64 | [Golem (Zalcano)](https://oldschool.runescape.wiki/w/Golem_%28Zalcano%29) | [Golem (Zalcano).png](https://oldschool.runescape.wiki/w/Special:FilePath/Golem_%28Zalcano%29.png) | Desert | Cave & Dungeon |
 | Gorad | 68 | [Gorad](https://oldschool.runescape.wiki/w/Gorad) | [Gorad.png](https://oldschool.runescape.wiki/w/Special:FilePath/Gorad.png) | Town & Castle | - |
 | Gorak | 149 | [Gorak](https://oldschool.runescape.wiki/w/Gorak) | [Gorak (GWD).png](https://oldschool.runescape.wiki/w/Special:FilePath/Gorak_%28GWD%29.png) | Cave & Dungeon | - |
@@ -476,7 +476,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Headless Beast | 82 | [Headless Beast](https://oldschool.runescape.wiki/w/Headless_Beast) | [Headless Beast.png](https://oldschool.runescape.wiki/w/Special:FilePath/Headless_Beast.png) | Wilderness | - |
 | Hellhound | 136 | [Hellhound](https://oldschool.runescape.wiki/w/Hellhound) | [Hellhound (GWD).png](https://oldschool.runescape.wiki/w/Special:FilePath/Hellhound_%28GWD%29.png) | Cave & Dungeon | Volcano & Fire |
 | Hengel | 2 | [Hengel](https://oldschool.runescape.wiki/w/Hengel) | [Hengel.png](https://oldschool.runescape.wiki/w/Special:FilePath/Hengel.png) | Town & Castle | - |
-| Herbiboar | 80 | [Herbiboar](https://oldschool.runescape.wiki/w/Herbiboar) | none on wiki | Swamp & Jungle | Forest & Woodland |
+| Herbiboar | 80 | [Herbiboar](https://oldschool.runescape.wiki/w/Herbiboar) | [Herbiboar.png](https://oldschool.runescape.wiki/w/Special:FilePath/Herbiboar.png) | Swamp & Jungle | Forest & Woodland |
 | Hermit crab | 19 | [Hermit crab](https://oldschool.runescape.wiki/w/Hermit_crab) | [Suspicious shell.png](https://oldschool.runescape.wiki/w/Special:FilePath/Suspicious_shell.png) | Coast & Sea | - |
 | Hero | 69 | [Hero](https://oldschool.runescape.wiki/w/Hero) | [Hero.png](https://oldschool.runescape.wiki/w/Special:FilePath/Hero.png) | Town & Castle | - |
 | Hespori | 284 | [Hespori](https://oldschool.runescape.wiki/w/Hespori) | [Hespori.png](https://oldschool.runescape.wiki/w/Special:FilePath/Hespori.png) | Forest & Woodland | Otherworldly |
@@ -487,7 +487,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Hole in the wall | 49 | [Wall beast](https://oldschool.runescape.wiki/w/Wall_beast) | [Hole in the wall.png](https://oldschool.runescape.wiki/w/Special:FilePath/Hole_in_the_wall.png) | Cave & Dungeon | - |
 | Hoop Snake | 19 | [Hoop Snake](https://oldschool.runescape.wiki/w/Hoop_Snake) | [Hoop Snake.png](https://oldschool.runescape.wiki/w/Special:FilePath/Hoop_Snake.png) | Swamp & Jungle | Grassland & Farmland |
 | Hopeless creature | 71 | [Hopeless creature](https://oldschool.runescape.wiki/w/Hopeless_creature) | [Hopeless creature.png](https://oldschool.runescape.wiki/w/Special:FilePath/Hopeless_creature.png) | Otherworldly | - |
-| Horned graahk | 41 | [Horned graahk](https://oldschool.runescape.wiki/w/Horned_graahk) | none on wiki | Swamp & Jungle | - |
+| Horned graahk | 41 | [Horned graahk](https://oldschool.runescape.wiki/w/Horned_graahk) | [Horned graahk.png](https://oldschool.runescape.wiki/w/Special:FilePath/Horned_graahk.png) | Swamp & Jungle | - |
 | Hueycoatl body | 642 | [The Hueycoatl](https://oldschool.runescape.wiki/w/The_Hueycoatl) | [Hueycoatl body.png](https://oldschool.runescape.wiki/w/Special:FilePath/Hueycoatl_body.png) | Cave & Dungeon | Forest & Woodland |
 | Hueycoatl tail | 642 | [The Hueycoatl](https://oldschool.runescape.wiki/w/The_Hueycoatl) | [Hueycoatl tail.png](https://oldschool.runescape.wiki/w/Special:FilePath/Hueycoatl_tail.png) | Cave & Dungeon | Forest & Woodland |
 | Huge spider | 81 | [Huge spider](https://oldschool.runescape.wiki/w/Huge_spider) | [Huge spider.png](https://oldschool.runescape.wiki/w/Special:FilePath/Huge_spider.png) | Cave & Dungeon | Grassland & Farmland |
@@ -543,7 +543,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Jeff | 2 | [Jeff](https://oldschool.runescape.wiki/w/Jeff) | [Jeff.png](https://oldschool.runescape.wiki/w/Special:FilePath/Jeff.png) | Town & Castle | - |
 | Jelly | 78 | [Jelly](https://oldschool.runescape.wiki/w/Jelly) | [Jelly (olive).png](https://oldschool.runescape.wiki/w/Special:FilePath/Jelly_%28olive%29.png) | Cave & Dungeon | - |
 | Jennella | 48 | [Jennella](https://oldschool.runescape.wiki/w/Jennella) | [Jennella.png](https://oldschool.runescape.wiki/w/Special:FilePath/Jennella.png) | Snow & Mountain | Town & Castle |
-| Jerboa | 1 | [Jerboa](https://oldschool.runescape.wiki/w/Jerboa) | none on wiki | Desert | - |
+| Jerboa | 1 | [Jerboa](https://oldschool.runescape.wiki/w/Jerboa) | [Jerboa.png](https://oldschool.runescape.wiki/w/Special:FilePath/Jerboa.png) | Desert | - |
 | Jogre | 58 | [Jogre](https://oldschool.runescape.wiki/w/Jogre) | [Jogre.png](https://oldschool.runescape.wiki/w/Special:FilePath/Jogre.png) | Swamp & Jungle | Cave & Dungeon |
 | Jogre Champion | 107 | [Jogre Champion](https://oldschool.runescape.wiki/w/Jogre_Champion) | [Jogre Champion.png](https://oldschool.runescape.wiki/w/Special:FilePath/Jogre_Champion.png) | Town & Castle | - |
 | Jonny the Beard | 2 | [Jonny the Beard](https://oldschool.runescape.wiki/w/Jonny_the_Beard) | [Jonny the Beard.png](https://oldschool.runescape.wiki/w/Special:FilePath/Jonny_the_Beard.png) | Town & Castle | Grassland & Farmland |
@@ -649,9 +649,9 @@ Treat the biomes as a best-effort guide, not canon.
 | Monkey Guard | 167 | [Monkey Guard](https://oldschool.runescape.wiki/w/Monkey_Guard) | [Monkey Guard.png](https://oldschool.runescape.wiki/w/Special:FilePath/Monkey_Guard.png) | Town & Castle | Grassland & Farmland |
 | Monkey Zombie | 129 | [Monkey Zombie](https://oldschool.runescape.wiki/w/Monkey_Zombie) | [Monkey Zombie.png](https://oldschool.runescape.wiki/w/Special:FilePath/Monkey_Zombie.png) | Swamp & Jungle | - |
 | Monstrous basilisk | 135 | [Monstrous basilisk](https://oldschool.runescape.wiki/w/Monstrous_basilisk) | [Monstrous basilisk.png](https://oldschool.runescape.wiki/w/Special:FilePath/Monstrous_basilisk.png) | Cave & Dungeon | - |
-| Moonlight antelope | 91 | [Moonlight antelope](https://oldschool.runescape.wiki/w/Moonlight_antelope) | none on wiki | Forest & Woodland | - |
+| Moonlight antelope | 91 | [Moonlight antelope](https://oldschool.runescape.wiki/w/Moonlight_antelope) | [Moonlight antelope.png](https://oldschool.runescape.wiki/w/Special:FilePath/Moonlight_antelope.png) | Forest & Woodland | - |
 | Moonlight Cockatrice | 49 | [Moonlight Cockatrice](https://oldschool.runescape.wiki/w/Moonlight_Cockatrice) | [Moonlight Cockatrice.png](https://oldschool.runescape.wiki/w/Special:FilePath/Moonlight_Cockatrice.png) | Forest & Woodland | - |
-| Moonlight moth | 75 | [Moonlight moth](https://oldschool.runescape.wiki/w/Moonlight_moth) | none on wiki | Forest & Woodland | - |
+| Moonlight moth | 75 | [Moonlight moth](https://oldschool.runescape.wiki/w/Moonlight_moth) | [Moonlight moth.png](https://oldschool.runescape.wiki/w/Special:FilePath/Moonlight_moth.png) | Forest & Woodland | - |
 | Mosquito swarm | 20 | [Mosquito swarm](https://oldschool.runescape.wiki/w/Mosquito_swarm) | [Mosquito large swarm.png](https://oldschool.runescape.wiki/w/Special:FilePath/Mosquito_large_swarm.png) | Swamp & Jungle | - |
 | Moss giant | 48 | [Moss giant](https://oldschool.runescape.wiki/w/Moss_giant) | [Moss giant (Varlamore, 1).png](https://oldschool.runescape.wiki/w/Special:FilePath/Moss_giant_%28Varlamore,_1%29.png) | Swamp & Jungle | Cave & Dungeon |
 | Mountain troll | 71 | [Mountain troll](https://oldschool.runescape.wiki/w/Mountain_troll) | [Mountain troll (level 71).png](https://oldschool.runescape.wiki/w/Special:FilePath/Mountain_troll_%28level_71%29.png) | Snow & Mountain | - |
@@ -701,7 +701,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Oipuis | 149 | [Oipuis](https://oldschool.runescape.wiki/w/Oipuis) | [Oipuis.png](https://oldschool.runescape.wiki/w/Special:FilePath/Oipuis.png) | Swamp & Jungle | Town & Castle |
 | Old Jack | 77 | [Old Jack](https://oldschool.runescape.wiki/w/Old_Jack) | [Old Jack.png](https://oldschool.runescape.wiki/w/Special:FilePath/Old_Jack.png) | Coast & Sea | Town & Castle |
 | Oomlie bird | 46 | [Oomlie bird](https://oldschool.runescape.wiki/w/Oomlie_bird) | [ Oomlie bird.png](https://oldschool.runescape.wiki/w/Special:FilePath/_Oomlie_bird.png) | Swamp & Jungle | Forest & Woodland |
-| Orange salamander | 47 | [Orange salamander](https://oldschool.runescape.wiki/w/Orange_salamander) | none on wiki | Desert | - |
+| Orange salamander | 47 | [Orange salamander](https://oldschool.runescape.wiki/w/Orange_salamander) | [Orange salamander detail.png](https://oldschool.runescape.wiki/w/Special:FilePath/Orange_salamander_detail.png) | Desert | - |
 | Orca | 205 | [Orca](https://oldschool.runescape.wiki/w/Orca) | [Orca.png](https://oldschool.runescape.wiki/w/Special:FilePath/Orca.png) | Snow & Mountain | Coast & Sea |
 | Ork | 107 | [Ork](https://oldschool.runescape.wiki/w/Ork) | [Ork.png](https://oldschool.runescape.wiki/w/Special:FilePath/Ork.png) | Otherworldly | Cave & Dungeon |
 | Oryx | 15 | [Oryx](https://oldschool.runescape.wiki/w/Oryx) | [Oryx.png](https://oldschool.runescape.wiki/w/Special:FilePath/Oryx.png) | Forest & Woodland | - |
@@ -739,10 +739,10 @@ Treat the biomes as a best-effort guide, not canon.
 | Porcupine | 4 | [Porcupine](https://oldschool.runescape.wiki/w/Porcupine) | [Porcupine.png](https://oldschool.runescape.wiki/w/Special:FilePath/Porcupine.png) | Forest & Woodland | - |
 | Possessed pickaxe | 50 | [Possessed pickaxe](https://oldschool.runescape.wiki/w/Possessed_pickaxe) | [Possessed pickaxe.png](https://oldschool.runescape.wiki/w/Special:FilePath/Possessed_pickaxe.png) | Cave & Dungeon | Crypt & Haunted |
 | Praying mantis | 14 | [Praying mantis](https://oldschool.runescape.wiki/w/Praying_mantis) | [Praying mantis (brown).png](https://oldschool.runescape.wiki/w/Special:FilePath/Praying_mantis_%28brown%29.png) | Desert | - |
-| Prickly kebbit | 37 | [Prickly kebbit](https://oldschool.runescape.wiki/w/Prickly_kebbit) | none on wiki | Forest & Woodland | Grassland & Farmland |
+| Prickly kebbit | 37 | [Prickly kebbit](https://oldschool.runescape.wiki/w/Prickly_kebbit) | [Prickly kebbit.png](https://oldschool.runescape.wiki/w/Special:FilePath/Prickly_kebbit.png) | Forest & Woodland | Grassland & Farmland |
 | Prifddinas guard | 1337 | [Guard (Deadman Mode)](https://oldschool.runescape.wiki/w/Guard_%28Deadman_Mode%29) | [Prifddinas guard (Deadman Mode).png](https://oldschool.runescape.wiki/w/Special:FilePath/Prifddinas_guard_%28Deadman_Mode%29.png) | Otherworldly | Town & Castle |
 | Pygmy kraken | 93 | [Pygmy kraken](https://oldschool.runescape.wiki/w/Pygmy_kraken) | [Pygmy kraken.png](https://oldschool.runescape.wiki/w/Special:FilePath/Pygmy_kraken.png) | Coast & Sea | - |
-| Pyre fox | 57 | [Pyre fox](https://oldschool.runescape.wiki/w/Pyre_fox) | none on wiki | Forest & Woodland | Volcano & Fire |
+| Pyre fox | 57 | [Pyre fox](https://oldschool.runescape.wiki/w/Pyre_fox) | [Pyre fox.png](https://oldschool.runescape.wiki/w/Special:FilePath/Pyre_fox.png) | Forest & Woodland | Volcano & Fire |
 | Pyrefiend | 48 | [Pyrefiend](https://oldschool.runescape.wiki/w/Pyrefiend) | [Pyrefiend.png](https://oldschool.runescape.wiki/w/Special:FilePath/Pyrefiend.png) | Volcano & Fire | Cave & Dungeon |
 | Pyrelord | 60 | [Pyrelord](https://oldschool.runescape.wiki/w/Pyrelord) | [Pyrelord.png](https://oldschool.runescape.wiki/w/Special:FilePath/Pyrelord.png) | Cave & Dungeon | Volcano & Fire |
 | Queen spawn | 63 | [Queen spawn](https://oldschool.runescape.wiki/w/Queen_spawn) | [Queen spawn.png](https://oldschool.runescape.wiki/w/Special:FilePath/Queen_spawn.png) | Otherworldly | Town & Castle |
@@ -756,7 +756,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Ravager | 106 | [Ravager](https://oldschool.runescape.wiki/w/Ravager) | [Ravager (Level 53).png](https://oldschool.runescape.wiki/w/Special:FilePath/Ravager_%28Level_53%29.png) | Otherworldly | Town & Castle |
 | Reanimated demon spawn | 87 | [Reanimated demon spawn](https://oldschool.runescape.wiki/w/Reanimated_demon_spawn) | [Reanimated demon spawn.png](https://oldschool.runescape.wiki/w/Special:FilePath/Reanimated_demon_spawn.png) | Crypt & Haunted | - |
 | Red dragon | 152 | [Red dragon](https://oldschool.runescape.wiki/w/Red_dragon) | [Red dragon.png](https://oldschool.runescape.wiki/w/Special:FilePath/Red_dragon.png) | Cave & Dungeon | Swamp & Jungle |
-| Red salamander | 59 | [Red salamander](https://oldschool.runescape.wiki/w/Red_salamander) | none on wiki | Desert | - |
+| Red salamander | 59 | [Red salamander](https://oldschool.runescape.wiki/w/Red_salamander) | [Red salamander detail.png](https://oldschool.runescape.wiki/w/Special:FilePath/Red_salamander_detail.png) | Desert | - |
 | Reef snake | 147 | [Reef snake](https://oldschool.runescape.wiki/w/Reef_snake) | [Reef snake.png](https://oldschool.runescape.wiki/w/Special:FilePath/Reef_snake.png) | Coast & Sea | - |
 | Renegade knight | 37 | [Renegade knight](https://oldschool.runescape.wiki/w/Renegade_knight) | [Renegade knight.png](https://oldschool.runescape.wiki/w/Special:FilePath/Renegade_knight.png) | Town & Castle | - |
 | Repugnant spectre | 335 | [Repugnant spectre](https://oldschool.runescape.wiki/w/Repugnant_spectre) | [Repugnant spectre.png](https://oldschool.runescape.wiki/w/Special:FilePath/Repugnant_spectre.png) | Crypt & Haunted | Cave & Dungeon |
@@ -786,20 +786,20 @@ Treat the biomes as a best-effort guide, not canon.
 | Rooster | 3 | [Rooster](https://oldschool.runescape.wiki/w/Rooster) | [Rooster.png](https://oldschool.runescape.wiki/w/Special:FilePath/Rooster.png) | Grassland & Farmland | - |
 | Rowdy slave | 10 | [Rowdy slave](https://oldschool.runescape.wiki/w/Rowdy_slave) | [Rowdy slave.png](https://oldschool.runescape.wiki/w/Special:FilePath/Rowdy_slave.png) | Desert | Town & Castle |
 | Rubble | 70 | [Body Golem](https://oldschool.runescape.wiki/w/Body_Golem) | [Rubble (Body Golem).png](https://oldschool.runescape.wiki/w/Special:FilePath/Rubble_%28Body_Golem%29.png) | Otherworldly | - |
-| Ruby harvest | 15 | [Ruby harvest](https://oldschool.runescape.wiki/w/Ruby_harvest) | none on wiki | Forest & Woodland | - |
+| Ruby harvest | 15 | [Ruby harvest](https://oldschool.runescape.wiki/w/Ruby_harvest) | [Ruby harvest.png](https://oldschool.runescape.wiki/w/Special:FilePath/Ruby_harvest.png) | Forest & Woodland | - |
 | Rune dragon | 380 | [Rune dragon](https://oldschool.runescape.wiki/w/Rune_dragon) | [Rune dragon.png](https://oldschool.runescape.wiki/w/Special:FilePath/Rune_dragon.png) | Snow & Mountain | Cave & Dungeon |
 | Runite Golem | 165 | [Runite Golem](https://oldschool.runescape.wiki/w/Runite_Golem) | [Runite Golem.png](https://oldschool.runescape.wiki/w/Special:FilePath/Runite_Golem.png) | Wilderness | Cave & Dungeon |
 | Ruptura Araxyte | 114 | [Ruptura Araxyte](https://oldschool.runescape.wiki/w/Ruptura_Araxyte) | [Ruptura Araxyte.png](https://oldschool.runescape.wiki/w/Special:FilePath/Ruptura_Araxyte.png) | Cave & Dungeon | Swamp & Jungle |
 | Rusty | 2 | [Rusty](https://oldschool.runescape.wiki/w/Rusty) | [Rusty.png](https://oldschool.runescape.wiki/w/Special:FilePath/Rusty.png) | Town & Castle | - |
-| Sabre-toothed kebbit | 51 | [Sabre-toothed kebbit](https://oldschool.runescape.wiki/w/Sabre-toothed_kebbit) | none on wiki | Snow & Mountain | - |
-| Sabre-toothed kyatt | 55 | [Sabre-toothed kyatt](https://oldschool.runescape.wiki/w/Sabre-toothed_kyatt) | none on wiki | Snow & Mountain | - |
+| Sabre-toothed kebbit | 51 | [Sabre-toothed kebbit](https://oldschool.runescape.wiki/w/Sabre-toothed_kebbit) | [Sabre-toothed kebbit.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sabre-toothed_kebbit.png) | Snow & Mountain | - |
+| Sabre-toothed kyatt | 55 | [Sabre-toothed kyatt](https://oldschool.runescape.wiki/w/Sabre-toothed_kyatt) | [Sabre-toothed kyatt.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sabre-toothed_kyatt.png) | Snow & Mountain | - |
 | Salarin the twisted | 70 | [Salarin the twisted](https://oldschool.runescape.wiki/w/Salarin_the_twisted) | [Salarin the twisted.png](https://oldschool.runescape.wiki/w/Special:FilePath/Salarin_the_twisted.png) | Cave & Dungeon | Town & Castle |
 | Sand Crab | 15 | [Sand Crab](https://oldschool.runescape.wiki/w/Sand_Crab) | [Sand Crab.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sand_Crab.png) | Coast & Sea | Desert |
 | Sand Snake | 36 | [Sand Snake](https://oldschool.runescape.wiki/w/Sand_Snake) | [Sand Snake.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sand_Snake.png) | Desert | - |
 | Sandy Boulder | 107 | [King Sand Crab](https://oldschool.runescape.wiki/w/King_Sand_Crab) | [Sandy Boulder.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sandy_Boulder.png) | Desert | Cave & Dungeon |
 | Sandy rocks | 15 | [Sand Crab](https://oldschool.runescape.wiki/w/Sand_Crab) | [Sandy rocks.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sandy_rocks.png) | Coast & Sea | Desert |
 | Sanguidae | 106 | [Sanguidae](https://oldschool.runescape.wiki/w/Sanguidae) | [Sanguidae (empty).png](https://oldschool.runescape.wiki/w/Special:FilePath/Sanguidae_%28empty%29.png) | Cave & Dungeon | Forest & Woodland |
-| Sapphire glacialis | 25 | [Sapphire glacialis](https://oldschool.runescape.wiki/w/Sapphire_glacialis) | none on wiki | Snow & Mountain | Forest & Woodland |
+| Sapphire glacialis | 25 | [Sapphire glacialis](https://oldschool.runescape.wiki/w/Sapphire_glacialis) | [Sapphire glacialis.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sapphire_glacialis.png) | Snow & Mountain | Forest & Woodland |
 | Sarachnis | 318 | [Sarachnis](https://oldschool.runescape.wiki/w/Sarachnis) | [Sarachnis.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sarachnis.png) | Cave & Dungeon | - |
 | Saradomin priest | 113 | [Saradomin priest](https://oldschool.runescape.wiki/w/Saradomin_priest) | [Saradomin priest.png](https://oldschool.runescape.wiki/w/Special:FilePath/Saradomin_priest.png) | Otherworldly | Cave & Dungeon |
 | Saradomin wizard | 108 | [Saradomin wizard](https://oldschool.runescape.wiki/w/Saradomin_wizard) | [Saradomin wizard.png](https://oldschool.runescape.wiki/w/Special:FilePath/Saradomin_wizard.png) | Otherworldly | Cave & Dungeon |
@@ -869,7 +869,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Snailfeet | 56 | [Snailfeet](https://oldschool.runescape.wiki/w/Snailfeet) | [Snailfeet.png](https://oldschool.runescape.wiki/w/Special:FilePath/Snailfeet.png) | Cave & Dungeon | Swamp & Jungle |
 | Snake | 5 | [Snake](https://oldschool.runescape.wiki/w/Snake) | [Snake.png](https://oldschool.runescape.wiki/w/Special:FilePath/Snake.png) | Swamp & Jungle | Grassland & Farmland |
 | Snakeling | 90 | [Snakeling](https://oldschool.runescape.wiki/w/Snakeling) | [Snakeling.png](https://oldschool.runescape.wiki/w/Special:FilePath/Snakeling.png) | Swamp & Jungle | - |
-| Snowy knight | 35 | [Snowy knight](https://oldschool.runescape.wiki/w/Snowy_knight) | none on wiki | Snow & Mountain | - |
+| Snowy knight | 35 | [Snowy knight](https://oldschool.runescape.wiki/w/Snowy_knight) | [Snowy knight.png](https://oldschool.runescape.wiki/w/Special:FilePath/Snowy_knight.png) | Snow & Mountain | - |
 | Sofiya | 24 | [Sofiya](https://oldschool.runescape.wiki/w/Sofiya) | [Sofiya.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sofiya.png) | Crypt & Haunted | - |
 | Sol Heredit | 1563 | [Sol Heredit](https://oldschool.runescape.wiki/w/Sol_Heredit) | [Sol Heredit.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sol_Heredit.png) | Town & Castle | Volcano & Fire |
 | Soldier | 48 | [Soldier (Burthorpe)](https://oldschool.runescape.wiki/w/Soldier_%28Burthorpe%29) | [Soldier (Burthorpe).png](https://oldschool.runescape.wiki/w/Special:FilePath/Soldier_%28Burthorpe%29.png) | Town & Castle | - |
@@ -888,7 +888,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Spindel | 302 | [Spindel](https://oldschool.runescape.wiki/w/Spindel) | [Spindel.png](https://oldschool.runescape.wiki/w/Special:FilePath/Spindel.png) | Cave & Dungeon | Wilderness |
 | Spindel's Spiderling | 12 | [Spindel's Spiderling](https://oldschool.runescape.wiki/w/Spindel's_Spiderling) | [Spindel's Spiderling.png](https://oldschool.runescape.wiki/w/Special:FilePath/Spindel's_Spiderling.png) | Cave & Dungeon | Wilderness |
 | Spined kraken | 128 | [Spined kraken](https://oldschool.runescape.wiki/w/Spined_kraken) | [Spined kraken.png](https://oldschool.runescape.wiki/w/Special:FilePath/Spined_kraken.png) | Coast & Sea | Snow & Mountain |
-| Spined larupia | 31 | [Spined larupia](https://oldschool.runescape.wiki/w/Spined_larupia) | none on wiki | Swamp & Jungle | - |
+| Spined larupia | 31 | [Spined larupia](https://oldschool.runescape.wiki/w/Spined_larupia) | [Spined larupia.png](https://oldschool.runescape.wiki/w/Special:FilePath/Spined_larupia.png) | Swamp & Jungle | - |
 | Spinner | 92 | [Spinner](https://oldschool.runescape.wiki/w/Spinner) | [Spinner (Level 55).png](https://oldschool.runescape.wiki/w/Special:FilePath/Spinner_%28Level_55%29.png) | Otherworldly | Town & Castle |
 | Spinolyp | 76 | [Spinolyp](https://oldschool.runescape.wiki/w/Spinolyp) | [Spinolyp.png](https://oldschool.runescape.wiki/w/Special:FilePath/Spinolyp.png) | Coast & Sea | Cave & Dungeon |
 | Spiritual Mage | 182 | [Spiritual mage](https://oldschool.runescape.wiki/w/Spiritual_mage) | [Spiritual Mage (Zaros).png](https://oldschool.runescape.wiki/w/Special:FilePath/Spiritual_Mage_%28Zaros%29.png) | Otherworldly | Cave & Dungeon |
@@ -897,7 +897,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Spitting Scarab | 89 | [Spitting Scarab](https://oldschool.runescape.wiki/w/Spitting_Scarab) | [Spitting Scarab.png](https://oldschool.runescape.wiki/w/Special:FilePath/Spitting_Scarab.png) | Desert | Cave & Dungeon |
 | Spitting Wyvern | 139 | [Spitting Wyvern](https://oldschool.runescape.wiki/w/Spitting_Wyvern) | [Spitting Wyvern.png](https://oldschool.runescape.wiki/w/Special:FilePath/Spitting_Wyvern.png) | Cave & Dungeon | Snow & Mountain |
 | Splatter | 65 | [Splatter](https://oldschool.runescape.wiki/w/Splatter) | [Splatter (level 22).png](https://oldschool.runescape.wiki/w/Special:FilePath/Splatter_%28level_22%29.png) | Otherworldly | Town & Castle |
-| Spotted kebbit | 43 | [Spotted kebbit](https://oldschool.runescape.wiki/w/Spotted_kebbit) | none on wiki | Forest & Woodland | Grassland & Farmland |
+| Spotted kebbit | 43 | [Spotted kebbit](https://oldschool.runescape.wiki/w/Spotted_kebbit) | [Spotted kebbit.png](https://oldschool.runescape.wiki/w/Special:FilePath/Spotted_kebbit.png) | Forest & Woodland | Grassland & Farmland |
 | Stag | 15 | [Stag](https://oldschool.runescape.wiki/w/Stag) | [Stag.png](https://oldschool.runescape.wiki/w/Special:FilePath/Stag.png) | Forest & Woodland | - |
 | Starlight | 149 | [Starlight](https://oldschool.runescape.wiki/w/Starlight) | [Starlight.png](https://oldschool.runescape.wiki/w/Special:FilePath/Starlight.png) | Otherworldly | Cave & Dungeon |
 | Steel dragon | 274 | [Steel dragon](https://oldschool.runescape.wiki/w/Steel_dragon) | [Steel dragon.png](https://oldschool.runescape.wiki/w/Special:FilePath/Steel_dragon.png) | Swamp & Jungle | Cave & Dungeon |
@@ -912,21 +912,21 @@ Treat the biomes as a best-effort guide, not canon.
 | Sulphur Lizard | 50 | [Sulphur Lizard](https://oldschool.runescape.wiki/w/Sulphur_Lizard) | [Sulphur Lizard.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sulphur_Lizard.png) | Forest & Woodland | Volcano & Fire |
 | Sulphur Nagua | 98 | [Sulphur Nagua](https://oldschool.runescape.wiki/w/Sulphur_Nagua) | [Sulphur Nagua.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sulphur_Nagua.png) | Forest & Woodland | Volcano & Fire |
 | Summoned Zombie | 13 | [Summoned Zombie](https://oldschool.runescape.wiki/w/Summoned_Zombie) | [Summoned Zombie.png](https://oldschool.runescape.wiki/w/Special:FilePath/Summoned_Zombie.png) | Crypt & Haunted | - |
-| Sunlight antelope | 72 | [Sunlight antelope](https://oldschool.runescape.wiki/w/Sunlight_antelope) | none on wiki | Forest & Woodland | Grassland & Farmland |
-| Sunlight Moth | 65 | [Sunlight Moth](https://oldschool.runescape.wiki/w/Sunlight_Moth) | none on wiki | Forest & Woodland | - |
+| Sunlight antelope | 72 | [Sunlight antelope](https://oldschool.runescape.wiki/w/Sunlight_antelope) | [Sunlight antelope.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sunlight_antelope.png) | Forest & Woodland | Grassland & Farmland |
+| Sunlight Moth | 65 | [Sunlight Moth](https://oldschool.runescape.wiki/w/Sunlight_Moth) | [Sunlight Moth.png](https://oldschool.runescape.wiki/w/Special:FilePath/Sunlight_Moth.png) | Forest & Woodland | - |
 | Suqah | 111 | [Suqah](https://oldschool.runescape.wiki/w/Suqah) | [Suqah (1).png](https://oldschool.runescape.wiki/w/Special:FilePath/Suqah_%281%29.png) | Snow & Mountain | - |
 | Suspicious water | 34 | [Spinolyp](https://oldschool.runescape.wiki/w/Spinolyp) | [Placeholder.png](https://oldschool.runescape.wiki/w/Special:FilePath/Placeholder.png) | Coast & Sea | - |
 | Svetlana | 24 | [Svetlana](https://oldschool.runescape.wiki/w/Svetlana) | [Svetlana.png](https://oldschool.runescape.wiki/w/Special:FilePath/Svetlana.png) | Crypt & Haunted | - |
 | Swamp Crab | 55 | [Swamp Crab](https://oldschool.runescape.wiki/w/Swamp_Crab) | [Swamp Crab (bloomed).png](https://oldschool.runescape.wiki/w/Special:FilePath/Swamp_Crab_%28bloomed%29.png) | Swamp & Jungle | Coast & Sea |
 | Swamp frog | 24 | [Swamp frog](https://oldschool.runescape.wiki/w/Swamp_frog) | [Swamp frog.png](https://oldschool.runescape.wiki/w/Special:FilePath/Swamp_frog.png) | Swamp & Jungle | - |
-| Swamp lizard | 29 | [Swamp lizard](https://oldschool.runescape.wiki/w/Swamp_lizard) | none on wiki | Swamp & Jungle | - |
+| Swamp lizard | 29 | [Swamp lizard](https://oldschool.runescape.wiki/w/Swamp_lizard) | [Swamp lizard detail.png](https://oldschool.runescape.wiki/w/Special:FilePath/Swamp_lizard_detail.png) | Swamp & Jungle | - |
 | Swamp snake | 139 | [Swamp snake](https://oldschool.runescape.wiki/w/Swamp_snake) | [Swamp snake.png](https://oldschool.runescape.wiki/w/Special:FilePath/Swamp_snake.png) | Swamp & Jungle | - |
 | Swampy log | 55 | [Swamp Crab](https://oldschool.runescape.wiki/w/Swamp_Crab) | [Swampy log.png](https://oldschool.runescape.wiki/w/Special:FilePath/Swampy_log.png) | Swamp & Jungle | - |
 | Swordchick | 46 | [Swordchick](https://oldschool.runescape.wiki/w/Swordchick) | [Swordchick.png](https://oldschool.runescape.wiki/w/Special:FilePath/Swordchick.png) | Cave & Dungeon | Otherworldly |
 | Taloned Wyvern | 147 | [Taloned Wyvern](https://oldschool.runescape.wiki/w/Taloned_Wyvern) | [Taloned Wyvern.png](https://oldschool.runescape.wiki/w/Special:FilePath/Taloned_Wyvern.png) | Cave & Dungeon | Snow & Mountain |
 | Tar Monster | 132 | [Tar Monster](https://oldschool.runescape.wiki/w/Tar_Monster) | [Tar Monster.png](https://oldschool.runescape.wiki/w/Special:FilePath/Tar_Monster.png) | Coast & Sea | - |
 | Tarik | 21 | [Tarik (Nardah)](https://oldschool.runescape.wiki/w/Tarik_%28Nardah%29) | [Tarik (Nardah).png](https://oldschool.runescape.wiki/w/Special:FilePath/Tarik_%28Nardah%29.png) | Desert | - |
-| Tecu salamander | 79 | [Tecu salamander](https://oldschool.runescape.wiki/w/Tecu_salamander) | none on wiki | Forest & Woodland | Desert |
+| Tecu salamander | 79 | [Tecu salamander](https://oldschool.runescape.wiki/w/Tecu_salamander) | [Tecu salamander detail.png](https://oldschool.runescape.wiki/w/Special:FilePath/Tecu_salamander_detail.png) | Forest & Woodland | Desert |
 | Temple Spider | 75 | [Temple Spider](https://oldschool.runescape.wiki/w/Temple_Spider) | [Temple Spider.png](https://oldschool.runescape.wiki/w/Special:FilePath/Temple_Spider.png) | Cave & Dungeon | Grassland & Farmland |
 | Tentacle | 99 | [Tentacle (Temple Trekking)](https://oldschool.runescape.wiki/w/Tentacle_%28Temple_Trekking%29) | [Tentacle (Temple Trekking).png](https://oldschool.runescape.wiki/w/Special:FilePath/Tentacle_%28Temple_Trekking%29.png) | Coast & Sea | - |
 | Tern | 20 | [Tern](https://oldschool.runescape.wiki/w/Tern) | [Tern.png](https://oldschool.runescape.wiki/w/Special:FilePath/Tern.png) | Coast & Sea | Otherworldly |
@@ -970,7 +970,7 @@ Treat the biomes as a best-effort guide, not canon.
 | Troll | 91 | [Troll (Construction)](https://oldschool.runescape.wiki/w/Troll_%28Construction%29) | [Troll (Construction).png](https://oldschool.runescape.wiki/w/Special:FilePath/Troll_%28Construction%29.png) | Snow & Mountain | - |
 | Troll general | 113 | [Troll general](https://oldschool.runescape.wiki/w/Troll_general) | [Troll general (hammer, brown).png](https://oldschool.runescape.wiki/w/Special:FilePath/Troll_general_%28hammer,_brown%29.png) | Snow & Mountain | - |
 | Troll spectator | 71 | [Troll spectator](https://oldschool.runescape.wiki/w/Troll_spectator) | [Mountain troll.png](https://oldschool.runescape.wiki/w/Special:FilePath/Mountain_troll.png) | Snow & Mountain | - |
-| Tropical wagtail | 19 | [Tropical wagtail](https://oldschool.runescape.wiki/w/Tropical_wagtail) | none on wiki | Swamp & Jungle | - |
+| Tropical wagtail | 19 | [Tropical wagtail](https://oldschool.runescape.wiki/w/Tropical_wagtail) | [Tropical wagtail.png](https://oldschool.runescape.wiki/w/Special:FilePath/Tropical_wagtail.png) | Swamp & Jungle | - |
 | Tstanon Karlak | 145 | [Tstanon Karlak](https://oldschool.runescape.wiki/w/Tstanon_Karlak) | [Tstanon Karlak.png](https://oldschool.runescape.wiki/w/Special:FilePath/Tstanon_Karlak.png) | Otherworldly | Cave & Dungeon |
 | Tumeken's Warden | 544 | [Tumeken's Warden](https://oldschool.runescape.wiki/w/Tumeken's_Warden) | [Tumeken's Warden (level-489, core-ejected).png](https://oldschool.runescape.wiki/w/Special:FilePath/Tumeken's_Warden_%28level-489,_core-ejected%29.png) | Desert | Cave & Dungeon |
 | Turoth | 89 | [Turoth](https://oldschool.runescape.wiki/w/Turoth) | [Turoth (lv 85).png](https://oldschool.runescape.wiki/w/Special:FilePath/Turoth_%28lv_85%29.png) | Cave & Dungeon | - |
@@ -1046,7 +1046,7 @@ Treat the biomes as a best-effort guide, not canon.
 | White Knight | 42 | [White Knight](https://oldschool.runescape.wiki/w/White_Knight) | [White Knight (initiate, female).png](https://oldschool.runescape.wiki/w/Special:FilePath/White_Knight_%28initiate,_female%29.png) | Town & Castle | - |
 | White wolf | 38 | [White wolf](https://oldschool.runescape.wiki/w/White_wolf) | [White wolf.png](https://oldschool.runescape.wiki/w/Special:FilePath/White_wolf.png) | Snow & Mountain | - |
 | Wild dog | 63 | [Wild dog](https://oldschool.runescape.wiki/w/Wild_dog) | [Wild dog.png](https://oldschool.runescape.wiki/w/Special:FilePath/Wild_dog.png) | Swamp & Jungle | - |
-| Wild kebbit | 23 | [Wild kebbit](https://oldschool.runescape.wiki/w/Wild_kebbit) | none on wiki | Forest & Woodland | Grassland & Farmland |
+| Wild kebbit | 23 | [Wild kebbit](https://oldschool.runescape.wiki/w/Wild_kebbit) | [Wild kebbit.png](https://oldschool.runescape.wiki/w/Special:FilePath/Wild_kebbit.png) | Forest & Woodland | Grassland & Farmland |
 | Wilson | 37 | [Wilson](https://oldschool.runescape.wiki/w/Wilson) | [Wilson.png](https://oldschool.runescape.wiki/w/Special:FilePath/Wilson.png) | Snow & Mountain | Town & Castle |
 | Wingman Skree | 143 | [Wingman Skree](https://oldschool.runescape.wiki/w/Wingman_Skree) | [Wingman Skree.png](https://oldschool.runescape.wiki/w/Special:FilePath/Wingman_Skree.png) | Otherworldly | Cave & Dungeon |
 | Wizard | 9 | [Wizard](https://oldschool.runescape.wiki/w/Wizard) | [Wizard.png](https://oldschool.runescape.wiki/w/Special:FilePath/Wizard.png) | Town & Castle | - |
@@ -1079,6 +1079,6 @@ Treat the biomes as a best-effort guide, not canon.
 | Zombie pirate | 34 | [Zombie pirate (Harmony Island)](https://oldschool.runescape.wiki/w/Zombie_pirate_%28Harmony_Island%29) | [Zombie pirate (Harmony Island) (26).png](https://oldschool.runescape.wiki/w/Special:FilePath/Zombie_pirate_%28Harmony_Island%29_%2826%29.png) | Crypt & Haunted | Coast & Sea |
 | Zombie rat | 3 | [Zombie rat](https://oldschool.runescape.wiki/w/Zombie_rat) | [Zombie rat (1).png](https://oldschool.runescape.wiki/w/Special:FilePath/Zombie_rat_%281%29.png) | Crypt & Haunted | - |
 | Zombie swab | 55 | [Zombie swab](https://oldschool.runescape.wiki/w/Zombie_swab) | [Zombie swab (1).png](https://oldschool.runescape.wiki/w/Special:FilePath/Zombie_swab_%281%29.png) | Crypt & Haunted | Cave & Dungeon |
-| Zombies& | 51 | [Zombies](https://oldschool.runescape.wiki/w/Zombies) | none on wiki | Crypt & Haunted | - |
+| Zombies& | 51 | [Zombie](https://oldschool.runescape.wiki/w/Zombie) | [Zombie (Level 13).png](https://oldschool.runescape.wiki/w/Special:FilePath/Zombie_%28Level_13%29.png) | Crypt & Haunted | - |
 | Zulrah | 725 | [Zulrah](https://oldschool.runescape.wiki/w/Zulrah) | [Zulrah (serpentine).png](https://oldschool.runescape.wiki/w/Special:FilePath/Zulrah_%28serpentine%29.png) | Swamp & Jungle | - |
 | Zygomite | 86 | [Zygomite](https://oldschool.runescape.wiki/w/Zygomite) | [Zygomite (level 74).png](https://oldschool.runescape.wiki/w/Special:FilePath/Zygomite_%28level_74%29.png) | Swamp & Jungle | Forest & Woodland |
