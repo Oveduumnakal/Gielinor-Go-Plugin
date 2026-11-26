@@ -156,14 +156,54 @@ final class PortraitPainter
 	 */
 	static BufferedImage paint(Mesh mesh, int size)
 	{
-		int vertices = mesh.vertices();
-		int triangles = mesh.triangles();
-		if (vertices == 0 || triangles == 0)
+		if (mesh.vertices() == 0 || mesh.triangles() == 0)
 			return null;
 
-		double[][] view = view(mesh, vertices);
+		double[][] view = view(mesh, mesh.vertices());
+		return draw(mesh, view, bounds(view, mesh.vertices(), emptyBounds()), size);
+	}
+
+	/**
+	 * Paints several poses of one model with one framing, so the creature keeps its size and its place from picture to
+	 * picture: the square holds everything any pose reaches.
+	 *
+	 * @param poses the model in each pose
+	 * @param size width and height of each picture, in pixels
+	 * @return the pictures in order, or null when any pose has nothing visible to draw
+	 */
+	static List<BufferedImage> paintAll(List<Mesh> poses, int size)
+	{
+		double[] bounds = emptyBounds();
+		List<double[][]> views = new ArrayList<>();
+		for (Mesh pose : poses)
+		{
+			if (pose.vertices() == 0 || pose.triangles() == 0)
+				return null;
+
+			double[][] view = view(pose, pose.vertices());
+			bounds(view, pose.vertices(), bounds);
+			views.add(view);
+		}
+
+		List<BufferedImage> pictures = new ArrayList<>();
+		for (int i = 0; i < poses.size(); i++)
+		{
+			BufferedImage picture = draw(poses.get(i), views.get(i), bounds, size);
+			if (picture == null)
+				return null;
+
+			pictures.add(picture);
+		}
+
+		return pictures;
+	}
+
+	private static BufferedImage draw(Mesh mesh, double[][] view, double[] bounds, int size)
+	{
+		int vertices = mesh.vertices();
+		int triangles = mesh.triangles();
 		Canvas canvas = new Canvas(size * SAMPLES);
-		fitToCanvas(view, vertices, canvas.side);
+		fitToCanvas(view, vertices, canvas.side, bounds);
 		List<Integer> seeThrough = new ArrayList<>();
 		for (int triangle = 0; triangle < triangles; triangle++)
 		{
@@ -227,26 +267,39 @@ final class PortraitPainter
 		return view;
 	}
 
-	/**
-	 * Moves and scales the turned model so it fills the canvas, with a margin, and puts up at the top.
-	 *
-	 * @param view the turned vertices; right and up are replaced by canvas coordinates
-	 * @param vertices how many vertices there are
-	 * @param side the canvas width and height, in samples
-	 */
-	private static void fitToCanvas(double[][] view, int vertices, int side)
+	/** @return bounds holding nothing yet: least right and up, then most right and up */
+	private static double[] emptyBounds()
 	{
-		double[] low = {Double.MAX_VALUE, Double.MAX_VALUE};
-		double[] high = {-Double.MAX_VALUE, -Double.MAX_VALUE};
+		return new double[] {Double.MAX_VALUE, Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
+	}
+
+	/** Widens the bounds to hold every turned vertex, and returns them. */
+	private static double[] bounds(double[][] view, int vertices, double[] bounds)
+	{
 		for (int axis = 0; axis < 2; axis++)
 		{
 			for (int i = 0; i < vertices; i++)
 			{
-				low[axis] = Math.min(low[axis], view[axis][i]);
-				high[axis] = Math.max(high[axis], view[axis][i]);
+				bounds[axis] = Math.min(bounds[axis], view[axis][i]);
+				bounds[axis + 2] = Math.max(bounds[axis + 2], view[axis][i]);
 			}
 		}
 
+		return bounds;
+	}
+
+	/**
+	 * Moves and scales the turned model so the bounds fill the canvas, with a margin, and puts up at the top.
+	 *
+	 * @param view the turned vertices; right and up are replaced by canvas coordinates
+	 * @param vertices how many vertices there are
+	 * @param side the canvas width and height, in samples
+	 * @param bounds what the square must hold, from {@link #bounds(double[][], int, double[])}
+	 */
+	private static void fitToCanvas(double[][] view, int vertices, int side, double[] bounds)
+	{
+		double[] low = {bounds[0], bounds[1]};
+		double[] high = {bounds[2], bounds[3]};
 		double widest = Math.max(1.0, Math.max(high[0] - low[0], high[1] - low[1]));
 		double scale = side * (1 - 2 * MARGIN) / widest;
 		for (int i = 0; i < vertices; i++)

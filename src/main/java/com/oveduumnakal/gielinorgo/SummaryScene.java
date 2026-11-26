@@ -73,7 +73,7 @@ final class SummaryScene
 	 * @return false when nothing was painted, so the plain portrait is wanted
 	 */
 	boolean paint(Graphics2D g, PageContext ctx, PortraitCache pictures, RowModel row, Rectangle2D box, double top,
-		double bob)
+		double bob, IdleStrip idle)
 	{
 		String biome = enabled.getAsBoolean() ? biomes.of(row.species()) : null;
 		if (biome == null)
@@ -97,7 +97,7 @@ final class SummaryScene
 		if (hint != null)
 			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
 
-		creature(g, ctx, pictures, row, box, new double[] {top, bob});
+		creature(g, ctx, pictures, row, box, new double[] {top, bob}, idle);
 		g.setClip(saved);
 		PortraitFrame.border(g, st, row, box, clip, ctx.now, ctx.mode);
 		return true;
@@ -126,13 +126,13 @@ final class SummaryScene
 	}
 
 	private void creature(Graphics2D g, PageContext ctx, PortraitCache pictures, RowModel row, Rectangle2D box,
-		double[] topAndBob)
+		double[] topAndBob, IdleStrip idle)
 	{
-		BufferedImage image = pictures.image(row.species(), row.view().npcId());
+		BufferedImage image = idle == null ? pictures.image(row.species(), row.view().npcId()) : idle.at(ctx.now);
 		if (image == null)
 			return;
 
-		Rectangle shape = trimmed(image);
+		Rectangle shape = idle == null ? trimmed(image) : idle.shape();
 		double dx = parallax.x() * Parallax.BACKGROUND * Parallax.MODEL * box.getWidth();
 		double dy = parallax.y() * Parallax.BACKGROUND * Parallax.MODEL * box.getHeight();
 		Rectangle2D stood = place(box, topAndBob[0], shape);
@@ -143,10 +143,17 @@ final class SummaryScene
 
 		double scale = stood.getHeight() / shape.height;
 		double side = image.getWidth() * scale;
-		Composite saved = PageContext.fade(g, pictures.alpha(row.species(), row.view().npcId(), ctx.now, ctx.mode));
+		double left = stood.getX() + dx - shape.x * scale;
+		double up = stood.getY() + dy - shape.y * scale - topAndBob[1];
 		BufferedImage shown = row.desaturated() ? PortraitFrame.grey(image) : image;
-		CrispImages.draw(g, shown, stood.getX() + dx - shape.x * scale,
-			stood.getY() + dy - shape.y * scale - topAndBob[1], side);
+		if (idle != null)
+		{
+			PortraitFrame.scaled(g, shown, left, up, side);
+			return;
+		}
+
+		Composite saved = PageContext.fade(g, pictures.alpha(row.species(), row.view().npcId(), ctx.now, ctx.mode));
+		CrispImages.draw(g, shown, left, up, side);
 		g.setComposite(saved);
 	}
 

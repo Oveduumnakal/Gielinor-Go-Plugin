@@ -201,6 +201,7 @@ public class GielinorGoPlugin extends Plugin
 	private BubbleInput bubbleInput;
 	private FollowerBubbles followerModel;
 	private BiomePlayer biomePlayer;
+	private IdleService idleStrips;
 	private FollowerBubbleView followerView;
 
 	/** Whether the follower bubbles failed this session, which leaves them off. */
@@ -347,6 +348,7 @@ public class GielinorGoPlugin extends Plugin
 		WindowStyle.share(null);
 		stopWindow();
 		biomePlayer.clear();
+		idleStrips.clear();
 		keyManager.unregisterKeyListener(hotkeys);
 		choiceOpen = false;
 		autoBattleOpen = false;
@@ -718,6 +720,7 @@ public class GielinorGoPlugin extends Plugin
 		noticeBoard.tick(System.currentTimeMillis());
 
 		portraits.tick();
+		idleStrips.tick();
 		biomePlayer.sweep(System.currentTimeMillis());
 		countSteps();
 		updateFollower();
@@ -3416,6 +3419,9 @@ public class GielinorGoPlugin extends Plugin
 			System::currentTimeMillis, PageText.Sink.NONE);
 		biomePlayer = BiomePlayer.bundled(executor, gson);
 		pages.scenery(new SummaryScene(BiomeTable.bundled(gson), biomePlayer, config::animatedBackgrounds));
+		idleStrips = new IdleService(client, clientThread, executor, game::speciesFor, loadAnimations(),
+			config::idleAnimation);
+		pages.idle(idleStrips);
 		window.shell().pages(pages);
 		BufferedImage jar = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon_large.png");
 		windowToggle = new WindowToggle(this::windowStyle, config::windowAnimations,

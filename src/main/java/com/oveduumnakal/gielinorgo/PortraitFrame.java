@@ -8,6 +8,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
@@ -50,13 +51,40 @@ final class PortraitFrame
 	static void paint(Graphics2D g, WindowStyle style, PortraitCache pictures, RowModel row, Rectangle2D box,
 		double skew, double bob, long now, MotionMode mode)
 	{
+		paint(g, style, pictures, row, box, skew, bob, now, mode, null);
+	}
+
+	/**
+	 * Paints a portrait that may be moving.
+	 *
+	 * @param g the graphics
+	 * @param style the style
+	 * @param pictures where the pictures are
+	 * @param row the creature's row
+	 * @param box where the portrait goes
+	 * @param skew how far the clip's sides lean, in pixels
+	 * @param bob how far up the portrait is drawn, in pixels
+	 * @param now the time in milliseconds
+	 * @param mode the motion mode
+	 * @param idle the creature's idle loop, drawn instead of the still picture, or null for the still one
+	 */
+	static void paint(Graphics2D g, WindowStyle style, PortraitCache pictures, RowModel row, Rectangle2D box,
+		double skew, double bob, long now, MotionMode mode, IdleStrip idle)
+	{
 		Shape clip = style.slant(box, skew);
 		g.setColor(style.color(ThemeColor.PORTRAIT_BACKDROP));
 		g.fill(clip);
 		Shape savedClip = g.getClip();
 		g.clip(clip);
-		BufferedImage image = pictures.image(row.species(), row.view().npcId());
-		if (image != null)
+		BufferedImage image = idle == null ? pictures.image(row.species(), row.view().npcId()) : null;
+		if (idle != null)
+		{
+			double side = Math.min(box.getWidth(), box.getHeight());
+			BufferedImage frame = idle.at(now);
+			scaled(g, row.desaturated() ? grey(frame) : frame, box.getCenterX() - side / 2.0,
+				box.getCenterY() - side / 2.0, side);
+		}
+		else if (image != null)
 		{
 			double alpha = pictures.alpha(row.species(), row.view().npcId(), now, mode);
 			Composite saved = PageContext.fade(g, alpha);
@@ -68,6 +96,26 @@ final class PortraitFrame
 
 		g.setClip(savedClip);
 		border(g, style, row, box, clip, now, mode);
+	}
+
+	/**
+	 * Draws a square picture of a moving creature, scaling as it draws: a strip has too many pictures to keep a copy
+	 * of each at every size.
+	 *
+	 * @param g the graphics
+	 * @param image the picture
+	 * @param x the left edge
+	 * @param y the top edge
+	 * @param side the side to draw it at
+	 */
+	static void scaled(Graphics2D g, BufferedImage image, double x, double y, double side)
+	{
+		Object hint = g.getRenderingHint(RenderingHints.KEY_INTERPOLATION);
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.drawImage(image, (int) Math.round(x), (int) Math.round(y), (int) Math.round(side), (int) Math.round(side),
+			null);
+		if (hint != null)
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, hint);
 	}
 
 	/**

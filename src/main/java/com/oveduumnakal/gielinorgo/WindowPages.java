@@ -245,6 +245,16 @@ final class WindowPages implements WindowShell.PageActions
 	}
 
 	/**
+	 * Lets the creature on the Summary page move while it stands.
+	 *
+	 * @param strips where idle loops come from, or null for still pictures
+	 */
+	void idle(IdleStrip.Source strips)
+	{
+		summary.idle(strips);
+	}
+
+	/**
 	 * Puts biome backgrounds behind the creature on the Summary page.
 	 *
 	 * @param backgrounds what paints them, or null for the plain portrait

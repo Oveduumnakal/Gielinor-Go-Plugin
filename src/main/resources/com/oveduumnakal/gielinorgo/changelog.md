@@ -43,6 +43,7 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Styles and status effects.** Melee, Ranged and Magic beat each other, and some moves poison, burn, freeze or
   stun. (#22)
 - **Choose your own turns.** An option makes each turn wait for you: Attack, Switch, Catch, Item or Run. (#20)
+- **Creatures move.** The creature on the Summary page breathes and shifts with its own standing motion. (#383)
 - **Living backgrounds.** The Summary page plays each creature's home biome behind it, shifting a little with
   your mouse. (#380)
 - **Follower bubbles.** Rest your mouse on your lead creature to switch, use an item or run. (#379)
