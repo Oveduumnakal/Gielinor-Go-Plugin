@@ -315,14 +315,13 @@ final class BubblePainter
 		double r = d.painted();
 		double cx = Math.round(d.x());
 		double cy = Math.round(d.y());
-		BufferedImage image = JarIcons.source(d.jar());
+		double side = JAR_PX * r / NATURAL_RADIUS;
+		BufferedImage image = JarIcons.source(d.jar(), JarIcons.pixels(g, side));
 		if (image != null)
 		{
-			double k = r / NATURAL_RADIUS;
 			if (d.disabled())
 				alpha(g, opacity * 0.5);
 
-			double side = JAR_PX * k;
 			CrispImages.draw(g, image, cx - side / 2.0, cy - side / 2.0, side);
 			alpha(g, opacity);
 			return;

@@ -24,6 +24,8 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Health bars.** While a battle is acted out, each creature has a health bar under its name. (#373)
 - **3D jar throws.** A thrown jar is a tumbling 3D jar with its contents inside, and a long throw arcs higher.
   (#376)
+- **Matching jar pictures.** The jar pictures in the bag, bubbles and floating text are drawn from the same 3D
+  jars. (#377)
 
 ### Your team
 
