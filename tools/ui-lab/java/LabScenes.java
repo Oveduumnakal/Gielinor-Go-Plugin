@@ -115,7 +115,7 @@ final class LabScenes
 					() -> true));
 			}
 
-			rig.publish(PartyRig.state(PartyRig.team(6)), true);
+			rig.publish(LabData.state(), true);
 			rig.open();
 			rig.now += 2_000;
 			rig.paint();

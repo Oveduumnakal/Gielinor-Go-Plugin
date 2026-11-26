@@ -24,6 +24,7 @@ change the plugin's code. It needs Python and a JDK 11 or newer (`JAVA_HOME` is 
   - **Theme colours** are the colour table of the chosen theme.
   - Each file has its named values. **(inside drawing code)** groups hold numbers and colours written straight into
     the painting code, labelled with the method, line and the code around them.
+- The window pages show a made-up save from `java/LabData.java`; edit it to see other cases.
 - **Pause**, **Speed** and the slider under them control time. **Restart** starts the scene over.
 - The picture takes hover and clicks: tabs, rows and bubbles answer.
 - **Hold: original** shows the scene as the code has it, for comparison.
