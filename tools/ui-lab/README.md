@@ -37,7 +37,9 @@ change the plugin's code. It needs Python and a JDK 11 or newer (`JAVA_HOME` is 
   - Set **Move** to **Things inside them** for health and XP bars, text, icons, chips, hearts and portraits. Each is
     known by the line of code that draws it, so every copy moves together (all six health bars). This also works on
     Storage, Battle, the battle controls, the pinned party box and the info card. It changes only what is drawn:
-    clickable areas stay put, so move buttons as **Panes and buttons**. Resizing text changes its room, not its size.
+    clickable areas stay put, so move buttons as **Panes and buttons**. Resizing text changes its room; **Text
+    size − +** (or the - and + keys) changes the size of the letters, for text, names, button and chip labels. The
+    game's font is made for its own sizes, so other sizes look softer.
 - **Hold: original** shows the scene as the code has it, for comparison.
 - Changes are **saved as you go** (in `tools/ui-lab/.autosave.json`, never committed) and are there next time.
 - **Undo** (Ctrl+Z) and **Redo** (Ctrl+Y) step through them. **My changes** lists each one with its own reset.

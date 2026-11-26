@@ -1,5 +1,7 @@
 package com.oveduumnakal.gielinorgo;
 
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -42,6 +44,10 @@ final class LabElements
 	private static final Map<String, List<String>> SOURCES = new HashMap<>();
 	private static final StackWalker WALKER = StackWalker.getInstance();
 	private static int depth;
+	/** How much larger the current element's text is, in pixels, and whether a font has been enlarged for it. */
+	private static double larger;
+	private static boolean enlarged;
+	private static String drawing;
 
 	/** Where the copied sources are, to read the line that draws an element. */
 	static Path sources;
@@ -58,12 +64,39 @@ final class LabElements
 	{
 		target.clear();
 		depth = 0;
+		larger = 0;
+		enlarged = false;
 	}
 
 	/** Ends the element begun last. */
 	static void done()
 	{
-		depth--;
+		if (--depth <= 0)
+		{
+			depth = 0;
+			larger = 0;
+			enlarged = false;
+		}
+	}
+
+	/** @return the font at the size the current element asks for; a font is only ever enlarged once */
+	static Font font(Font font)
+	{
+		if (larger == 0 || enlarged)
+			return font;
+
+		enlarged = true;
+		return font.deriveFont((float) Math.max(4.0, font.getSize2D() + larger));
+	}
+
+	/** Keeps a button's or chip's label centred when its text changes size. */
+	static int centred(Graphics2D g, String text, int x, Font was, Font now)
+	{
+		if (now == was || !"button".equals(drawing) && !"chip".equals(drawing))
+			return x;
+
+		FontMetrics before = g.getFontMetrics(was);
+		return x - (g.getFontMetrics(now).stringWidth(text) - before.stringWidth(text)) / 2;
 	}
 
 	private static String component(String type)
@@ -129,6 +162,10 @@ final class LabElements
 		double[] change = new double[units.length];
 		for (int i = 0; i < units.length; i++)
 			change[i] = units[i] * LabBoxes.unit;
+
+		larger = change[4];
+		enlarged = false;
+		drawing = kind;
 
 		Rectangle2D moved = new Rectangle2D.Double(box.getX() + change[0], box.getY() + change[1],
 			Math.max(1, box.getWidth() + change[2]), Math.max(1, box.getHeight() + change[3]));

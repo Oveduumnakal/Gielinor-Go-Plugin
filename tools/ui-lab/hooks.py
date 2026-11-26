@@ -221,8 +221,11 @@ def shape(kind):
     return ['Shape labShape = LabElements.shape("%s", g, shape);' % kind], {"shape": "labShape"}
 
 
-def words(kind, sample):
-    return (['Rectangle labBox = LabElements.box("%s", %s, g, box);' % (kind, sample)], {"box": "labBox"})
+def words(kind, sample, font=True):
+    setup = ['Rectangle labBox = LabElements.box("%s", %s, g, box);' % (kind, sample)]
+    if not font:
+        return setup, {"box": "labBox"}
+    return setup + ["Font labFont = LabElements.font(font);"], {"box": "labBox", "font": "labFont"}
 
 
 def square(kind):
@@ -262,10 +265,28 @@ TEXT_ELEMENTS = [
      words("text", "text")),
     ("String draw(Graphics2D g, String text, Rectangle box, Font font, Color colour, Align align)",
      words("text", "text")),
-    ("String drawName(Graphics2D g, String name, Rectangle box, ThemeColor colour)", words("name", "name")),
+    ("String drawName(Graphics2D g, String name, Rectangle box, ThemeColor colour)",
+     words("name", "name", font=False)),
     ("int drawWrapped(Graphics2D g, String text, Rectangle box, Font font, ThemeColor colour)",
      words("paragraph", "null")),
 ]
+
+
+def labels(text):
+    """The last step of all text: apply the element's text size there too, for button and chip labels."""
+    for colour in ("ThemeColor", "Color"):
+        signature = "void text(Graphics2D g, String s, int x, int baselineY, Font font, %s colour)" % colour
+        text = element_font(text, signature)
+    return text
+
+
+def element_font(text, signature):
+    at = once(text, signature, "WindowStyle")
+    inner = "labText"
+    body = [signature, "\t{", "\t\tFont labFont = LabElements.font(font);",
+            "\t\tint labX = LabElements.centred(g, s, x, font, labFont);",
+            "\t\t%s(g, s, labX, baselineY, labFont, colour);" % inner, "\t}", "", "\t"]
+    return text[:at] + "\n".join(body) + signature.replace(" text(", " %s(" % inner) + text[at + len(signature):]
 
 
 def portrait(text):
@@ -287,7 +308,7 @@ def apply(source):
         path = source / (stem + ".java")
         path.write_text(hook(path.read_text(encoding="utf-8")), encoding="utf-8", newline="\n")
     shared = {
-        "WindowStyle": elements("WindowStyle", STYLE_ELEMENTS),
+        "WindowStyle": chain(elements("WindowStyle", STYLE_ELEMENTS), labels),
         "PageText": elements("PageText", TEXT_ELEMENTS),
         "PortraitFrame": portrait,
         "Icons": elements("Icons", ICON_ELEMENTS),

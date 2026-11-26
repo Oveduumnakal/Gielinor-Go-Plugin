@@ -8,11 +8,11 @@ import java.util.Map;
 /**
  * Moved and resized panes and buttons. The lab's copy of each page's layout hands its rectangles here once it has
  * worked them out; they are changed in place, so painting and clicking follow. Changes are in layout units, so they
- * grow with the window's scale.
+ * grow with the window's scale. The fifth side, f, is the text size of an element.
  */
 final class LabBoxes
 {
-	private static final String[] SIDES = {"x", "y", "w", "h"};
+	private static final String[] SIDES = {"x", "y", "w", "h", "f"};
 	private static final Map<String, double[]> CHANGES = new HashMap<>();
 
 	/** Where the layouts of the scene being drawn leave their rectangles, by name. */
@@ -29,7 +29,7 @@ final class LabBoxes
 	 * Changes one side of one box.
 	 *
 	 * @param id the box's name, a dot and x, y, w or h
-	 * @param units how far it is from where the plugin puts it
+	 * @param units how far it is from where the plugin puts it, or how much larger its text is
 	 */
 	static void set(String id, double units)
 	{
