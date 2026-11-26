@@ -48,6 +48,9 @@ public final class LabServer
 		Double value;
 		int line;
 		String doc;
+		/** The generated class that holds a value written into drawing code, or null for a named value. */
+		String holder;
+		String key;
 	}
 
 	private final Path web;
@@ -235,6 +238,7 @@ public final class LabServer
 		}
 
 		schema.put("themeColors", colors);
+		schema.put("depth", LabDepth.settings());
 		schema.put("changed", changed);
 		return schema;
 	}
@@ -255,6 +259,8 @@ public final class LabServer
 			changed.remove(one);
 			if (one.startsWith("theme:"))
 				LabTheme.set(one.substring(6), null);
+			else if (one.startsWith("depth:"))
+				LabDepth.reset(one);
 			else if (controls.containsKey(one))
 				apply(one, controls.get(one).value);
 		}
@@ -270,14 +276,22 @@ public final class LabServer
 			return;
 		}
 
+		if (id.startsWith("depth:"))
+		{
+			LabDepth.set(id, value);
+			return;
+		}
+
 		Control control = controls.get(id);
 		if (control == null)
 			throw new IllegalArgumentException("no such control: " + id);
 
+		String target = control.holder != null ? control.holder : control.file;
+		String name = control.holder != null ? control.key : control.name;
 		if ("Color".equals(control.type))
-			LabRegistry.color(control.file, control.name, (int) (long) value);
+			LabRegistry.color(target, name, (int) (long) value);
 		else
-			LabRegistry.set(control.file, control.name, value);
+			LabRegistry.set(target, name, value);
 	}
 
 	private void refresh()

@@ -20,6 +20,9 @@ import shutil
 import subprocess
 import sys
 
+import hooks
+import literals
+
 LAB = pathlib.Path(__file__).resolve().parent
 ROOT = LAB.parents[1]
 BUILD = ROOT / "build" / "ui-lab"
@@ -38,7 +41,8 @@ DECLARATION = re.compile(
     r"^(?P<head>\t+(?:private |public |protected )?)static final (?P<type>int|long|double|float|Color) "
     r"(?P<name>[A-Z][A-Z0-9_]*) = (?P<value>[^;]+);\s*$")
 NUMBER = re.compile(r"^-?(0[xX][0-9a-fA-F_]+[Ll]?|(\d[\d_]*)?\.?\d[\d_]*([eE]-?\d+)?[LlFfDd]?)$")
-CACHE_FIELD = re.compile(r"static (?:final )?[\w.]*(?:Map|Set)<.*> (CACHE|TRIMMED|GREY)\b")
+CACHE_FIELD = re.compile(r"static (?:final )?[\w.]*(?:Map|Set)<.*> "
+                         r"(CACHE|TRIMMED|GREY|SPRITES|STILLS|TAMED|BAKED|SOURCES|HEIGHTS)\b")
 TYPE_OPEN = re.compile(r"\b(class|interface|enum)\s+([A-Za-z_]\w*)")
 
 
@@ -134,8 +138,22 @@ def scan(path):
     return lines, found
 
 
+def declaration_kind(line):
+    """Whether a line declares a named value: "plain" when it is written out, "computed" when it is worked out."""
+    match = DECLARATION.match(line)
+    if not match:
+        return None
+    expr = match.group("value").strip()
+    value = color_value(expr) if match.group("type") == "Color" else number_value(expr)
+    return "computed" if value is None else "plain"
+
+
+def rewrite(stem, text, excluded):
+    return literals.extract(stem, text, excluded, declaration_kind, color_value)
+
+
 def collect():
-    declarations, caches = [], {}
+    declarations, caches, written = [], {}, []
     for path in sorted(MAIN.glob("*.java")):
         text = path.read_text(encoding="utf-8")
         names = [m.group(1) for m in CACHE_FIELD.finditer(text)]
@@ -143,7 +161,10 @@ def collect():
             caches[path.stem] = sorted(set(names))
         if not UI_CLASSES.match(path.stem):
             continue
-        _, found = scan(path)
+        lines, found = scan(path)
+        rewritten, inline, _ = rewrite(path.stem, "\n".join(lines), set())
+        rewritten = rewritten.split("\n")
+        written += inline
         for entry in found:
             entry["id"] = "%s:%s%s" % (entry["file"], entry["nested"] + "." if entry["nested"] else "", entry["name"])
             if entry["type"] == "Color":
@@ -151,15 +172,17 @@ def collect():
             else:
                 entry["value"] = number_value(entry["expr"])
             entry["derived"] = entry["value"] is None
+            if entry["derived"]:
+                entry["expr"] = DECLARATION.match(rewritten[entry["line"]]).group("value").strip()
             declarations.append(entry)
-    return declarations, caches
+    return declarations, caches, written
 
 
 def field(entry):
     return (entry["nested"] + "." if entry["nested"] else "") + entry["name"]
 
 
-def injected(stem, entries, caches):
+def injected(entries, caches, stores):
     """The methods added to one copied class."""
     out = ["", "\tstatic boolean labSet(String name, double value)", "\t{", "\t\tswitch (name)", "\t\t{"]
     for e in entries:
@@ -178,6 +201,7 @@ def injected(stem, entries, caches):
     for e in entries:
         if e["derived"]:
             out.append("\t\t%s = %s; /*lab:%s*/" % (field(e), e["expr"], e["id"]))
+    out += ["\t\t%s" % store for store in stores]
     out += ["\t}", "", "\tstatic void labClear()", "\t{"]
     out += ["\t\t%s.clear();" % name for name in caches]
     out += ["\t}"]
@@ -193,7 +217,21 @@ def write_copy(declarations, caches, excluded, no_recompute):
     for entry in declarations:
         if entry["id"] not in excluded:
             by_file.setdefault(entry["file"], []).append(entry)
-    classes = sorted(set(by_file) | set(caches))
+    holders, stored = {}, {}
+    for path in sorted(source.glob("*.java")):
+        if not UI_CLASSES.match(path.stem):
+            continue
+        text, inline, stores = rewrite(path.stem, path.read_text(encoding="utf-8").replace("\r\n", "\n"), excluded)
+        if not inline:
+            continue
+        path.write_text(text, encoding="utf-8", newline="\n")
+        holder = "LabLit_" + path.stem
+        holders[holder] = inline
+        (source / (holder + ".java")).write_text(literals.holder_class(holder, inline), encoding="utf-8", newline="\n")
+        if stores:
+            ids = {"%s.%s;" % (holder, e["key"]): e["id"] for e in inline}
+            stored[path.stem] = ["%s /*lab:%s*/" % (s, ids[s.split(" = ")[1]]) for s in stores]
+    classes = sorted(set(by_file) | set(caches) | set(stored))
     for stem in classes:
         path = source / (stem + ".java")
         lines = path.read_text(encoding="utf-8").replace("\r\n", "\n").split("\n")
@@ -203,7 +241,7 @@ def write_copy(declarations, caches, excluded, no_recompute):
         entries = [dict(e, derived=False, type="skip") if e["id"] in no_recompute else e
                    for e in by_file.get(stem, [])]
         entries = [e for e in entries if e["type"] != "skip"]
-        lines[last:last] = injected(stem, entries, caches.get(stem, []))
+        lines[last:last] = injected(entries, caches.get(stem, []), stored.get(stem, []))
         path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
     theme = source / "WindowTheme.java"
@@ -218,15 +256,17 @@ def write_copy(declarations, caches, excluded, no_recompute):
     registry = ["package com.oveduumnakal.gielinorgo;", "", "/** Generated by ui_lab.py. */", "final class LabRegistry",
                 "{", "\tstatic boolean set(String file, String name, double value)", "\t{", "\t\tswitch (file)",
                 "\t\t{"]
-    registry += ['\t\t\tcase "%s": return %s.labSet(name, value);' % (s, s) for s in classes]
+    targets = classes + sorted(holders)
+    registry += ['\t\t\tcase "%s": return %s.labSet(name, value);' % (s, s) for s in targets]
     registry += ["\t\t\tdefault: return false;", "\t\t}", "\t}", "",
                  "\tstatic boolean color(String file, String name, int argb)", "\t{", "\t\tswitch (file)", "\t\t{"]
-    registry += ['\t\t\tcase "%s": return %s.labColor(name, argb);' % (s, s) for s in classes]
+    registry += ['\t\t\tcase "%s": return %s.labColor(name, argb);' % (s, s) for s in targets]
     registry += ["\t\t\tdefault: return false;", "\t\t}", "\t}", "", "\tstatic void refresh()", "\t{",
                  "\t\tfor (int pass = 0; pass < 2; pass++)", "\t\t{"]
     registry += ["\t\t\t%s.labRecompute();" % s for s in classes]
     registry += ["\t\t}", ""] + ["\t\t%s.labClear();" % s for s in classes] + ["\t}", "}", ""]
     (source / "LabRegistry.java").write_text("\n".join(registry), encoding="utf-8", newline="\n")
+    hooks.apply(source)
 
     for path in (LAB / "java").glob("*.java"):
         shutil.copy(path, source / path.name)
@@ -261,6 +301,10 @@ def blame(output, source, declarations):
         if not path.exists():
             continue
         line = path.read_text(encoding="utf-8").split("\n")[number - 1]
+        inline = ["%s:@%s.%s" % found for found in re.findall(r"LabLit_(\w+)\.v(\d+)_(\d+)", line)]
+        if inline:
+            excluded.update(inline)
+            continue
         marker = re.search(r"/\*lab:([^*]+)\*/", line)
         if marker:
             entry = next(e for e in declarations if e["id"] == marker.group(1))
@@ -274,7 +318,7 @@ def blame(output, source, declarations):
 
 
 def compile_lab():
-    declarations, caches = collect()
+    declarations, caches, written = collect()
     cp = classpath()
     excluded, dropped = set(), set()
     out = BUILD / "classes"
@@ -301,9 +345,12 @@ def compile_lab():
     controls = [{"id": e["id"], "file": e["file"], "name": field(e), "type": e["type"], "value": e["value"],
                  "line": e["line"] + 1, "doc": e["doc"]}
                 for e in declarations if not e["derived"] and e["id"] not in excluded]
-    (BUILD / "controls.json").write_text(json.dumps(controls), encoding="utf-8")
-    print("UI Lab: %d controls; %d values stay fixed because the code needs them final"
-          % (len(controls), len(excluded)))
+    inline = [{"id": e["id"], "file": e["file"], "name": e["name"], "type": e["type"], "value": e["value"],
+               "line": e["line"], "doc": e["doc"], "holder": e["holder"], "key": e["key"]}
+              for e in written if e["id"] not in excluded]
+    (BUILD / "controls.json").write_text(json.dumps(controls + inline), encoding="utf-8")
+    print("UI Lab: %d named values and %d written into drawing code; %d stay fixed"
+          % (len(controls), len(inline), len(excluded)))
     return cp, out
 
 

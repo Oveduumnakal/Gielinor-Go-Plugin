@@ -7,7 +7,7 @@
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; font: 13px/1.4 system-ui, sans-serif; background: #1b1b1d; color: #ddd; height: 100vh;
-         display: grid; grid-template-columns: 380px 1fr; overflow: hidden; }
+         display: grid; grid-template-columns: 440px 1fr; overflow: hidden; }
   aside { display: flex; flex-direction: column; border-right: 1px solid #333; min-height: 0; }
   main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
   header, .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 10px;
@@ -110,6 +110,7 @@ const hex = n => n.toString(16).padStart(2, "0");
 const rgb = argb => "#" + hex((argb >>> 16) & 255) + hex((argb >>> 8) & 255) + hex(argb & 255);
 
 function range(c) {
+  if (c.step) return { min: c.min, max: c.max, step: c.step };
   const v = Math.abs(c.value);
   const whole = c.type === "int" || c.type === "long";
   if (!whole && v <= 1) return { min: 0, max: c.value < 0 ? 1 : Math.max(1, v * 2), step: 0.01 };
@@ -122,7 +123,7 @@ function numberRow(c) {
   row.className = "row";
   const label = document.createElement("label");
   label.textContent = c.name;
-  label.title = (c.doc || "") + "\n" + c.file + ".java line " + c.line + ", was " + c.value;
+  label.title = (c.doc || "") + "\n" + (c.file ? c.file + ".java line " + c.line + ", " : "") + "was " + c.value;
   const r = range(c);
   const slider = Object.assign(document.createElement("input"), { type: "range", min: r.min, max: r.max, step: r.step });
   const box = Object.assign(document.createElement("input"), { type: "number", step: r.step });
@@ -184,12 +185,18 @@ function build() {
   const list = $("list");
   list.textContent = "";
   const open = words.length > 0;
+  const make = c => c.type === "Color" ? colorRow(c) : numberRow(c);
+  const depth = schema.depth.filter(hit);
+  if (depth.length) list.append(group("NEW: depth and light", depth, make, true));
   const theme = schema.themeColors.filter(c => c.theme === $("theme").value && hit(c));
   if (theme.length) list.append(group("Theme colours (" + $("theme").value + ")", theme, colorRow, open));
   const files = {};
-  schema.controls.filter(hit).forEach(c => (files[c.file] = files[c.file] || []).push(c));
+  schema.controls.filter(hit).forEach(c => {
+    const title = c.holder ? c.file + " (inside drawing code)" : c.file;
+    (files[title] = files[title] || []).push(c);
+  });
   Object.keys(files).sort().forEach(f =>
-    list.append(group(f, files[f], c => c.type === "Color" ? colorRow(c) : numberRow(c), open && files[f].length < 40)));
+    list.append(group(f, files[f], make, open && files[f].length < 40)));
 }
 
 function count() {
@@ -198,12 +205,15 @@ function count() {
 }
 
 function preset() {
-  const all = schema.controls.concat(schema.themeColors);
+  const all = schema.controls.concat(schema.themeColors, schema.depth);
   return Object.entries(changed).map(([id, value]) => {
     const c = all.find(x => x.id === id) || {};
     const color = c.type === "Color" || id.startsWith("theme:");
     const show = v => color ? "0x" + (v >>> 0).toString(16).padStart(8, "0").toUpperCase() : v;
-    return { id, from: show(c.value), to: show(value), value, file: c.file || "WindowTheme", line: c.line || null };
+    const file = c.file || (id.startsWith("depth:") ? "LabDepth (new effect)" : "WindowTheme");
+    const entry = { id, from: show(c.value), to: show(value), value, file, line: c.line || null };
+    if (c.holder) entry.source = c.doc;
+    return entry;
   });
 }
 
