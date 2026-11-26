@@ -310,8 +310,9 @@ def words(kind, sample, font=True):
     return setup + ["Font labFont = LabElements.font(font);"], {"box": "labBox", "font": "labFont"}
 
 
-def square(kind):
-    return (['double[] labAt = LabElements.square("%s", g, x, y, size);' % kind],
+def square(kind, sample="null"):
+    """sample: "" at run time means nothing is drawn there, so the picture gets no box."""
+    return (['double[] labAt = LabElements.square("%s", %s, g, x, y, size);' % (kind, sample)],
             {"x": "labAt[0]", "y": "labAt[1]", "size": "labAt[2]"})
 
 
@@ -397,9 +398,9 @@ def apply(source):
         "CrispImages": elements("CrispImages", [
             ("void draw(Graphics2D g, BufferedImage source, double x, double y, double size)", square("picture"))]),
         "JarIcons": elements("JarIcons", [
-            ("boolean draw(Graphics2D g, JarType type, double x, double y, double size)", square("jar picture"))]),
+            ("boolean draw(Graphics2D g, JarType type, double x, double y, double size)", square("jar picture", 'type == null ? "" : null'))]),
         "ItemIcons": elements("ItemIcons", [
-            ("boolean draw(Graphics2D g, ItemType type, double x, double y, double size)", square("item picture"))]),
+            ("boolean draw(Graphics2D g, ItemType type, double x, double y, double size)", square("item picture", 'type == null ? "" : null'))]),
     }
     for stem, hook in shared.items():
         path = source / (stem + ".java")

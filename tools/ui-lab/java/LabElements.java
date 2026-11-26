@@ -205,9 +205,9 @@ final class LabElements
 	}
 
 	/** @return the x, y and side of a square picture; whichever of width and height was dragged more sets the side */
-	static double[] square(String kind, Graphics2D g, double x, double y, double size)
+	static double[] square(String kind, String sample, Graphics2D g, double x, double y, double size)
 	{
-		double[] c = begin(kind, null, g, new Rectangle2D.Double(x, y, size, size));
+		double[] c = begin(kind, sample, g, new Rectangle2D.Double(x, y, size, size));
 		if (c == null)
 			return new double[] {x, y, size};
 

@@ -22,6 +22,7 @@ final class LabAnimations
 {
 	private static final long BASE = 600_000;
 	private static final int TICK = 20;
+	private static final long OPENING_MS = 3_000;
 
 	private LabAnimations()
 	{
@@ -110,6 +111,16 @@ final class LabAnimations
 		}
 	}
 
+	/** Opens the window long enough before the loop that its opening animation is over when the loop starts. */
+	private static void openedBefore(PartyRig rig)
+	{
+		rig.now = BASE - OPENING_MS;
+		rig.shell.open(rig.now);
+		rig.paint();
+		rig.now = BASE;
+		rig.paint();
+	}
+
 	/** A script over the painted window. */
 	private abstract static class WindowScript extends Script
 	{
@@ -141,13 +152,10 @@ final class LabAnimations
 			script();
 		}
 
+		/** Starts the loop with the window already open, so it does not fade in again each time round. */
 		final void opened()
 		{
-			at(0, () ->
-			{
-				rig.shell.open(rig.now);
-				rig.paint();
-			});
+			openedBefore(rig);
 		}
 
 		/** Runs a step on the window at its time, then paints so the window sees it. */
@@ -341,11 +349,7 @@ final class LabAnimations
 			rig.height = (int) Math.round(520 * scale);
 			rig.now = BASE;
 			rig.publish(LabData.state(PartyRig.team(6)), false);
-			at(0, () ->
-			{
-				rig.shell.open(rig.now);
-				rig.paint();
-			});
+			openedBefore(rig);
 			at(600, () ->
 			{
 				rig.now = now;
@@ -557,7 +561,7 @@ final class LabAnimations
 		void advance(long at)
 		{
 			double[] head = {200, 190};
-			bubbles.tick(now, LabScenes.followerOffer(), head, true, near ? head : new double[] {390, 255},
+			bubbles.tick(now, LabScenes.followerOffer(), head, near, near ? head : new double[] {390, 255},
 				new Rectangle(0, 0, 400, 260));
 		}
 
