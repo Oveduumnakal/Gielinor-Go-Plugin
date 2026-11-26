@@ -42,7 +42,7 @@ DECLARATION = re.compile(
     r"(?P<name>[A-Z][A-Z0-9_]*) = (?P<value>[^;]+);\s*$")
 NUMBER = re.compile(r"^-?(0[xX][0-9a-fA-F_]+[Ll]?|(\d[\d_]*)?\.?\d[\d_]*([eE]-?\d+)?[LlFfDd]?)$")
 CACHE_FIELD = re.compile(r"static (?:final )?[\w.]*(?:Map|Set)<.*> "
-                         r"(CACHE|TRIMMED|GREY|SPRITES|STILLS|TAMED|BAKED|SOURCES|HEIGHTS)\b")
+                         r"(CACHE|TRIMMED|GREY|SPRITES|STILLS|TAMED|BAKED|HEIGHTS)\b")
 TYPE_OPEN = re.compile(r"\b(class|interface|enum)\s+([A-Za-z_]\w*)")
 
 

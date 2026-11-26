@@ -332,7 +332,9 @@ public final class LabServer
 		BufferedImage image;
 		try
 		{
-			image = scene(query).frame(number(query, "t"));
+			LabScenes.Scene scene = scene(query);
+			LabDepth.frame();
+			image = scene.frame(number(query, "t"));
 		}
 		finally
 		{

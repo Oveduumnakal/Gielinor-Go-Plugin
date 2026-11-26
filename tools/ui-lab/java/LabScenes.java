@@ -125,6 +125,9 @@ final class LabScenes
 			if (summary)
 				click("row:0");
 
+			if ("Collection".equals(tab))
+				click(rig.ids().stream().filter(id -> id.endsWith("row:0")).findFirst().orElse(null));
+
 			base = rig.now;
 		}
 
@@ -141,6 +144,7 @@ final class LabScenes
 				build();
 
 			rig.now = base + t;
+			LabDepth.frame();
 			return rig.paint();
 		}
 

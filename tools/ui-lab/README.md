@@ -19,6 +19,9 @@ change the plugin's code. It needs Python and a JDK 11 or newer (`JAVA_HOME` is 
 - **Scene** picks what to look at; **Theme** and **Scale** how it is drawn. **Zoom** only enlarges the picture.
 - The left side lists the controls. Search narrows them: try `glass`, `radius`, `open` or `hp`. Hover a name for its
   description and where it lives.
+  - **NEW: pane heights on this page** sets how high each pane of the shown page sits (Summary, Party, Bag,
+    Collection, Tasks). A raised pane casts a shadow on the page and on lower panes beside it; below zero it sinks.
+    **Layer gap** spreads all the heights further apart.
   - **NEW: depth and light** has effects the plugin does not have yet: extrusion, bevel and shadow for panels, rows,
     buttons and tabs, chips and bubbles, lit from one angle. All start at zero.
   - **Theme colours** are the colour table of the chosen theme.

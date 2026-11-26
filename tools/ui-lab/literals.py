@@ -45,7 +45,8 @@ def code_mask(line, in_comment):
 
 def array_index(statement, offset):
     """Which element of a flat array initializer starts at this offset, or None."""
-    start = statement.find("{")
+    flat = re.search(r"=\s*(?:new [\w.]+\[\]\s*)?\{", statement)
+    start = flat.end() - 1 if flat else -1
     if start < 0 or offset < start:
         return None
     depth, index, begin = 0, 0, start + 1

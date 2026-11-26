@@ -186,7 +186,14 @@ function build() {
   list.textContent = "";
   const open = words.length > 0;
   const make = c => c.type === "Color" ? colorRow(c) : numberRow(c);
-  const depth = schema.depth.filter(hit);
+  const isPane = c => c.id.startsWith("depth:pane.");
+  const isLayer = c => isPane(c) || c.id === "depth:separation" || c.id === "depth:layerSide";
+  const page = $("scene").value.replace("Window: ", "").split(" ")[0] + ": ";
+  const layers = schema.depth.filter(c => isLayer(c) && hit(c) &&
+    (words.length || !isPane(c) || c.id.startsWith("depth:pane." + page)));
+  if (layers.some(isPane))
+    list.append(group(words.length ? "NEW: pane heights" : "NEW: pane heights on this page", layers, make, true));
+  const depth = schema.depth.filter(c => !isLayer(c) && hit(c));
   if (depth.length) list.append(group("NEW: depth and light", depth, make, true));
   const theme = schema.themeColors.filter(c => c.theme === $("theme").value && hit(c));
   if (theme.length) list.append(group("Theme colours (" + $("theme").value + ")", theme, colorRow, open));
@@ -231,7 +238,7 @@ async function start() {
 const remember = () => localStorage.setItem("uilab", JSON.stringify({ scene: $("scene").value }));
 $("search").oninput = build;
 $("theme").onchange = build;
-$("scene").onchange = () => { t = 0; remember(); };
+$("scene").onchange = () => { t = 0; remember(); build(); };
 $("scale").oninput = () => $("scaleText").textContent = Number($("scale").value).toFixed(2);
 $("play").onclick = () => { playing = !playing; $("play").textContent = playing ? "Pause" : "Play";
   $("play").classList.toggle("on", playing); };
