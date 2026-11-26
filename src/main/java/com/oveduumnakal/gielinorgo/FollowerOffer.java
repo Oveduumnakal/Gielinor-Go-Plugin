@@ -129,7 +129,6 @@ final class FollowerOffer
 	private final double runChance;
 	private final List<Member> others;
 	private final List<Item> items;
-	private final int out;
 
 	private FollowerOffer(Builder b)
 	{
@@ -141,7 +140,6 @@ final class FollowerOffer
 		this.runChance = b.runChance;
 		this.others = Collections.unmodifiableList(new ArrayList<>(b.others));
 		this.items = Collections.unmodifiableList(new ArrayList<>(b.items));
-		this.out = b.out;
 	}
 
 	/** Collects the parts of an offer. */
@@ -155,7 +153,6 @@ final class FollowerOffer
 		private double runChance = 1.0;
 		private final List<Member> others = new ArrayList<>();
 		private final List<Item> items = new ArrayList<>();
-		private int out;
 
 		/**
 		 * Marks the offer as made during a battle.
@@ -187,14 +184,12 @@ final class FollowerOffer
 		 * Shows the Item bubble.
 		 *
 		 * @param owned the owned items, in item order
-		 * @param creatureOut the place of the creature that is out, which a quick use prefers
 		 * @return this builder
 		 */
-		Builder items(List<Item> owned, int creatureOut)
+		Builder items(List<Item> owned)
 		{
 			itemShown = true;
 			items.addAll(owned);
-			out = creatureOut;
 			return this;
 		}
 
@@ -254,10 +249,10 @@ final class FollowerOffer
 		return live && !others.isEmpty();
 	}
 
-	/** @return whether some item would help someone now */
+	/** @return whether the bag can be opened now: a choice can be made and an item is owned */
 	boolean itemEnabled()
 	{
-		return live && quickItem() != null;
+		return live && !items.isEmpty();
 	}
 
 	/** @return whether Run can be pressed now */
@@ -288,29 +283,5 @@ final class FollowerOffer
 	List<Item> items()
 	{
 		return items;
-	}
-
-	/** @return the item a quick use takes, the first that would help someone, or null */
-	Item quickItem()
-	{
-		return items.stream()
-				.filter(item -> !item.targets().isEmpty())
-				.findFirst()
-				.orElse(null);
-	}
-
-	/**
-	 * Picks whom a quick use helps: the creature that is out when it is one of them, otherwise the first.
-	 *
-	 * @param item an item with targets
-	 * @return the creature
-	 */
-	Member quickTarget(Item item)
-	{
-		return item.targets()
-				.stream()
-				.filter(member -> member.index() == out)
-				.findFirst()
-				.orElse(item.targets().get(0));
 	}
 }

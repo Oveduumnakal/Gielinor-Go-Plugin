@@ -463,7 +463,7 @@ final class FollowerBubbles
 			case SWITCH:
 				return pressSwitch(button);
 			case ITEM:
-				return pressItem(button);
+				return pressItem();
 			case RUN:
 				return button == LEFT && dot.enabled() ? new Action(Action.Type.RUN, -1, null) : Action.NONE;
 			case POTION:
@@ -486,20 +486,13 @@ final class FollowerBubbles
 		return Action.NONE;
 	}
 
-	/** A left click uses the first item that would help; a right click opens the list. */
-	private Action pressItem(int button)
+	/** Either click opens the bag, and the item to use is picked there. */
+	private Action pressItem()
 	{
-		if (button == RIGHT)
-		{
-			if (offer.live() && !offer.items().isEmpty())
-				cluster = Cluster.ITEMS;
+		if (offer.itemEnabled())
+			cluster = Cluster.ITEMS;
 
-			return Action.NONE;
-		}
-
-		FollowerOffer.Item item = offer.live() ? offer.quickItem() : null;
-		return item == null ? Action.NONE
-			: new Action(Action.Type.ITEM, offer.quickTarget(item).index(), item.type());
+		return Action.NONE;
 	}
 
 	/** An item picked from the list is used at once on the one creature it helps, or asks which of several. */
@@ -558,9 +551,7 @@ final class FollowerBubbles
 				if (waiting)
 					return "Item: wait for your turn";
 
-				FollowerOffer.Item item = offer.quickItem();
-				return item == null ? "No item would help right now"
-					: "Use " + item.type().label() + " on " + offer.quickTarget(item).name();
+				return dot.enabled() ? "Open your items" : "You have no items";
 
 			case RUN:
 				return runTip();

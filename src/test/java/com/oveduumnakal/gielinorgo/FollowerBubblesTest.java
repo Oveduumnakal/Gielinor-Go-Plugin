@@ -35,7 +35,7 @@ public class FollowerBubblesTest
 				.switching(Arrays.asList(BOB, EVE))
 				.items(Arrays.asList(
 						new FollowerOffer.Item(ItemType.SMALL_SALVE, 3, Arrays.asList(BOB, EVE)),
-						new FollowerOffer.Item(ItemType.ANTIDOTE, 1, Collections.emptyList())), 2)
+						new FollowerOffer.Item(ItemType.ANTIDOTE, 1, Collections.emptyList())))
 				.running(0.7)
 				.build();
 	}
@@ -111,17 +111,13 @@ public class FollowerBubblesTest
 	}
 
 	@Test
-	public void aLeftClickInBattleSwitchesToTheNextCreatureAndUsesTheFirstHelpfulItem()
+	public void aLeftClickInBattleSwitchesToTheNextCreatureAndRunRuns()
 	{
 		FollowerBubbles bubbles = opened(everything());
 
 		FollowerBubbles.Action swap = press(bubbles, FollowerBubbles.Kind.SWITCH, FollowerBubbles.LEFT);
 		assertEquals(FollowerBubbles.Action.Type.SWITCH, swap.type());
 		assertEquals(1, swap.index());
-
-		FollowerBubbles.Action item = press(bubbles, FollowerBubbles.Kind.ITEM, FollowerBubbles.LEFT);
-		assertEquals(ItemType.SMALL_SALVE, item.item());
-		assertEquals("the creature that is out is preferred", 2, item.index());
 
 		assertEquals(FollowerBubbles.Action.Type.RUN,
 				press(bubbles, FollowerBubbles.Kind.RUN, FollowerBubbles.LEFT).type());
@@ -146,7 +142,8 @@ public class FollowerBubblesTest
 	public void anItemThatHelpsSeveralAsksWhich()
 	{
 		FollowerBubbles bubbles = opened(everything());
-		press(bubbles, FollowerBubbles.Kind.ITEM, FollowerBubbles.RIGHT);
+		assertEquals("a click only opens the bag", FollowerBubbles.Action.Type.NONE,
+				press(bubbles, FollowerBubbles.Kind.ITEM, FollowerBubbles.LEFT).type());
 		assertEquals(5, bubbles.dots().size());
 
 		assertEquals(FollowerBubbles.Action.Type.NONE,

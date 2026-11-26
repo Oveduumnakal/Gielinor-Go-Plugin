@@ -14,7 +14,9 @@ import java.awt.Shape;
 import java.awt.geom.Arc2D;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -133,7 +135,7 @@ final class FollowerBubblePainter
 				arrows(g, cx, cy, r);
 				break;
 			case ITEM:
-				ItemIcons.draw(g, ItemType.SMALL_SALVE, cx - r * 0.7, cy - r * 0.7, r * 1.4);
+				backpack(g, cx, cy, r);
 				break;
 			case RUN:
 				runner(g, cx, cy, r);
@@ -188,6 +190,28 @@ final class FollowerBubblePainter
 			arrow.lineTo(cx - side * w * 0.4, y + h * 0.8);
 			g.draw(arrow);
 		}
+	}
+
+	/** A backpack from the front: a handle, side pockets, the body with its flap seam, buckle and front pocket. */
+	private static void backpack(Graphics2D g, double cx, double cy, double r)
+	{
+		double s = r * 0.62;
+		g.setColor(GLYPH);
+		g.setStroke(new BasicStroke((float) (0.18 * s), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		g.draw(new Arc2D.Double(cx - 0.36 * s, cy - 1.05 * s, 0.72 * s, 0.70 * s, 0, 180, Arc2D.OPEN));
+		g.fill(rounded(cx - 0.96 * s, cy + 0.10 * s, 0.36 * s, 0.72 * s, 0.24 * s));
+		g.fill(rounded(cx + 0.60 * s, cy + 0.10 * s, 0.36 * s, 0.72 * s, 0.24 * s));
+		g.fill(rounded(cx - 0.70 * s, cy - 0.74 * s, 1.40 * s, 1.74 * s, 0.84 * s));
+		g.setColor(OUTLINE);
+		g.setStroke(new BasicStroke((float) (0.12 * s), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		g.draw(new Line2D.Double(cx - 0.70 * s, cy - 0.08 * s, cx + 0.70 * s, cy - 0.08 * s));
+		g.draw(rounded(cx - 0.42 * s, cy + 0.30 * s, 0.84 * s, 0.48 * s, 0.20 * s));
+		g.fill(rounded(cx - 0.14 * s, cy - 0.22 * s, 0.28 * s, 0.30 * s, 0.08 * s));
+	}
+
+	private static RoundRectangle2D rounded(double x, double y, double w, double h, double arc)
+	{
+		return new RoundRectangle2D.Double(x, y, w, h, arc, arc);
 	}
 
 	/** A figure running to the right with speed lines behind it, in thick rounded strokes. */
