@@ -208,7 +208,7 @@ final class LabScenes
 			g.setColor(new Color(0, 0, 0, 90));
 			g.fillOval(180, 215, 40, 12);
 			FollowerBubbles.Dot under = bubbles.at(pointer[0], pointer[1]);
-			new FollowerBubblePainter(null).paint(g, bubbles.dots(), under, style());
+			new FollowerBubblePainter(new PartyRig().pictures).paint(g, bubbles.dots(), under, style());
 			g.dispose();
 			return image;
 		}

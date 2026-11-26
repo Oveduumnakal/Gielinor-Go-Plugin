@@ -88,6 +88,7 @@ public final class LabServer
 			return;
 		}
 		lab.load();
+		LabPortraits.folder = lab.kept("UILAB_PORTRAITS", ".portraits");
 		HttpServer server = lab.bind();
 		server.createContext("/", lab::handle);
 		server.start();

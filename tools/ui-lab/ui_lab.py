@@ -22,6 +22,7 @@ import sys
 
 import hooks
 import literals
+import portraits
 
 LAB = pathlib.Path(__file__).resolve().parent
 ROOT = LAB.parents[1]
@@ -265,6 +266,7 @@ def write_copy(declarations, caches, excluded, no_recompute):
     registry += ["\t\t\t%s.labRecompute();" % s for s in classes]
     registry += ["\t\t}", ""] + ["\t\t%s.labClear();" % s for s in classes] + ["\t}", "}", ""]
     (source / "LabRegistry.java").write_text("\n".join(registry), encoding="utf-8", newline="\n")
+    shutil.copy(TEST_SOURCES / PACKAGE / "PartyRig.java", source / "PartyRig.java")
     hooks.apply(source)
 
     for path in (LAB / "java").glob("*.java"):
@@ -357,6 +359,8 @@ def compile_lab(cp=None):
 def main():
     BUILD.mkdir(parents=True, exist_ok=True)
     cp, classes = compile_lab()
+    if "--no-download" not in sys.argv:
+        portraits.fetch(LAB)
     run = os.pathsep.join([str(classes), str(RESOURCES), cp])
     args = BUILD / "java.args"
     args.write_text('-Djava.awt.headless=true\n-cp "%s"\ncom.oveduumnakal.gielinorgo.LabServer\n"%s"\n"%s"\n%s\n'

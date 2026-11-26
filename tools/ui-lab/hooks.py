@@ -212,6 +212,12 @@ def battle_page(text):
                  "LabBoxes.target.put(LabBoxes.card(one.block), onScreen(one.box));\n\t\t}", name)
 
 
+def party_rig(text):
+    """The tests' window rig hands out a blue square for every portrait; the lab's copy hands out pictures."""
+    at = once(text, "onReady.accept(square());", "PartyRig")
+    return text[:at] + "onReady.accept(LabPortraits.of(speciesName, square()));" + text[at + len("onReady.accept(square());"):]
+
+
 def chain(*hooks):
     def run(text):
         for hook in hooks:
@@ -225,7 +231,7 @@ HOOKS = {"WindowStyle": window_style, "FollowerBubblePainter": follower_bubbles,
          "CollectionPage": chain(collection, collection_boxes), "TasksPage": chain(tasks, tasks_boxes),
          "SummaryLayout": summary_layout, "PartyLayout": party_layout, "BagLayout": bag_layout,
          "StorageControls": storage_controls, "StoragePage": storage_page, "BattleLayout": battle_layout,
-         "BattlePage": battle_page}
+         "BattlePage": battle_page, "PartyRig": party_rig}
 
 
 def element(text, signature, name, setup, call):
