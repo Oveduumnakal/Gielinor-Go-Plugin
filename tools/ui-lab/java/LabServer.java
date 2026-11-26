@@ -75,6 +75,11 @@ public final class LabServer
 	{
 		LabElements.sources = Paths.get(args[1]).resolveSibling("src").resolve("com/oveduumnakal/gielinorgo");
 		LabServer lab = new LabServer(Paths.get(args[0]), Paths.get(args[1]));
+		if (args.length > 3 && "dump".equals(args[2]))
+		{
+			Files.write(Paths.get(args[3]), GSON.toJson(lab.dump()).getBytes(StandardCharsets.UTF_8));
+			return;
+		}
 		HttpServer server = lab.bind();
 		server.createContext("/", lab::handle);
 		server.start();
@@ -93,6 +98,30 @@ public final class LabServer
 				System.out.println("Open the address above in your browser.");
 			}
 		}
+	}
+
+	/** @return what the build check compares: the schema, and the name of every pane and button */
+	private Map<String, Object> dump()
+	{
+		Map<String, Object> out = schema();
+		List<String> boxes = new ArrayList<>();
+		for (String name : factories.keySet())
+		{
+			if (!name.startsWith("Window: "))
+				continue;
+
+			Map<String, String> query = new HashMap<>();
+			query.put("scene", name);
+			query.put("t", "3000");
+			for (Map<String, Object> box : boxes(query))
+			{
+				if (!boxes.contains(box.get("name")))
+					boxes.add((String) box.get("name"));
+			}
+		}
+
+		out.put("boxes", boxes);
+		return out;
 	}
 
 	private HttpServer bind() throws IOException

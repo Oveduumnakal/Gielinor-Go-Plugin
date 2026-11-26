@@ -229,8 +229,7 @@ def write_copy(declarations, caches, excluded, no_recompute):
         holders[holder] = inline
         (source / (holder + ".java")).write_text(literals.holder_class(holder, inline), encoding="utf-8", newline="\n")
         if stores:
-            ids = {"%s.%s;" % (holder, e["key"]): e["id"] for e in inline}
-            stored[path.stem] = ["%s /*lab:%s*/" % (s, ids[s.split(" = ")[1]]) for s in stores]
+            stored[path.stem] = stores
     classes = sorted(set(by_file) | set(caches) | set(stored))
     for stem in classes:
         path = source / (stem + ".java")
@@ -290,10 +289,11 @@ def classpath():
     raise SystemExit("could not read the classpath:\n" + out.stdout + out.stderr)
 
 
-def blame(output, source, declarations):
+def blame(output, source, declarations, written):
     """Finds which declarations a failed compile is about: the ones to leave final, and recomputations to drop."""
     excluded, dropped = set(), set()
     by_name = {}
+    inline_ids = {(e["holder"], e["key"]): e["id"] for e in written}
     for e in declarations:
         by_name.setdefault(e["name"], []).append(e)
     for match in re.finditer(r"^(.*?\.java):(\d+): error: (.*)$", output, re.M):
@@ -301,7 +301,7 @@ def blame(output, source, declarations):
         if not path.exists():
             continue
         line = path.read_text(encoding="utf-8").split("\n")[number - 1]
-        inline = ["%s:@%s.%s" % found for found in re.findall(r"LabLit_(\w+)\.v(\d+)_(\d+)", line)]
+        inline = [inline_ids[found] for found in re.findall(r"(LabLit_\w+)\.(v\d+_\d+)", line)]
         if inline:
             excluded.update(inline)
             continue
@@ -317,9 +317,9 @@ def blame(output, source, declarations):
     return excluded, dropped
 
 
-def compile_lab():
+def compile_lab(cp=None):
     declarations, caches, written = collect()
-    cp = classpath()
+    cp = cp or classpath()
     excluded, dropped = set(), set()
     out = BUILD / "classes"
     for attempt in range(8):
@@ -334,7 +334,7 @@ def compile_lab():
         result = subprocess.run([java_tool("javac"), "@" + str(args)], capture_output=True, text=True)
         if result.returncode == 0:
             break
-        more_excluded, more_dropped = blame(result.stderr, source, declarations)
+        more_excluded, more_dropped = blame(result.stderr, source, declarations, written)
         if not (more_excluded - excluded) and not (more_dropped - dropped):
             raise SystemExit("compile failed:\n" + result.stderr[:6000])
         excluded |= more_excluded

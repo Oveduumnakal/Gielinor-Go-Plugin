@@ -74,6 +74,7 @@ def extract(stem, text, excluded, tunable_declaration, color_value):
     found, stores = [], []
     in_comment, method = False, ""
     once, array, constants = False, None, False
+    repeats = {}
     for number, line in enumerate(lines):
         mask, in_comment = code_mask(line, in_comment)
         stripped = mask.strip()
@@ -92,6 +93,14 @@ def extract(stem, text, excluded, tunable_declaration, color_value):
             offset = len(array["text"])
             array["text"] += mask + " "
         written_out = tunable_declaration(line) == "plain"
+        spots = [m.span() for m in LITERAL.finditer(mask)]
+        shape = line
+        for start, end in reversed(spots):
+            shape = shape[:start] + "#" + shape[end:]
+        shape = shape.strip()
+        nth = repeats.get((method, shape), 0)
+        if spots:
+            repeats[(method, shape)] = nth + 1
         skip = once or constants or written_out or stripped.startswith(("@", "case "))
         changes = []
         for match in [] if skip else LITERAL.finditer(mask):
@@ -118,7 +127,7 @@ def extract(stem, text, excluded, tunable_declaration, color_value):
                 if index is None:
                     continue
             key = "v%d_%d" % (number + 1, match.start())
-            ident = "%s:@%d.%d" % (stem, number + 1, match.start())
+            ident = "%s|%s|%s|%d|%d" % (stem, method, shape, nth, spots.index(match.span()))
             if ident in excluded:
                 continue
             if index is not None:
