@@ -304,10 +304,11 @@ Every feature and every number, in detail. For the short version, see the [READM
 - **Follower bubbles**
 
   Rest your mouse on your lead creature for a moment and bubbles pop out above it: **Switch**, **Item** and, in a wild
-  battle, **Run**. Right-click Switch or Item, or hold the mouse on it, for the list of creatures or items. Out of
+  battle, **Run**. Click the backpack, right-click Switch, or hold the mouse on either, for the list. Out of
   battle Switch changes your lead and items work on any team member they would help. In a battle you steer they do
   what the battle box does and are dim until it is your turn. In a battle that plays itself only Run shows. In battle
-  a left click on Switch brings in the next creature, and on Item uses the first item that would help. Wild creature
+  a left click on Switch brings in the next creature. A click on Item, the backpack, opens your items: click
+  the one to use, then the creature if it would help several. Wild creature
   bubbles come first when both would show. The **Follower bubbles** setting turns them off.
 
 - **Running from a battle that plays itself**

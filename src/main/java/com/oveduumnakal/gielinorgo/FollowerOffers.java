@@ -58,7 +58,7 @@ final class FollowerOffers
 			items.add(new FollowerOffer.Item(type, count, targets));
 		}
 
-		return offer.items(items, 0).build();
+		return offer.items(items).build();
 	}
 
 	/**
@@ -99,7 +99,7 @@ final class FollowerOffers
 			}
 		}
 
-		offer.items(items, state.myIndex());
+		offer.items(items);
 		if (session.wild())
 			offer.running(state.fleeChance());
 
