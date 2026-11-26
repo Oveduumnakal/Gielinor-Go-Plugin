@@ -14,7 +14,6 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -115,9 +114,6 @@ public class GielinorGoPlugin extends Plugin
 
 	/** Game ticks between saves of changed progress. */
 	private static final int SAVE_TICKS = 50;
-
-	/** Most battle log lines played back on screen. */
-	private static final int BATTLE_LINES = 6;
 
 	/** Game ticks between two hellos to the party, so a burst of people joining is answered once. */
 	private static final int HELLO_TICKS = 5;
