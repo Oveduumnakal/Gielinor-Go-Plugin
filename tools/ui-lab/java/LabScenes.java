@@ -64,6 +64,7 @@ final class LabScenes
 		scenes.put("HUD: notice", Notices::new);
 		scenes.put("Motion: jar throw", Throw::new);
 		scenes.put("Motion: jar and item pictures", () -> still(LabScenes::pictures));
+		LabMoreScenes.add(scenes);
 		return scenes;
 	}
 

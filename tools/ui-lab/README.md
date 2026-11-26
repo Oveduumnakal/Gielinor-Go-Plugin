@@ -70,7 +70,8 @@ The server listens on this computer only and refuses requests from other sites.
 
 - Portraits are pictures from the OSRS Wiki, not the plugin's own renders from the game's models. They are downloaded
   once into `.portraits/` (never committed; `--no-download` skips it). Put your own `<name>.png` there to replace one.
-- In-world animation needs the game.
+- Creature animation in the world needs the game. The damage, name tag and catch scenes use the plugin's own drawing
+  lines at fixed spots, over pictures standing in for creatures.
 - Whole numbers written into drawing code, and the plain 0 and 1, have no control.
 - Resizing a pane does not always rearrange what is inside it: the Moves pills, jar cells and rows of text keep
   their size.

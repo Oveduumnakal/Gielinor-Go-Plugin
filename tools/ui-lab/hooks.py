@@ -218,6 +218,47 @@ def party_rig(text):
     return text[:at] + "onReady.accept(LabPortraits.of(speciesName, square()));" + text[at + len("onReady.accept(square());"):]
 
 
+def tail(text, method, start, name):
+    """The lines of a method from an anchor to its end, to build a drawing method the lab can call."""
+    at = once(text, method, name)
+    begin = text.index(start, at)
+    return text[begin:text.index("\n\t}\n", begin)]
+
+
+def add_methods(text, methods):
+    end = text.rindex("\n}")
+    return text[:end] + "\n\n" + "\n\n".join(methods) + text[end:]
+
+
+def floating_text(text):
+    name = "FloatingTextOverlay"
+    bar = tail(text, "private void drawBar(", "int x = name.getX()", name)
+    tag = tail(text, "private void drawTag(", "graphics.setColor(Color.BLACK);", name)
+    at = once(text, "private void draw(Graphics2D graphics, Point anchor,", name)
+    text = text[:at] + text[at + len("private "):]
+    return add_methods(text, [
+        "\tvoid labBar(Graphics2D graphics, Point name, double share)\n\t{\n\t\t%s\n\t}" % bar,
+        "\tstatic void labTag(Graphics2D graphics, Point at, Status status)\n\t{\n\t\tString text = status.tag();"
+        "\n\t\t%s\n\t}" % tag])
+
+
+def wild_overlay(text):
+    name = "WildOverlay"
+    words = tail(text, "private void draw(Graphics2D graphics, WildBody body)", "String tag = ", name).split("\n")[0]
+    rest = tail(text, "private void draw(Graphics2D graphics, WildBody body)", "Rarity rarity = ", name)
+    return add_methods(text, [
+        "\tstatic void labTag(Graphics2D graphics, WildEntry entry, Point location)\n\t{\n\t\t%s\n\t\t%s\n\t}"
+        % (words, rest)])
+
+
+def follower_tag(text):
+    name = "FollowerTagOverlay"
+    rest = tail(text, "private void draw(Graphics2D graphics)", "graphics.setColor(SHADOW_COLOR);", name)
+    return add_methods(text, [
+        "\tstatic void labTag(Graphics2D graphics, String text, Point at)\n\t{\n\t\t"
+        "graphics.setFont(FontManager.getRunescapeBoldFont());\n\t\t%s\n\t}" % rest])
+
+
 def chain(*hooks):
     def run(text):
         for hook in hooks:
@@ -231,7 +272,8 @@ HOOKS = {"WindowStyle": window_style, "FollowerBubblePainter": follower_bubbles,
          "CollectionPage": chain(collection, collection_boxes), "TasksPage": chain(tasks, tasks_boxes),
          "SummaryLayout": summary_layout, "PartyLayout": party_layout, "BagLayout": bag_layout,
          "StorageControls": storage_controls, "StoragePage": storage_page, "BattleLayout": battle_layout,
-         "BattlePage": battle_page, "PartyRig": party_rig}
+         "BattlePage": battle_page, "PartyRig": party_rig,
+         "FloatingTextOverlay": floating_text, "WildOverlay": wild_overlay, "FollowerTagOverlay": follower_tag}
 
 
 def element(text, signature, name, setup, call):
