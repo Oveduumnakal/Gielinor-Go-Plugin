@@ -67,8 +67,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   Your character makes a throwing motion when you throw a jar, then cheers for a catch, stamps when the
   creature breaks free and cries when it runs away (skipped if you moved or started something else). The jar you threw
   flies in an arc from your hand to the creature. The creature reacts when the jar lands: a creature you catch
-  flinches and shrinks into the jar; one that breaks free turns to you, attacks and stands again; one that runs
-  away turns and runs off, fading out. The result text floats over the creature's copy. Only you see this, and no real monster is ever hidden or
+  flinches and shrinks into the jar; one that breaks free turns to you, attacks and stands again (a beaten one stays
+  down); one that runs away turns and runs off, fading out. The result text floats over the creature's copy. Only you see this, and no real monster is ever hidden or
   changed. You can switch it off in the settings: a caught or fled creature then just disappears.
 
 - **Earn jars by playing**
@@ -287,18 +287,18 @@ Every feature and every number, in detail. For the short version, see the [READM
   stays put to use Dragonfire, and a wyvern uses Icy breath. A move that misses is acted out like a hit, but the
   other creature does not flinch.
   The arrow, bolt and breath are drawn on your own screen only, they are not real game projectiles, so other plugins
-  do not see them. The loser lies down for a few seconds before getting up. Your lead then walks back to you. The fight is
-  played on the wild copy itself, which turns to face your lead. Only you see any of this, and the real monster is
+  do not see them. A wild creature you beat stays down; one that beats you gets up again after a few seconds. Your
+  lead then walks back to you. The fight is played on the wild copy itself, which turns to face your lead. Only you see any of this, and the real monster is
   untouched. A breath plays the creature's breath animation. Creatures with no animation for a
   move lunge or tip over instead. Every variant of a monster that shares its name (a goblin of any kind, a small or a big
   Monkey Guard) has its own animations, and a monster the data does not know yet stands and walks the way the game
   draws it. Switch it off in the settings.
 
-  **Catch a knocked-out creature.** When your lead wins, the wild creature lies knocked out for about 10 seconds.
+  **Catch a knocked-out creature.** When your lead wins, the wild creature lies knocked out and stays down until its
+  time as a wild creature runs out, at least 10 seconds.
   The jar bubble, or **Catch** in the right-click menu, throws your selected jar (you can also do this
-  while it fights). A knocked-out creature is twice as easy to catch (x2.0); once it is back up it is x1.5 as
-  before. Caught: the jar flies to the lying creature, which shrinks into it (it does not get up to flinch). Broke
-  free: it gets up, turns to you, attacks and the scene ends. Ran away: it gets up and runs off fading out, and it
+  while it fights). A knocked-out creature is twice as easy to catch (x2.0). Caught: the jar
+  flies to the lying creature, which shrinks into it (it does not get up to flinch). Broke free: it stays down. Ran away: it gets up and runs off fading out, and it
   is no longer wild. A jar thrown while it still fights is played on the creature the same way.
 
 - **Choose your own moves**

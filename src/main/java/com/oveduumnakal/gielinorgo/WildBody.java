@@ -133,6 +133,9 @@ final class WildBody
 			drawnHeight += made.liftUnits();
 			made.useAnimations(idleAnimation, walkAnimation);
 			made.setBase(made.standAnimation());
+			if (life.beaten())
+				made.act(CreatureBody.Act.DEFEATED);
+
 			made.setOpacity(0.0);
 			body = made;
 			fadeBroken = false;
@@ -363,15 +366,30 @@ final class WildBody
 		if (body == null || !BodyCatch.plays(outcome) || life.leaving())
 			return false;
 
-		boolean lying = life.knockedOut() || body.lyingDown();
+		boolean lying = life.knockedOut() || body.lyingDown() || entry.defeated();
 		if (!life.beginCatch())
 			return false;
 
 		body.endTurn();
 		route.clear();
 		turningAway = false;
-		scene = new BodyCatch(outcome, lying);
+		scene = new BodyCatch(outcome, lying, entry.defeated());
 		return true;
+	}
+
+	/**
+	 * Puts a beaten creature down for good, wherever the beating was shown: on the stage, where it lies already, or
+	 * in text only, where it falls now.
+	 */
+	void layDefeated()
+	{
+		boolean down = life.knockedOut();
+		if (!life.defeat())
+			return;
+
+		route.clear();
+		if (!down && body != null)
+			body.act(CreatureBody.Act.DEFEATED);
 	}
 
 	/** @return whether a catch scene is playing on the body */
@@ -416,7 +434,10 @@ final class WildBody
 			turningAway = false;
 			facingHeld = false;
 			body.setSize(1.0);
-			body.recover();
+			if (entry.defeated())
+				life.defeat();
+			else
+				body.recover();
 		}
 	}
 

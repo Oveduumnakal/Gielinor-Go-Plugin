@@ -23,6 +23,19 @@ public class BodyCatchTest
 	}
 
 	@Test
+	public void aBeatenCreatureThatBreaksFreeDoesNotGetUp()
+	{
+		BodyCatch scene = new BodyCatch(CatchOutcome.BROKE_FREE, true, true);
+		for (int age = 0; age <= TargetScript.end(CatchOutcome.BROKE_FREE); age++)
+		{
+			assertFalse(scene.getsUp());
+			assertEquals(TargetScript.Step.NONE, scene.step());
+			assertEquals(TargetScript.Turn.NONE, scene.turn());
+			scene.tick();
+		}
+	}
+
+	@Test
 	public void aStandingCreatureFlinchesAtTheLanding()
 	{
 		for (CatchOutcome outcome : new CatchOutcome[] {CatchOutcome.CAUGHT, CatchOutcome.BROKE_FREE,

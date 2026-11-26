@@ -586,6 +586,12 @@ final class BattleStage implements StageAnchors
 		try
 		{
 			wild.freeFacing();
+			if (wild.entry().defeated() && wild.life().knockedOut())
+			{
+				wild.life().defeat();
+				return;
+			}
+
 			if (wild.life().state() == WildLife.State.IN_BATTLE || wild.life().knockedOut())
 			{
 				if (wild.body() != null)

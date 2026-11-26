@@ -57,6 +57,50 @@ public class WildLifeTest
 	}
 
 	@Test
+	public void aBeatenCreatureStaysDownUntilItsStayRunsOut()
+	{
+		WildLife life = born();
+		life.update(WildLife.APPEAR_MS, 3, true);
+		life.beginBattle();
+		life.knockOut();
+
+		assertTrue(life.defeat());
+		life.endBattle(WildLife.APPEAR_MS);
+
+		assertTrue(life.knockedOut());
+		life.update(WildLife.STAY_MS - 1, 3, true);
+		assertTrue(life.knockedOut());
+		life.update(WildLife.STAY_MS + 1, 3, true);
+		assertEquals(WildLife.State.LEAVING, life.state());
+	}
+
+	@Test
+	public void aBeatenCreatureThatBreaksFreeIsStillDown()
+	{
+		WildLife life = born();
+		life.update(WildLife.APPEAR_MS, 3, true);
+		life.defeat();
+
+		assertTrue(life.beginCatch());
+		assertFalse("not while the jar plays", life.defeat());
+		life.endCatch(true, WildLife.APPEAR_MS);
+
+		assertTrue(life.knockedOut());
+	}
+
+	@Test
+	public void aBeatenCreatureAlmostOutOfTimeStillLeavesTimeForAJar()
+	{
+		WildLife life = born();
+		life.update(WildLife.STAY_MS - 1, 3, true);
+		life.defeat();
+
+		life.update(WildLife.STAY_MS - 1 + WildLife.DOWN_MIN_MS - 1, 3, true);
+
+		assertTrue(life.knockedOut());
+	}
+
+	@Test
 	public void itLeavesWhenItsTimeIsUp()
 	{
 		WildLife life = born();

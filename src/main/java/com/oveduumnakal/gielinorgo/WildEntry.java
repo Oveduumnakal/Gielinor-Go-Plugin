@@ -190,6 +190,12 @@ final class WildEntry
 		return battled;
 	}
 
+	/** @return whether it was beaten in battle, so it stays down until it leaves */
+	boolean defeated()
+	{
+		return battled && weakened;
+	}
+
 	/** @return whether it lost a battle and is easier to catch */
 	boolean weakened()
 	{
