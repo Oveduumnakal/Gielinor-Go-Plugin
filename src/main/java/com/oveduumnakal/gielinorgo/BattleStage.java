@@ -476,6 +476,18 @@ final class BattleStage implements StageAnchors
 		return acting.tagOf(anchor == Notice.Anchor.STAGE_LEAD);
 	}
 
+	/**
+	 * @param anchor which body
+	 * @return the share of full health its bar shows, or null for no bar or when no battle is on stage
+	 */
+	Double healthOf(Notice.Anchor anchor)
+	{
+		if (timeline == null || (anchor != Notice.Anchor.STAGE_FOE && anchor != Notice.Anchor.STAGE_LEAD))
+			return null;
+
+		return acting.healthOf(anchor == Notice.Anchor.STAGE_LEAD);
+	}
+
 	/** Ends the battle on stage, if any; the wild creature stands again and the lead walks back to the player. */
 	void clear()
 	{

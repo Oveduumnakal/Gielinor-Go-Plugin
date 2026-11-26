@@ -42,6 +42,17 @@ final class FloatingTextOverlay extends Overlay
 	private static final int RISE_PIXELS = 14;
 	private static final double FADE_FROM_AGE = 0.75;
 
+	/** How far above a body its name sits, for the player's creature and for the wild or opposing one. */
+	private static final int LEAD_NAME_OFFSET = 30;
+	private static final int FOE_NAME_OFFSET = WildOverlay.TAG_HEIGHT_OFFSET;
+
+	private static final int BAR_WIDTH = 40;
+	private static final int BAR_HEIGHT = 5;
+	private static final int BAR_GAP = 3;
+	private static final Color BAR_EDGE = Color.BLACK;
+	private static final Color BAR_LOST = new Color(0x8B1A1A);
+	private static final Color BAR_LEFT = new Color(0x2ECC40);
+
 	private final Client client;
 	private final NoticeBoard board;
 	private static final Notice LEAD_BODY = Notice.stageLead("", Tone.INFO);
@@ -49,6 +60,7 @@ final class FloatingTextOverlay extends Overlay
 
 	private final Function<Notice, StageAnchors.Spot> bodies;
 	private final Function<Notice.Anchor, Status> tags;
+	private final Function<Notice.Anchor, Double> health;
 
 	/**
 	 * Creates the overlay.
@@ -59,12 +71,14 @@ final class FloatingTextOverlay extends Overlay
 	 * @param tags finds the status a body on a battle stage shows as a tag, or null for none
 	 */
 	FloatingTextOverlay(Client client, NoticeBoard board, Function<Notice, StageAnchors.Spot> bodies,
-		Function<Notice.Anchor, Status> tags)
+		Function<Notice.Anchor, Status> tags,
+		Function<Notice.Anchor, Double> health)
 	{
 		this.client = client;
 		this.board = board;
 		this.bodies = bodies;
 		this.tags = tags;
+		this.health = health;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}
@@ -88,6 +102,8 @@ final class FloatingTextOverlay extends Overlay
 	{
 		long now = System.currentTimeMillis();
 		graphics.setFont(FontManager.getRunescapeBoldFont());
+		drawBar(graphics, LEAD_BODY, Notice.Anchor.STAGE_LEAD, LEAD_NAME_OFFSET);
+		drawBar(graphics, FOE_BODY, Notice.Anchor.STAGE_FOE, FOE_NAME_OFFSET);
 		drawTag(graphics, LEAD_BODY, Notice.Anchor.STAGE_LEAD);
 		drawTag(graphics, FOE_BODY, Notice.Anchor.STAGE_FOE);
 		List<NoticeBoard.Shown> lines = board.visible(now);
@@ -120,6 +136,41 @@ final class FloatingTextOverlay extends Overlay
 	 * @param body a notice that stands for the body, to find where it is drawn
 	 * @param anchor which body
 	 */
+	/** Draws a health bar just under where a creature's name sits, while a battle on stage knows its health. */
+	private void drawBar(Graphics2D graphics, Notice body, Notice.Anchor anchor, int nameOffset)
+	{
+		Double share = health == null ? null : health.apply(anchor);
+		StageAnchors.Spot spot = share == null ? null : spotFor(body);
+		if (spot == null)
+			return;
+
+		Point name = Perspective.getCanvasTextLocation(client, graphics, spot.point(), "", spot.height() + nameOffset);
+		if (name == null)
+			return;
+
+		int x = name.getX() - BAR_WIDTH / 2;
+		int y = name.getY() + BAR_GAP;
+		graphics.setColor(BAR_EDGE);
+		graphics.fillRect(x - 1, y - 1, BAR_WIDTH + 2, BAR_HEIGHT + 2);
+		graphics.setColor(BAR_LOST);
+		graphics.fillRect(x, y, BAR_WIDTH, BAR_HEIGHT);
+		graphics.setColor(BAR_LEFT);
+		graphics.fillRect(x, y, filled(share, BAR_WIDTH), BAR_HEIGHT);
+	}
+
+	/**
+	 * @param share the share of full health, from 0 to 1
+	 * @param width the bar's width in pixels
+	 * @return the pixels filled: at least one while any health is left, never more than the width
+	 */
+	static int filled(double share, int width)
+	{
+		if (share <= 0)
+			return 0;
+
+		return (int) Math.max(1, Math.min(width, Math.round(share * width)));
+	}
+
 	private void drawTag(Graphics2D graphics, Notice body, Notice.Anchor anchor)
 	{
 		Status status = tags == null ? null : tags.apply(anchor);

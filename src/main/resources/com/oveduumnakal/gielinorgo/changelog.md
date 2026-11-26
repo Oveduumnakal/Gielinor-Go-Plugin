@@ -21,6 +21,8 @@ A Creature Log, daily tasks and daily events give you goals.
   selected jar, start a battle, or read a summary card. A plain left click now just walks. (#264)
 - **Spawn variety.** Featured species, night spawns and weekend events change what turns wild. (#27)
 
+- **Health bars.** While a battle is acted out, each creature has a health bar under its name. (#373)
+
 ### Your team
 
 - **Training and the lead creature.** Every XP drop trains your team. The lead learns twice as fast and follows you.

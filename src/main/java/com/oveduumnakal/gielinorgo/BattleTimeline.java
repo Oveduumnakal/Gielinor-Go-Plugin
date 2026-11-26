@@ -113,6 +113,7 @@ final class BattleTimeline
 		private final boolean missed;
 		private boolean onLead;
 		private BattleLine tags;
+		private BattleHealth health;
 
 		/**
 		 * Describes the step in which a creature of the team steps in as the lead.
@@ -188,6 +189,12 @@ final class BattleTimeline
 		boolean onLead()
 		{
 			return onLead;
+		}
+
+		/** @return the health around this beat, or null when it is not known */
+		BattleHealth health()
+		{
+			return health;
 		}
 
 		/** @return whether this beat says which status each creature has afterwards */
@@ -361,6 +368,7 @@ final class BattleTimeline
 		List<Step> steps = new ArrayList<>();
 		for (BattleLine line : lines)
 		{
+			int before = steps.size();
 			switch (line.kind())
 			{
 				case OPENING:
@@ -398,6 +406,9 @@ final class BattleTimeline
 				default:
 					break;
 			}
+
+			if (steps.size() > before)
+				steps.get(before).health = line.health();
 		}
 
 		return steps;

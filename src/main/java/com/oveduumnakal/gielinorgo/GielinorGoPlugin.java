@@ -307,7 +307,7 @@ public class GielinorGoPlugin extends Plugin
 		bodies = new WildBodies(client, animations, random);
 		wildHover = new WildHover();
 		wildOverlay = new WildOverlay(client, bodies, config, outlineRenderer, wildHover, tooltipManager);
-		floatingText = new FloatingTextOverlay(client, noticeBoard, this::spotFor, this::tagFor);
+		floatingText = new FloatingTextOverlay(client, noticeBoard, this::spotFor, this::tagFor, this::healthFor);
 		overlayManager.add(wildOverlay);
 		overlayManager.add(floatingText);
 		portraits = new PortraitService(client, clientThread, game::speciesFor);
@@ -418,6 +418,20 @@ public class GielinorGoPlugin extends Plugin
 		Status status = wild == null ? null : wild.statusOf(anchor);
 		ArenaStage team = arena;
 		return status != null || team == null ? status : team.statusOf(anchor);
+	}
+
+	/**
+	 * Finds the health bar a body of the battle on stage shows. Called from the render thread.
+	 *
+	 * @param anchor which body
+	 * @return the share of full health, or null for no bar
+	 */
+	private Double healthFor(Notice.Anchor anchor)
+	{
+		BattleStage wild = stage;
+		Double share = wild == null ? null : wild.healthOf(anchor);
+		ArenaStage team = arena;
+		return share != null || team == null ? share : team.healthOf(anchor);
 	}
 
 	/**
@@ -2637,11 +2651,13 @@ public class GielinorGoPlugin extends Plugin
 	private Notice withLiveHealth(Notice notice, BattleLine line)
 	{
 		BattleSession battle = pendingBattle;
-		if (battle == null || line.minePlace() < 0 || line.minePlace() >= battle.fighters().size())
+		BattleHealth health = line.health();
+		if (battle == null || health == null || health.minePlace() < 0
+			|| health.minePlace() >= battle.fighters().size())
 			return notice;
 
-		int place = game.teamPlace(battle.fighters().get(line.minePlace()));
-		return place < 0 ? notice : notice.withHealth(new LiveHealth.Step(battle, place, line.mineHealth()));
+		int place = game.teamPlace(battle.fighters().get(health.minePlace()));
+		return place < 0 ? notice : notice.withHealth(new LiveHealth.Step(battle, place, health.lead()));
 	}
 
 	/**
