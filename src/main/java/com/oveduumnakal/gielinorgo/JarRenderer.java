@@ -53,6 +53,7 @@ final class JarRenderer
 		private Rectangle area;
 		private int samples;
 		private double flicker;
+		private double liquid;
 		private final List<Shown> faces = new ArrayList<>();
 	}
 
@@ -111,6 +112,7 @@ final class JarRenderer
 		painting.area = area;
 		painting.samples = samples;
 		painting.flicker = flicker;
+		painting.liquid = jar.liquidAlpha();
 		for (JarModel.Face face : jar.faces())
 			painting.faces.add(seen(face, view));
 
@@ -244,7 +246,7 @@ final class JarRenderer
 			case LIQUID:
 			{
 				Color body = normal[1] > 0.8 ? mix(color, Color.WHITE, 0.25) : mix(color, shade(shown, color), 0.55);
-				fill(painting, shown, body, 0.82, false);
+				fill(painting, shown, body, painting.liquid, false);
 				break;
 			}
 			case CONTENT:

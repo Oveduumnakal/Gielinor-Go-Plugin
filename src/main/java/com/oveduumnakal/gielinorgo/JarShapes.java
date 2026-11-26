@@ -17,14 +17,20 @@ import java.util.Random;
  */
 final class JarShapes
 {
+	/** How strongly a jar's liquid covers what is behind it. */
+	private static final double LIQUID_ALPHA = 0.82;
+
 	/** The height of a whole jar, from its base to the top of the cork, in the jar's units. */
 	static final double HEIGHT = 119;
 
 	private static final double[][] LIP = {{20, 83}, {29, 85}, {30, 90}, {26, 92}, {18, 93}};
 	private static final double[][] CORK = {{0, 91}, {20, 91}, {21, 96}, {26, 100}, {26, 112}, {20, 117}, {0, 119}};
-	private static final double[][] SHINE = {{-36, 24}, {-27, 18}, {-26, 46}, {-30, 54}, {-36, 50}};
-	private static final double[][] GLINT = {{-34, 9}, {-26, 7}, {-25, 13}, {-33, 16}};
-	private static final double[][] EDGE = {{31, 14}, {36, 17}, {36, 46}, {31, 49}};
+	/** The long highlight down the left, as distance round the jar and height. */
+	static final double[][] SHINE = {{-36, 24}, {-27, 18}, {-26, 46}, {-30, 54}, {-36, 50}};
+	/** The small glint under it. */
+	static final double[][] GLINT = {{-34, 9}, {-26, 7}, {-25, 13}, {-33, 16}};
+	/** The fainter highlight down the right. */
+	static final double[][] EDGE = {{31, 14}, {36, 17}, {36, 46}, {31, 49}};
 
 	/** The Ember flame and its core, as distance round the jar and height. */
 	private static final double[][] FLAME = {
@@ -537,6 +543,6 @@ final class JarShapes
 	{
 		double[][] profile = {{0, 4}, {31, 4}, {38, 8}, {39.5, 14}, {39.5, top}, {0, top}};
 		JarLathe.lathe(jar.faces(), profile, JarModel.Layer.LIQUID, new Color(color), 0);
-		jar.fill();
+		jar.fill(LIQUID_ALPHA);
 	}
 }

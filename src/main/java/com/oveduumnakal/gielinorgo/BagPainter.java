@@ -243,7 +243,8 @@ final class BagPainter
 		for (int i = 0; i < types.length; i++)
 		{
 			int count = count(state.items(), types[i]);
-			cell(g, ctx, text, layout.itemCells[i], ITEM_PREFIX + i, false, ItemIcons.source(types[i]),
+			cell(g, ctx, text, layout.itemCells[i], ITEM_PREFIX + i, false,
+				ItemIcons.source(types[i], JarIcons.pixels(g, fit.size)),
 				String.valueOf(count), count > 0, fit);
 		}
 	}
