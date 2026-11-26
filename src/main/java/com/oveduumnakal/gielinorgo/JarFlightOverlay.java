@@ -176,7 +176,7 @@ final class JarFlightOverlay extends Overlay
 		if (!flat && drawModel(graphics, flying, at, height, from.point, to))
 			return;
 
-		BufferedImage image = JarIcons.source(flying);
+		BufferedImage image = JarIcons.source(flying, JarIcons.pixels(graphics, JarIcons.ICON_SIZE));
 		int plane = world.getPlane();
 		Point screen = Perspective.localToCanvas(client, at, plane, (int) Math.round(height - ground(at)));
 		if (image == null || screen == null)

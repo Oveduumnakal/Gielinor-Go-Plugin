@@ -5,11 +5,8 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
-import javax.imageio.ImageIO;
 
 import org.junit.Test;
 
@@ -17,13 +14,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-/** Checks the 17 bundled jar pictures: every jar has one, in the agreed size, with a clear margin, all different. */
+/** Checks the 17 rendered jar pictures: every jar has one, at the size asked, with a clear margin, all different. */
 public class JarIconsTest
 {
 	private static final int SIDE = 128;
 
 	@Test
-	public void everyJarHasA128PixelPictureWithAnAlphaChannel() throws IOException
+	public void everyJarHasA128PixelPictureWithAnAlphaChannel()
 	{
 		for (JarType type : JarType.values())
 		{
@@ -36,7 +33,7 @@ public class JarIconsTest
 	}
 
 	@Test
-	public void theOutermostPixelRingIsFullyTransparent() throws IOException
+	public void theOutermostPixelRingIsFullyTransparent()
 	{
 		for (JarType type : JarType.values())
 		{
@@ -52,7 +49,7 @@ public class JarIconsTest
 	}
 
 	@Test
-	public void allSeventeenPicturesDiffer() throws IOException
+	public void allSeventeenPicturesDiffer()
 	{
 		Set<String> seen = new HashSet<>();
 		for (JarType type : JarType.values())
@@ -62,25 +59,37 @@ public class JarIconsTest
 	}
 
 	@Test
-	public void theSourceKeepsTheFullFileSizeAndMissingJarsGiveNull()
+	public void aPictureIsRenderedAtTheSizeAskedForAndKept()
 	{
 		for (JarType type : JarType.values())
 		{
-			assertNotNull(type.name(), JarIcons.source(type));
-			assertEquals(SIDE, JarIcons.source(type).getWidth());
-			assertEquals(SIDE, JarIcons.source(type).getHeight());
+			for (int side : new int[] {16, 22, 33, 50})
+			{
+				BufferedImage image = JarIcons.source(type, side);
+				assertNotNull(type.name(), image);
+				assertEquals(side, image.getWidth());
+				assertEquals(side, image.getHeight());
+				assertTrue(image == JarIcons.source(type, side));
+			}
 		}
 
-		assertEquals(null, JarIcons.source(null));
+		assertEquals(null, JarIcons.source(null, 16));
+		assertEquals(JarIcons.LARGEST, JarIcons.source(JarType.IRON, 4000).getWidth());
 	}
 
-	private static BufferedImage read(JarType type) throws IOException
+	@Test
+	public void allSeventeenDifferAtTheSmallestSizeDrawn()
 	{
-		try (InputStream in = JarIcons.class.getResourceAsStream(JarIcons.resourceName(type)))
-		{
-			assertNotNull(type.name() + " has no file", in);
-			return ImageIO.read(in);
-		}
+		Set<String> seen = new HashSet<>();
+		for (JarType type : JarType.values())
+			assertTrue(type.name() + " matches another jar", seen.add(pixels(JarIcons.source(type, 16))));
+	}
+
+	private static BufferedImage read(JarType type)
+	{
+		BufferedImage image = JarIcons.source(type, SIDE);
+		assertNotNull(type.name() + " has no picture", image);
+		return image;
 	}
 
 	private static int alpha(BufferedImage image, int x, int y)

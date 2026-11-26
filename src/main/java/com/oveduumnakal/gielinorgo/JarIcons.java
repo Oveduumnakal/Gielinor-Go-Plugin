@@ -5,76 +5,84 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.util.EnumMap;
-import java.util.Locale;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.runelite.client.util.ImageUtil;
-
 /**
- * The small picture of each jar, loaded once from the bundled files in {@code jars/}. A file that is missing or
- * cannot be read gives null, and every caller then shows text alone.
+ * The small picture of each jar, rendered from the same model as the thrown jar ({@link JarShapes}), once for each
+ * size it is drawn at, so it is never stretched. A jar that cannot be rendered gives null, and every caller then shows
+ * text or a plain glyph.
  */
 final class JarIcons
 {
-	/** The side the picture is drawn at, in layout pixels. The file is bigger and is scaled to the real pixels. */
+	/** The side the picture is drawn at beside floating text, in layout pixels. */
 	static final int ICON_SIZE = 16;
 
-	private static final Logger log = LoggerFactory.getLogger(JarIcons.class);
-	private static final Map<JarType, BufferedImage> IMAGES = new EnumMap<>(JarType.class);
+	/** The largest picture rendered; a bigger square shows this one scaled up. */
+	static final int LARGEST = 256;
 
-	static
-	{
-		for (JarType type : JarType.values())
-			load(type);
-	}
+	/** The most pictures kept before all are rendered afresh, which covers every jar at many sizes. */
+	private static final int MAX_CACHED = 256;
+
+	/** Pictures up to this side are averaged from sixteen samples a pixel, larger ones from four. */
+	private static final int FINE_UP_TO = 96;
+
+	private static final Logger log = LoggerFactory.getLogger(JarIcons.class);
+	private static final Map<Integer, BufferedImage> CACHE = new HashMap<>();
 
 	private JarIcons()
 	{
 	}
 
 	/**
-	 * Gives the file name of a jar's picture.
+	 * Gives the number of device pixels a square covers, which is the size to render at.
 	 *
-	 * @param type the jar
-	 * @return the path relative to this package, such as {@code jars/bronze.png}
+	 * @param g the graphics it will be drawn on
+	 * @param size the side of the square, in the graphics' units
+	 * @return the side in device pixels
 	 */
-	static String resourceName(JarType type)
+	static int pixels(Graphics2D g, double size)
 	{
-		return "jars/" + type.name().toLowerCase(Locale.ROOT) + ".png";
+		return Math.max(1, (int) Math.round(size * CrispImages.deviceScale(g)));
 	}
 
 	/**
-	 * Loads one picture at its full size.
+	 * Finds a jar's picture at one size, rendering it the first time.
 	 *
-	 * @param type the jar
+	 * @param type the jar, or null
+	 * @param pixels the side wanted; held between 1 and {@link #LARGEST}
+	 * @return the square picture, or null when there is none
 	 */
-	private static void load(JarType type)
+	static synchronized BufferedImage source(JarType type, int pixels)
 	{
+		if (type == null)
+			return null;
+
+		int side = Math.max(1, Math.min(LARGEST, pixels));
+		int key = type.ordinal() * (LARGEST + 1) + side;
+		BufferedImage cached = CACHE.get(key);
+		if (cached != null)
+			return cached;
+
 		try
 		{
-			BufferedImage full = ImageUtil.loadImageResource(JarIcons.class, resourceName(type));
-			IMAGES.put(type, full);
+			BufferedImage image = render(type, side);
+			if (CACHE.size() >= MAX_CACHED)
+				CACHE.clear();
+
+			CACHE.put(key, image);
+			return image;
 		}
 		catch (RuntimeException e)
 		{
 			log.debug("Gielinor Go: no picture for the {} jar", type, e);
+			return null;
 		}
-	}
-
-	/**
-	 * Finds a jar's full-size picture.
-	 *
-	 * @param type the jar, or null
-	 * @return the picture as it is in the file, or null when there is none
-	 */
-	static BufferedImage source(JarType type)
-	{
-		return type == null ? null : IMAGES.get(type);
 	}
 
 	/**
@@ -89,11 +97,19 @@ final class JarIcons
 	 */
 	static boolean draw(Graphics2D g, JarType type, double x, double y, double size)
 	{
-		BufferedImage image = source(type);
+		BufferedImage image = source(type, pixels(g, size));
 		if (image == null)
 			return false;
 
 		CrispImages.draw(g, image, x, y, size);
 		return true;
+	}
+
+	/** Renders a jar front on and empty, with a ring that is fainter on a small picture. */
+	private static BufferedImage render(JarType type, int side)
+	{
+		int edge = side <= 18 ? 0x73 : side <= 26 ? 0xA6 : 0xE0;
+		return JarRenderer.render(JarShapes.build(type, false), new JarFixedView(side, 0, 0),
+			new Rectangle(0, 0, side, side), side <= FINE_UP_TO ? 4 : 2, 0.5, edge);
 	}
 }

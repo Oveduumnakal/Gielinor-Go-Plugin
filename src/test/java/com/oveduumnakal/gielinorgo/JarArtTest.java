@@ -6,11 +6,8 @@ package com.oveduumnakal.gielinorgo;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.EnumMap;
 import java.util.Map;
-import javax.imageio.ImageIO;
 
 import org.junit.Test;
 
@@ -19,9 +16,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Checks that the jar pictures cut from the owner's sprite sheet (issue 261) went to the right jar: the sheet's rows
- * are Bronze, Iron, Rune, Dragon; Cave, Swift, Blessed, Slayer; Venom, Ember, Giant, Tide; Stab, Slash, Crush, Archer;
- * Mystic, and each jar's lid or band has its own colour.
+ * Checks that each rendered jar picture is the right jar: its cork, band or emblem has its own colour, the grey jars
+ * have none, and all stand at the same scale.
  */
 public class JarArtTest
 {
@@ -44,13 +40,11 @@ public class JarArtTest
 		HUES.put(JarType.MYSTIC, new double[]{205, 235});
 	}
 
-	private static BufferedImage read(JarType type) throws IOException
+	private static BufferedImage read(JarType type)
 	{
-		try (InputStream in = JarIcons.class.getResourceAsStream(JarIcons.resourceName(type)))
-		{
-			assertNotNull(type.name() + " has no file", in);
-			return ImageIO.read(in);
-		}
+		BufferedImage image = JarIcons.source(type, 128);
+		assertNotNull(type.name() + " has no picture", image);
+		return image;
 	}
 
 	/** @return the average hue in degrees of the clearly coloured pixels, or -1 when there are too few */
@@ -90,7 +84,7 @@ public class JarArtTest
 	}
 
 	@Test
-	public void eachColouredJarHasItsOwnColour() throws IOException
+	public void eachColouredJarHasItsOwnColour()
 	{
 		for (Map.Entry<JarType, double[]> entry : HUES.entrySet())
 		{
@@ -102,14 +96,14 @@ public class JarArtTest
 	}
 
 	@Test
-	public void theGreyJarsHaveNoStrongColour() throws IOException
+	public void theGreyJarsHaveNoStrongColour()
 	{
 		for (JarType type : new JarType[]{JarType.IRON, JarType.SWIFT, JarType.BLESSED, JarType.CAVE, JarType.SLAYER})
 			assertEquals(type.name(), -1.0, hue(read(type)), 0.0);
 	}
 
 	@Test
-	public void everyJarIsTallerThanWideAndTheSameHeightAcrossTheSet() throws IOException
+	public void everyJarIsTallerThanWideAndTheSameHeightAcrossTheSet()
 	{
 		int shortest = Integer.MAX_VALUE;
 		int tallest = 0;

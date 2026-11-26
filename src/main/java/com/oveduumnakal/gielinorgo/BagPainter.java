@@ -226,7 +226,8 @@ final class BagPainter
 			String id = jarId(i);
 			boolean selected = type == state.selectedJar();
 			int count = count(state.jars(), type);
-			cell(g, ctx, text, layout.jarCells[i], id, selected, JarIcons.source(type), String.valueOf(count),
+			cell(g, ctx, text, layout.jarCells[i], id, selected, JarIcons.source(type, JarIcons.pixels(g, fit.size)),
+				String.valueOf(count),
 				count > 0 || selected, fit);
 		}
 	}
