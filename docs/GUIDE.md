@@ -644,6 +644,10 @@ Every feature and every number, in detail. For the short version, see the [READM
   **Rename**, **Moves**, **Use item** and **Open wiki**, and **Revive** for a fainted creature, whose row is grey with a **Fainted** tag.
   A small column on the right shows your eggs and top tasks.
 
+  Behind the picture on the Summary plays the creature's home biome (twelve of them, from caves to the Wilderness),
+  and the two shift a little as your mouse moves. With **Window animations** set to Reduced or Off the scene holds
+  still. Switch off **Animated backgrounds** for the plain box.
+
 - **Bag, Storage, Collection, Tasks and Battle**
 
   **Bag** holds your jars, healing items (hover for what each does) and the eggs you carry. **Storage** holds the

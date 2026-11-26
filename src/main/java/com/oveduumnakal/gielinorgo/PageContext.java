@@ -7,6 +7,7 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.AlphaComposite;
 import java.awt.Composite;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
@@ -39,6 +40,27 @@ final class PageContext
 
 	/** The id of the hit being pressed, or null. */
 	final String pressed;
+
+	/** Where the pointer is over the window, or null when it is away. */
+	private Point pointer;
+
+	/**
+	 * Says where the pointer is.
+	 *
+	 * @param at its place in window pixels, or null when it is not over the window
+	 * @return these facts
+	 */
+	PageContext pointer(Point at)
+	{
+		this.pointer = at;
+		return this;
+	}
+
+	/** @return where the pointer is over the window, or null */
+	Point pointer()
+	{
+		return pointer;
+	}
 
 	/**
 	 * Gathers a frame's facts.

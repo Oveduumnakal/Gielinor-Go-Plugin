@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 import javax.inject.Inject;
 
 import com.google.gson.Gson;
@@ -157,6 +158,9 @@ public class GielinorGoPlugin extends Plugin
 	private Gson gson;
 
 	@Inject
+	private ScheduledExecutorService executor;
+
+	@Inject
 	private RenderCallbackManager renderCallbackManager;
 
 	@Inject
@@ -196,6 +200,7 @@ public class GielinorGoPlugin extends Plugin
 	private WildBubbleOverlay bubbleOverlay;
 	private BubbleInput bubbleInput;
 	private FollowerBubbles followerModel;
+	private BiomePlayer biomePlayer;
 	private FollowerBubbleView followerView;
 
 	/** Whether the follower bubbles failed this session, which leaves them off. */
@@ -341,6 +346,7 @@ public class GielinorGoPlugin extends Plugin
 		stopControls();
 		WindowStyle.share(null);
 		stopWindow();
+		biomePlayer.clear();
 		keyManager.unregisterKeyListener(hotkeys);
 		choiceOpen = false;
 		autoBattleOpen = false;
@@ -712,6 +718,7 @@ public class GielinorGoPlugin extends Plugin
 		noticeBoard.tick(System.currentTimeMillis());
 
 		portraits.tick();
+		biomePlayer.sweep(System.currentTimeMillis());
 		countSteps();
 		updateFollower();
 		greetParty();
@@ -3405,8 +3412,11 @@ public class GielinorGoPlugin extends Plugin
 		window = new GoWindow(config, configManager, overlayManager, System::currentTimeMillis,
 			client::getCanvasWidth, client::getCanvasHeight, this::showNotice);
 		windowPortraits = new PortraitCache(portraits, System::currentTimeMillis);
-		window.shell().pages(new WindowPages(window.shell(), panelActions(), windowPortraits,
-			System::currentTimeMillis, PageText.Sink.NONE));
+		WindowPages pages = new WindowPages(window.shell(), panelActions(), windowPortraits,
+			System::currentTimeMillis, PageText.Sink.NONE);
+		biomePlayer = BiomePlayer.bundled(executor, gson);
+		pages.scenery(new SummaryScene(BiomeTable.bundled(gson), biomePlayer, config::animatedBackgrounds));
+		window.shell().pages(pages);
 		BufferedImage jar = ImageUtil.loadImageResource(GielinorGoPlugin.class, "panel_icon_large.png");
 		windowToggle = new WindowToggle(this::windowStyle, config::windowAnimations,
 			System::currentTimeMillis, jar);
