@@ -312,9 +312,9 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Running from a battle that plays itself**
 
-  A wild battle that plays itself can be run from too: press the **Run** bubble over your creature, or set a **Run** hotkey. The try takes the place of
-  your creature's next attack, with the same odds as below. Walking away or logging out does not run: the battle is
-  finished and counts as usual.
+  A wild battle that plays itself can be run from too: press the **Run** bubble over your creature, or set a **Run**
+  hotkey. The try takes the place of your creature's next attack, with the same odds as below. Walking away or logging
+  out does not run: the battle is finished and counts as usual.
 
 - **Choose your own moves**
 
