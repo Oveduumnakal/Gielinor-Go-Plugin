@@ -358,10 +358,11 @@ final class WildBody
 	 * and runs off fading out ({@link BodyCatch}). A body that lies knocked out stays down until its second act.
 	 *
 	 * @param outcome what the throw led to
+	 * @param delay client ticks this jar lands later than a short throw
 	 * @return true when the scene plays; false when the throw touches nothing or the creature is already leaving, so
 	 *     the caller ends the creature itself if it was caught or fled
 	 */
-	boolean beginCatch(CatchOutcome outcome)
+	boolean beginCatch(CatchOutcome outcome, int delay)
 	{
 		if (body == null || !BodyCatch.plays(outcome) || life.leaving())
 			return false;
@@ -373,7 +374,7 @@ final class WildBody
 		body.endTurn();
 		route.clear();
 		turningAway = false;
-		scene = new BodyCatch(outcome, lying, entry.defeated());
+		scene = new BodyCatch(outcome, lying, entry.defeated(), delay);
 		return true;
 	}
 

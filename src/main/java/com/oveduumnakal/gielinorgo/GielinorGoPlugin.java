@@ -2304,12 +2304,11 @@ public class GielinorGoPlugin extends Plugin
 			return;
 
 		WildBody body = bodies.get(wildId);
-		boolean played = config.catchEffects() && body != null && body.beginCatch(outcome);
-		if (config.catchEffects() && effects.throwJar())
-		{
-			effects.react(outcome);
-			jarFlight.start(jar, () -> bodies.spotOf(wildId));
-		}
+		boolean throwing = config.catchEffects() && effects.throwJar();
+		int delay = throwing ? jarFlight.start(jar, () -> bodies.spotOf(wildId)) : 0;
+		boolean played = config.catchEffects() && body != null && body.beginCatch(outcome, delay);
+		if (throwing)
+			effects.react(outcome, delay);
 
 		boolean gone = outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED;
 		if (gone && !played)
@@ -2950,8 +2949,7 @@ public class GielinorGoPlugin extends Plugin
 		if (outcome != CatchOutcome.BROKE_FREE || !config.catchEffects() || !effects.throwJar())
 			return;
 
-		effects.react(outcome);
-		jarFlight.start(jar, () -> bodies.spotOf(wildId));
+		effects.react(outcome, jarFlight.start(jar, () -> bodies.spotOf(wildId)));
 	}
 
 	/**

@@ -26,12 +26,14 @@ final class CatchEffects
 	{
 		private final int animation;
 		private final WorldPoint tile;
+		private final int due;
 		private int age;
 
-		private Reaction(int animation, WorldPoint tile)
+		private Reaction(int animation, WorldPoint tile, int due)
 		{
 			this.animation = animation;
 			this.tile = tile;
+			this.due = due;
 		}
 	}
 
@@ -76,11 +78,13 @@ final class CatchEffects
 	 * the character is then idle and still on the tile it threw from. A newer result replaces a waiting one.
 	 *
 	 * @param outcome what the throw led to
+	 * @param delay client ticks this jar lands later than a short throw
 	 */
-	void react(CatchOutcome outcome)
+	void react(CatchOutcome outcome, int delay)
 	{
 		int animation = CatchScene.reactionFor(outcome);
-		reaction = animation == CatchScene.NONE ? null : new Reaction(animation, thrownFrom);
+		reaction = animation == CatchScene.NONE ? null
+			: new Reaction(animation, thrownFrom, CatchScene.REACT_TICK + delay);
 	}
 
 	/** Moves the waiting reaction on by one client tick. */
@@ -102,17 +106,17 @@ final class CatchEffects
 			return;
 
 		reaction.age++;
-		if (reaction.age < CatchScene.REACT_TICK)
+		if (reaction.age < reaction.due)
 			return;
 
-		Reaction due = reaction;
+		Reaction ready = reaction;
 		reaction = null;
 		Player player = client.getLocalPlayer();
-		if (player == null || player.getAnimation() != NO_ANIMATION || due.tile == null
-			|| !due.tile.equals(player.getWorldLocation()))
+		if (player == null || player.getAnimation() != NO_ANIMATION || ready.tile == null
+			|| !ready.tile.equals(player.getWorldLocation()))
 			return;
 
-		player.setAnimation(due.animation);
+		player.setAnimation(ready.animation);
 		player.setAnimationFrame(0);
 	}
 

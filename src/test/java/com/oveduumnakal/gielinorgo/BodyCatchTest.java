@@ -13,6 +13,27 @@ import static org.junit.Assert.assertTrue;
 /** Checks what the body does when a jar lands on it, for a lying and a standing start. */
 public class BodyCatchTest
 {
+	@Test
+	public void aFarThrowMakesTheWholeSceneWaitForTheJar()
+	{
+		BodyCatch scene = new BodyCatch(CatchOutcome.CAUGHT, false, false, 20);
+		for (int i = 0; i < TargetScript.LAND; i++)
+			scene.tick();
+
+		assertEquals(TargetScript.Step.NONE, scene.step());
+		for (int i = 0; i < 20; i++)
+			scene.tick();
+
+		assertEquals(TargetScript.Step.HIT, scene.step());
+		assertEquals(1.0, scene.size(), 0.0);
+		for (int i = scene.age(); i < TargetScript.CAUGHT_END + 19; i++)
+			scene.tick();
+
+		assertFalse(scene.removesBody());
+		scene.tick();
+		assertTrue(scene.removesBody());
+	}
+
 	private static BodyCatch at(CatchOutcome outcome, boolean lying, int age)
 	{
 		BodyCatch scene = new BodyCatch(outcome, lying);
