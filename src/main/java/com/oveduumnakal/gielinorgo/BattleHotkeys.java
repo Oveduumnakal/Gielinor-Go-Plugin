@@ -25,6 +25,7 @@ final class BattleHotkeys implements KeyListener
 	private final Supplier<Keybind> run;
 	private final Supplier<Keybind> item;
 	private final BooleanSupplier open;
+	private BooleanSupplier runOnly = () -> false;
 	private final Consumer<BattleChoice.Kind> pressed;
 
 	/**
@@ -67,6 +68,19 @@ final class BattleHotkeys implements KeyListener
 	}
 
 	/**
+	 * Lets the Run key through at a time when the others are not live: during a battle that plays itself, which can
+	 * be run from but takes no other choice.
+	 *
+	 * @param when whether the Run key is live on its own
+	 * @return these keys
+	 */
+	BattleHotkeys runAlso(BooleanSupplier when)
+	{
+		this.runOnly = when;
+		return this;
+	}
+
+	/**
 	 * Finds the choice a key press stands for.
 	 *
 	 * @param event the key press
@@ -103,11 +117,11 @@ final class BattleHotkeys implements KeyListener
 	@Override
 	public void keyPressed(KeyEvent event)
 	{
-		if (!open.getAsBoolean())
-			return;
-
 		BattleChoice.Kind kind = kindOf(event);
 		if (kind == null)
+			return;
+
+		if (!open.getAsBoolean() && !(kind == BattleChoice.Kind.RUN && runOnly.getAsBoolean()))
 			return;
 
 		event.consume();

@@ -23,6 +23,21 @@ import static org.junit.Assert.assertTrue;
 /** Checks that hotkeys act only while a choice is open, only when set, and take the key they use. */
 public class BattleHotkeysTest
 {
+	@Test
+	public void onlyTheRunKeyIsLiveDuringABattleThatPlaysItself()
+	{
+		List<BattleChoice.Kind> heard = new java.util.ArrayList<>();
+		Keybind attack = new Keybind(KeyEvent.VK_A, 0);
+		Keybind run = new Keybind(KeyEvent.VK_R, 0);
+		BattleHotkeys keys = new BattleHotkeys(() -> attack, () -> Keybind.NOT_SET, () -> Keybind.NOT_SET, () -> run,
+			() -> false, heard::add).runAlso(() -> true);
+
+		keys.keyPressed(press(KeyEvent.VK_A));
+		keys.keyPressed(press(KeyEvent.VK_R));
+
+		assertEquals(java.util.Collections.singletonList(BattleChoice.Kind.RUN), heard);
+	}
+
 	private final List<BattleChoice.Kind> pressed = new ArrayList<>();
 	private boolean open = true;
 

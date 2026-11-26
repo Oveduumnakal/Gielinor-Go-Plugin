@@ -14,7 +14,6 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
@@ -116,12 +115,6 @@ public class GielinorGoPlugin extends Plugin
 	/** Game ticks between saves of changed progress. */
 	private static final int SAVE_TICKS = 50;
 
-	/** Most battle log lines played back on screen. */
-	private static final int BATTLE_LINES = 6;
-
-	/** Game ticks after which a deferred result is written even if its scene never ended: about three minutes. */
-	private static final int PENDING_MAX_TICKS = 300;
-
 	/** Game ticks between two hellos to the party, so a burst of people joining is answered once. */
 	private static final int HELLO_TICKS = 5;
 
@@ -205,16 +198,9 @@ public class GielinorGoPlugin extends Plugin
 	private WildBodies bodies;
 	private final NoticeBoard noticeBoard = new NoticeBoard();
 
-	/** The health the pinned party box shows while a battle that played itself is still being shown. */
-	private final LiveHealth liveHealth = new LiveHealth();
 	private final CueGate cueGate = new CueGate();
 	private List<Notice> heldNotices;
 
-	/** The battle that plays itself, worked out ahead, whose result is written once its last beat has shown. */
-	private BattleSession pendingBattle;
-
-	/** Game ticks the deferred battle has waited for its scene to end. */
-	private int pendingAge;
 	private FloatingTextOverlay floatingText;
 	private FollowerTagOverlay followerTag;
 	/** The lead creature's nickname for the overlay, kept up to date on the game thread. Null for none. */
@@ -235,6 +221,9 @@ public class GielinorGoPlugin extends Plugin
 	private TrackerView lastTracker = TrackerView.NONE;
 	private BattleHotkeys hotkeys;
 	private volatile boolean choiceOpen;
+
+	/** Whether a battle that plays itself is on, which the Run key can stop. */
+	private volatile boolean autoBattleOpen;
 	private int steerWild = Notice.PLAYER;
 	private WorldPoint steerHome;
 	private List<Notice> pendingLines = new ArrayList<>();
@@ -322,7 +311,8 @@ public class GielinorGoPlugin extends Plugin
 		director = new BattleDirector(game, config::turnSeconds, battleListener());
 		trades.battleOn(director::active);
 		hotkeys = new BattleHotkeys(config::attackKey, config::switchKey, config::catchKey, config::runKey,
-			config::itemKey, () -> choiceOpen, this::hotkeyPressed);
+			config::itemKey, () -> choiceOpen, this::hotkeyPressed)
+				.runAlso(() -> autoBattleOpen);
 		keyManager.registerKeyListener(hotkeys);
 		detectVersionChange();
 		startWindow();
@@ -344,22 +334,20 @@ public class GielinorGoPlugin extends Plugin
 		stopWindow();
 		keyManager.unregisterKeyListener(hotkeys);
 		choiceOpen = false;
+		autoBattleOpen = false;
 		clientThread.invoke(director::end);
 		GoGame endingGame = loaded ? game : null;
 		GoPersistence endingPersistence = persistence;
 		String endingProfile = saveProfileKey;
 		boolean endingUnsaved = unsaved;
-		BattleSession endingBattle = pendingBattle;
-		pendingBattle = null;
 		Map<String, Integer> endingXp = ledger.stamp();
 		loaded = false;
 		clientThread.invoke(() ->
 		{
-			boolean paid = endingGame != null && endingBattle != null && endingGame.finishDeferred(endingBattle);
 			if (endingGame != null && endingXp != null)
 				endingGame.stampXp(endingXp);
 
-			SaveFlush.write(endingGame, endingPersistence, endingProfile, endingUnsaved || paid);
+			SaveFlush.write(endingGame, endingPersistence, endingProfile, endingUnsaved);
 		});
 		clientThread.invoke(stage::clear);
 		clientThread.invoke(arena::clear);
@@ -444,7 +432,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		clientThread.invoke(() ->
 		{
-			settlePending();
+			director.end();
 			saveNow();
 			loadSave();
 		});
@@ -462,7 +450,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		try
 		{
-			settlePending();
+			director.settle();
 			saveNow();
 			configManager.sendConfig();
 		}
@@ -496,7 +484,6 @@ public class GielinorGoPlugin extends Plugin
 		if (state != GameState.LOGIN_SCREEN && state != GameState.HOPPING)
 			return;
 
-		settlePending();
 		director.end();
 		closeWindow();
 		choiceOpen = false;
@@ -713,9 +700,7 @@ public class GielinorGoPlugin extends Plugin
 		watchCombat();
 		steering();
 		battleScene();
-		Notice due = noticeBoard.tick(System.currentTimeMillis());
-		if (due != null && liveHealth.show(due.health()))
-			refreshPanel();
+		noticeBoard.tick(System.currentTimeMillis());
 
 		portraits.tick();
 		countSteps();
@@ -1455,7 +1440,6 @@ public class GielinorGoPlugin extends Plugin
 		if (configManager.getRSProfileKey() == null)
 			return;
 
-		settlePending();
 		director.end();
 		game.load(persistence.load());
 		long account = client.getAccountHash();
@@ -1536,7 +1520,7 @@ public class GielinorGoPlugin extends Plugin
 		publishWindow(state);
 		lastTracker = state.tracker();
 		trackerOverlay.publish(trackerModel.frame(lastTracker, System.currentTimeMillis()));
-		partyBoxOverlay.publish(PartyBoxModel.rows(liveHealth.over(state.team())));
+		partyBoxOverlay.publish(PartyBoxModel.rows(state.team()));
 	}
 
 	/**
@@ -1725,7 +1709,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 		}
 
-		settlePending();
+		director.end();
 		persistence.save(game.data());
 		persistence.backUp();
 		game.reset();
@@ -2272,7 +2256,7 @@ public class GielinorGoPlugin extends Plugin
 		if (entry == null)
 			return;
 
-		if (inBattleWith(entry))
+		if (inBattleWith(entry) && !director.automatic())
 		{
 			chooseBattle(BattleChoice.catching(jar));
 			return;
@@ -2280,7 +2264,12 @@ public class GielinorGoPlugin extends Plugin
 
 		CatchOutcome outcome = game.tryCatch(entry, jar, knockedOut(wildId));
 		if (outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED)
+		{
+			if (inBattleWith(entry))
+				director.finish();
+
 			tracker.remove(wildId);
+		}
 
 		showCatch(outcome, wildId, jar);
 		refreshPanel();
@@ -2334,22 +2323,19 @@ public class GielinorGoPlugin extends Plugin
 			return;
 		}
 
-		heldNotices = new ArrayList<>();
-		BattleResult result = game.battleDeferred(entry);
-		pendingBattle = result == null ? null : result.pending();
-		pendingAge = 0;
-		liveHealth.follow(pendingBattle);
-		List<BattleLine> lines = result == null ? null : result.playbackSummary(BATTLE_LINES);
-		boolean staged = false;
-		if (result != null && config.battleAnimations() && !arena.active() && !stage.active())
-		{
-			staged = result.switches() > 0 ? stageTeamBattle(body, result, lines)
-				: stage.start(body, lines, result.won());
-			noteUnreachable(wildId, body);
-		}
+		startAutomaticBattle(wildId, entry);
+	}
 
-		playBack(lines, wildId, staged);
-		refreshPanel();
+	/**
+	 * Starts a wild battle that plays itself. It is played turn by turn like a steered one, so Run can stop it. With
+	 * "Battle animations" on the lead walks up and the turns are acted out; otherwise the battle is played in text.
+	 *
+	 * @param wildId the wild creature's id
+	 * @param entry the wild creature
+	 */
+	private void startAutomaticBattle(int wildId, WildEntry entry)
+	{
+		beginWild(wildId, game.startAutoBattle(entry), true);
 	}
 
 	/**
@@ -2362,25 +2348,6 @@ public class GielinorGoPlugin extends Plugin
 	{
 		if (stage.takeUnreachable() && body.noteUnreachable())
 			announce(Notice.creature(wildId, "Can't reach it, so the battle is shown as text", Tone.INFO));
-	}
-
-	/**
-	 * Acts out an automatic battle in which creatures stepped in, through the same open timeline a battle the player
-	 * steers uses: the face-off, then every beat at once ({@link WildScript}), then the end. The real lead is shown
-	 * again when the scene ends.
-	 *
-	 * @param body the wild creature's body
-	 * @param result the battle
-	 * @param lines the lines of the battle, as {@link WildScript} cut them
-	 * @return whether the battle is on stage, so its text waits for the scene
-	 */
-	private boolean stageTeamBattle(WildBody body, BattleResult result, List<BattleLine> lines)
-	{
-		if (!stage.startOpen(body, lines.subList(0, 1)))
-			return false;
-
-		stage.playScript(WildScript.of(result), result.won(), result.opener(), result.leadOpened());
-		return true;
 	}
 
 	/**
@@ -2413,43 +2380,12 @@ public class GielinorGoPlugin extends Plugin
 
 		if (noticeBoard.holding() && (stage.linesDue() || (!stage.active() && !arena.active())))
 			noticeBoard.release();
-
-		if (pendingBattle != null)
-			pendingAge++;
-
-		if (pendingBattle != null && WindowRules.deferredDue(pendingAge, PENDING_MAX_TICKS,
-			stage.active() || arena.active(), noticeBoard.idle(), stage.wildDown()))
-		{
-			heldNotices = new ArrayList<>();
-			settlePending();
-			playBack(Collections.emptyList(), Notice.PLAYER, false);
-			refreshPanel();
-		}
-	}
-
-	/**
-	 * Writes the result of the battle that played itself to the save, once: the health, a faint, the rewards and the
-	 * tasks. Called when the wild creature goes down or the last beat has shown, and at once when the player logs out,
-	 * hops, switches save or turns the plugin off, so the result is never lost and never written twice.
-	 *
-	 * @return whether a result was written
-	 */
-	private boolean settlePending()
-	{
-		BattleSession owed = pendingBattle;
-		pendingBattle = null;
-		liveHealth.follow(null);
-		if (owed == null || game == null || !game.finishDeferred(owed))
-			return false;
-
-		unsaved = true;
-		return true;
 	}
 
 	/** @return whether a battle is on that a new one must wait for: one the player steers, or one still playing */
 	private boolean battleBusy()
 	{
-		return director.active() || pendingBattle != null;
+		return director.active();
 	}
 
 	private void challenge(String championId)
@@ -2599,8 +2535,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		List<Notice> after = HeldNotices.close(heldNotices);
 		heldNotices = null;
-		boolean follows = pendingBattle != null && config.pinParty();
-		if (lines == null || !config.showResults() && !follows)
+		if (lines == null || !config.showResults())
 		{
 			after.forEach(this::announce);
 			return;
@@ -2622,41 +2557,17 @@ public class GielinorGoPlugin extends Plugin
 			else
 				notice = Notice.creature(wildId, line.text(), line.tone());
 
-			notice = withLiveHealth(notice, line);
-			queue.add(config.showResults() ? notice : notice.unseen());
+			queue.add(notice);
 		}
 
-		if (config.showResults())
-			queue.addAll(after);
-		else
-			after.forEach(this::announce);
-
+		queue.addAll(after);
 		noticeBoard.enqueue(queue, staged);
 
-		if (!config.showResults() || !config.chatMessages())
+		if (!config.chatMessages())
 			return;
 
 		for (Notice notice : after)
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", notice.text(), null);
-	}
-
-	/**
-	 * Gives a battle line's notice the health it leaves, when the line is of the battle that is still being shown.
-	 *
-	 * @param notice the line's notice
-	 * @param line the line
-	 * @return the notice, with the health when there is one
-	 */
-	private Notice withLiveHealth(Notice notice, BattleLine line)
-	{
-		BattleSession battle = pendingBattle;
-		BattleHealth health = line.health();
-		if (battle == null || health == null || health.minePlace() < 0
-			|| health.minePlace() >= battle.fighters().size())
-			return notice;
-
-		int place = game.teamPlace(battle.fighters().get(health.minePlace()));
-		return place < 0 ? notice : notice.withHealth(new LiveHealth.Step(battle, place, health.lead()));
 	}
 
 	/**
@@ -2697,7 +2608,21 @@ public class GielinorGoPlugin extends Plugin
 	private void startSteeredBattle(int wildId, WildEntry entry)
 	{
 		heldNotices = new ArrayList<>();
-		BattleSession battle = game.startBattle(entry);
+		beginWild(wildId, game.startBattle(entry), false);
+	}
+
+	/**
+	 * Puts a wild battle that has just started in the director's hands, on the stage when it can be acted out.
+	 *
+	 * @param wildId the wild creature's id
+	 * @param battle the battle, or null when none could start
+	 * @param automatic whether it plays itself
+	 */
+	private void beginWild(int wildId, BattleSession battle, boolean automatic)
+	{
+		if (heldNotices == null)
+			heldNotices = new ArrayList<>();
+
 		if (battle == null)
 		{
 			playBack(null, wildId, false);
@@ -2714,7 +2639,12 @@ public class GielinorGoPlugin extends Plugin
 		if (body != null)
 			noteUnreachable(wildId, body);
 
-		director.begin(battle, staged ? new WildScene(stage) : null);
+		WildScene scene = staged ? new WildScene(stage) : null;
+		if (automatic)
+			director.beginAutomatic(battle, scene);
+		else
+			director.begin(battle, scene);
+
 		playBack(opening, wildId, staged);
 		refreshPanel();
 	}
@@ -2819,6 +2749,12 @@ public class GielinorGoPlugin extends Plugin
 		clientThread.invoke(() ->
 		{
 			BattleSession battle = director.session();
+			if (kind == BattleChoice.Kind.RUN && director.automatic())
+			{
+				askToRun();
+				return;
+			}
+
 			if (battle == null || !director.promptOpen())
 				return;
 
@@ -2846,6 +2782,14 @@ public class GielinorGoPlugin extends Plugin
 		});
 	}
 
+	/** Asks to run from the battle that plays itself, and says so once. */
+	private void askToRun()
+	{
+		boolean already = director.fleeing();
+		if (director.flee() && !already)
+			announce(Notice.player("Trying to run", Tone.INFO));
+	}
+
 	/**
 	 * Moves a battle the player steers on by one game tick: opens the choice when the scene is ready, counts the
 	 * time, plays the creature's own attack when it is up, and ends the battle as running when the player left it.
@@ -2853,6 +2797,7 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void steering()
 	{
+		autoBattleOpen = director.automatic();
 		if (!director.active())
 		{
 			if (choiceOpen)

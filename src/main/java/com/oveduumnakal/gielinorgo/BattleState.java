@@ -292,8 +292,7 @@ final class BattleState
 				break;
 
 			case RUN:
-				over = TurnResult.Status.RAN;
-				turn.lines.add(new BattleLine("You ran away", Tone.INFO, true));
+				run(choice.sure(), turn);
 				break;
 
 			default:
@@ -720,6 +719,43 @@ final class BattleState
 				turn.used = false;
 				break;
 		}
+	}
+
+	/** @return the chance a try to run gets away now, from 0 to 1; 1 when running cannot fail in this battle */
+	double fleeChance()
+	{
+		if (mode != Mode.WILD)
+			return 1.0;
+
+		Combatant out = mine();
+		Combatant opponent = foe();
+		return FleeRules.chance(out.level(), opponent.level(), opponent.status() != null);
+	}
+
+	/**
+	 * Runs away. Against a wild creature the try can fail, which costs the turn: the creature attacks, as when it
+	 * breaks out of a jar.
+	 *
+	 * @param sure whether the battle ends whatever the odds
+	 * @param turn the turn to record it in
+	 */
+	private void run(boolean sure, Turn turn)
+	{
+		Combatant out = mine();
+		Combatant opponent = foe();
+		if (sure || mode != Mode.WILD
+			|| FleeRules.escapes(out.level(), opponent.level(), opponent.status() != null, random))
+		{
+			over = TurnResult.Status.RAN;
+			turn.lines.add(new BattleLine("You ran away", Tone.INFO, true));
+			return;
+		}
+
+		turn.lines.add(new BattleLine("You could not get away!", Tone.BAD, true));
+		decideOrder();
+		attackIfAble(false, turn, -1);
+		endRound(turn);
+		settle(turn);
 	}
 
 	/** Ends the pairing in the fight when one of the two fainted or the attack limit was reached. */

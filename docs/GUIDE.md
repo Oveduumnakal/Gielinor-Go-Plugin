@@ -301,6 +301,12 @@ Every feature and every number, in detail. For the short version, see the [READM
   flies to the lying creature, which shrinks into it (it does not get up to flinch). Broke free: it stays down. Ran away: it gets up and runs off fading out, and it
   is no longer wild. A jar thrown while it still fights is played on the creature the same way.
 
+- **Running from a battle that plays itself**
+
+  A wild battle that plays itself can be run from too: set a **Run** hotkey and press it. The try takes the place of
+  your creature's next attack, with the same odds as below. Walking away or logging out does not run: the battle is
+  finished and counts as usual.
+
 - **Choose your own moves**
 
   Turn on **Choose battle actions** in the settings (it is off by default, and then every battle plays itself as
@@ -325,13 +331,16 @@ Every feature and every number, in detail. For the short version, see the [READM
     only items that would do something and asks which creature when an item could help several. The item is spent
     once the turn is played, and nothing is spent when it would do nothing. From a creature's menu in the window,
     items cannot be used while a battle is on.
-  - **Run**: ends the battle. Nothing is won and that creature cannot be battled again. Logging out, hopping, walking
-    more than 15 tiles away or the monster going away counts as running.
+  - **Run**: ends the battle. Nothing is won and that creature cannot be battled again. Against a wild creature the
+    try can fail: the chance is 50%, plus or minus 3% for each level your creature that is out is above or below
+    it, plus 20% if it has a status effect, never under 10% or over 95%. A failed try costs your turn and it
+    attacks. Champion, Elite and friend battles are always left at once. Logging out, hopping, walking more than 15
+    tiles away or the monster going away always ends a battle you steer.
 
   Choose nothing for 10 seconds (set **Seconds per turn** from 5 to 30) and your creature attacks by itself, or steps
   in the next creature after a faint. A small prompt on the game screen shows whose turn it is, the time left and both
   health values, and you can set **Attack**, **Switch**, **Catch**, **Item** and **Run** hotkeys (none are set by default, so no
-  key is taken from chat or dialogue, and they work only while a choice is open). The Switch hotkey steps in the first
+  key is taken from chat or dialogue, and they work only while a choice is open, except Run, which also works during a wild battle that plays itself). The Switch hotkey steps in the first
   creature that can fight, and the Item hotkey uses the first item that would help (Small salve, Large salve, Revive
   draught, Antidote); use the box's buttons to pick a creature or an item.
 

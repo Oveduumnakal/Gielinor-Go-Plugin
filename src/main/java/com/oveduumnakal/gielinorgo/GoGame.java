@@ -1253,7 +1253,15 @@ final class GoGame
 		return defer ? result.pending(session) : result;
 	}
 
-	private BattleSession startAutoBattle(WildEntry entry)
+	/**
+	 * Starts a wild battle that plays itself but is worked out one turn at a time, so the player can run partway.
+	 * Whoever drives it picks the creature's own attack each turn ({@link #act}); the result is written on the turn
+	 * that ends it.
+	 *
+	 * @param entry the wild creature
+	 * @return the battle, or null when none could start
+	 */
+	BattleSession startAutoBattle(WildEntry entry)
 	{
 		if (eliteBusy())
 			return null;
@@ -1683,7 +1691,7 @@ final class GoGame
 			return null;
 		}
 
-		TurnResult turn = act(session, BattleChoice.run());
+		TurnResult turn = act(session, BattleChoice.leave());
 		if (turn != null && session.isElite())
 		{
 			for (BattleLine line : session.verdict())
@@ -1749,6 +1757,7 @@ final class GoGame
 		boolean canCatch = session.wild() && jar != null && !state.needsSwitch();
 		BattleView view = new BattleView(state.mine(), state.foe(), state.needsSwitch(), canCatch, jar,
 			jar == null ? 0 : data.jarCount(jar), secondsLeft, timeLeft, options, itemOptions(session));
+		view.fleeChance(state.fleeChance());
 		FriendTurnBattle friend = session.friendTurn();
 		return friend == null ? view : view.againstFriend(friend.friendName(), !friend.mustChoose());
 	}

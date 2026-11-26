@@ -81,6 +81,9 @@ final class BattleDirector
 		void jarThrown(BattleSession session, JarType jar, CatchOutcome outcome);
 	}
 
+	/** Game ticks between the turns of an automatic battle played in text, so there is time to run. */
+	static final int TEXT_PAUSE = 3;
+
 	private final GoGame game;
 	private final IntSupplier turnSeconds;
 	private final Listener listener;
@@ -88,6 +91,9 @@ final class BattleDirector
 	private BattleSession session;
 	private Scene scene;
 	private boolean promptOpen;
+	private boolean automatic;
+	private boolean fleeAsked;
+	private int waited;
 
 	/**
 	 * Makes a director with no battle.
@@ -142,6 +148,98 @@ final class BattleDirector
 	}
 
 	/**
+	 * Starts a wild battle that plays itself turn by turn, the creature picking its own attacks. No choice is ever
+	 * open, but the player may ask to run ({@link #flee()}). Walking away does not end it: what is left is played at
+	 * once and the result is written, as a battle that plays itself always has.
+	 *
+	 * @param battle the battle
+	 * @param stage what acts it out, or null for text only
+	 */
+	void beginAutomatic(BattleSession battle, Scene stage)
+	{
+		end();
+		session = battle;
+		scene = stage;
+		promptOpen = false;
+		automatic = true;
+		fleeAsked = false;
+		waited = 0;
+	}
+
+	/** @return whether the battle that is on plays itself */
+	boolean automatic()
+	{
+		return session != null && automatic;
+	}
+
+	/**
+	 * Asks to run from the automatic battle. The try is made in place of the creature's next attack.
+	 *
+	 * @return whether an automatic battle is on to run from
+	 */
+	boolean flee()
+	{
+		if (!automatic())
+			return false;
+
+		fleeAsked = true;
+		return true;
+	}
+
+	/** @return whether a try to run from the automatic battle waits for its turn */
+	boolean fleeing()
+	{
+		return automatic() && fleeAsked;
+	}
+
+	/**
+	 * Plays an automatic battle to its end at once and writes the result, for a player who walks away, logs out or
+	 * stops the plugin. Only the closing lines of the last turn are shown. Does nothing for any other battle.
+	 */
+	void finish()
+	{
+		if (!automatic())
+			return;
+
+		BattleSession played = session;
+		Scene stage = scene;
+		TurnResult last = playOut();
+		if (stage != null)
+			stage.end();
+
+		if (last != null)
+			listener.turn(played, last, game.closingLines(played, last), false);
+	}
+
+	/**
+	 * Writes the result of an automatic battle without showing anything or touching the scene, for when the client is
+	 * closing and this is not the game thread. Does nothing for any other battle.
+	 */
+	void settle()
+	{
+		if (automatic())
+			playOut();
+	}
+
+	/** Plays the rest of the automatic battle and drops it. */
+	private TurnResult playOut()
+	{
+		fleeAsked = false;
+		TurnResult last = null;
+		while (!session.over())
+		{
+			TurnResult turn = game.act(session, autoChoice());
+			if (turn == null)
+				break;
+
+			last = turn;
+		}
+
+		drop();
+		return last;
+	}
+
+	/**
 	 * Describes the battle for the panel and the prompt.
 	 *
 	 * @return the view, or null when no choice is open
@@ -168,7 +266,11 @@ final class BattleDirector
 
 		if (forfeit)
 		{
-			giveUp();
+			if (automatic)
+				finish();
+			else
+				giveUp();
+
 			return;
 		}
 
@@ -178,6 +280,12 @@ final class BattleDirector
 		if (session.friendTurn() != null)
 		{
 			friendTick();
+			return;
+		}
+
+		if (automatic)
+		{
+			automaticTick();
 			return;
 		}
 
@@ -218,6 +326,32 @@ final class BattleDirector
 		if (session.friendTurn() != null)
 			return chooseForFriend(choice);
 
+		return play(choice);
+	}
+
+	/** Plays the next turn of an automatic battle once the scene is ready and the pause is over. */
+	private void automaticTick()
+	{
+		if (scene != null && !scene.waiting())
+			return;
+
+		waited++;
+		if (scene == null && waited < TEXT_PAUSE)
+			return;
+
+		waited = 0;
+		if (fleeAsked && !session.state().needsSwitch())
+		{
+			fleeAsked = false;
+			play(BattleChoice.run());
+			return;
+		}
+
+		play(autoChoice());
+	}
+
+	private boolean play(BattleChoice choice)
+	{
 		BattleSession played = session;
 		JarType jar = choice.kind() == BattleChoice.Kind.CATCH && choice.jar() == null ? game.jarToThrow()
 			: choice.jar();
@@ -245,12 +379,11 @@ final class BattleDirector
 		listener.turn(played, turn, closing, stage != null);
 		if (status.over())
 		{
-			session = null;
-			scene = null;
+			drop();
 			return true;
 		}
 
-		if (stage == null)
+		if (stage == null && !automatic)
 			open();
 
 		return true;
@@ -365,8 +498,7 @@ final class BattleDirector
 	{
 		BattleSession leaving = session;
 		Scene stage = scene;
-		session = null;
-		scene = null;
+		drop();
 		promptOpen = false;
 		clock.close();
 		if (leaving != null)
@@ -376,11 +508,24 @@ final class BattleDirector
 			stage.end();
 	}
 
-	/** Drops the battle with no ruling, for when the plugin stops. Whatever was won or lost stays as it is. */
+	/**
+	 * Ends the battle for when the plugin stops or the player leaves the game: an automatic one is played out, any
+	 * other is run from. Whatever was won or lost stays as it is.
+	 */
 	void end()
 	{
-		if (session != null)
+		if (automatic())
+			finish();
+		else if (session != null)
 			giveUp();
+	}
+
+	private void drop()
+	{
+		session = null;
+		scene = null;
+		automatic = false;
+		fleeAsked = false;
 	}
 
 	private void open()
