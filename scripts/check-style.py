@@ -325,7 +325,7 @@ def control_branches(lines, comment):
 
 
 def check_file(path):
-    lines = open(path).read().split('\n')
+    lines = open(path, encoding='utf-8').read().split('\n')
     comment = in_block_comment_mask(lines)
 
     for i, raw in enumerate(lines, 1):

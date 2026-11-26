@@ -61,6 +61,7 @@ tasks.register('checkMovesets', Exec) {
 check.dependsOn checkMovesets
 
 javadoc {
+	options.encoding = 'UTF-8'
 	options.memberLevel = JavadocMemberLevel.PRIVATE
 	options.addStringOption('Xdoclint:syntax,html,reference', '-quiet')
 }
