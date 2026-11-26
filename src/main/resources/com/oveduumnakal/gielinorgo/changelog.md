@@ -26,6 +26,7 @@ A Creature Log, daily tasks and daily events give you goals.
   (#376)
 - **Matching jar pictures.** The jar pictures in the bag, bubbles and floating text are drawn from the same 3D
   jars. (#377)
+- **Matching item pictures.** The healing items are drawn in the same 3D style as the jars. (#378)
 
 ### Your team
 

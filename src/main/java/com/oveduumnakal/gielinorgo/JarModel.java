@@ -94,7 +94,7 @@ final class JarModel
 
 	private final List<Face> faces = new ArrayList<>();
 	private Color glow;
-	private boolean liquid;
+	private double liquid;
 
 	/** @return every face of the jar */
 	List<Face> faces()
@@ -111,6 +111,12 @@ final class JarModel
 	/** @return whether the jar holds liquid, which is painted over the front glass */
 	boolean liquid()
 	{
+		return liquid > 0;
+	}
+
+	/** @return how strongly the liquid covers what is behind it, from 0 to 1 */
+	double liquidAlpha()
+	{
 		return liquid;
 	}
 
@@ -124,9 +130,13 @@ final class JarModel
 		glow = color;
 	}
 
-	/** Marks the jar as holding liquid. */
-	void fill()
+	/**
+	 * Marks the jar as holding liquid.
+	 *
+	 * @param alpha how strongly the liquid covers what is behind it, above 0 and at most 1
+	 */
+	void fill(double alpha)
 	{
-		liquid = true;
+		liquid = alpha;
 	}
 }
