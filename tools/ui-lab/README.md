@@ -39,6 +39,9 @@ change the plugin's code. It needs Python and a JDK 11 or newer (`JAVA_HOME` is 
     Storage, Battle, the battle controls, the pinned party box and the info card. It changes only what is drawn:
     clickable areas stay put, so move buttons as **Panes and buttons**. Resizing text changes its room, not its size.
 - **Hold: original** shows the scene as the code has it, for comparison.
+- Changes are **saved as you go** (in `tools/ui-lab/.autosave.json`, never committed) and are there next time.
+- **Undo** (Ctrl+Z) and **Redo** (Ctrl+Y) step through them. **My changes** lists each one with its own reset.
+- **Save to project** writes a named preset into `tools/ui-lab/presets/`, where `./gradlew build` keeps an eye on it.
 - **Export preset** saves what you changed as `ui-preset.json`: each value with its file, line, old and new value.
   Hand that file over to have it applied to the code. **Load preset** brings it back later.
 
@@ -50,6 +53,16 @@ painters call the depth effects (`hooks.py`, `java/LabDepth.java`). That copy is
 The folder is not part of the plugin build. If a painter changes shape, the build stops and says which hook to update.
 
 The server listens on this computer only and refuses requests from other sites.
+
+## The build check
+
+`./gradlew build` runs `tools/ui-lab/check.py` (task `checkUiLab`). It fails when:
+
+- the lab no longer builds against the plugin, for example because a painter changed shape (`hooks.py` says which);
+- `controls.snapshot` no longer lists the values, theme colours, panes and buttons the code has. If you meant the
+  change, run `python tools/ui-lab/check.py --update` and commit the snapshot with it;
+- a preset in `presets/` points at something that is gone, or was made from a value the code no longer has. Update or
+  delete the preset.
 
 ## What it cannot show
 

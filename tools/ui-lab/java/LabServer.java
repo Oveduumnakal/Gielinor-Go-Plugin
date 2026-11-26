@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -15,7 +16,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,6 +61,10 @@ public final class LabServer
 	private final Map<String, Double> changed = new LinkedHashMap<>();
 	private final Map<String, Supplier<LabScenes.Scene>> factories = LabScenes.all();
 	private final Map<String, LabScenes.Scene> scenes = new HashMap<>();
+	private final Deque<Map<String, Double>> undo = new ArrayDeque<>();
+	private final Deque<Map<String, Double>> redo = new ArrayDeque<>();
+	private final List<String> skipped = new ArrayList<>();
+	private String gesture;
 	private int port;
 
 	private LabServer(Path web, Path controlFile) throws IOException
@@ -80,6 +87,7 @@ public final class LabServer
 			Files.write(Paths.get(args[3]), GSON.toJson(lab.dump()).getBytes(StandardCharsets.UTF_8));
 			return;
 		}
+		lab.load();
 		HttpServer server = lab.bind();
 		server.createContext("/", lab::handle);
 		server.start();
@@ -182,13 +190,31 @@ public final class LabServer
 					break;
 				case "/api/set":
 					requirePost(post);
+					remember(query.get("g"));
 					set(query.get("id"), query.get("value"));
+					save();
 					send(exchange, 200, "application/json", "{}");
 					break;
 				case "/api/reset":
 					requirePost(post);
+					remember(query.get("g"));
 					reset(query.get("id"));
+					save();
 					send(exchange, 200, "application/json", "{}");
+					break;
+				case "/api/undo":
+					requirePost(post);
+					step(undo, redo);
+					send(exchange, 200, "application/json", GSON.toJson(changed));
+					break;
+				case "/api/redo":
+					requirePost(post);
+					step(redo, undo);
+					send(exchange, 200, "application/json", GSON.toJson(changed));
+					break;
+				case "/api/save":
+					requirePost(post);
+					send(exchange, 200, "application/json", GSON.toJson(keep(query.get("name"), exchange.getRequestBody())));
 					break;
 				case "/api/input":
 					requirePost(post);
@@ -276,7 +302,113 @@ public final class LabServer
 		schema.put("themeColors", colors);
 		schema.put("depth", LabDepth.settings());
 		schema.put("changed", changed);
+		schema.put("skipped", skipped);
 		return schema;
+	}
+
+	/** Brings back what was changed last time, leaving out what the code no longer has. */
+	private void load() throws IOException
+	{
+		Path file = autosave();
+		if (!Files.exists(file))
+			return;
+
+		Map<String, Double> saved = GSON.fromJson(new String(Files.readAllBytes(file), StandardCharsets.UTF_8),
+			new TypeToken<LinkedHashMap<String, Double>>()
+			{
+			}.getType());
+		if (saved == null)
+			return;
+
+		saved.forEach((id, value) ->
+		{
+			try
+			{
+				apply(id, value);
+				changed.put(id, value);
+			}
+			catch (IllegalArgumentException e)
+			{
+				skipped.add(id);
+			}
+		});
+		if (!skipped.isEmpty())
+			Files.copy(file, file.resolveSibling(".autosave.before-skips.json"),
+				java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+		refresh();
+	}
+
+	/** @return where a file of the user's working state lives, unless the environment says otherwise, as tests do */
+	private Path kept(String variable, String name)
+	{
+		String elsewhere = System.getenv(variable);
+		return elsewhere != null ? Paths.get(elsewhere) : web.resolveSibling(name);
+	}
+
+	private Path autosave()
+	{
+		return kept("UILAB_AUTOSAVE", ".autosave.json");
+	}
+
+	private void save() throws IOException
+	{
+		Path next = autosave().resolveSibling(".autosave.next.json");
+		Files.write(next, GSON.toJson(changed).getBytes(StandardCharsets.UTF_8));
+		Files.move(next, autosave(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+	}
+
+	/** Keeps the state before a change, once for each drag, click or key press. */
+	private void remember(String next)
+	{
+		if (next != null && next.equals(gesture))
+			return;
+
+		gesture = next;
+		undo.push(new LinkedHashMap<>(changed));
+		if (undo.size() > 200)
+			undo.removeLast();
+
+		redo.clear();
+	}
+
+	private void step(Deque<Map<String, Double>> from, Deque<Map<String, Double>> to) throws IOException
+	{
+		if (from.isEmpty())
+			return;
+
+		to.push(new LinkedHashMap<>(changed));
+		Map<String, Double> wanted = from.pop();
+		reset(null);
+		wanted.forEach((id, value) ->
+		{
+			apply(id, value);
+			changed.put(id, value);
+		});
+		refresh();
+		gesture = null;
+		save();
+	}
+
+	/** Writes a named preset into the project, where the build check looks after it. */
+	private Map<String, Object> keep(String name, InputStream body) throws IOException
+	{
+		if (name == null || !name.matches("[A-Za-z0-9 _-]{1,40}"))
+			throw new IllegalArgumentException("a preset name is letters, digits, spaces, - or _");
+
+		ByteArrayOutputStream read = new ByteArrayOutputStream();
+		byte[] chunk = new byte[8192];
+		for (int n = body.read(chunk); n >= 0; n = body.read(chunk))
+		{
+			read.write(chunk, 0, n);
+			if (read.size() > 1_000_000)
+				throw new IllegalArgumentException("too large for a preset");
+		}
+
+		Path folder = kept("UILAB_PRESETS", "presets");
+		Files.createDirectories(folder);
+		Files.write(folder.resolve(name + ".json"), read.toByteArray());
+		return java.util.Collections.singletonMap("saved", "tools/ui-lab/presets/" + name + ".json");
 	}
 
 	private void set(String id, String text)

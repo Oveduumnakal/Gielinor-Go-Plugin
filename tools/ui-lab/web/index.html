@@ -44,6 +44,11 @@
   .box .se { left: 100%; top: 100%; cursor: nwse-resize; }
   #picked { display: none; }
   #status { color: #e88; padding: 0 10px; }
+  #note { color: #9d9; padding: 0 10px; }
+  #mine { max-height: 34vh; overflow: auto; padding: 0 10px; border-bottom: 1px solid #444; flex: none; }
+  .mine { display: grid; grid-template-columns: 1fr auto 22px; gap: 8px; align-items: center; padding: 2px 0; }
+  .mine span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mine b { color: #ffcc66; font-weight: 400; white-space: nowrap; }
   #scrub { flex: 1; min-width: 160px; }
 </style>
 </head>
@@ -51,12 +56,17 @@
 <aside>
   <header><input id="search" placeholder="Search controls, e.g. glass, radius, open, hp"></header>
   <div class="bar">
+    <button id="undo" title="Ctrl+Z">Undo</button>
+    <button id="redo" title="Ctrl+Y">Redo</button>
+    <button id="resetAll">Reset all</button>
+    <button id="keep" title="Writes the preset into tools/ui-lab/presets, where the build checks it">Save to project</button>
     <button id="export">Export preset</button>
     <button id="import">Load preset</button>
-    <button id="resetAll">Reset all</button>
     <span id="count"></span>
     <input id="file" type="file" accept="application/json" hidden>
   </div>
+  <div id="note"></div>
+  <details id="mine" open hidden><summary>My changes <small id="mineCount"></small></summary><div></div></details>
   <div id="list"></div>
 </aside>
 <main>
@@ -97,9 +107,16 @@ let schema, changed = {}, playing = true, original = false, t = 0, last = perfor
 const params = extra => new URLSearchParams(Object.assign(
   { scene: $("scene").value, theme: $("theme").value, scale: $("scale").value, t: Math.round(t) }, extra)).toString();
 
+/* One number for each drag, click or key press, so that undo steps back a whole one. */
+let gesture = Date.now();
+["pointerdown", "keydown"].forEach(kind => window.addEventListener(kind, () => gesture++, true));
+
 async function post(path, query) {
-  const reply = await fetch(path + (query ? "?" + query : ""), { method: "POST", headers: { "X-UI-Lab": "1" } });
+  const asked = new URLSearchParams(query || "");
+  asked.set("g", gesture);
+  const reply = await fetch(path + "?" + asked, { method: "POST", headers: { "X-UI-Lab": "1" } });
   if (!reply.ok) $("status").textContent = await reply.text();
+  return reply.ok;
 }
 
 async function tick() {
@@ -229,10 +246,80 @@ function build() {
     list.append(group(f, files[f], make, open && files[f].length < 40)));
 }
 
-function count() {
-  const n = Object.keys(changed).length;
-  $("count").textContent = n ? n + " changed" : "";
+const find = id => schema.controls.concat(schema.themeColors, schema.depth).find(x => x.id === id);
+const SIDE_NAMES = { x: "across", y: "down", w: "width", h: "height", f: "text size" };
+
+/* What a change is called, and what it went from and to. */
+function told(id, value) {
+  if (id.startsWith("layout:")) {
+    const dot = id.lastIndexOf("."), name = id.slice(7, dot), side = id.slice(dot + 1);
+    let label = name;
+    if (name.startsWith("el|")) {
+      const [, owner, kind] = name.split("|");
+      label = owner.replace(/(Painter|Page)\./, " ") + ": " + kind;
+    }
+    return { label: label + ", " + SIDE_NAMES[side], was: "", now: (value > 0 ? "+" : "") + value };
+  }
+  const c = find(id) || {};
+  const color = c.type === "Color" || id.startsWith("theme:");
+  const show = v => v === undefined ? "?" : color ? "#" + (v >>> 0).toString(16).padStart(8, "0") : +(+v).toFixed(3);
+  const label = id.startsWith("theme:") ? id.slice(6) : c.file ? c.file + ": " + c.name : c.name || id;
+  return { label, was: show(c.value), now: show(value) };
 }
+
+function count() {
+  const ids = Object.keys(changed);
+  $("count").textContent = ids.length ? ids.length + " changed" : "";
+  $("mine").hidden = !ids.length;
+  $("mineCount").textContent = ids.length;
+  const body = $("mine").lastElementChild;
+  body.textContent = "";
+  ids.forEach(id => {
+    const t = told(id, changed[id]);
+    const row = Object.assign(document.createElement("div"), { className: "mine", title: id });
+    const undoOne = Object.assign(document.createElement("button"), { textContent: "↺", title: "Put this one back" });
+    undoOne.onclick = async () => {
+      delete changed[id];
+      await post("/api/reset", { id });
+      refresh();
+    };
+    row.append(Object.assign(document.createElement("span"), { textContent: t.label }),
+      Object.assign(document.createElement("b"), { textContent: t.was === "" ? t.now : t.was + " → " + t.now }), undoOne);
+    body.append(row);
+  });
+}
+
+function refresh() {
+  count();
+  build();
+  loadBoxes();
+}
+
+async function travel(way) {
+  const reply = await fetch("/api/" + way, { method: "POST", headers: { "X-UI-Lab": "1" } });
+  if (!reply.ok) return;
+  changed = await reply.json();
+  refresh();
+}
+$("undo").onclick = () => travel("undo");
+$("redo").onclick = () => travel("redo");
+window.addEventListener("keydown", e => {
+  if (!(e.ctrlKey || e.metaKey) || ["search", "text", "number"].includes(document.activeElement.type)) return;
+  const key = e.key.toLowerCase();
+  if (key === "z" || key === "y") {
+    e.preventDefault();
+    travel(key === "y" || e.shiftKey ? "redo" : "undo");
+  }
+});
+
+$("keep").onclick = async () => {
+  if (!Object.keys(changed).length) { $("note").textContent = "Nothing is changed yet."; return; }
+  const name = prompt("Name for this preset (letters, digits, spaces):", "my preset");
+  if (!name) return;
+  const reply = await fetch("/api/save?name=" + encodeURIComponent(name),
+    { method: "POST", headers: { "X-UI-Lab": "1" }, body: JSON.stringify(preset(), null, 2) });
+  $("note").textContent = reply.ok ? "Saved " + (await reply.json()).saved : await reply.text();
+};
 
 function preset() {
   const all = schema.controls.concat(schema.themeColors, schema.depth);
@@ -241,7 +328,7 @@ function preset() {
     const color = c.type === "Color" || id.startsWith("theme:");
     const show = v => color ? "0x" + (v >>> 0).toString(16).padStart(8, "0").toUpperCase() : v;
     const file = c.file || (id.startsWith("depth:") ? "LabDepth (new effect)" : "WindowTheme");
-    const entry = { id, from: show(c.value), to: show(value), value, file, line: c.line || null };
+    const entry = { id, from: show(c.value), to: show(value), was: c.value, value, file, line: c.line || null };
     if (id.startsWith("layout:el|")) {
       const [, method, kind, ...rest] = id.slice(7, id.lastIndexOf(".")).split("|");
       return { id, from: 0, to: value, value, file: method.split(".")[0] + ".java", element: kind,
@@ -263,6 +350,9 @@ async function start() {
   const saved = JSON.parse(localStorage.getItem("uilab") || "{}");
   if (schema.scenes.includes(saved.scene)) $("scene").value = saved.scene;
   build(); count(); tick();
+  if (schema.skipped.length)
+    $("note").textContent = schema.skipped.length + " saved changes no longer fit the code and were left out "
+      + "(a copy is in tools/ui-lab/.autosave.before-skips.json).";
 }
 
 const remember = () => localStorage.setItem("uilab", JSON.stringify({ scene: $("scene").value }));
@@ -288,12 +378,24 @@ $("import").onclick = () => $("file").click();
 $("file").onchange = async () => {
   const file = $("file").files[0];
   if (!file) return;
-  try {
-    for (const entry of JSON.parse(await file.text())) {
-      changed[entry.id] = Number(entry.value);
-      await post("/api/set", new URLSearchParams({ id: entry.id, value: entry.value }));
+  let entries = [], left = 0;
+  try { entries = JSON.parse(await file.text()); } catch (e) { $("note").textContent = "That file is not a preset."; }
+  gesture++;
+  for (const entry of entries) {
+    let id = entry.id;
+    /* Presets made before IDs were stable name a value by line and column. */
+    const old = /^(\w+):@(\d+)\.(\d+)$/.exec(id);
+    if (old) {
+      const c = schema.controls.find(x => x.file === old[1] && x.key === "v" + old[2] + "_" + old[3]
+        && x.doc === entry.source);
+      if (c) id = c.id;
     }
-  } catch (e) { $("status").textContent = "That file is not a preset."; }
+    if (await post("/api/set", { id, value: entry.value })) changed[id] = Number(entry.value);
+    else left++;
+  }
+  if (entries.length)
+    $("note").textContent = "Loaded " + (entries.length - left) + " changes"
+      + (left ? "; " + left + " no longer fit the code." : ".");
   $("file").value = "";
   count(); build(); loadBoxes();
 };
