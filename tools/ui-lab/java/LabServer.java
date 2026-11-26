@@ -141,6 +141,9 @@ public final class LabServer
 				case "/api/schema":
 					send(exchange, 200, "application/json", GSON.toJson(schema()));
 					break;
+				case "/api/boxes":
+					send(exchange, 200, "application/json", GSON.toJson(boxes(query)));
+					break;
 				case "/api/frame":
 					frame(exchange, query);
 					break;
@@ -156,7 +159,7 @@ public final class LabServer
 					break;
 				case "/api/input":
 					requirePost(post);
-					scene(query).input(query.get("type"), number(query, "x"), number(query, "y"), number(query, "button"),
+					current(query).input(query.get("type"), number(query, "x"), number(query, "y"), number(query, "button"),
 						number(query, "t"));
 					send(exchange, 200, "application/json", "{}");
 					break;
@@ -261,6 +264,8 @@ public final class LabServer
 				LabTheme.set(one.substring(6), null);
 			else if (one.startsWith("depth:"))
 				LabDepth.reset(one);
+			else if (one.startsWith("layout:"))
+				LabBoxes.set(one.substring(7), 0);
 			else if (controls.containsKey(one))
 				apply(one, controls.get(one).value);
 		}
@@ -279,6 +284,12 @@ public final class LabServer
 		if (id.startsWith("depth:"))
 		{
 			LabDepth.set(id, value);
+			return;
+		}
+
+		if (id.startsWith("layout:"))
+		{
+			LabBoxes.set(id.substring(7), value);
 			return;
 		}
 
@@ -322,6 +333,41 @@ public final class LabServer
 		return scene;
 	}
 
+	/** @return the scene asked for, with the layouts set to report to it */
+	private LabScenes.Scene current(Map<String, String> query)
+	{
+		LabScenes.Scene scene = scene(query);
+		LabBoxes.target = scene.boxes;
+		LabBoxes.unit = scene.scale;
+		return scene;
+	}
+
+	/** @return the panes and buttons of the page the scene shows, with where they are and how far they have moved */
+	private List<Map<String, Object>> boxes(Map<String, String> query)
+	{
+		LabScenes.Scene scene = current(query);
+		LabDepth.frame();
+		scene.frame(number(query, "t"));
+		String name = query.get("scene");
+		String page = name.startsWith("Window: ") ? name.substring(8).split(" ")[0] + ": " : "-";
+		List<Map<String, Object>> found = new ArrayList<>();
+		scene.boxes.forEach((box, at) ->
+		{
+			if (!box.startsWith(page))
+				return;
+
+			Map<String, Object> entry = new LinkedHashMap<>();
+			entry.put("name", box);
+			entry.put("x", at.x);
+			entry.put("y", at.y);
+			entry.put("w", at.width);
+			entry.put("h", at.height);
+			entry.put("change", LabBoxes.change(box));
+			found.add(entry);
+		});
+		return found;
+	}
+
 	private void frame(HttpExchange exchange, Map<String, String> query) throws IOException
 	{
 		boolean original = "1".equals(query.get("original"));
@@ -332,7 +378,7 @@ public final class LabServer
 		BufferedImage image;
 		try
 		{
-			LabScenes.Scene scene = scene(query);
+			LabScenes.Scene scene = current(query);
 			LabDepth.frame();
 			image = scene.frame(number(query, "t"));
 		}

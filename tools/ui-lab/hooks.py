@@ -131,9 +131,67 @@ def tasks(text):
     return text
 
 
+def boxes(*calls):
+    return "".join("LabBoxes.at(%s);\n\t\t" % call for call in calls)
+
+
+def summary_layout(text):
+    calls = boxes('"Summary: name bar", header', '"Summary: portrait", portrait, chips', '"Summary: type badges", chips',
+                  '"Summary: Description", description', '"Summary: Stats", stats', '"Summary: Nature", nature',
+                  '"Summary: hearts", bond', '"Summary: Moves", moves')
+    anchor = "body.y + body.height - buttonH + row * (buttonH + gap), each, buttonH);\n\t\t}\n"
+    each = ('for (int i = 0; i < n; i++)\n\t\t\tLabBoxes.at("Summary: " + labels[i] + " button", buttons[i]);\n')
+    return after(text, anchor, "\n\t\t%s%s" % (calls, each), "SummaryLayout")
+
+
+def party_layout(text):
+    calls = boxes('"Party: eggs", eggs', '"Party: tasks", tasks', '"Party: Pin Party button", pinButton',
+                  '"Party: More button", moreButton')
+    each = 'for (int i = 0; i < SLOTS; i++)\n\t\t\tLabBoxes.at("Party: row " + (i + 1), rows[i]);\n'
+    anchor = "tasks = new Rectangle(side.x, side.y + eggsH + gap, side.width, Math.max(0, free - eggsH - gap));\n"
+    return after(text, anchor, "\n\t\t%s%s" % (calls, each), "PartyLayout")
+
+
+def bag_layout(text):
+    calls = boxes('"Bag: trainer", trainer, titleLine, winsLine, trainerBar, stepsLine, stepsBar',
+                  '"Bag: jars", jars, jarsHeading, jarCells', '"Bag: healing items", items, itemsHeading, itemCells',
+                  '"Bag: eggs", eggs, eggsHeading, eggRows, eggsMore')
+    at = once(text, "eggsMore = rows < eggCount && capacity > 0", "BagLayout")
+    end = text.index(": new Rectangle();\n", at) + len(": new Rectangle();\n")
+    return text[:end] + "\n\t\t%s\n" % calls.rstrip() + text[end:]
+
+
+def collection_boxes(text):
+    calls = boxes('"Collection: summary", left, record, recordBar, reward, todayHeading, todayRows, event, night',
+                  '"Collection: list background", right', '"Collection: filter button", filterButton, count',
+                  '"Collection: search box", searchBox', '"Collection: details", detail',
+                  '"Collection: species list", labList')
+    anchor = "list.layout(new Rectangle(right.x + pad / 2, top, right.width - pad, Math.max(0, listBottom - top)), rowH,"
+    new = ("Rectangle labList = new Rectangle(right.x + pad / 2, top, right.width - pad, "
+           "Math.max(0, listBottom - top));\n\t\t%slist.layout(labList, rowH," % calls)
+    once(text, anchor, "CollectionPage")
+    return text.replace(anchor, new)
+
+
+def tasks_boxes(text):
+    calls = boxes('"Tasks: tasks", left, headings, taskRows, divider, streak',
+                  '"Tasks: milestones", right, milestoneHeading, nextLine, nextBar',
+                  '"Tasks: milestone list", viewport')
+    return before(text, "list.layout(viewport, style.px(MILESTONE_UNITS)", calls, "TasksPage")
+
+
+def chain(*hooks):
+    def run(text):
+        for hook in hooks:
+            text = hook(text)
+        return text
+    return run
+
+
 HOOKS = {"WindowStyle": window_style, "FollowerBubblePainter": follower_bubbles, "BubblePainter": wild_bubbles,
-         "SummaryPainter": summary, "BagPainter": bag, "PartyPainter": party, "CollectionPage": collection,
-         "TasksPage": tasks}
+         "SummaryPainter": summary, "BagPainter": bag, "PartyPainter": party,
+         "CollectionPage": chain(collection, collection_boxes), "TasksPage": chain(tasks, tasks_boxes),
+         "SummaryLayout": summary_layout, "PartyLayout": party_layout, "BagLayout": bag_layout}
 
 
 def apply(source):

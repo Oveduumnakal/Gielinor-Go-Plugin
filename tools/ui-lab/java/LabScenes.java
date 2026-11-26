@@ -24,6 +24,8 @@ final class LabScenes
 	{
 		WindowTheme theme;
 		double scale = 1.0;
+		/** The panes and buttons this scene's layouts reported. */
+		final Map<String, Rectangle> boxes = new LinkedHashMap<>();
 
 		abstract BufferedImage frame(long t);
 

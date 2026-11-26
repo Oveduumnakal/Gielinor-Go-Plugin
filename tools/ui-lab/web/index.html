@@ -29,7 +29,18 @@
   .row.color { grid-template-columns: 1fr 44px 132px 22px; }
   .row input[type=color] { padding: 0; width: 44px; height: 22px; }
   #stage { flex: 1; overflow: auto; padding: 16px; }
-  #frame { display: block; image-rendering: pixelated; border: 1px solid #333; user-select: none; }
+  #wrap { position: relative; display: inline-block; outline: 1px solid #333; }
+  #frame { display: block; image-rendering: pixelated; user-select: none; }
+  #boxes { position: absolute; inset: 0; }
+  .box { position: absolute; border: 1px dashed rgba(80, 220, 255, .75); cursor: move; touch-action: none; }
+  .box:hover { background: rgba(80, 220, 255, .12); }
+  .box.picked { border: 2px solid #ffcc33; background: rgba(255, 204, 51, .12); }
+  .box i { position: absolute; width: 10px; height: 10px; background: #ffcc33; display: none; }
+  .box.picked i, .box:hover i { display: block; }
+  .box .e { right: -5px; top: calc(50% - 5px); cursor: ew-resize; }
+  .box .s { bottom: -5px; left: calc(50% - 5px); cursor: ns-resize; }
+  .box .se { right: -5px; bottom: -5px; cursor: nwse-resize; }
+  #picked { display: none; }
   #status { color: #e88; padding: 0 10px; }
   #scrub { flex: 1; min-width: 160px; }
 </style>
@@ -54,6 +65,7 @@
       <span id="scaleText">1.00</span></label>
     <label>Zoom <select id="zoom"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
     <button id="compare" title="Hold to see the original values">Hold: original</button>
+    <button id="edit" title="Drag panes and buttons to move them; drag a yellow handle to resize">Edit layout</button>
   </header>
   <div class="bar">
     <button id="play" class="on">Pause</button>
@@ -63,8 +75,15 @@
     <input id="scrub" type="range" min="0" max="5000" step="10" value="0">
     <span id="time">0 ms</span>
   </div>
+  <div class="bar" id="picked">
+    <span id="pickedText">Drag a box to move it, or a yellow handle to resize it. Arrows move; Shift+arrows resize.</span>
+    <button id="resetBox" style="visibility: hidden">Reset this one</button>
+    <label title="Hold Alt while dragging to turn this off for a moment"><input id="snap" type="checkbox" checked>
+      Snap to edges</label>
+  </div>
   <div id="status"></div>
-  <div id="stage"><img id="frame" alt="the chosen part of the plugin's interface" draggable="false"></div>
+  <div id="stage"><div id="wrap"><img id="frame" alt="the chosen part of the plugin's interface" draggable="false">
+    <div id="boxes"></div></div></div>
 </main>
 <script>
 "use strict";
@@ -219,6 +238,8 @@ function preset() {
     const show = v => color ? "0x" + (v >>> 0).toString(16).padStart(8, "0").toUpperCase() : v;
     const file = c.file || (id.startsWith("depth:") ? "LabDepth (new effect)" : "WindowTheme");
     const entry = { id, from: show(c.value), to: show(value), value, file, line: c.line || null };
+    if (id.startsWith("layout:"))
+      return { id, from: 0, to: value, value, file: id.slice(7).split(":")[0] + " layout (change in layout units)" };
     if (c.holder) entry.source = c.doc;
     return entry;
   });
@@ -247,7 +268,7 @@ $("scrub").oninput = () => { playing = false; $("play").textContent = "Play"; $(
   t = Number($("scrub").value); };
 $("compare").onpointerdown = () => original = true;
 window.addEventListener("pointerup", () => original = false);
-$("resetAll").onclick = async () => { changed = {}; await post("/api/reset"); count(); build(); };
+$("resetAll").onclick = async () => { changed = {}; await post("/api/reset"); count(); build(); loadBoxes(); };
 $("export").onclick = () => {
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(preset(), null, 2)], { type: "application/json" }));
@@ -265,8 +286,130 @@ $("file").onchange = async () => {
     }
   } catch (e) { $("status").textContent = "That file is not a preset."; }
   $("file").value = "";
-  count(); build();
+  count(); build(); loadBoxes();
 };
+
+const SIDES = ["x", "y", "w", "h"];
+let editing = false, boxList = [], picked = null, dragging = null;
+
+async function loadBoxes() {
+  if (!editing || dragging) return;
+  const reply = await fetch("/api/boxes?" + params({}));
+  boxList = reply.ok ? await reply.json() : [];
+  drawBoxes();
+}
+
+function place(div, b) {
+  const zoom = Number($("zoom").value);
+  Object.assign(div.style, { left: b.x * zoom + "px", top: b.y * zoom + "px", width: b.w * zoom + "px",
+    height: b.h * zoom + "px" });
+}
+
+function drawBoxes() {
+  const layer = $("boxes");
+  layer.textContent = "";
+  if (!editing) return;
+  [...boxList].sort((a, b) => b.w * b.h - a.w * a.h).forEach(b => {
+    const div = document.createElement("div");
+    div.className = "box" + (b.name === picked ? " picked" : "");
+    div.title = b.name;
+    place(div, b);
+    ["e", "s", "se"].forEach(side => div.append(Object.assign(document.createElement("i"), { className: side })));
+    div.onpointerdown = e => startDrag(e, b, div, e.target.tagName === "I" ? e.target.className : "move");
+    layer.append(div);
+  });
+  describe();
+}
+
+function describe() {
+  const b = boxList.find(x => x.name === picked);
+  $("resetBox").style.visibility = b ? "visible" : "hidden";
+  $("pickedText").textContent = b
+    ? b.name + "   moved " + b.change[0] + ", " + b.change[1] + "   resized " + b.change[2] + " wide, " + b.change[3]
+      + " tall"
+    : boxList.length ? "Drag a box to move it, or a yellow handle to resize it. Arrows move; Shift+arrows resize."
+      : "This scene has nothing to rearrange. Pick Summary, Party, Bag, Collection or Tasks.";
+}
+
+async function setChange(name, change) {
+  for (let i = 0; i < SIDES.length; i++) {
+    const id = "layout:" + name + "." + SIDES[i];
+    if (change[i] === (changed[id] || 0)) continue;
+    if (change[i]) changed[id] = change[i]; else delete changed[id];
+    await post("/api/set", new URLSearchParams({ id, value: change[i] }));
+  }
+  count();
+}
+
+function snapped(value, others, reach) {
+  let best = null;
+  others.forEach(edge => value.forEach(mine => {
+    const gap = edge - mine;
+    if (Math.abs(gap) <= reach && (best === null || Math.abs(gap) < Math.abs(best))) best = gap;
+  }));
+  return best || 0;
+}
+
+function startDrag(event, b, div, mode) {
+  event.preventDefault();
+  picked = b.name;
+  document.querySelectorAll(".box").forEach(x => x.classList.remove("picked"));
+  div.classList.add("picked");
+  describe();
+  div.setPointerCapture(event.pointerId);
+  const zoom = Number($("zoom").value), scale = Number($("scale").value);
+  const from = { x: event.clientX, y: event.clientY, box: Object.assign({}, b), change: [...b.change] };
+  const others = boxList.filter(x => x.name !== b.name);
+  const across = others.flatMap(x => [x.x, x.x + x.w]), down = others.flatMap(x => [x.y, x.y + x.h]);
+  let change = from.change;
+  dragging = b.name;
+  div.onpointermove = e => {
+    let dx = (e.clientX - from.x) / zoom, dy = (e.clientY - from.y) / zoom;
+    const o = from.box, move = mode === "move";
+    if ($("snap").checked && !e.altKey) {
+      if (move || mode !== "s")
+        dx += snapped(move ? [o.x + dx, o.x + o.w + dx] : [o.x + o.w + dx], across, 5);
+      if (move || mode !== "e")
+        dy += snapped(move ? [o.y + dy, o.y + o.h + dy] : [o.y + o.h + dy], down, 5);
+    }
+    const ux = Math.round(dx / scale), uy = Math.round(dy / scale);
+    const add = move ? [ux, uy, 0, 0] : [0, 0, mode === "s" ? 0 : ux, mode === "e" ? 0 : uy];
+    change = from.change.map((v, i) => v + add[i]);
+    place(div, { x: o.x + add[0] * scale, y: o.y + add[1] * scale, w: Math.max(0, o.w + add[2] * scale),
+      h: Math.max(0, o.h + add[3] * scale) });
+    b.change = change;
+    describe();
+  };
+  div.onpointerup = async () => {
+    div.onpointermove = div.onpointerup = null;
+    await setChange(b.name, change);
+    dragging = null;
+    loadBoxes();
+  };
+}
+
+window.addEventListener("keydown", async e => {
+  const b = boxList.find(x => x.name === picked);
+  const step = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+  if (!editing || !b || !step || ["INPUT", "SELECT"].includes(document.activeElement.tagName)) return;
+  e.preventDefault();
+  const at = e.shiftKey ? 2 : 0;
+  b.change[at] += step[0];
+  b.change[at + 1] += step[1];
+  await setChange(b.name, b.change);
+  loadBoxes();
+});
+
+$("edit").onclick = () => {
+  editing = !editing;
+  picked = null;
+  $("edit").classList.toggle("on", editing);
+  $("picked").style.display = editing ? "flex" : "none";
+  if (editing) loadBoxes(); else drawBoxes();
+};
+$("resetBox").onclick = async () => { await setChange(picked, [0, 0, 0, 0]); loadBoxes(); };
+$("zoom").addEventListener("change", drawBoxes);
+["scene", "scale", "theme"].forEach(id => $(id).addEventListener("change", () => setTimeout(loadBoxes, 100)));
 
 let lastMove = 0;
 function pointer(event, type) {
