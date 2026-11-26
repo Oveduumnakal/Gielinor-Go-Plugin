@@ -440,6 +440,23 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Whether the Summary page plays the creature's biome behind it.
+	 *
+	 * @return true to show the backgrounds
+	 */
+	@ConfigItem(
+		keyName = "animatedBackgrounds",
+		name = "Animated backgrounds",
+		description = "Plays the creature's home biome behind it on the Summary page.\n"
+			+ "Window animations set to Reduced or Off holds it still.",
+		position = 40
+	)
+	default boolean animatedBackgrounds()
+	{
+		return true;
+	}
+
+	/**
 	 * The size of the painted window, as a share of the game screen's width.
 	 *
 	 * @return the size preset, small by default

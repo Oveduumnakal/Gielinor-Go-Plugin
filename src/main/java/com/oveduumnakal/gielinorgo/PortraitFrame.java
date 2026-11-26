@@ -66,10 +66,33 @@ final class PortraitFrame
 			g.setComposite(saved);
 		}
 
-		if (row.gilded() && mode.loops())
-			sweep(g, style, box, now);
-
 		g.setClip(savedClip);
+		border(g, style, row, box, clip, now, mode);
+	}
+
+	/**
+	 * Paints what goes round a portrait: the light sweep and gold frame of a gilded creature, or the glass border.
+	 *
+	 * @param g the graphics
+	 * @param style the style
+	 * @param row the creature's row
+	 * @param box the portrait box
+	 * @param clip its slanted shape
+	 * @param now the time in milliseconds
+	 * @param mode the motion mode
+	 */
+	static void border(Graphics2D g, WindowStyle style, RowModel row, Rectangle2D box, Shape clip, long now,
+		MotionMode mode)
+	{
+		double skew = style.metrics().slant / 2.0;
+		if (row.gilded() && mode.loops())
+		{
+			Shape saved = g.getClip();
+			g.clip(clip);
+			sweep(g, style, box, now);
+			g.setClip(saved);
+		}
+
 		if (style.theme().glass() && !row.gilded())
 			GlassStyle.borderInset(g, clip, style, 1.0);
 
@@ -127,7 +150,11 @@ final class PortraitFrame
 		g.setTransform(saved);
 	}
 
-	private static synchronized BufferedImage grey(BufferedImage image)
+	/**
+	 * @param image a portrait
+	 * @return the same picture without colour, kept for next time
+	 */
+	static synchronized BufferedImage grey(BufferedImage image)
 	{
 		BufferedImage have = GREY.get(image);
 		if (have != null)

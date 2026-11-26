@@ -244,6 +244,16 @@ final class WindowPages implements WindowShell.PageActions
 		enter = true;
 	}
 
+	/**
+	 * Puts biome backgrounds behind the creature on the Summary page.
+	 *
+	 * @param backgrounds what paints them, or null for the plain portrait
+	 */
+	void scenery(SummaryScene backgrounds)
+	{
+		summary.scenery(backgrounds);
+	}
+
 	@Override
 	public void closed()
 	{
@@ -420,7 +430,12 @@ final class WindowPages implements WindowShell.PageActions
 	{
 		StringBuilder text = new StringBuilder("Moves");
 		for (Move move : view.moves())
-			text.append('\n').append(move.name()).append(": ").append(move.describe());
+		{
+			text.append('\n')
+					.append(move.name())
+					.append(": ")
+					.append(move.describe());
+		}
 
 		return text.append("\nClick to open").toString();
 	}
@@ -454,7 +469,9 @@ final class WindowPages implements WindowShell.PageActions
 			if (text.length() > 0)
 				text.append('\n');
 
-			text.append(row.label()).append(": ").append(row.done() ? "done" : row.count());
+			text.append(row.label())
+					.append(": ")
+					.append(row.done() ? "done" : row.count());
 		}
 
 		return text.toString();

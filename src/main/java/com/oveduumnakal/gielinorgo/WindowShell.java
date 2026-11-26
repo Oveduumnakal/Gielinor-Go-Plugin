@@ -10,6 +10,7 @@ import java.awt.Composite;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
@@ -676,6 +677,9 @@ final class WindowShell
 			pages.typed(c, modifiers, nowMs);
 	}
 
+	/** Where the pointer was last seen over the window, or null once it left. */
+	private Point pointer;
+
 	/**
 	 * The pointer moved over the window.
 	 *
@@ -685,6 +689,7 @@ final class WindowShell
 	 */
 	void onMoved(int x, int y, long nowMs)
 	{
+		pointer = new Point(x, y);
 		if (!open)
 			return;
 
@@ -707,6 +712,7 @@ final class WindowShell
 	/** The pointer left the window, so nothing it was over is hovered any more. */
 	void onLeft()
 	{
+		pointer = null;
 		tooltip.clear();
 		if (!open)
 			return;
@@ -1026,7 +1032,7 @@ final class WindowShell
 		AffineTransform savedTransform = g.getTransform();
 		g.translate(0, lift);
 		PageContext ctx = new PageContext(st, mode, nowMs, shown, body, focus.highlight(), focus.focused(),
-			pressedId);
+			pressedId).pointer(pointer);
 		if (changelog != null)
 		{
 			changelog.paint(g, ctx);

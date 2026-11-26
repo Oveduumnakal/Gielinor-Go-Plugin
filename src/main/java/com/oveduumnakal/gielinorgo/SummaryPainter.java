@@ -50,6 +50,7 @@ final class SummaryPainter
 	static final String DESCRIPTION_HEADING = "Description";
 
 	private final PortraitCache pictures;
+	private SummaryScene scene;
 	private final PageText.Sink sink;
 
 	/**
@@ -95,6 +96,16 @@ final class SummaryPainter
 		g.setClip(savedClip);
 	}
 
+	/**
+	 * Puts biome backgrounds behind the creature.
+	 *
+	 * @param backgrounds what paints them, or null for the plain portrait
+	 */
+	void scenery(SummaryScene backgrounds)
+	{
+		this.scene = backgrounds;
+	}
+
 	private void left(Graphics2D g, PageContext ctx, SummaryLayout layout, SummaryContent content, double grow,
 		Rectangle origin)
 	{
@@ -108,8 +119,11 @@ final class SummaryPainter
 			double w = from.width + (target.width - from.width) * grow;
 			double h = from.height + (target.height - from.height) * grow;
 			double bob = Loop.wave(ctx.mode, ctx.now, WindowTimes.PORTRAIT_BOB, 0) * st.scale();
-			PortraitFrame.paint(g, st, pictures, content.row(), new Rectangle2D.Double(x, y, w, h),
-				st.metrics().slant / 2.0, bob, ctx.now, ctx.mode);
+			Rectangle2D box = new Rectangle2D.Double(x, y, w, h);
+			double top = layout.chips.y + layout.chips.height;
+			if (scene == null || !scene.paint(g, ctx, pictures, content.row(), box, top, bob))
+				PortraitFrame.paint(g, st, pictures, content.row(), box, st.metrics().slant / 2.0, bob, ctx.now,
+					ctx.mode);
 		}
 
 		header(g, ctx, layout, content);
