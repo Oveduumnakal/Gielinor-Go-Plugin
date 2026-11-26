@@ -54,7 +54,7 @@ final class LabBoxes
 	 *
 	 * @param name the box's name, the page first
 	 * @param box the rectangle, changed in place
-	 * @param children rectangles, or arrays of them, that move when the box does
+	 * @param children rectangles, or arrays or lists of them, that move when the box does
 	 */
 	static void at(String name, Rectangle box, Object... children)
 	{
@@ -69,27 +69,34 @@ final class LabBoxes
 		box.width = Math.max(0, box.width + (int) Math.round(change[2] * unit));
 		box.height = Math.max(0, box.height + (int) Math.round(change[3] * unit));
 		for (Object child : children)
-		{
-			if (child instanceof Rectangle[])
-			{
-				for (Rectangle each : (Rectangle[]) child)
-					shift(each, dx, dy);
-			}
-			else
-			{
-				shift((Rectangle) child, dx, dy);
-			}
-		}
+			shift(child, dx, dy);
 
 		target.put(name, box);
 	}
 
-	private static void shift(Rectangle child, int dx, int dy)
+	/** @return the name of a champion or friend card on the Battle page */
+	static String card(BattleBlock block)
 	{
-		if (child != null)
+		String text = block.text().replace('.', ' ').trim();
+		return "Battle: card " + (text.length() > 28 ? text.substring(0, 28) : text);
+	}
+
+	private static void shift(Object child, int dx, int dy)
+	{
+		if (child instanceof Rectangle)
 		{
-			child.x += dx;
-			child.y += dy;
+			((Rectangle) child).x += dx;
+			((Rectangle) child).y += dy;
+		}
+		else if (child instanceof Rectangle[])
+		{
+			for (Rectangle each : (Rectangle[]) child)
+				shift(each, dx, dy);
+		}
+		else if (child instanceof Iterable)
+		{
+			for (Object each : (Iterable<?>) child)
+				shift(each, dx, dy);
 		}
 	}
 }

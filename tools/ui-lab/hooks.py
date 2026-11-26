@@ -180,6 +180,38 @@ def tasks_boxes(text):
     return before(text, "list.layout(viewport, style.px(MILESTONE_UNITS)", calls, "TasksPage")
 
 
+def storage_controls(text):
+    calls = boxes('"Storage: Select button", this.select', '"Storage: Filter button", this.filter',
+                  '"Storage: Sort button", this.sort', '"Storage: View button", this.view',
+                  '"Storage: heading", this.heading', '"Storage: hint and filter chips", this.strip',
+                  '"Storage: Tick all button", this.tickAll', '"Storage: Release button", this.release')
+    return after(text, "this.bottom = bottom;\n", "\t\t\t%s\n" % calls.rstrip().replace("\n\t\t", "\n\t\t\t"),
+                 "StorageControls")
+
+
+def storage_page(text):
+    name = "StoragePage"
+    calls = boxes('"Storage: background", panel', '"Storage: creature list", viewport')
+    text = before(text, "if (mode != laidOut)", calls, name)
+    return after(text, "card = grid.detail(viewport, style.metrics().pad);",
+                 '\n\t\tLabBoxes.at("Storage: details card", card);', name)
+
+
+def battle_layout(text):
+    card = ("if (block.kind() == BattleBlock.Kind.CARD)\n\t\t\t\tLabBoxes.at(LabBoxes.card(block), one.box, one.title, "
+            "one.status, one.stripe, one.badge, one.items, one.buttons);\n\n\t\t\t")
+    return before(text, "out.add(one);", card, "BattleLayout")
+
+
+def battle_page(text):
+    name = "BattlePage"
+    anchor = "list.layout(viewport, line, (laid.height() + line - 1) / line, style);"
+    text = before(text, anchor, 'LabBoxes.at("Battle: list", viewport);\n\t\t', name)
+    return after(text, anchor, "\n\t\tfor (BattleLayout.Placed one : laid.placed())\n\t\t{\n\t\t\t"
+                 "if (one.block.kind() == BattleBlock.Kind.CARD)\n\t\t\t\t"
+                 "LabBoxes.target.put(LabBoxes.card(one.block), onScreen(one.box));\n\t\t}", name)
+
+
 def chain(*hooks):
     def run(text):
         for hook in hooks:
@@ -191,7 +223,9 @@ def chain(*hooks):
 HOOKS = {"WindowStyle": window_style, "FollowerBubblePainter": follower_bubbles, "BubblePainter": wild_bubbles,
          "SummaryPainter": summary, "BagPainter": bag, "PartyPainter": party,
          "CollectionPage": chain(collection, collection_boxes), "TasksPage": chain(tasks, tasks_boxes),
-         "SummaryLayout": summary_layout, "PartyLayout": party_layout, "BagLayout": bag_layout}
+         "SummaryLayout": summary_layout, "PartyLayout": party_layout, "BagLayout": bag_layout,
+         "StorageControls": storage_controls, "StoragePage": storage_page, "BattleLayout": battle_layout,
+         "BattlePage": battle_page}
 
 
 def element(text, signature, name, setup, call):

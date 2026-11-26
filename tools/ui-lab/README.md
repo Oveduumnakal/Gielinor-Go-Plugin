@@ -30,7 +30,7 @@ change the plugin's code. It needs Python and a JDK 11 or newer (`JAVA_HOME` is 
 - The window pages show a made-up save from `java/LabData.java`; edit it to see other cases.
 - **Pause**, **Speed** and the slider under them control time. **Restart** starts the scene over.
 - The picture takes hover and clicks: tabs, rows and bubbles answer.
-- **Edit layout** puts a box over every pane and button of the Summary, Party, Bag, Collection and Tasks pages. Drag a
+- **Edit layout** puts a box over every pane and button of the window pages. Drag a
   box to move it; drag a yellow handle to resize it. Arrows move the picked box one unit and Shift+arrows resize it.
   Boxes snap to each other's edges (hold Alt to stop that). What is inside a pane moves with it. Changes are saved in
   presets, in layout units.
@@ -71,7 +71,7 @@ The server listens on this computer only and refuses requests from other sites.
 - Creature portraits and in-world animation need the game, so a blue square stands in for a portrait.
 - Whole numbers written into drawing code, and the plain 0 and 1, have no control.
 - Resizing a pane does not always rearrange what is inside it: the Moves pills, jar cells and rows of text keep
-  their size. Storage and Battle panes cannot be rearranged yet.
+  their size.
 - Marks painted by hand have no box: the egg dots, rarity squares, stars, lead arrow and the Storage grid's health
   strip. The low-health flash does not follow a moved health bar.
 - A layout or depth effect you keep has to be built into the plugin; a preset only records the amounts.

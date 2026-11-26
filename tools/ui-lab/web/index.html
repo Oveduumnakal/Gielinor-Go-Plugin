@@ -447,7 +447,7 @@ function describe() {
     ? b.label + (boxList.filter(x => x.name === b.name).length > 1 ? "  (all copies move)" : "") + "   moved " + b.change[0] + ", " + b.change[1] + "   resized " + b.change[2] + " wide, " + b.change[3]
       + " tall" + (hasText(b) ? ", text size " + (b.change[4] || 0) : "")
     : boxList.length ? "Drag a box to move it, or a yellow handle to resize it. Arrows move; Shift+arrows resize."
-      : "No panes to rearrange here. Pick Summary, Party, Bag, Collection or Tasks, or move things inside them.";
+      : "No panes to rearrange in this scene. Pick a window page, or move things inside them.";
 }
 
 async function setChange(name, change) {
