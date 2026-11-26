@@ -22,6 +22,8 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Spawn variety.** Featured species, night spawns and weekend events change what turns wild. (#27)
 
 - **Health bars.** While a battle is acted out, each creature has a health bar under its name. (#373)
+- **3D jar throws.** A thrown jar is a tumbling 3D jar with its contents inside, and a long throw arcs higher.
+  (#376)
 
 ### Your team
 

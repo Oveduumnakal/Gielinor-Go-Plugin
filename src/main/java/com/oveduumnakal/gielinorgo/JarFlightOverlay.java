@@ -6,7 +6,10 @@ package com.oveduumnakal.gielinorgo;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -24,10 +27,11 @@ import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 
 /**
- * Draws the thrown jar's picture flying in an arc from the player to the creature's body, on the player's own screen
- * only. The flight starts where the player stood at the release, follows the creature, and ends by itself when the jar
- * lands. Everything is measured in the top-level world view, so a throw from a boat aims true. Every client call is
- * guarded, so a failure here can never break the drawing of the rest of the screen.
+ * Draws the thrown jar flying in an arc from the player to the creature's body, on the player's own screen only. The
+ * jar is a 3D model ({@link JarShapes}) that spins and tumbles end over end, seen by the game's camera; if it cannot be
+ * drawn, its flat picture flies instead. The flight starts where the player stood at the release, follows the creature,
+ * and ends by itself when the jar lands. Everything is measured in the top-level world view, so a throw from a boat
+ * aims true. Every client call is guarded, so a failure here can never break the drawing of the rest of the screen.
  */
 final class JarFlightOverlay extends Overlay
 {
@@ -35,6 +39,15 @@ final class JarFlightOverlay extends Overlay
 
 	/** The height of the player's hand above the ground, in local units. */
 	private static final int HAND_HEIGHT = 100;
+
+	/** Client ticks the jar takes to turn once. */
+	private static final double TURN_TICKS = 20;
+
+	/** The alpha of the ring round a jar in flight, a little fainter than on a still picture. */
+	private static final int EDGE_ALPHA = 0xB4;
+
+	/** The widest or tallest picture drawn for the model, in pixels; a camera right on the jar shows the flat one. */
+	private static final int LARGEST = 400;
 
 	/** One end of a flight: a place on the top-level ground and an absolute height, larger being higher. */
 	private static final class End
@@ -50,6 +63,8 @@ final class JarFlightOverlay extends Overlay
 	}
 
 	private final Client client;
+	private final Map<JarType, JarModel> models = new EnumMap<>(JarType.class);
+	private boolean flat;
 	private JarType jar;
 	private Supplier<StageAnchors.Spot> target;
 	private End release;
@@ -81,6 +96,7 @@ final class JarFlightOverlay extends Overlay
 		jar = place == null ? null : thrown;
 		target = place;
 		release = null;
+		flat = false;
 		age = 0;
 		double tiles = jar == null ? 0 : tilesTo(place);
 		flightTicks = JarFlight.flightTicks(tiles);
@@ -142,11 +158,10 @@ final class JarFlightOverlay extends Overlay
 	 */
 	private void draw(Graphics2D graphics, JarType flying)
 	{
-		BufferedImage image = JarIcons.source(flying);
 		Supplier<StageAnchors.Spot> place = target;
 		StageAnchors.Spot body = place == null ? null : place.get();
 		End from = release;
-		if (image == null || body == null || body.point() == null || from == null)
+		if (body == null || body.point() == null || from == null)
 			return;
 
 		WorldView world = client.getTopLevelWorldView();
@@ -158,13 +173,82 @@ final class JarFlightOverlay extends Overlay
 			world);
 		double end = ground(to) + body.height() / 2.0;
 		double height = JarFlight.height(from.height, end, progress, arc);
+		if (!flat && drawModel(graphics, flying, at, height, from.point, to))
+			return;
+
+		BufferedImage image = JarIcons.source(flying);
 		int plane = world.getPlane();
 		Point screen = Perspective.localToCanvas(client, at, plane, (int) Math.round(height - ground(at)));
-		if (screen == null)
+		if (image == null || screen == null)
 			return;
 
 		double half = JarIcons.ICON_SIZE / 2.0;
 		CrispImages.draw(graphics, image, screen.getX() - half, screen.getY() - half, JarIcons.ICON_SIZE);
+	}
+
+	/**
+	 * Draws the 3D jar. A failure is remembered, so the rest of this flight shows the flat picture.
+	 *
+	 * @param graphics the canvas
+	 * @param flying the jar being thrown
+	 * @param at where the jar is over the ground
+	 * @param height its height, larger being higher
+	 * @param from where it was thrown from
+	 * @param to where it is going
+	 * @return whether nothing else is to be drawn
+	 */
+	private boolean drawModel(Graphics2D graphics, JarType flying, LocalPoint at, double height, LocalPoint from,
+		LocalPoint to)
+	{
+		try
+		{
+			JarModel model = models.computeIfAbsent(flying, type -> JarShapes.build(type, true));
+			JarLiveView.Camera camera = camera();
+			double turned = (age - JarFlight.RELEASE_TICK) / TURN_TICKS * 2 * Math.PI;
+			JarLiveView view = new JarLiveView(camera, new double[] {at.getX(), at.getY(), -height}, turned,
+				to.getX() - from.getX(), to.getY() - from.getY());
+			if (!view.inFront())
+				return true;
+
+			Rectangle area = JarRenderer.bounds(model, view);
+			if (area.width > LARGEST || area.height > LARGEST)
+				return false;
+
+			int samples = Math.max(area.width, area.height) <= 64 ? 4 : 2;
+			double flicker = 0.5 + 0.5 * Math.sin(turned * 2);
+			graphics.drawImage(JarRenderer.render(model, view, area, samples, flicker, EDGE_ALPHA), area.x, area.y,
+				null);
+			return true;
+		}
+		catch (RuntimeException e)
+		{
+			log.debug("Gielinor Go: could not draw the 3D jar", e);
+			flat = true;
+			return false;
+		}
+	}
+
+	/**
+	 * Reads the game's camera the way the game itself projects with it: the GPU plugin draws with a finer camera than
+	 * the plain renderer does.
+	 *
+	 * @return the camera as it is now
+	 */
+	private JarLiveView.Camera camera()
+	{
+		if (client.isGpu())
+		{
+			double[] position = {client.getCameraFpX(), client.getCameraFpY(), client.getCameraFpZ()};
+			return new JarLiveView.Camera(position, client.getCameraFpYaw(), client.getCameraFpPitch(),
+				client.getScale(), client.getViewportXOffset() + client.getViewportWidth() / 2.0,
+				client.getViewportYOffset() + client.getViewportHeight() / 2.0);
+		}
+
+		double[] position = {client.getCameraX(), client.getCameraY(), client.getCameraZ()};
+		return new JarLiveView.Camera(position, JarLiveView.radians(client.getCameraYaw()),
+			JarLiveView.radians(client.getCameraPitch()), client.getScale(),
+			client.getViewportXOffset() + client.getViewportWidth() / 2,
+			client.getViewportYOffset() + client.getViewportHeight() / 2);
 	}
 
 	/**
