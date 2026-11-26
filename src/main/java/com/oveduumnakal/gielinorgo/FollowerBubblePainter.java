@@ -136,7 +136,7 @@ final class FollowerBubblePainter
 				ItemIcons.draw(g, ItemType.SMALL_SALVE, cx - r * 0.7, cy - r * 0.7, r * 1.4);
 				break;
 			case RUN:
-				chevrons(g, cx, cy, r);
+				runner(g, cx, cy, r);
 				break;
 			case POTION:
 				ItemIcons.draw(g, dot.item().type(), cx - r * 0.75, cy - r * 0.75, r * 1.5);
@@ -190,21 +190,37 @@ final class FollowerBubblePainter
 		}
 	}
 
-	/** Two arrow heads pointing away. */
-	private static void chevrons(Graphics2D g, double cx, double cy, double r)
+	/** A figure running to the right with speed lines behind it, in thick rounded strokes. */
+	private static void runner(Graphics2D g, double cx, double cy, double r)
 	{
-		double h = r * 0.42;
+		double s = r * 0.76;
 		g.setColor(GLYPH);
-		g.setStroke(new BasicStroke(2.5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-		for (int i = 0; i < 2; i++)
-		{
-			double x = cx - r * 0.35 + i * r * 0.42;
-			Path2D head = new Path2D.Double();
-			head.moveTo(x, cy - h);
-			head.lineTo(x + h * 0.8, cy);
-			head.lineTo(x, cy + h);
-			g.draw(head);
-		}
+		g.fill(circle(cx + 0.34 * s, cy - 0.66 * s, 0.23 * s));
+		limb(g, cx, cy, s, 0.34, new double[] {0.14, -0.28, -0.10, 0.14});
+		limb(g, cx, cy, s, 0.19, new double[] {0.12, -0.28, 0.40, -0.01, 0.72, -0.10});
+		limb(g, cx, cy, s, 0.19, new double[] {0.10, -0.30, -0.24, -0.30, -0.34, -0.02});
+		limb(g, cx, cy, s, 0.23, new double[] {-0.08, 0.14, 0.30, 0.38, 0.20, 0.80});
+		limb(g, cx, cy, s, 0.23, new double[] {-0.10, 0.14, -0.30, 0.52, -0.70, 0.56});
+		limb(g, cx, cy, s, 0.12, new double[] {-1.00, -0.50, -0.58, -0.50});
+		limb(g, cx, cy, s, 0.12, new double[] {-1.08, -0.14, -0.70, -0.14});
+		limb(g, cx, cy, s, 0.12, new double[] {-0.94, 0.22, -0.56, 0.22});
+	}
+
+	/**
+	 * Draws one bent stroke.
+	 *
+	 * @param width its thickness, as a share of the glyph's size
+	 * @param points pairs of across and down from the middle, as shares of the glyph's size
+	 */
+	private static void limb(Graphics2D g, double cx, double cy, double s, double width, double[] points)
+	{
+		Path2D path = new Path2D.Double();
+		path.moveTo(cx + points[0] * s, cy + points[1] * s);
+		for (int i = 2; i < points.length; i += 2)
+			path.lineTo(cx + points[i] * s, cy + points[i + 1] * s);
+
+		g.setStroke(new BasicStroke((float) (width * s), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		g.draw(path);
 	}
 
 	private static void label(Graphics2D g, String text, double centre, double baseline)
