@@ -119,9 +119,6 @@ public class GielinorGoPlugin extends Plugin
 	/** Most battle log lines played back on screen. */
 	private static final int BATTLE_LINES = 6;
 
-	/** Game ticks after which a deferred result is written even if its scene never ended: about three minutes. */
-	private static final int PENDING_MAX_TICKS = 300;
-
 	/** Game ticks between two hellos to the party, so a burst of people joining is answered once. */
 	private static final int HELLO_TICKS = 5;
 
@@ -205,16 +202,9 @@ public class GielinorGoPlugin extends Plugin
 	private WildBodies bodies;
 	private final NoticeBoard noticeBoard = new NoticeBoard();
 
-	/** The health the pinned party box shows while a battle that played itself is still being shown. */
-	private final LiveHealth liveHealth = new LiveHealth();
 	private final CueGate cueGate = new CueGate();
 	private List<Notice> heldNotices;
 
-	/** The battle that plays itself, worked out ahead, whose result is written once its last beat has shown. */
-	private BattleSession pendingBattle;
-
-	/** Game ticks the deferred battle has waited for its scene to end. */
-	private int pendingAge;
 	private FloatingTextOverlay floatingText;
 	private FollowerTagOverlay followerTag;
 	/** The lead creature's nickname for the overlay, kept up to date on the game thread. Null for none. */
@@ -354,17 +344,14 @@ public class GielinorGoPlugin extends Plugin
 		GoPersistence endingPersistence = persistence;
 		String endingProfile = saveProfileKey;
 		boolean endingUnsaved = unsaved;
-		BattleSession endingBattle = pendingBattle;
-		pendingBattle = null;
 		Map<String, Integer> endingXp = ledger.stamp();
 		loaded = false;
 		clientThread.invoke(() ->
 		{
-			boolean paid = endingGame != null && endingBattle != null && endingGame.finishDeferred(endingBattle);
 			if (endingGame != null && endingXp != null)
 				endingGame.stampXp(endingXp);
 
-			SaveFlush.write(endingGame, endingPersistence, endingProfile, endingUnsaved || paid);
+			SaveFlush.write(endingGame, endingPersistence, endingProfile, endingUnsaved);
 		});
 		clientThread.invoke(stage::clear);
 		clientThread.invoke(arena::clear);
@@ -449,7 +436,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		clientThread.invoke(() ->
 		{
-			settlePending();
+			director.end();
 			saveNow();
 			loadSave();
 		});
@@ -467,7 +454,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		try
 		{
-			settlePending();
+			director.settle();
 			saveNow();
 			configManager.sendConfig();
 		}
@@ -501,7 +488,6 @@ public class GielinorGoPlugin extends Plugin
 		if (state != GameState.LOGIN_SCREEN && state != GameState.HOPPING)
 			return;
 
-		settlePending();
 		director.end();
 		closeWindow();
 		choiceOpen = false;
@@ -718,9 +704,7 @@ public class GielinorGoPlugin extends Plugin
 		watchCombat();
 		steering();
 		battleScene();
-		Notice due = noticeBoard.tick(System.currentTimeMillis());
-		if (due != null && liveHealth.show(due.health()))
-			refreshPanel();
+		noticeBoard.tick(System.currentTimeMillis());
 
 		portraits.tick();
 		countSteps();
@@ -1460,7 +1444,6 @@ public class GielinorGoPlugin extends Plugin
 		if (configManager.getRSProfileKey() == null)
 			return;
 
-		settlePending();
 		director.end();
 		game.load(persistence.load());
 		long account = client.getAccountHash();
@@ -1541,7 +1524,7 @@ public class GielinorGoPlugin extends Plugin
 		publishWindow(state);
 		lastTracker = state.tracker();
 		trackerOverlay.publish(trackerModel.frame(lastTracker, System.currentTimeMillis()));
-		partyBoxOverlay.publish(PartyBoxModel.rows(liveHealth.over(state.team())));
+		partyBoxOverlay.publish(PartyBoxModel.rows(state.team()));
 	}
 
 	/**
@@ -1730,7 +1713,7 @@ public class GielinorGoPlugin extends Plugin
 			return;
 		}
 
-		settlePending();
+		director.end();
 		persistence.save(game.data());
 		persistence.backUp();
 		game.reset();
@@ -2372,25 +2355,6 @@ public class GielinorGoPlugin extends Plugin
 	}
 
 	/**
-	 * Acts out an automatic battle in which creatures stepped in, through the same open timeline a battle the player
-	 * steers uses: the face-off, then every beat at once ({@link WildScript}), then the end. The real lead is shown
-	 * again when the scene ends.
-	 *
-	 * @param body the wild creature's body
-	 * @param result the battle
-	 * @param lines the lines of the battle, as {@link WildScript} cut them
-	 * @return whether the battle is on stage, so its text waits for the scene
-	 */
-	private boolean stageTeamBattle(WildBody body, BattleResult result, List<BattleLine> lines)
-	{
-		if (!stage.startOpen(body, lines.subList(0, 1)))
-			return false;
-
-		stage.playScript(WildScript.of(result), result.won(), result.opener(), result.leadOpened());
-		return true;
-	}
-
-	/**
 	 * Moves a battle that is acted out on screen on by one game tick, and lets its text start once the lead creature
 	 * has walked up to the wild one. Called before the floating text moves on, so the first line and the first blow
 	 * come on the same tick. A battle that ends early, or is switched off, lets its text out at once.
@@ -2420,43 +2384,12 @@ public class GielinorGoPlugin extends Plugin
 
 		if (noticeBoard.holding() && (stage.linesDue() || (!stage.active() && !arena.active())))
 			noticeBoard.release();
-
-		if (pendingBattle != null)
-			pendingAge++;
-
-		if (pendingBattle != null && WindowRules.deferredDue(pendingAge, PENDING_MAX_TICKS,
-			stage.active() || arena.active(), noticeBoard.idle(), stage.wildDown()))
-		{
-			heldNotices = new ArrayList<>();
-			settlePending();
-			playBack(Collections.emptyList(), Notice.PLAYER, false);
-			refreshPanel();
-		}
-	}
-
-	/**
-	 * Writes the result of the battle that played itself to the save, once: the health, a faint, the rewards and the
-	 * tasks. Called when the wild creature goes down or the last beat has shown, and at once when the player logs out,
-	 * hops, switches save or turns the plugin off, so the result is never lost and never written twice.
-	 *
-	 * @return whether a result was written
-	 */
-	private boolean settlePending()
-	{
-		BattleSession owed = pendingBattle;
-		pendingBattle = null;
-		liveHealth.follow(null);
-		if (owed == null || game == null || !game.finishDeferred(owed))
-			return false;
-
-		unsaved = true;
-		return true;
 	}
 
 	/** @return whether a battle is on that a new one must wait for: one the player steers, or one still playing */
 	private boolean battleBusy()
 	{
-		return director.active() || pendingBattle != null;
+		return director.active();
 	}
 
 	private void challenge(String championId)
@@ -2606,8 +2539,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		List<Notice> after = HeldNotices.close(heldNotices);
 		heldNotices = null;
-		boolean follows = pendingBattle != null && config.pinParty();
-		if (lines == null || !config.showResults() && !follows)
+		if (lines == null || !config.showResults())
 		{
 			after.forEach(this::announce);
 			return;
@@ -2629,41 +2561,17 @@ public class GielinorGoPlugin extends Plugin
 			else
 				notice = Notice.creature(wildId, line.text(), line.tone());
 
-			notice = withLiveHealth(notice, line);
-			queue.add(config.showResults() ? notice : notice.unseen());
+			queue.add(notice);
 		}
 
-		if (config.showResults())
-			queue.addAll(after);
-		else
-			after.forEach(this::announce);
-
+		queue.addAll(after);
 		noticeBoard.enqueue(queue, staged);
 
-		if (!config.showResults() || !config.chatMessages())
+		if (!config.chatMessages())
 			return;
 
 		for (Notice notice : after)
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", notice.text(), null);
-	}
-
-	/**
-	 * Gives a battle line's notice the health it leaves, when the line is of the battle that is still being shown.
-	 *
-	 * @param notice the line's notice
-	 * @param line the line
-	 * @return the notice, with the health when there is one
-	 */
-	private Notice withLiveHealth(Notice notice, BattleLine line)
-	{
-		BattleSession battle = pendingBattle;
-		BattleHealth health = line.health();
-		if (battle == null || health == null || health.minePlace() < 0
-			|| health.minePlace() >= battle.fighters().size())
-			return notice;
-
-		int place = game.teamPlace(battle.fighters().get(health.minePlace()));
-		return place < 0 ? notice : notice.withHealth(new LiveHealth.Step(battle, place, health.lead()));
 	}
 
 	/**

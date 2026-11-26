@@ -203,11 +203,32 @@ final class BattleDirector
 
 		BattleSession played = session;
 		Scene stage = scene;
+		TurnResult last = playOut();
+		if (stage != null)
+			stage.end();
+
+		if (last != null)
+			listener.turn(played, last, game.closingLines(played, last), false);
+	}
+
+	/**
+	 * Writes the result of an automatic battle without showing anything or touching the scene, for when the client is
+	 * closing and this is not the game thread. Does nothing for any other battle.
+	 */
+	void settle()
+	{
+		if (automatic())
+			playOut();
+	}
+
+	/** Plays the rest of the automatic battle and drops it. */
+	private TurnResult playOut()
+	{
 		fleeAsked = false;
 		TurnResult last = null;
-		while (!played.over())
+		while (!session.over())
 		{
-			TurnResult turn = game.act(played, autoChoice());
+			TurnResult turn = game.act(session, autoChoice());
 			if (turn == null)
 				break;
 
@@ -215,11 +236,7 @@ final class BattleDirector
 		}
 
 		drop();
-		if (stage != null)
-			stage.end();
-
-		if (last != null)
-			listener.turn(played, last, game.closingLines(played, last), false);
+		return last;
 	}
 
 	/**
