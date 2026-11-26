@@ -33,6 +33,7 @@ final class BattleChoice
 
 	private static final BattleChoice ATTACK = new BattleChoice(Kind.ATTACK, -1, null, -1, null);
 	private static final BattleChoice RUN = new BattleChoice(Kind.RUN, -1, null, -1, null);
+	private static final BattleChoice LEAVE = new BattleChoice(Kind.RUN, -1, null, -1, null);
 	private static final BattleChoice ITEM = new BattleChoice(Kind.ITEM, -1, null, -1, null);
 
 	private final Kind kind;
@@ -67,10 +68,24 @@ final class BattleChoice
 		return new BattleChoice(Kind.ATTACK, -1, null, moveIndex, null);
 	}
 
-	/** @return the choice to run away */
+	/** @return the choice to run away, which can fail against a wild creature */
 	static BattleChoice run()
 	{
 		return RUN;
+	}
+
+	/**
+	 * @return the end of a battle the player walks away from, logs out of or loses sight of: it never fails
+	 */
+	static BattleChoice leave()
+	{
+		return LEAVE;
+	}
+
+	/** @return whether this is {@link #leave()}, which always ends the battle */
+	boolean sure()
+	{
+		return this == LEAVE;
 	}
 
 	/** @return the choice to use an item with none picked, which a battle refuses; see {@link #item(ItemType, int)} */

@@ -304,7 +304,7 @@ public class BattleDirectorTest
 		scene.ready = true;
 		director.gameTick(false);
 
-		director.choose(BattleChoice.run());
+		director.choose(BattleChoice.leave());
 
 		assertEquals(Arrays.asList("run"), scene.told);
 		assertFalse(director.active());

@@ -222,7 +222,7 @@ public class BattleStateTest
 		Combatant mine = new Combatant(GOBLIN, 20, 1.0);
 		BattleState state = wild(team(mine), new Combatant(GOBLIN, 20, 1.0), 1, null);
 
-		TurnResult turn = state.step(BattleChoice.run());
+		TurnResult turn = state.step(BattleChoice.leave());
 
 		assertEquals(TurnResult.Status.RAN, turn.status());
 		assertTrue(turn.hits().isEmpty());

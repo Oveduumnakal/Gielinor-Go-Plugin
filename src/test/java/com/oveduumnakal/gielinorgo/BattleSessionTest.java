@@ -208,7 +208,7 @@ public class BattleSessionTest
 		game.act(session, BattleChoice.attack());
 		double health = lead().hpFraction;
 
-		TurnResult ran = game.act(session, BattleChoice.run());
+		TurnResult ran = game.act(session, BattleChoice.leave());
 
 		assertEquals(TurnResult.Status.RAN, ran.status());
 		assertTrue(session.over());
@@ -461,7 +461,7 @@ public class BattleSessionTest
 		now += Creature.FULL_REST_MS;
 		BattleSession ran = game.startChallenge("lumbridge");
 
-		assertEquals(TurnResult.Status.RAN, game.act(ran, BattleChoice.run()).status());
+		assertEquals(TurnResult.Status.RAN, game.act(ran, BattleChoice.leave()).status());
 		assertFalse(game.data().sigils.contains("lumbridge"));
 		assertNotNull("running does not lock the champion", game.startChallenge("lumbridge"));
 	}

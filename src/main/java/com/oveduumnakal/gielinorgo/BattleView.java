@@ -113,6 +113,7 @@ final class BattleView
 	private final Status foeStatus;
 	private final boolean forcedSwitch;
 	private final boolean canCatch;
+	private double fleeChance = 1.0;
 	private final String jarLabel;
 	private final int jarCount;
 	private final int secondsLeft;
@@ -191,6 +192,24 @@ final class BattleView
 		this.friendName = name;
 		this.waitingForFriend = waiting;
 		return this;
+	}
+
+	/**
+	 * Says how likely a try to run is to get away.
+	 *
+	 * @param chance from 0 to 1; 1 when running cannot fail
+	 * @return this view
+	 */
+	BattleView fleeChance(double chance)
+	{
+		this.fleeChance = chance;
+		return this;
+	}
+
+	/** @return the chance a try to run gets away, from 0 to 1 */
+	double fleeChance()
+	{
+		return fleeChance;
 	}
 
 	/** @return the friend the battle is against, or null when it is not a battle against a friend */

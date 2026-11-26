@@ -489,7 +489,7 @@ final class BattleControlsModel
 			default:
 				enabled = !view.forcedSwitch() || friend;
 				text = "Run";
-				tip = friend ? "Leave the battle. Nothing is won or lost." : "";
+				tip = friend ? "Leave the battle. Nothing is won or lost." : runTip(view.fleeChance());
 				break;
 		}
 
@@ -726,5 +726,12 @@ final class BattleControlsModel
 			parts[i] = new Rectangle();
 
 		return parts;
+	}
+
+	/** @return what the Run button says when pointed at: the odds, or nothing when it cannot fail */
+	static String runTip(double chance)
+	{
+		return chance >= 1.0 ? ""
+			: Math.round(chance * 100) + "% chance to get away. A failed try costs your turn.";
 	}
 }

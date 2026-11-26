@@ -1683,7 +1683,7 @@ final class GoGame
 			return null;
 		}
 
-		TurnResult turn = act(session, BattleChoice.run());
+		TurnResult turn = act(session, BattleChoice.leave());
 		if (turn != null && session.isElite())
 		{
 			for (BattleLine line : session.verdict())
@@ -1749,6 +1749,7 @@ final class GoGame
 		boolean canCatch = session.wild() && jar != null && !state.needsSwitch();
 		BattleView view = new BattleView(state.mine(), state.foe(), state.needsSwitch(), canCatch, jar,
 			jar == null ? 0 : data.jarCount(jar), secondsLeft, timeLeft, options, itemOptions(session));
+		view.fleeChance(state.fleeChance());
 		FriendTurnBattle friend = session.friendTurn();
 		return friend == null ? view : view.againstFriend(friend.friendName(), !friend.mustChoose());
 	}
