@@ -194,7 +194,110 @@ HOOKS = {"WindowStyle": window_style, "FollowerBubblePainter": follower_bubbles,
          "SummaryLayout": summary_layout, "PartyLayout": party_layout, "BagLayout": bag_layout}
 
 
+def element(text, signature, name, setup, call):
+    """Renames a drawing method and puts one in its place that lets the element be moved and resized."""
+    at = once(text, signature, name)
+    head = signature.split("(")[0].split()
+    returns, method = head[-2], head[-1]
+    inner = "labEl" + method[0].upper() + method[1:]
+    arguments = [p.split()[-1] for p in signature[signature.index("(") + 1:signature.rindex(")")].split(",")]
+    passed = [call.get(argument, argument) for argument in arguments]
+    keep = "" if returns == "void" else "return "
+    static = "static " if text[:at].rstrip(" \t").endswith("static") else ""
+    body = [signature, "\t{"] + ["\t\t" + line for line in setup]
+    body += ["\t\ttry", "\t\t{", "\t\t\t%s%s(%s);" % (keep, inner, ", ".join(passed)), "\t\t}", "\t\tfinally",
+             "\t\t{", "\t\t\tLabElements.done();"]
+    body += ["\t\t\tlabCopy.dispose();"] if any("labCopy" in line for line in setup) else []
+    body += ["\t\t}", "\t}", "", "\t" + static]
+    renamed = signature.replace(" %s(" % method, " %s(" % inner)
+    return text[:at] + "\n".join(body) + renamed + text[at + len(signature):]
+
+
+def rect(kind):
+    return ['java.awt.geom.Rectangle2D labBox = LabElements.rect("%s", g, box);' % kind], {"box": "labBox"}
+
+
+def shape(kind):
+    return ['Shape labShape = LabElements.shape("%s", g, shape);' % kind], {"shape": "labShape"}
+
+
+def words(kind, sample):
+    return (['Rectangle labBox = LabElements.box("%s", %s, g, box);' % (kind, sample)], {"box": "labBox"})
+
+
+def square(kind):
+    return (['double[] labAt = LabElements.square("%s", g, x, y, size);' % kind],
+            {"x": "labAt[0]", "y": "labAt[1]", "size": "labAt[2]"})
+
+
+def elements(name, methods):
+    def run(text):
+        for signature, (setup, call) in methods:
+            text = element(text, signature, name, setup, call)
+        return text
+    return run
+
+
+CHIP = (["int labW = chipWidth(g, label);",
+         'java.awt.Graphics2D labCopy = LabElements.stretched("chip", label, g, x, y, labW, metrics.chipHeight);'],
+        {"g": "labCopy"})
+
+STYLE_ELEMENTS = [
+    ("void bar(Graphics2D g, Rectangle2D box, double fraction, ThemeColor fill, ThemeColor track)", rect("bar")),
+    ("void hpBar(Graphics2D g, Rectangle2D box, double fraction)", rect("HP bar")),
+    ("void xpBar(Graphics2D g, Rectangle2D box, double fraction)", rect("XP bar")),
+    ("void button(Graphics2D g, Rectangle2D box, String label, boolean primary, boolean disabled, double hover,\n"
+     "\t\tdouble press)", rect("button")),
+    ("Shape row(Graphics2D g, Rectangle2D box, boolean lead, double hover, double press)", rect("row background")),
+    ("int chip(Graphics2D g, int x, int y, String label, boolean accent)", CHIP),
+    ("void card(Graphics2D g, Shape shape)", shape("card")),
+    ("void chipBody(Graphics2D g, Shape shape)", shape("pill")),
+    ("void chipBody(Graphics2D g, Shape shape, Color[] outline)", shape("pill")),
+    ("void accentChip(Graphics2D g, Shape shape)", shape("badge")),
+    ("void heart(Graphics2D g, Shape shape, boolean filled, boolean gold)", shape("heart")),
+]
+
+TEXT_ELEMENTS = [
+    ("String draw(Graphics2D g, String text, Rectangle box, Font font, ThemeColor colour, Align align)",
+     words("text", "text")),
+    ("String draw(Graphics2D g, String text, Rectangle box, Font font, Color colour, Align align)",
+     words("text", "text")),
+    ("String drawName(Graphics2D g, String name, Rectangle box, ThemeColor colour)", words("name", "name")),
+    ("int drawWrapped(Graphics2D g, String text, Rectangle box, Font font, ThemeColor colour)",
+     words("paragraph", "null")),
+]
+
+
+def portrait(text):
+    signature = ("void paint(Graphics2D g, WindowStyle style, PortraitCache pictures, RowModel row, Rectangle2D box,\n"
+                 "\t\tdouble skew, double bob, long now, MotionMode mode, IdleStrip idle)")
+    setup, call = rect("portrait")
+    return element(text, signature, "PortraitFrame", setup, call)
+
+
+ICON_ELEMENTS = [("void %s(Graphics2D g, %sdouble x, double y, double size)" % (method, extra), square(kind))
+                 for method, extra, kind in (("gender", "Gender gender, ", "gender icon"),
+                                             ("style", "CombatType style, ", "style icon"),
+                                             ("check", "", "tick"), ("cross", "", "cross"), ("eye", "", "eye icon"),
+                                             ("jar", "", "jar mark"), ("sigil", "boolean gold, ", "sigil"))]
+
+
 def apply(source):
     for stem, hook in HOOKS.items():
+        path = source / (stem + ".java")
+        path.write_text(hook(path.read_text(encoding="utf-8")), encoding="utf-8", newline="\n")
+    shared = {
+        "WindowStyle": elements("WindowStyle", STYLE_ELEMENTS),
+        "PageText": elements("PageText", TEXT_ELEMENTS),
+        "PortraitFrame": portrait,
+        "Icons": elements("Icons", ICON_ELEMENTS),
+        "CrispImages": elements("CrispImages", [
+            ("void draw(Graphics2D g, BufferedImage source, double x, double y, double size)", square("picture"))]),
+        "JarIcons": elements("JarIcons", [
+            ("boolean draw(Graphics2D g, JarType type, double x, double y, double size)", square("jar picture"))]),
+        "ItemIcons": elements("ItemIcons", [
+            ("boolean draw(Graphics2D g, ItemType type, double x, double y, double size)", square("item picture"))]),
+    }
+    for stem, hook in shared.items():
         path = source / (stem + ".java")
         path.write_text(hook(path.read_text(encoding="utf-8")), encoding="utf-8", newline="\n")

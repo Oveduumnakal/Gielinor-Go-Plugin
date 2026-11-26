@@ -73,6 +73,7 @@ public final class LabServer
 
 	public static void main(String[] args) throws IOException
 	{
+		LabElements.sources = Paths.get(args[1]).resolveSibling("src").resolve("com/oveduumnakal/gielinorgo");
 		LabServer lab = new LabServer(Paths.get(args[0]), Paths.get(args[1]));
 		HttpServer server = lab.bind();
 		server.createContext("/", lab::handle);
@@ -143,6 +144,9 @@ public final class LabServer
 					break;
 				case "/api/boxes":
 					send(exchange, 200, "application/json", GSON.toJson(boxes(query)));
+					break;
+				case "/api/elements":
+					send(exchange, 200, "application/json", GSON.toJson(elements(query)));
 					break;
 				case "/api/frame":
 					frame(exchange, query);
@@ -339,6 +343,7 @@ public final class LabServer
 		LabScenes.Scene scene = scene(query);
 		LabBoxes.target = scene.boxes;
 		LabBoxes.unit = scene.scale;
+		LabElements.target = scene.elements;
 		return scene;
 	}
 
@@ -368,6 +373,30 @@ public final class LabServer
 		return found;
 	}
 
+	/** @return every bar, text, icon, chip and portrait drawn, with how far each has been moved */
+	private List<Map<String, Object>> elements(Map<String, String> query)
+	{
+		LabScenes.Scene scene = current(query);
+		LabDepth.frame();
+		LabElements.frame();
+		scene.frame(number(query, "t"));
+		List<Map<String, Object>> found = new ArrayList<>();
+		for (LabElements.Drawn drawn : scene.elements)
+		{
+			Map<String, Object> entry = new LinkedHashMap<>();
+			entry.put("key", drawn.key);
+			entry.put("name", drawn.name);
+			entry.put("x", drawn.at.x);
+			entry.put("y", drawn.at.y);
+			entry.put("w", drawn.at.width);
+			entry.put("h", drawn.at.height);
+			entry.put("change", LabBoxes.change(drawn.key));
+			found.add(entry);
+		}
+
+		return found;
+	}
+
 	private void frame(HttpExchange exchange, Map<String, String> query) throws IOException
 	{
 		boolean original = "1".equals(query.get("original"));
@@ -380,6 +409,7 @@ public final class LabServer
 		{
 			LabScenes.Scene scene = current(query);
 			LabDepth.frame();
+			LabElements.frame();
 			image = scene.frame(number(query, "t"));
 		}
 		finally

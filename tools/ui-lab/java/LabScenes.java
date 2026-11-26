@@ -26,6 +26,8 @@ final class LabScenes
 		double scale = 1.0;
 		/** The panes and buttons this scene's layouts reported. */
 		final Map<String, Rectangle> boxes = new LinkedHashMap<>();
+		/** The bars, text and icons drawn in the last frame. */
+		final List<LabElements.Drawn> elements = new ArrayList<>();
 
 		abstract BufferedImage frame(long t);
 
@@ -147,6 +149,7 @@ final class LabScenes
 
 			rig.now = base + t;
 			LabDepth.frame();
+			LabElements.frame();
 			return rig.paint();
 		}
 

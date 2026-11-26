@@ -34,12 +34,14 @@
   #boxes { position: absolute; inset: 0; }
   .box { position: absolute; border: 1px dashed rgba(80, 220, 255, .75); cursor: move; touch-action: none; }
   .box:hover { background: rgba(80, 220, 255, .12); }
-  .box.picked { border: 2px solid #ffcc33; background: rgba(255, 204, 51, .12); }
-  .box i { position: absolute; width: 10px; height: 10px; background: #ffcc33; display: none; }
+  .box.picked { border: 2px solid #ffcc33; background: rgba(255, 204, 51, .12); z-index: 2; }
+  .box:hover { z-index: 3; }
+  /* Handles sit outside the box, so the whole box moves it, however thin it is. */
+  .box i { position: absolute; width: 9px; height: 9px; background: #ffcc33; display: none; }
   .box.picked i, .box:hover i { display: block; }
-  .box .e { right: -5px; top: calc(50% - 5px); cursor: ew-resize; }
-  .box .s { bottom: -5px; left: calc(50% - 5px); cursor: ns-resize; }
-  .box .se { right: -5px; bottom: -5px; cursor: nwse-resize; }
+  .box .e { left: 100%; top: calc(50% - 5px); cursor: ew-resize; }
+  .box .s { top: 100%; left: calc(50% - 5px); cursor: ns-resize; }
+  .box .se { left: 100%; top: 100%; cursor: nwse-resize; }
   #picked { display: none; }
   #status { color: #e88; padding: 0 10px; }
   #scrub { flex: 1; min-width: 160px; }
@@ -76,6 +78,8 @@
     <span id="time">0 ms</span>
   </div>
   <div class="bar" id="picked">
+    <label>Move <select id="mode"><option value="boxes">Panes and buttons</option>
+      <option value="elements">Things inside them (bars, text, icons)</option></select></label>
     <span id="pickedText">Drag a box to move it, or a yellow handle to resize it. Arrows move; Shift+arrows resize.</span>
     <button id="resetBox" style="visibility: hidden">Reset this one</button>
     <label title="Hold Alt while dragging to turn this off for a moment"><input id="snap" type="checkbox" checked>
@@ -238,6 +242,11 @@ function preset() {
     const show = v => color ? "0x" + (v >>> 0).toString(16).padStart(8, "0").toUpperCase() : v;
     const file = c.file || (id.startsWith("depth:") ? "LabDepth (new effect)" : "WindowTheme");
     const entry = { id, from: show(c.value), to: show(value), value, file, line: c.line || null };
+    if (id.startsWith("layout:el|")) {
+      const [, method, kind, ...rest] = id.slice(7, id.lastIndexOf(".")).split("|");
+      return { id, from: 0, to: value, value, file: method.split(".")[0] + ".java", element: kind,
+        method: method.split(".")[1], source: rest.join("|"), side: id.slice(id.lastIndexOf(".") + 1) };
+    }
     if (id.startsWith("layout:"))
       return { id, from: 0, to: value, value, file: id.slice(7).split(":")[0] + " layout (change in layout units)" };
     if (c.holder) entry.source = c.doc;
@@ -294,8 +303,10 @@ let editing = false, boxList = [], picked = null, dragging = null;
 
 async function loadBoxes() {
   if (!editing || dragging) return;
-  const reply = await fetch("/api/boxes?" + params({}));
+  const inside = $("mode").value === "elements";
+  const reply = await fetch((inside ? "/api/elements?" : "/api/boxes?") + params({}));
   boxList = reply.ok ? await reply.json() : [];
+  boxList.forEach(b => { b.label = b.name; b.name = b.key || b.name; });
   drawBoxes();
 }
 
@@ -312,7 +323,8 @@ function drawBoxes() {
   [...boxList].sort((a, b) => b.w * b.h - a.w * a.h).forEach(b => {
     const div = document.createElement("div");
     div.className = "box" + (b.name === picked ? " picked" : "");
-    div.title = b.name;
+    div.title = b.label;
+    div.dataset.name = b.name;
     place(div, b);
     ["e", "s", "se"].forEach(side => div.append(Object.assign(document.createElement("i"), { className: side })));
     div.onpointerdown = e => startDrag(e, b, div, e.target.tagName === "I" ? e.target.className : "move");
@@ -325,18 +337,23 @@ function describe() {
   const b = boxList.find(x => x.name === picked);
   $("resetBox").style.visibility = b ? "visible" : "hidden";
   $("pickedText").textContent = b
-    ? b.name + "   moved " + b.change[0] + ", " + b.change[1] + "   resized " + b.change[2] + " wide, " + b.change[3]
+    ? b.label + (boxList.filter(x => x.name === b.name).length > 1 ? "  (all copies move)" : "") + "   moved " + b.change[0] + ", " + b.change[1] + "   resized " + b.change[2] + " wide, " + b.change[3]
       + " tall"
     : boxList.length ? "Drag a box to move it, or a yellow handle to resize it. Arrows move; Shift+arrows resize."
-      : "This scene has nothing to rearrange. Pick Summary, Party, Bag, Collection or Tasks.";
+      : "No panes to rearrange here. Pick Summary, Party, Bag, Collection or Tasks, or move things inside them.";
 }
 
 async function setChange(name, change) {
   for (let i = 0; i < SIDES.length; i++) {
     const id = "layout:" + name + "." + SIDES[i];
     if (change[i] === (changed[id] || 0)) continue;
-    if (change[i]) changed[id] = change[i]; else delete changed[id];
-    await post("/api/set", new URLSearchParams({ id, value: change[i] }));
+    if (change[i]) {
+      changed[id] = change[i];
+      await post("/api/set", new URLSearchParams({ id, value: change[i] }));
+    } else {
+      delete changed[id];
+      await post("/api/reset", new URLSearchParams({ id }));
+    }
   }
   count();
 }
@@ -353,8 +370,7 @@ function snapped(value, others, reach) {
 function startDrag(event, b, div, mode) {
   event.preventDefault();
   picked = b.name;
-  document.querySelectorAll(".box").forEach(x => x.classList.remove("picked"));
-  div.classList.add("picked");
+  document.querySelectorAll(".box").forEach(x => x.classList.toggle("picked", x.dataset.name === b.name));
   describe();
   div.setPointerCapture(event.pointerId);
   const zoom = Number($("zoom").value), scale = Number($("scale").value);
@@ -409,6 +425,7 @@ $("edit").onclick = () => {
 };
 $("resetBox").onclick = async () => { await setChange(picked, [0, 0, 0, 0]); loadBoxes(); };
 $("zoom").addEventListener("change", drawBoxes);
+$("mode").onchange = () => { picked = null; loadBoxes(); };
 ["scene", "scale", "theme"].forEach(id => $(id).addEventListener("change", () => setTimeout(loadBoxes, 100)));
 
 let lastMove = 0;

@@ -34,6 +34,10 @@ change the plugin's code. It needs Python and a JDK 11 or newer (`JAVA_HOME` is 
   box to move it; drag a yellow handle to resize it. Arrows move the picked box one unit and Shift+arrows resize it.
   Boxes snap to each other's edges (hold Alt to stop that). What is inside a pane moves with it. Changes are saved in
   presets, in layout units.
+  - Set **Move** to **Things inside them** for health and XP bars, text, icons, chips, hearts and portraits. Each is
+    known by the line of code that draws it, so every copy moves together (all six health bars). This also works on
+    Storage, Battle, the battle controls, the pinned party box and the info card. It changes only what is drawn:
+    clickable areas stay put, so move buttons as **Panes and buttons**. Resizing text changes its room, not its size.
 - **Hold: original** shows the scene as the code has it, for comparison.
 - **Export preset** saves what you changed as `ui-preset.json`: each value with its file, line, old and new value.
   Hand that file over to have it applied to the code. **Load preset** brings it back later.
@@ -52,6 +56,8 @@ The server listens on this computer only and refuses requests from other sites.
 - Creature portraits and in-world animation need the game, so a blue square stands in for a portrait.
 - Whole numbers written into drawing code, and the plain 0 and 1, have no control.
 - Resizing a pane does not always rearrange what is inside it: the Moves pills, jar cells and rows of text keep
-  their size. Storage and Battle cannot be rearranged yet.
+  their size. Storage and Battle panes cannot be rearranged yet.
+- Marks painted by hand have no box: the egg dots, rarity squares, stars, lead arrow and the Storage grid's health
+  strip. The low-health flash does not follow a moved health bar.
 - A layout or depth effect you keep has to be built into the plugin; a preset only records the amounts.
 - It is a close view, not the game: check what you keep in the client.
