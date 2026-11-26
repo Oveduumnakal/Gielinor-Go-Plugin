@@ -213,9 +213,15 @@ def battle_page(text):
 
 
 def party_rig(text):
-    """The tests' window rig hands out a blue square for every portrait; the lab's copy hands out pictures."""
-    at = once(text, "onReady.accept(square());", "PartyRig")
-    return text[:at] + "onReady.accept(LabPortraits.of(speciesName, square()));" + text[at + len("onReady.accept(square());"):]
+    """The tests' window rig hands out a blue square for every portrait at once; the lab's copy hands out pictures, and
+    a scene can hold them back to show one arriving late."""
+    plain = "onReady.accept(square());"
+    at = once(text, plain, "PartyRig")
+    picture = "deliver.accept(() -> onReady.accept(LabPortraits.of(speciesName, square())));"
+    text = text[:at] + picture + text[at + len(plain):]
+    return after(text, "final PortraitCache pictures;",
+                 "\n\n\t/** Hands a picture over; a scene may keep it back. */\n\t"
+                 "java.util.function.Consumer<Runnable> deliver = Runnable::run;", "PartyRig")
 
 
 def tail(text, method, start, name):

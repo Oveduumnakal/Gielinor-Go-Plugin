@@ -42,6 +42,9 @@ final class LabAnimations
 		scenes.put("Animate: wild creature bubbles", Wild::new);
 		scenes.put("Animate: follower bubbles open and close", Follow::new);
 		scenes.put("Animate: battle turn (dash, strike, return)", Turn::new);
+		scenes.put("Animate: bubbles wait, then follow a walking creature", Walk::new);
+		scenes.put("Animate: knocked-out creature pulses", Down::new);
+		scenes.put("Animate: portraits arrive late", Late::new);
 	}
 
 	/** A scene that replays itself. */
@@ -139,10 +142,16 @@ final class LabAnimations
 		/** Adds the steps; the window has been built but not opened. */
 		abstract void script();
 
+		/** Changes the rig before it is given anything to show. */
+		void prepare()
+		{
+		}
+
 		@Override
 		final void start()
 		{
 			rig = new PartyRig();
+			prepare();
 			rig.theme = theme;
 			rig.motion = MotionMode.FULL;
 			rig.width = (int) Math.round(800 * scale);
@@ -415,6 +424,36 @@ final class LabAnimations
 		}
 	}
 
+	/** The window opens with no creature pictures yet; they arrive together a moment later and fade in. */
+	private static final class Late extends WindowScript
+	{
+		private final List<Runnable> waiting = new ArrayList<>();
+
+		private Late()
+		{
+			super(3200);
+		}
+
+		@Override
+		void prepare()
+		{
+			waiting.clear();
+			rig.deliver = waiting::add;
+		}
+
+		@Override
+		void script()
+		{
+			opened();
+			then(800, () ->
+			{
+				waiting.forEach(Runnable::run);
+				waiting.clear();
+				rig.deliver = Runnable::run;
+			});
+		}
+	}
+
 	private static final class NoticeLife extends LabScenes.Scene
 	{
 		@Override
@@ -435,29 +474,71 @@ final class LabAnimations
 	}
 
 	/** The bubbles over a wild creature: they appear, a jar is hovered, then the card, then the pointer leaves. */
-	private static final class Wild extends Script
+	private static class Wild extends Script
 	{
 		private static final int ID = 7;
 		private static final Rectangle VIEW = new Rectangle(0, 0, 640, 420);
-		private static final BubbleAnchors ANCHORS = new BubbleAnchors(300, 330, 300, 250);
 
 		private final BubblePainter painter = new BubblePainter();
 		private WildBubbles bubbles;
 		private BubbleOffer offer;
 		private Dimension card;
 		private BubbleFrame shown;
-		private int pointerX;
-		private int pointerY;
-		private boolean near;
-		private BubbleKind aim;
+		int pointerX;
+		int pointerY;
+		boolean near;
+		BubbleKind aim;
 
 		private Wild()
 		{
-			super(7000);
+			this(7000);
+		}
+
+		Wild(int period)
+		{
+			super(period);
+		}
+
+		/** @return where the creature is now */
+		BubbleAnchors anchors()
+		{
+			return new BubbleAnchors(300, 330, 300, 250);
+		}
+
+		/** @return whether it lost its battle */
+		boolean knockedOut()
+		{
+			return false;
+		}
+
+		/** Adds the steps. */
+		void script()
+		{
+			at(300, this::approach);
+			at(1300, () -> aim = BubbleKind.JAR);
+			at(2800, () -> aim = BubbleKind.INFO);
+			at(4600, this::leave);
+		}
+
+		/** Puts the pointer on the creature. */
+		final void approach()
+		{
+			near = true;
+			pointerX = (int) anchors().originX();
+			pointerY = (int) anchors().originY();
+		}
+
+		/** Takes the pointer well away from it. */
+		final void leave()
+		{
+			aim = null;
+			near = false;
+			pointerX = 620;
+			pointerY = 410;
 		}
 
 		@Override
-		void start()
+		final void start()
 		{
 			bubbles = new WildBubbles();
 			shown = BubbleFrame.NONE;
@@ -469,7 +550,7 @@ final class LabAnimations
 				false);
 			offer = new BubbleOffer(ID, JarType.BRONZE, Arrays.asList(new JarSuggest.JarChoice(JarType.BRONZE, 5, 0.5, false),
 				new JarSuggest.JarChoice(JarType.IRON, 2, 0.6, false), new JarSuggest.JarChoice(JarType.RUNE, 1, 0.7, false)),
-				true, false, content);
+				true, knockedOut(), content);
 			BufferedImage probe = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = probe.createGraphics();
 			card = painter.cardSize(g, content, style());
@@ -478,21 +559,7 @@ final class LabAnimations
 			aim = null;
 			pointerX = 600;
 			pointerY = 400;
-			at(300, () ->
-			{
-				near = true;
-				pointerX = 300;
-				pointerY = 330;
-			});
-			at(1300, () -> aim = BubbleKind.JAR);
-			at(2800, () -> aim = BubbleKind.INFO);
-			at(4600, () ->
-			{
-				aim = null;
-				near = false;
-				pointerX = 620;
-				pointerY = 410;
-			});
+			script();
 		}
 
 		@Override
@@ -510,23 +577,91 @@ final class LabAnimations
 				}
 			}
 
-			bubbles.tick(offer, ANCHORS, VIEW, near, Collections.emptyList(), pointerX, pointerY, now, MotionMode.FULL);
-			shown = bubbles.frame(id -> id == ID ? ANCHORS : null, VIEW, card, now, MotionMode.FULL);
+			BubbleAnchors anchors = anchors();
+			bubbles.tick(offer, anchors, VIEW, near, Collections.emptyList(), pointerX, pointerY, now, MotionMode.FULL);
+			shown = bubbles.frame(id -> id == ID ? anchors : null, VIEW, card, now, MotionMode.FULL);
 		}
 
 		@Override
-		BufferedImage draw(long at)
+		final BufferedImage draw(long at)
 		{
 			BufferedImage image = new BufferedImage(VIEW.width, VIEW.height, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = image.createGraphics();
 			BufferedImage imp = LabPortraits.of("Imp", null);
 			if (imp != null)
-				g.drawImage(imp, 240, 250, 120, 120, null);
+				g.drawImage(imp, (int) anchors().originX() - 60, (int) anchors().originY() - 80, 120, 120, null);
 
 			painter.paint(g, shown, style(), now);
 			pointer(g, pointerX, pointerY);
 			g.dispose();
 			return image;
+		}
+	}
+
+	/**
+	 * The pointer rests on a bubble while the creature walks off, so the bubbles stay; then it moves back to the
+	 * creature, and after the hold the bubbles glide after it.
+	 */
+	private static final class Walk extends Wild
+	{
+		private static final int WALKS_AT = 1600;
+		private static final int WALK_MS = 800;
+		private static final int STEP = 140;
+
+		private double walked;
+
+		private Walk()
+		{
+			super(7000);
+		}
+
+		@Override
+		BubbleAnchors anchors()
+		{
+			return new BubbleAnchors(220 + walked, 330, 220 + walked, 250);
+		}
+
+		@Override
+		void script()
+		{
+			walked = 0;
+			at(300, this::approach);
+			at(1100, () -> aim = BubbleKind.BATTLE);
+			at(2600, () ->
+			{
+				aim = null;
+				approach();
+			});
+			at(5800, this::leave);
+		}
+
+		@Override
+		void advance(long at)
+		{
+			walked = STEP * Math.max(0, Math.min(1.0, (at - WALKS_AT) / (double) WALK_MS));
+			super.advance(at);
+		}
+	}
+
+	/** A knocked-out creature: the ring on its Catch bubble pulses. */
+	private static final class Down extends Wild
+	{
+		private Down()
+		{
+			super(6000);
+		}
+
+		@Override
+		boolean knockedOut()
+		{
+			return true;
+		}
+
+		@Override
+		void script()
+		{
+			at(300, this::approach);
+			at(5000, this::leave);
 		}
 	}
 
