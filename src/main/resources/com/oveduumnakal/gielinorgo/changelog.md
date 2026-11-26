@@ -44,7 +44,7 @@ A Creature Log, daily tasks and daily events give you goals.
   stun. (#22)
 - **Choose your own turns.** An option makes each turn wait for you: Attack, Switch, Catch, Item or Run. (#20)
 - **Running can fail.** Against a wild creature the chance depends on both levels, and is better when it has a
-  status effect. A failed try costs your turn. (#379)
+  status effect. A failed try costs your turn. (#387)
 
 ### Goals
 
