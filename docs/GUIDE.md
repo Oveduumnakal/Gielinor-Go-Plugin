@@ -66,7 +66,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Your character makes a throwing motion when you throw a jar, then cheers for a catch, stamps when the
   creature breaks free and cries when it runs away (skipped if you moved or started something else). The jar you threw
-  flies in an arc from your hand to the creature. The creature reacts when the jar lands: a creature you catch
+  flies in an arc from your hand to the creature; a long throw arcs higher and takes longer. The creature reacts when the jar lands: a creature you catch
   flinches and shrinks into the jar; one that breaks free turns to you, attacks and stands again (a beaten one stays
   down); one that runs away turns and runs off, fading out. The result text floats over the creature's copy. Only you see this, and no real monster is ever hidden or
   changed. You can switch it off in the settings: a caught or fled creature then just disappears.

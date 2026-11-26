@@ -9,14 +9,15 @@ package com.oveduumnakal.gielinorgo;
  * throw. It reuses the timing of {@link TargetScript}, with two differences that come from the body possibly lying
  * knocked out: a lying creature does not get up to flinch (it stays down until its second act), and one that breaks
  * free or flees gets up first. A caught creature shrinks to nothing and its body is removed; one that flees fades out
- * and its body is removed; one that breaks free attacks and then stands again. Holds no RuneLite types, so it can be
- * tested tick by tick.
+ * and its body is removed; one that breaks free attacks and then stands again. A jar thrown far lands later, and the
+ * whole scene waits for it. Holds no RuneLite types, so it can be tested tick by tick.
  */
 final class BodyCatch
 {
 	private final CatchOutcome outcome;
 	private final boolean lying;
 	private final boolean staysDown;
+	private final int delay;
 	private int age;
 
 	/**
@@ -37,6 +38,18 @@ final class BodyCatch
 	 */
 	BodyCatch(CatchOutcome outcome, boolean lying, boolean beaten)
 	{
+		this(outcome, lying, beaten, 0);
+	}
+
+	/**
+	 * @param outcome what the throw led to
+	 * @param lying whether the body lay when the jar was thrown
+	 * @param beaten whether the creature was beaten in battle, so it does not get up when it breaks free
+	 * @param delay client ticks this jar lands later than a short throw
+	 */
+	BodyCatch(CatchOutcome outcome, boolean lying, boolean beaten, int delay)
+	{
+		this.delay = delay;
 		this.outcome = outcome;
 		this.lying = lying;
 		this.staysDown = beaten && outcome == CatchOutcome.BROKE_FREE;
@@ -96,7 +109,7 @@ final class BodyCatch
 	 */
 	TargetScript.Step step()
 	{
-		TargetScript.Step step = TargetScript.stepAt(outcome, age);
+		TargetScript.Step step = TargetScript.stepAt(outcome, scriptAge());
 		if (staysDown)
 			return TargetScript.Step.NONE;
 
@@ -110,32 +123,34 @@ final class BodyCatch
 	 */
 	boolean getsUp()
 	{
-		return lying && !staysDown && age == TargetScript.ACT_TICK
+		return lying && !staysDown && scriptAge() == TargetScript.ACT_TICK
 			&& TargetScript.turnOf(outcome) != TargetScript.Turn.NONE;
 	}
 
 	/** @return how the body turns on this tick, or none: it turns when its second act starts */
 	TargetScript.Turn turn()
 	{
-		return age == TargetScript.ACT_TICK && !staysDown ? TargetScript.turnOf(outcome) : TargetScript.Turn.NONE;
+		return scriptAge() == TargetScript.ACT_TICK && !staysDown
+			? TargetScript.turnOf(outcome)
+			: TargetScript.Turn.NONE;
 	}
 
 	/** @return how big the body is drawn, from 1 down to 0; only a caught creature shrinks */
 	double size()
 	{
-		return TargetScript.size(outcome, age);
+		return TargetScript.size(outcome, scriptAge());
 	}
 
 	/** @return how solid the body is, from 1 down to 0; only a fleeing creature fades */
 	double opacity()
 	{
-		return TargetScript.opacity(outcome, age);
+		return TargetScript.opacity(outcome, scriptAge());
 	}
 
 	/** @return how far the body has run, in tiles; only a fleeing creature runs */
 	double runTiles()
 	{
-		return TargetScript.runTiles(outcome, age);
+		return TargetScript.runTiles(outcome, scriptAge());
 	}
 
 	/**
@@ -146,7 +161,7 @@ final class BodyCatch
 	 */
 	boolean removesBody()
 	{
-		return leavesHidden(outcome) && age >= TargetScript.end(outcome);
+		return leavesHidden(outcome) && scriptAge() >= TargetScript.end(outcome);
 	}
 
 	/**
@@ -156,6 +171,12 @@ final class BodyCatch
 	 */
 	boolean standsAgain()
 	{
-		return outcome == CatchOutcome.BROKE_FREE && age == TargetScript.end(outcome);
+		return outcome == CatchOutcome.BROKE_FREE && scriptAge() == TargetScript.end(outcome);
+	}
+
+	/** @return the age {@link TargetScript} is asked about, which counts as if the throw were short */
+	private int scriptAge()
+	{
+		return age - delay;
 	}
 }
