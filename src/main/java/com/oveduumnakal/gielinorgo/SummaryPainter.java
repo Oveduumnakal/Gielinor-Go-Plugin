@@ -51,6 +51,7 @@ final class SummaryPainter
 
 	private final PortraitCache pictures;
 	private SummaryScene scene;
+	private IdleStrip.Source idle;
 	private final PageText.Sink sink;
 
 	/**
@@ -97,6 +98,16 @@ final class SummaryPainter
 	}
 
 	/**
+	 * Lets the creature move while it stands.
+	 *
+	 * @param strips where idle loops come from, or null for still pictures
+	 */
+	void idle(IdleStrip.Source strips)
+	{
+		this.idle = strips;
+	}
+
+	/**
 	 * Puts biome backgrounds behind the creature.
 	 *
 	 * @param backgrounds what paints them, or null for the plain portrait
@@ -121,9 +132,13 @@ final class SummaryPainter
 			double bob = Loop.wave(ctx.mode, ctx.now, WindowTimes.PORTRAIT_BOB, 0) * st.scale();
 			Rectangle2D box = new Rectangle2D.Double(x, y, w, h);
 			double top = layout.chips.y + layout.chips.height;
-			if (scene == null || !scene.paint(g, ctx, pictures, content.row(), box, top, bob))
-				PortraitFrame.paint(g, st, pictures, content.row(), box, st.metrics().slant / 2.0, bob, ctx.now,
-					ctx.mode);
+			RowModel row = content.row();
+			CreatureView view = row.view();
+			IdleStrip moving = idle == null || !ctx.mode.loops() ? null : idle.strip(row.species(), view.npcId());
+			double lift = moving == null ? bob : 0;
+			if (scene == null || !scene.paint(g, ctx, pictures, content.row(), box, top, lift, moving))
+				PortraitFrame.paint(g, st, pictures, content.row(), box, st.metrics().slant / 2.0, lift, ctx.now,
+					ctx.mode, moving);
 		}
 
 		header(g, ctx, layout, content);

@@ -646,7 +646,8 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   Behind the picture on the Summary plays the creature's home biome (twelve of them, from caves to the Wilderness),
   and the two shift a little as your mouse moves. With **Window animations** set to Reduced or Off the scene holds
-  still. Switch off **Animated backgrounds** for the plain box.
+  still. Switch off **Animated backgrounds** for the plain box. The creature also moves as it does standing in
+  the world, a few seconds after you open the page while logged in; **Idle animation** switches that off.
 
 - **Bag, Storage, Collection, Tasks and Battle**
 

@@ -457,6 +457,23 @@ public interface GielinorGoConfig extends Config
 	}
 
 	/**
+	 * Whether the creature on the Summary page moves while it stands.
+	 *
+	 * @return true to play its idle loop
+	 */
+	@ConfigItem(
+		keyName = "idleAnimation",
+		name = "Idle animation",
+		description = "Plays the creature's own standing motion on the Summary page.\n"
+			+ "It needs you to be logged in, and plays only with Window animations set to Full.",
+		position = 41
+	)
+	default boolean idleAnimation()
+	{
+		return true;
+	}
+
+	/**
 	 * The size of the painted window, as a share of the game screen's width.
 	 *
 	 * @return the size preset, small by default
