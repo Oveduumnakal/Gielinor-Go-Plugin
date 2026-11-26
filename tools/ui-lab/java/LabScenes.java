@@ -47,6 +47,20 @@ final class LabScenes
 	{
 	}
 
+	/** @return what the follower's bubbles offer in the lab */
+	static FollowerOffer followerOffer()
+	{
+		FollowerOffer.Member bob = new FollowerOffer.Member(1, "Bob", "goblin", 0, 12, 0.55);
+		FollowerOffer.Member eve = new FollowerOffer.Member(2, "Eve", "chicken", 0, 7, 1.0);
+		return new FollowerOffer.Builder().battle(true)
+			.switching(Arrays.asList(bob, eve))
+			.items(Arrays.asList(new FollowerOffer.Item(ItemType.SMALL_SALVE, 3, Arrays.asList(bob, eve)),
+				new FollowerOffer.Item(ItemType.REVIVE, 1, Collections.emptyList()),
+				new FollowerOffer.Item(ItemType.ANTIDOTE, 2, Arrays.asList(bob))))
+			.running(0.7)
+			.build();
+	}
+
 	static Map<String, Supplier<Scene>> all()
 	{
 		Map<String, Supplier<Scene>> scenes = new LinkedHashMap<>();
@@ -65,6 +79,7 @@ final class LabScenes
 		scenes.put("Motion: jar throw", Throw::new);
 		scenes.put("Motion: jar and item pictures", () -> still(LabScenes::pictures));
 		LabMoreScenes.add(scenes);
+		LabAnimations.add(scenes);
 		return scenes;
 	}
 
@@ -181,15 +196,7 @@ final class LabScenes
 
 		private FollowerOffer offer()
 		{
-			FollowerOffer.Member bob = new FollowerOffer.Member(1, "Bob", "goblin", 0, 12, 0.55);
-			FollowerOffer.Member eve = new FollowerOffer.Member(2, "Eve", "chicken", 0, 7, 1.0);
-			return new FollowerOffer.Builder().battle(true)
-				.switching(Arrays.asList(bob, eve))
-				.items(Arrays.asList(new FollowerOffer.Item(ItemType.SMALL_SALVE, 3, Arrays.asList(bob, eve)),
-					new FollowerOffer.Item(ItemType.REVIVE, 1, Collections.emptyList()),
-					new FollowerOffer.Item(ItemType.ANTIDOTE, 2, Arrays.asList(bob))))
-				.running(0.7)
-				.build();
+			return followerOffer();
 		}
 
 		@Override

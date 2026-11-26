@@ -27,6 +27,10 @@ change the plugin's code. It needs Python and a JDK 11 or newer (`JAVA_HOME` is 
   - **Theme colours** are the colour table of the chosen theme.
   - Each file has its named values. **(inside drawing code)** groups hold numbers and colours written straight into
     the painting code, labelled with the method, line and the code around them.
+- **Play an animation** lists looping scripts that drive the plugin's own animation code: the window opening and
+  closing, bars draining, hover and press, menus, page changes, refusals, notices, bubbles, a battle turn and more.
+  Slow them with **Speed** and tune the timing values while they run. The plugin never reads `WindowTimes.PRESS`, so
+  that slider has no effect anywhere.
 - The window pages show a made-up save from `java/LabData.java`; edit it to see other cases.
 - **Pause**, **Speed** and the slider under them control time. **Restart** starts the scene over.
 - The picture takes hover and clicks: tabs, rows and bubbles answer.

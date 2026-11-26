@@ -45,6 +45,7 @@
   #picked { display: none; }
   #status { color: #e88; padding: 0 10px; }
   #note { color: #9d9; padding: 0 10px; }
+  #play-row button { padding: 1px 8px; }
   #mine { max-height: 34vh; overflow: auto; padding: 0 10px; border-bottom: 1px solid #444; flex: none; }
   .mine { display: grid; grid-template-columns: 1fr auto 22px; gap: 8px; align-items: center; padding: 2px 0; }
   .mine span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -84,7 +85,7 @@
     <button id="restart">Restart</button>
     <label>Speed <select id="speed"><option value="1">1x</option><option value="0.5">0.5x</option>
       <option value="0.25">0.25x</option><option value="0.1">0.1x</option><option value="2">2x</option></select></label>
-    <input id="scrub" type="range" min="0" max="5000" step="10" value="0">
+    <input id="scrub" type="range" min="0" max="9000" step="10" value="0">
     <span id="time">0 ms</span>
   </div>
   <div class="bar" id="picked">
@@ -97,6 +98,10 @@
     <label title="Hold Alt while dragging to turn this off for a moment"><input id="snap" type="checkbox" checked>
       Snap to edges</label>
   </div>
+  <details id="plays" class="bar" style="display: block">
+    <summary>Play an animation</summary>
+    <div id="play-row" style="display: flex; flex-wrap: wrap; gap: 6px; padding-top: 6px"></div>
+  </details>
   <div id="status"></div>
   <div id="stage"><div id="wrap"><img id="frame" alt="the chosen part of the plugin's interface" draggable="false">
     <div id="boxes"></div></div></div>
@@ -125,7 +130,7 @@ async function tick() {
   const now = performance.now();
   if (playing) t += (now - last) * Number($("speed").value);
   last = now;
-  $("scrub").value = t % 5000;
+  $("scrub").value = t % Number($("scrub").max);
   $("time").textContent = Math.round(t) + " ms";
   if (!busy) {
     busy = true;
@@ -347,6 +352,17 @@ async function start() {
   schema = await (await fetch("/api/schema")).json();
   changed = Object.assign({}, schema.changed);
   schema.scenes.forEach(s => $("scene").add(new Option(s)));
+  schema.scenes.filter(s => s.startsWith("Animate: ") || s.startsWith("Motion: ")).forEach(s => {
+    const button = Object.assign(document.createElement("button"), { textContent: s.replace(/^\w+: /, "") });
+    button.onclick = async () => {
+      $("scene").value = s;
+      $("scene").dispatchEvent(new Event("change"));
+      await post("/api/restart");
+      t = 0;
+      if (!playing) $("play").click();
+    };
+    $("play-row").append(button);
+  });
   schema.themes.forEach(s => $("theme").add(new Option(s)));
   $("theme").value = "Glass bronze";
   const saved = JSON.parse(localStorage.getItem("uilab") || "{}");

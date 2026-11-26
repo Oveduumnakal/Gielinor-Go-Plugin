@@ -106,6 +106,12 @@ final class LabData
 	/** @return the save the window scenes show */
 	static PanelState state()
 	{
+		return state(PartyRig.team(6));
+	}
+
+	/** @return the same save with this team */
+	static PanelState state(List<CreatureView> team)
+	{
 		Map<JarType, Integer> jars = new EnumMap<>(JarType.class);
 		for (JarType jar : JarType.values())
 			jars.put(jar, jar.ordinal() % 4 == 3 ? 0 : 3 + jar.ordinal() * 5 % 23);
@@ -116,7 +122,7 @@ final class LabData
 
 		List<EggView> eggs = Arrays.asList(new EggView(Rarity.COMMON, 120, 1000), new EggView(Rarity.RARE, 2200, 4000),
 			new EggView(Rarity.LEGENDARY, 9000, 10000));
-		return new PanelState(7, 0.4, 25, jars, JarType.BRONZE, 40, PartyRig.team(6), stored(), log(), 10, 20, eggs,
+		return new PanelState(7, 0.4, 25, jars, JarType.BRONZE, 40, team, stored(), log(), 10, 20, eggs,
 			champions(), today(), tasks(), items).withGoals(milestones(), EliteView.NONE);
 	}
 }
