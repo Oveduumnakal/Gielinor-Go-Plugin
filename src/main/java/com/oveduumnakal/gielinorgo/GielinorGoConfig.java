@@ -156,7 +156,7 @@ public interface GielinorGoConfig extends Config
 		keyName = "showFollower",
 		name = "Lead creature follows you",
 		description = "Shows your lead creature walking behind you, shrunk to fit beside you. Only you can see it,"
-			+ " and it cannot be clicked.",
+			+ " and clicks pass through it.",
 		position = 6
 	)
 	default boolean showFollower()
@@ -521,6 +521,23 @@ public interface GielinorGoConfig extends Config
 		position = 30
 	)
 	default boolean wildBubbles()
+	{
+		return true;
+	}
+
+	/**
+	 * Whether bubbles pop out over the lead creature that follows the player.
+	 *
+	 * @return true to show them
+	 */
+	@ConfigItem(
+		keyName = "followerBubbles",
+		name = "Follower bubbles",
+		description = "Shows Switch, Item and Run bubbles above your lead creature when your mouse rests on it.\n"
+			+ "Run shows only in a wild battle.",
+		position = 39
+	)
+	default boolean followerBubbles()
 	{
 		return true;
 	}

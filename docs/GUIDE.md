@@ -301,9 +301,18 @@ Every feature and every number, in detail. For the short version, see the [READM
   flies to the lying creature, which shrinks into it (it does not get up to flinch). Broke free: it stays down. Ran away: it gets up and runs off fading out, and it
   is no longer wild. A jar thrown while it still fights is played on the creature the same way.
 
+- **Follower bubbles**
+
+  Rest your mouse on your lead creature for a moment and bubbles pop out above it: **Switch**, **Item** and, in a wild
+  battle, **Run**. Right-click Switch or Item, or hold the mouse on it, for the list of creatures or items. Out of
+  battle Switch changes your lead and items work on any team member they would help. In a battle you steer they do
+  what the battle box does and are dim until it is your turn. In a battle that plays itself only Run shows. In battle
+  a left click on Switch brings in the next creature, and on Item uses the first item that would help. Wild creature
+  bubbles come first when both would show. The **Follower bubbles** setting turns them off.
+
 - **Running from a battle that plays itself**
 
-  A wild battle that plays itself can be run from too: set a **Run** hotkey and press it. The try takes the place of
+  A wild battle that plays itself can be run from too: press the **Run** bubble over your creature, or set a **Run** hotkey. The try takes the place of
   your creature's next attack, with the same odds as below. Walking away or logging out does not run: the battle is
   finished and counts as usual.
 
