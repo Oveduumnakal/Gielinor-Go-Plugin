@@ -35,10 +35,12 @@ import net.runelite.api.Menu;
 import net.runelite.api.MenuAction;
 import net.runelite.api.MenuEntry;
 import net.runelite.api.NPC;
+import net.runelite.api.Perspective;
 import net.runelite.api.Player;
 import net.runelite.api.Skill;
 import net.runelite.api.WorldType;
 import net.runelite.api.WorldView;
+import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ChatMessage;
 import net.runelite.api.events.ClientTick;
@@ -193,6 +195,11 @@ public class GielinorGoPlugin extends Plugin
 	private WildBubbles bubbles;
 	private WildBubbleOverlay bubbleOverlay;
 	private BubbleInput bubbleInput;
+	private FollowerBubbles followerModel;
+	private FollowerBubbleView followerView;
+
+	/** Whether the follower bubbles failed this session, which leaves them off. */
+	private boolean followerBubblesFailed;
 	private volatile boolean bubblesFailed;
 	private volatile BufferedImage combatSprite;
 	private WildBodies bodies;
@@ -320,6 +327,7 @@ public class GielinorGoPlugin extends Plugin
 		startTracker();
 		startPartyBox();
 		startBubbles();
+		startFollowerBubbles();
 		clientThread.invoke(this::startOnClientThread);
 	}
 
@@ -329,6 +337,7 @@ public class GielinorGoPlugin extends Plugin
 		stopPartyBox();
 		stopTracker();
 		stopBubbles();
+		stopFollowerBubbles();
 		stopControls();
 		WindowStyle.share(null);
 		stopWindow();
@@ -860,6 +869,14 @@ public class GielinorGoPlugin extends Plugin
 			}
 
 			bubbleTick(mouse, overScene, menuOpen);
+			followerBubbleTick(mouse, menuOpen);
+			if (mouse != null && !menuOpen && followerView.covers(mouse.getX(), mouse.getY()) && !dragKey.held())
+			{
+				client.getMenu().setMenuEntries(new MenuEntry[0]);
+				wildHover.clear();
+				return;
+			}
+
 			if (bodies.isEmpty() || menuOpen || mouse == null)
 			{
 				wildHover.clear();
@@ -1057,6 +1074,149 @@ public class GielinorGoPlugin extends Plugin
 		bubbleInput = new BubbleInput(bubbleOverlay::hits, dragKey, bubbleSink());
 		overlayManager.add(bubbleOverlay);
 		mouseManager.registerMouseListener(bubbleInput);
+	}
+
+	/** Registers the bubbles over the follower. */
+	private void startFollowerBubbles()
+	{
+		followerBubblesFailed = false;
+		followerModel = new FollowerBubbles();
+		followerView = new FollowerBubbleView(client, followerModel, new FollowerBubblePainter(windowPortraits),
+			bubbleOverlay::style, () -> dragKey.held(),
+			press -> clientThread.invoke(() -> followerPressed(press)), () -> followerBubblesFailed = true);
+		overlayManager.add(followerView);
+		mouseManager.registerMouseListener(followerView);
+	}
+
+	/** Unregisters the bubbles over the follower. */
+	private void stopFollowerBubbles()
+	{
+		mouseManager.unregisterMouseListener(followerView);
+		overlayManager.remove(followerView);
+		followerView.clear();
+		clientThread.invoke(followerModel::hide);
+	}
+
+	/**
+	 * Moves the follower bubbles on by one client tick. A wild creature's bubbles win over these out of battle, and
+	 * they stay away while the pointer is over the painted window. A failure turns them off for the session; the
+	 * window, the battle box and the hotkeys do everything they do.
+	 *
+	 * @param mouse the pointer on the canvas, or null when it is outside it
+	 * @param menuOpen whether the game's menu is open, which leaves the bubbles as they are
+	 */
+	private void followerBubbleTick(net.runelite.api.Point mouse, boolean menuOpen)
+	{
+		if (menuOpen)
+			return;
+
+		try
+		{
+			StageAnchors.Spot spot = followerBubblesWanted(mouse) ? followerSpot() : null;
+			net.runelite.api.Point head = spot == null ? null
+				: Perspective.localToCanvas(client, spot.point(), spot.plane(),
+					spot.height() + WildOverlay.TAG_HEIGHT_OFFSET);
+			net.runelite.api.Point foot = spot == null ? null
+				: Perspective.localToCanvas(client, spot.point(), spot.plane(), 0);
+			if (mouse == null || head == null || foot == null)
+			{
+				followerModel.hide();
+				return;
+			}
+
+			double half = Math.max(14, (foot.getY() - head.getY()) / 2.0);
+			boolean onBody = Math.abs(mouse.getX() - head.getX()) <= half && mouse.getY() >= head.getY()
+				&& mouse.getY() <= foot.getY() + 8;
+			long now = System.currentTimeMillis();
+			BattleSession battle = director.session();
+			FollowerOffer offer = battle == null
+				? FollowerOffers.outOfBattle(game, now)
+				: FollowerOffers.inBattle(battle, director.view(), director.automatic());
+			followerModel.tick(now, offer, new double[] {head.getX(), head.getY()}, onBody,
+				new double[] {mouse.getX(), mouse.getY()}, new Rectangle(client.getViewportXOffset(),
+					client.getViewportYOffset(), client.getViewportWidth(), client.getViewportHeight()));
+		}
+		catch (RuntimeException | AssertionError e)
+		{
+			log.debug("Gielinor Go: the follower bubbles failed", e);
+			followerBubblesFailed = true;
+			followerModel.hide();
+			followerView.clear();
+		}
+	}
+
+	private boolean followerBubblesWanted(net.runelite.api.Point mouse)
+	{
+		if (!config.followerBubbles() || followerBubblesFailed || !loaded || !saveLive() || mouse == null)
+			return false;
+
+		if (window.shell().isOpen() && window.screenBounds().contains(mouse.getX(), mouse.getY()))
+			return false;
+
+		if (director.active())
+			return true;
+
+		return playable() && bubbles.wildId() == WildBubbles.NO_TARGET;
+	}
+
+	/** @return where the lead creature is drawn: on the stage in a battle that is acted out, else following */
+	private StageAnchors.Spot followerSpot()
+	{
+		StageAnchors.Spot staged = stage.active() ? stage.spotOf(Notice.Anchor.STAGE_LEAD)
+			: arena.active() ? arena.spotOf(Notice.Anchor.STAGE_LEAD) : null;
+		if (staged != null)
+			return staged;
+
+		LocalPoint ground = follower.groundPoint();
+		WorldView view = client.getTopLevelWorldView();
+		return ground == null || view == null ? null
+			: new StageAnchors.Spot(ground, view.getPlane(), follower.tagHeight());
+	}
+
+	/**
+	 * Acts on a press on a follower bubble, through the same paths as the window, the battle box and the hotkeys.
+	 *
+	 * @param press the press as x, y and button
+	 */
+	private void followerPressed(int[] press)
+	{
+		if (!loaded || !saveLive() || !config.followerBubbles())
+			return;
+
+		FollowerBubbles.Action action = followerModel.press(press[0], press[1], press[2]);
+		boolean battling = director.active();
+		switch (action.type())
+		{
+			case SWITCH:
+				if (battling)
+					chooseBattle(BattleChoice.switchTo(action.index()));
+				else
+					game.setLead(action.index());
+
+				break;
+
+			case ITEM:
+				if (battling)
+					chooseBattle(BattleChoice.item(action.item(), action.index()));
+				else if (action.index() < game.data().team.size())
+					game.useItem(game.data().team.get(action.index()), action.item());
+
+				break;
+
+			case RUN:
+				if (director.automatic())
+					askToRun();
+				else
+					chooseBattle(BattleChoice.run());
+
+				break;
+
+			default:
+				return;
+		}
+
+		followerModel.hide();
+		refreshPanel();
 	}
 
 	/** Unregisters the wild creature bubbles. */
@@ -1976,7 +2136,7 @@ public class GielinorGoPlugin extends Plugin
 		Creature lead = config.showFollower() && !hiddenForPvp() ? game.followerCreature() : null;
 		leadTag = lead != null && config.showLeadName()
 			? FollowerTagOverlay.nameFor(lead.nickname, game.speciesNameOf(lead), lead.level()) : null;
-		follower.setWander(config.followerWander());
+		follower.setWander(config.followerWander() && !followerModel.open());
 		follower.gameTick(lead == null ? null : lead.species, lead == null ? 0 : lead.npcId,
 			lead != null && lead.gilded);
 	}
