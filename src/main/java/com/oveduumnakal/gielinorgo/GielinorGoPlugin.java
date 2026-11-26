@@ -235,6 +235,9 @@ public class GielinorGoPlugin extends Plugin
 	private TrackerView lastTracker = TrackerView.NONE;
 	private BattleHotkeys hotkeys;
 	private volatile boolean choiceOpen;
+
+	/** Whether a battle that plays itself is on, which the Run key can stop. */
+	private volatile boolean autoBattleOpen;
 	private int steerWild = Notice.PLAYER;
 	private WorldPoint steerHome;
 	private List<Notice> pendingLines = new ArrayList<>();
@@ -322,7 +325,8 @@ public class GielinorGoPlugin extends Plugin
 		director = new BattleDirector(game, config::turnSeconds, battleListener());
 		trades.battleOn(director::active);
 		hotkeys = new BattleHotkeys(config::attackKey, config::switchKey, config::catchKey, config::runKey,
-			config::itemKey, () -> choiceOpen, this::hotkeyPressed);
+			config::itemKey, () -> choiceOpen, this::hotkeyPressed)
+				.runAlso(() -> autoBattleOpen);
 		keyManager.registerKeyListener(hotkeys);
 		detectVersionChange();
 		startWindow();
@@ -344,6 +348,7 @@ public class GielinorGoPlugin extends Plugin
 		stopWindow();
 		keyManager.unregisterKeyListener(hotkeys);
 		choiceOpen = false;
+		autoBattleOpen = false;
 		clientThread.invoke(director::end);
 		GoGame endingGame = loaded ? game : null;
 		GoPersistence endingPersistence = persistence;
@@ -2272,7 +2277,7 @@ public class GielinorGoPlugin extends Plugin
 		if (entry == null)
 			return;
 
-		if (inBattleWith(entry))
+		if (inBattleWith(entry) && !director.automatic())
 		{
 			chooseBattle(BattleChoice.catching(jar));
 			return;
@@ -2280,7 +2285,12 @@ public class GielinorGoPlugin extends Plugin
 
 		CatchOutcome outcome = game.tryCatch(entry, jar, knockedOut(wildId));
 		if (outcome == CatchOutcome.CAUGHT || outcome == CatchOutcome.FLED)
+		{
+			if (inBattleWith(entry))
+				director.finish();
+
 			tracker.remove(wildId);
+		}
 
 		showCatch(outcome, wildId, jar);
 		refreshPanel();
@@ -2334,22 +2344,19 @@ public class GielinorGoPlugin extends Plugin
 			return;
 		}
 
-		heldNotices = new ArrayList<>();
-		BattleResult result = game.battleDeferred(entry);
-		pendingBattle = result == null ? null : result.pending();
-		pendingAge = 0;
-		liveHealth.follow(pendingBattle);
-		List<BattleLine> lines = result == null ? null : result.playbackSummary(BATTLE_LINES);
-		boolean staged = false;
-		if (result != null && config.battleAnimations() && !arena.active() && !stage.active())
-		{
-			staged = result.switches() > 0 ? stageTeamBattle(body, result, lines)
-				: stage.start(body, lines, result.won());
-			noteUnreachable(wildId, body);
-		}
+		startAutomaticBattle(wildId, entry);
+	}
 
-		playBack(lines, wildId, staged);
-		refreshPanel();
+	/**
+	 * Starts a wild battle that plays itself. It is played turn by turn like a steered one, so Run can stop it. With
+	 * "Battle animations" on the lead walks up and the turns are acted out; otherwise the battle is played in text.
+	 *
+	 * @param wildId the wild creature's id
+	 * @param entry the wild creature
+	 */
+	private void startAutomaticBattle(int wildId, WildEntry entry)
+	{
+		beginWild(wildId, game.startAutoBattle(entry), true);
 	}
 
 	/**
@@ -2697,7 +2704,21 @@ public class GielinorGoPlugin extends Plugin
 	private void startSteeredBattle(int wildId, WildEntry entry)
 	{
 		heldNotices = new ArrayList<>();
-		BattleSession battle = game.startBattle(entry);
+		beginWild(wildId, game.startBattle(entry), false);
+	}
+
+	/**
+	 * Puts a wild battle that has just started in the director's hands, on the stage when it can be acted out.
+	 *
+	 * @param wildId the wild creature's id
+	 * @param battle the battle, or null when none could start
+	 * @param automatic whether it plays itself
+	 */
+	private void beginWild(int wildId, BattleSession battle, boolean automatic)
+	{
+		if (heldNotices == null)
+			heldNotices = new ArrayList<>();
+
 		if (battle == null)
 		{
 			playBack(null, wildId, false);
@@ -2714,7 +2735,12 @@ public class GielinorGoPlugin extends Plugin
 		if (body != null)
 			noteUnreachable(wildId, body);
 
-		director.begin(battle, staged ? new WildScene(stage) : null);
+		WildScene scene = staged ? new WildScene(stage) : null;
+		if (automatic)
+			director.beginAutomatic(battle, scene);
+		else
+			director.begin(battle, scene);
+
 		playBack(opening, wildId, staged);
 		refreshPanel();
 	}
@@ -2819,6 +2845,12 @@ public class GielinorGoPlugin extends Plugin
 		clientThread.invoke(() ->
 		{
 			BattleSession battle = director.session();
+			if (kind == BattleChoice.Kind.RUN && director.automatic())
+			{
+				askToRun();
+				return;
+			}
+
 			if (battle == null || !director.promptOpen())
 				return;
 
@@ -2846,6 +2878,14 @@ public class GielinorGoPlugin extends Plugin
 		});
 	}
 
+	/** Asks to run from the battle that plays itself, and says so once. */
+	private void askToRun()
+	{
+		boolean already = director.fleeing();
+		if (director.flee() && !already)
+			announce(Notice.player("Trying to run", Tone.INFO));
+	}
+
 	/**
 	 * Moves a battle the player steers on by one game tick: opens the choice when the scene is ready, counts the
 	 * time, plays the creature's own attack when it is up, and ends the battle as running when the player left it.
@@ -2853,6 +2893,7 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void steering()
 	{
+		autoBattleOpen = director.automatic();
 		if (!director.active())
 		{
 			if (choiceOpen)

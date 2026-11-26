@@ -294,6 +294,83 @@ public class BattleDirectorTest
 		assertEquals(Arrays.asList("lead Chicken", "append 1"), scene.told);
 	}
 
+	/** Starts an automatic battle in text against a goblin and returns the goblin. */
+	private WildEntry automatic(Scripted random)
+	{
+		build(random);
+		WildEntry foe = new WildEntry(1, GOBLIN, 30, 1);
+		game.data().team.add(creature("goblin", 30));
+		director.beginAutomatic(game.startAutoBattle(foe), null);
+		return foe;
+	}
+
+	private void ticks(int count)
+	{
+		for (int i = 0; i < count; i++)
+			director.gameTick(false);
+	}
+
+	@Test
+	public void anAutomaticBattlePlaysATurnEveryFewTicksWithNoPrompt()
+	{
+		automatic(new Scripted());
+
+		ticks(BattleDirector.TEXT_PAUSE - 1);
+		assertTrue(shown.isEmpty());
+		assertFalse(director.promptOpen());
+
+		ticks(1);
+		assertEquals(1, shown.size());
+		ticks(200 * BattleDirector.TEXT_PAUSE);
+		assertFalse(director.active());
+	}
+
+	@Test
+	public void runningFromAnAutomaticBattlePaysNothing()
+	{
+		Scripted random = new Scripted();
+		WildEntry foe = automatic(random);
+		ticks(BattleDirector.TEXT_PAUSE);
+		random.arm(0.0);
+
+		assertTrue(director.flee());
+		ticks(BattleDirector.TEXT_PAUSE);
+
+		assertFalse(director.active());
+		assertEquals("RAN text", shown.get(shown.size() - 1));
+		assertTrue(foe.battled());
+		assertEquals(0, game.data().battlesWon);
+	}
+
+	@Test
+	public void aFailedTryToRunLeavesTheBattleOnAndIsNotRepeated()
+	{
+		Scripted random = new Scripted();
+		automatic(random);
+		random.arm(0.999);
+
+		director.flee();
+		ticks(BattleDirector.TEXT_PAUSE);
+
+		assertTrue(director.active());
+		assertEquals("ONGOING text", shown.get(0));
+		assertFalse(director.fleeing());
+	}
+
+	@Test
+	public void walkingAwayFromAnAutomaticBattlePlaysItOutAndWritesTheResult()
+	{
+		WildEntry foe = automatic(new Scripted());
+
+		director.gameTick(true);
+
+		assertFalse(director.active());
+		assertTrue(foe.battled());
+		assertEquals(1, shown.size());
+		assertFalse(shown.get(0).startsWith("RAN"));
+		assertFalse(director.flee());
+	}
+
 	@Test
 	public void runningEndsTheSceneWithNoRewards()
 	{
