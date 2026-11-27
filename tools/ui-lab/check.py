@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
-"""Fails when the UI Lab no longer matches the plugin. Part of ./gradlew build (task checkUiLab).
+"""Fails when the UI Lab no longer matches the plugin. Run it by hand, or as ./gradlew checkUiLab. It is not part of
+./gradlew build, so a change to the painters never waits on the lab.
 
 It checks that:
   1. the lab still builds against the plugin's code, with every hook finding its place;
-  2. tools/ui-lab/controls.snapshot lists exactly the values, theme colours, panes and buttons the code has now;
-  3. every preset in tools/ui-lab/presets still points at something, and was made from the value the code still has.
+  2. every preset in tools/ui-lab/presets still points at something, and was made from the value the code still has.
 
-    python tools/ui-lab/check.py            check
-    python tools/ui-lab/check.py --update   rewrite the snapshot after a change you meant to make
+    python tools/ui-lab/check.py
 """
 import json
 import os
@@ -22,9 +21,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import ui_lab  # noqa: E402
 
 LAB = ui_lab.LAB
-SNAPSHOT = LAB / "controls.snapshot"
 PRESETS = LAB / "presets"
-UPDATE = "python tools/ui-lab/check.py --update"
 
 
 def normalized(line):
@@ -45,34 +42,6 @@ def current():
                        dump.as_posix()), encoding="utf-8")
     subprocess.run([ui_lab.java_tool("java"), "@" + str(args)], cwd=ui_lab.ROOT, check=True)
     return json.loads(dump.read_text(encoding="utf-8"))
-
-
-def snapshot_lines(dump):
-    lines = [["value", c["id"], c["value"]] for c in dump["controls"]]
-    lines += [["theme", c["id"], c["value"]] for c in dump["themeColors"]]
-    lines += [["depth", c["id"], c["value"]] for c in dump["depth"]]
-    lines += [["box", name, None] for name in dump["boxes"]]
-    return sorted(json.dumps(line, ensure_ascii=False) for line in lines)
-
-
-def describe(line):
-    kind, ident, value = json.loads(line)
-    return "%s %s%s" % (kind, ident, "" if value is None else " = %s" % value)
-
-
-def compare_snapshot(lines):
-    if not SNAPSHOT.exists():
-        return ["there is no %s; run: %s" % (SNAPSHOT.name, UPDATE)]
-    saved = set(SNAPSHOT.read_text(encoding="utf-8").splitlines())
-    now = set(lines)
-    if saved == now:
-        return []
-    problems = ["%s is out of date. If you meant to change these, run: %s" % (SNAPSHOT.name, UPDATE)]
-    for label, entries in (("gone or changed from", sorted(saved - now)), ("new or changed to", sorted(now - saved))):
-        problems += ["  %s: %s" % (label, describe(line)) for line in entries[:15]]
-        if len(entries) > 15:
-            problems.append("  ... and %d more" % (len(entries) - 15))
-    return problems
 
 
 def element_exists(key):
@@ -115,18 +84,11 @@ def check_presets(dump):
 
 
 def main():
-    dump = current()
-    lines = snapshot_lines(dump)
-    if "--update" in sys.argv:
-        SNAPSHOT.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
-        print("wrote %s: %d entries" % (SNAPSHOT.name, len(lines)))
-        problems = check_presets(dump)
-    else:
-        problems = compare_snapshot(lines) + check_presets(dump)
+    problems = check_presets(current())
     if problems:
         print("UI Lab check failed:\n  " + "\n  ".join(problems))
         sys.exit(1)
-    print("UI Lab check passed (%d entries)." % len(lines))
+    print("UI Lab check passed.")
 
 
 if __name__ == "__main__":

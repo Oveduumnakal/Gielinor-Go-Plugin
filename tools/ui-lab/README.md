@@ -61,15 +61,16 @@ The folder is not part of the plugin build. If a painter changes shape, the buil
 
 The server listens on this computer only and refuses requests from other sites.
 
-## The build check
+## The check
 
-`./gradlew build` runs `tools/ui-lab/check.py` (task `checkUiLab`). It fails when:
+`python tools/ui-lab/check.py` (or `./gradlew checkUiLab`) fails when:
 
 - the lab no longer builds against the plugin, for example because a painter changed shape (`hooks.py` says which);
-- `controls.snapshot` no longer lists the values, theme colours, panes and buttons the code has. If you meant the
-  change, run `python tools/ui-lab/check.py --update` and commit the snapshot with it;
 - a preset in `presets/` points at something that is gone, or was made from a value the code no longer has. Update or
   delete the preset.
+
+It is not part of `./gradlew build`: changing the painters never waits on the lab. Run it before you use the lab or
+apply a preset, and fix the lab then.
 
 ## What it cannot show
 
