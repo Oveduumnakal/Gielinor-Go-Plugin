@@ -69,7 +69,7 @@ def preset_problem(entry, known, boxes):
 
 
 def check_presets(dump):
-    known = {c["id"]: c["value"] for key in ("controls", "themeColors", "depth") for c in dump[key]}
+    known = {c["id"]: c["value"] for key in ("controls", "themeColors") for c in dump[key]}
     boxes = set(dump["boxes"])
     problems = []
     for path in sorted(PRESETS.glob("*.json")) if PRESETS.exists() else []:

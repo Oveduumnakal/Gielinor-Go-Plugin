@@ -19,11 +19,12 @@ change the plugin's code. It needs Python and a JDK 11 or newer (`JAVA_HOME` is 
 - **Scene** picks what to look at; **Theme** and **Scale** how it is drawn. **Zoom** only enlarges the picture.
 - The left side lists the controls. Search narrows them: try `glass`, `radius`, `open` or `hp`. Hover a name for its
   description and where it lives.
-  - **NEW: pane heights on this page** sets how high each pane of the shown page sits (Summary, Party, Bag,
+  - **Depth: pane heights on this page** sets how high each pane of the shown page sits (Summary, Party, Bag,
     Collection, Tasks). A raised pane casts a shadow on the page and on lower panes beside it; below zero it sinks.
-    **Layer gap** spreads all the heights further apart.
-  - **NEW: depth and light** has effects the plugin does not have yet: extrusion, bevel and shadow for panels, rows,
-    buttons and tabs, chips and bubbles, lit from one angle. All start at zero.
+    `LAYER_GAP` spreads all the heights further apart.
+  - **Depth and light** has the plugin's depth amounts (`WindowDepth.java`): extrusion, bevel and shadow for panels,
+    rows, buttons and tabs, chips and bubbles, lit from one angle. All start at zero, so the plugin shows no depth
+    until a preset sets them.
   - **Theme colours** are the colour table of the chosen theme.
   - Each file has its named values. **(inside drawing code)** groups hold numbers and colours written straight into
     the painting code, labelled with the method, line and the code around them.
@@ -56,7 +57,8 @@ change the plugin's code. It needs Python and a JDK 11 or newer (`JAVA_HOME` is 
 
 Nothing under `src/` is written to. The sources are copied to `build/ui-lab`. In the copy, the UI classes' named
 values stop being `final`, numbers written into drawing code move into generated fields (`literals.py`), and the
-painters call the depth effects (`hooks.py`, `java/LabDepth.java`). That copy is compiled with the server in `java/`.
+painters report their panes, buttons and elements to the lab (`hooks.py`). That copy is compiled with the server in
+`java/`.
 The folder is not part of the plugin build. If a painter changes shape, the build stops and says which hook to update.
 
 The server listens on this computer only and refuses requests from other sites.
@@ -83,5 +85,6 @@ apply a preset, and fix the lab then.
   their size.
 - Marks painted by hand have no box: the egg dots, rarity squares, stars, lead arrow and the Storage grid's health
   strip. The low-health flash does not follow a moved health bar.
-- A layout or depth effect you keep has to be built into the plugin; a preset only records the amounts.
+- A layout change you keep has to be built into the plugin's layout code; a preset only records the amounts. Depth
+  amounts are named values, so they apply like any other.
 - It is a close view, not the game: check what you keep in the client.

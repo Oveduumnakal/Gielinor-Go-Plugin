@@ -156,8 +156,14 @@ async function tick() {
 const hex = n => n.toString(16).padStart(2, "0");
 const rgb = argb => "#" + hex((argb >>> 16) & 255) + hex((argb >>> 8) & 255) + hex(argb & 255);
 
+/* Slider ranges for the depth amounts, which all start at zero. */
+const DEPTH_RANGES = [[/_HEIGHT$/, -5, 5, 0.5], [/_EXTRUDE$/, 0, 16, 0.5], [/_BEVEL$/, 0, 8, 0.5],
+  [/_SHADOW$/, 0, 24, 0.5], [/^LIGHT_ANGLE$/, 0, 360, 5], [/^SHADOW_BLUR$/, 0, 20, 1], [/^LAYER_GAP$/, 0, 16, 0.5]];
+
 function range(c) {
   if (c.step) return { min: c.min, max: c.max, step: c.step };
+  const depth = c.file === "WindowDepth" && !c.holder && DEPTH_RANGES.find(([pattern]) => pattern.test(c.name));
+  if (depth) return { min: depth[1], max: depth[2], step: depth[3] };
   const v = Math.abs(c.value);
   const whole = c.type === "int" || c.type === "long";
   if (!whole && v <= 1) return { min: 0, max: c.value < 0 ? 1 : Math.max(1, v * 2), step: 0.01 };
@@ -233,19 +239,20 @@ function build() {
   list.textContent = "";
   const open = words.length > 0;
   const make = c => c.type === "Color" ? colorRow(c) : numberRow(c);
-  const isPane = c => c.id.startsWith("depth:pane.");
-  const isLayer = c => isPane(c) || c.id === "depth:separation" || c.id === "depth:layerSide";
-  const page = $("scene").value.replace("Window: ", "").split(" ")[0] + ": ";
-  const layers = schema.depth.filter(c => isLayer(c) && hit(c) &&
-    (words.length || !isPane(c) || c.id.startsWith("depth:pane." + page)));
+  const isDepth = c => c.file === "WindowDepth" && !c.holder;
+  const isPane = c => isDepth(c) && /_HEIGHT$/.test(c.name);
+  const isLayer = c => isPane(c) || c.name === "LAYER_GAP" || c.name === "LAYER_SIDE";
+  const page = $("scene").value.replace("Window: ", "").split(" ")[0].toUpperCase() + "_";
+  const layers = schema.controls.filter(c => isLayer(c) && hit(c) &&
+    (words.length || !isPane(c) || c.name.startsWith(page)));
   if (layers.some(isPane))
-    list.append(group(words.length ? "NEW: pane heights" : "NEW: pane heights on this page", layers, make, true));
-  const depth = schema.depth.filter(c => !isLayer(c) && hit(c));
-  if (depth.length) list.append(group("NEW: depth and light", depth, make, true));
+    list.append(group(words.length ? "Depth: pane heights" : "Depth: pane heights on this page", layers, make, true));
+  const depth = schema.controls.filter(c => isDepth(c) && !isLayer(c) && hit(c));
+  if (depth.length) list.append(group("Depth and light", depth, make, true));
   const theme = schema.themeColors.filter(c => c.theme === $("theme").value && hit(c));
   if (theme.length) list.append(group("Theme colours (" + $("theme").value + ")", theme, colorRow, open));
   const files = {};
-  schema.controls.filter(hit).forEach(c => {
+  schema.controls.filter(c => hit(c) && !isDepth(c)).forEach(c => {
     const title = c.holder ? c.file + " (inside drawing code)" : c.file;
     (files[title] = files[title] || []).push(c);
   });
@@ -253,7 +260,7 @@ function build() {
     list.append(group(f, files[f], make, open && files[f].length < 40)));
 }
 
-const find = id => schema.controls.concat(schema.themeColors, schema.depth).find(x => x.id === id);
+const find = id => schema.controls.concat(schema.themeColors).find(x => x.id === id);
 const SIDE_NAMES = { x: "across", y: "down", w: "width", h: "height", f: "text size" };
 
 /* What a change is called, and what it went from and to. */
@@ -329,12 +336,12 @@ $("keep").onclick = async () => {
 };
 
 function preset() {
-  const all = schema.controls.concat(schema.themeColors, schema.depth);
+  const all = schema.controls.concat(schema.themeColors);
   return Object.entries(changed).map(([id, value]) => {
     const c = all.find(x => x.id === id) || {};
     const color = c.type === "Color" || id.startsWith("theme:");
     const show = v => color ? "0x" + (v >>> 0).toString(16).padStart(8, "0").toUpperCase() : v;
-    const file = c.file || (id.startsWith("depth:") ? "LabDepth (new effect)" : "WindowTheme");
+    const file = c.file || "WindowTheme";
     const entry = { id, from: show(c.value), to: show(value), was: c.value, value, file, line: c.line || null };
     if (id.startsWith("layout:el|")) {
       const [, method, kind, ...rest] = id.slice(7, id.lastIndexOf(".")).split("|");

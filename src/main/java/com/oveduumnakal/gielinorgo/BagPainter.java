@@ -175,8 +175,10 @@ final class BagPainter
 		PageText text = new PageText(st, sink);
 		Font regular = st.font(WindowFonts.Face.REGULAR, WindowFonts.BODY_UNITS);
 		Font small = st.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
-		for (Rectangle box : new Rectangle[] {layout.trainer, layout.jars, layout.items, layout.eggs})
-			st.panel(g, rect(box));
+		st.panel(g, rect(layout.trainer), WindowDepth.Pane.BAG_TRAINER);
+		st.panel(g, rect(layout.jars), WindowDepth.Pane.BAG_JARS);
+		st.panel(g, rect(layout.items), WindowDepth.Pane.BAG_HEALING_ITEMS);
+		st.panel(g, rect(layout.eggs), WindowDepth.Pane.BAG_EGGS);
 
 		trainer(g, ctx, text, layout, state, regular, small);
 		text.draw(g, "Throw", layout.jarsHeading, small, ThemeColor.SUBTEXT, PageText.Align.LEFT);
