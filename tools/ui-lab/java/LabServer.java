@@ -301,7 +301,6 @@ public final class LabServer
 		}
 
 		schema.put("themeColors", colors);
-		schema.put("depth", LabDepth.settings());
 		schema.put("changed", changed);
 		schema.put("skipped", skipped);
 		return schema;
@@ -428,8 +427,6 @@ public final class LabServer
 			changed.remove(one);
 			if (one.startsWith("theme:"))
 				LabTheme.set(one.substring(6), null);
-			else if (one.startsWith("depth:"))
-				LabDepth.reset(one);
 			else if (one.startsWith("layout:"))
 				LabBoxes.set(one.substring(7), 0);
 			else if (controls.containsKey(one))
@@ -444,12 +441,6 @@ public final class LabServer
 		if (id.startsWith("theme:"))
 		{
 			LabTheme.set(id.substring(6), new Color((int) (long) value, true));
-			return;
-		}
-
-		if (id.startsWith("depth:"))
-		{
-			LabDepth.set(id, value);
 			return;
 		}
 
@@ -513,7 +504,6 @@ public final class LabServer
 	private List<Map<String, Object>> boxes(Map<String, String> query)
 	{
 		LabScenes.Scene scene = current(query);
-		LabDepth.frame();
 		scene.frame(number(query, "t"));
 		String name = query.get("scene");
 		String page = name.startsWith("Window: ") ? name.substring(8).split(" ")[0] + ": " : "-";
@@ -539,7 +529,6 @@ public final class LabServer
 	private List<Map<String, Object>> elements(Map<String, String> query)
 	{
 		LabScenes.Scene scene = current(query);
-		LabDepth.frame();
 		LabElements.frame();
 		scene.frame(number(query, "t"));
 		List<Map<String, Object>> found = new ArrayList<>();
@@ -570,7 +559,6 @@ public final class LabServer
 		try
 		{
 			LabScenes.Scene scene = current(query);
-			LabDepth.frame();
 			LabElements.frame();
 			image = scene.frame(number(query, "t"));
 		}

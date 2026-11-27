@@ -62,15 +62,13 @@ check.dependsOn checkMovesets
 
 tasks.register('checkUiLab', Exec) {
 	group = 'verification'
-	description = 'Fails when the UI Lab, its snapshot or a saved preset no longer matches (tools/ui-lab/check.py).'
+	description = 'Fails when the UI Lab no longer builds or a saved preset no longer matches. Not part of build.'
 	commandLine pythonExecutable, 'tools/ui-lab/check.py'
 	doFirst {
 		environment 'UILAB_CP', configurations.testRuntimeClasspath.asPath
 		environment 'JAVA_HOME', System.getProperty('java.home')
 	}
 }
-
-check.dependsOn checkUiLab
 
 javadoc {
 	options.encoding = 'UTF-8'

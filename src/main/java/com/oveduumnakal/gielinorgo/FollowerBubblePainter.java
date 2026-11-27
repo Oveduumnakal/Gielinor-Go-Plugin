@@ -88,6 +88,11 @@ final class FollowerBubblePainter
 		if (!dot.enabled())
 			g.setComposite(AlphaComposite.SrcOver.derive((float) BubblePainter.DISABLED_ALPHA));
 
+		WindowDepth depth = style.depth();
+		Shape disc = depth.shows(WindowDepth.Element.BUBBLE) ? circle(cx, cy, r) : null;
+		if (disc != null)
+			depth.under(g, WindowDepth.Element.BUBBLE, disc, WindowDepth.Pane.NONE);
+
 		if (style.theme().glass())
 		{
 			GlassStyle.disc(g, style, cx, cy, r, fill, null);
@@ -104,6 +109,9 @@ final class FollowerBubblePainter
 			g.setStroke(new BasicStroke(2f));
 			g.draw(circle(cx, cy, r));
 		}
+
+		if (disc != null)
+			depth.over(g, WindowDepth.Element.BUBBLE, disc, WindowDepth.Pane.NONE);
 
 		face(g, dot, cx, cy, r);
 		g.setComposite(saved);

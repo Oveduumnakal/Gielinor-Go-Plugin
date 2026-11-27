@@ -51,6 +51,7 @@ final class WindowStyle
 	private final double scale;
 	private final Metrics metrics;
 	private final WashSource washes;
+	private final WindowDepth depth;
 
 	private WindowStyle(WindowTheme theme, double scale, WashSource washes)
 	{
@@ -58,6 +59,7 @@ final class WindowStyle
 		this.scale = scale;
 		this.metrics = new Metrics(scale);
 		this.washes = washes;
+		this.depth = new WindowDepth(scale);
 	}
 
 	/**
@@ -108,6 +110,12 @@ final class WindowStyle
 	Metrics metrics()
 	{
 		return metrics;
+	}
+
+	/** @return the depth this frame draws: sides, bevels, shadows and pane heights */
+	WindowDepth depth()
+	{
+		return depth;
 	}
 
 	/**
@@ -532,6 +540,15 @@ final class WindowStyle
 	void popup(Graphics2D g, Rectangle2D box, String surface, ThemeColor fill, ThemeColor border, boolean shadow,
 		List<Readability.Need> needs)
 	{
+		Shape outline = outline(Kind.BODY, box);
+		depth.under(g, WindowDepth.Element.PANEL, outline, WindowDepth.Pane.NONE);
+		popupBody(g, box, surface, fill, border, shadow, needs);
+		depth.over(g, WindowDepth.Element.PANEL, outline, WindowDepth.Pane.NONE);
+	}
+
+	private void popupBody(Graphics2D g, Rectangle2D box, String surface, ThemeColor fill, ThemeColor border,
+		boolean shadow, List<Readability.Need> needs)
+	{
 		if (theme.glass())
 		{
 			Shape body = outline(Kind.BODY, box);
@@ -569,15 +586,31 @@ final class WindowStyle
 	 */
 	void panel(Graphics2D g, Rectangle2D box)
 	{
+		panel(g, box, WindowDepth.Pane.NONE);
+	}
+
+	/**
+	 * Paints a boxed section of a page that is one of the page's panes, at that pane's height.
+	 *
+	 * @param g the graphics
+	 * @param box the section bounds
+	 * @param pane which pane it is
+	 */
+	void panel(Graphics2D g, Rectangle2D box, WindowDepth.Pane pane)
+	{
+		Shape panel = outline(Kind.PANEL, box);
+		depth.under(g, WindowDepth.Element.PANEL, panel, pane);
 		if (theme.glass())
 		{
-			Shape panel = outline(Kind.PANEL, box);
 			GlassStyle.pressed(g, panel, this, GlassTokens.black(GlassTokens.INSET_FILL));
 			GlassStyle.borderInset(g, panel, this, 1.0);
-			return;
+		}
+		else
+		{
+			box(g, box, Kind.PANEL, ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER);
 		}
 
-		box(g, box, Kind.PANEL, ThemeColor.PANEL_BOX, ThemeColor.PANEL_BORDER);
+		depth.over(g, WindowDepth.Element.PANEL, panel, pane);
 	}
 
 	/**
@@ -589,20 +622,36 @@ final class WindowStyle
 	 */
 	void card(Graphics2D g, Shape shape)
 	{
+		card(g, shape, WindowDepth.Pane.NONE);
+	}
+
+	/**
+	 * Paints a card that is one of the page's panes, at that pane's height.
+	 *
+	 * @param g the graphics
+	 * @param shape the card's outline
+	 * @param pane which pane it is
+	 */
+	void card(Graphics2D g, Shape shape, WindowDepth.Pane pane)
+	{
+		depth.under(g, WindowDepth.Element.PANEL, shape, pane);
 		if (theme.glass())
 		{
 			GlassStyle.pressed(g, shape, this, GlassTokens.black(GlassTokens.INSET_FILL));
 			GlassStyle.borderInset(g, shape, this, 1.0);
-			return;
+		}
+		else
+		{
+			g.setColor(color(ThemeColor.PANEL_BOX));
+			g.fill(shape);
+			Stroke saved = g.getStroke();
+			g.setColor(color(ThemeColor.PANEL_BORDER));
+			g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
+			g.draw(shape);
+			g.setStroke(saved);
 		}
 
-		g.setColor(color(ThemeColor.PANEL_BOX));
-		g.fill(shape);
-		Stroke saved = g.getStroke();
-		g.setColor(color(ThemeColor.PANEL_BORDER));
-		g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
-		g.draw(shape);
-		g.setStroke(saved);
+		depth.over(g, WindowDepth.Element.PANEL, shape, pane);
 	}
 
 	/**
@@ -614,7 +663,19 @@ final class WindowStyle
 	 */
 	void chipBody(Graphics2D g, Shape shape)
 	{
-		chipBody(g, shape, false);
+		chipBody(g, shape, WindowDepth.Pane.NONE);
+	}
+
+	/**
+	 * Paints the body of a small label that belongs to one of the page's panes, at that pane's height.
+	 *
+	 * @param g the graphics
+	 * @param shape the label's outline
+	 * @param pane which pane it belongs to
+	 */
+	void chipBody(Graphics2D g, Shape shape, WindowDepth.Pane pane)
+	{
+		chipBody(g, shape, false, pane);
 	}
 
 	/**
@@ -625,24 +686,28 @@ final class WindowStyle
 	 */
 	void accentChip(Graphics2D g, Shape shape)
 	{
-		chipBody(g, shape, true);
+		chipBody(g, shape, true, WindowDepth.Pane.NONE);
 	}
 
-	private void chipBody(Graphics2D g, Shape shape, boolean accent)
+	private void chipBody(Graphics2D g, Shape shape, boolean accent, WindowDepth.Pane pane)
 	{
+		depth.under(g, WindowDepth.Element.CHIP, shape, pane);
 		if (theme.glass())
 		{
 			GlassStyle.chip(g, shape, this, accent);
-			return;
+		}
+		else
+		{
+			g.setColor(color(accent ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP));
+			g.fill(shape);
+			Stroke saved = g.getStroke();
+			g.setColor(color(ThemeColor.PANEL_BORDER));
+			g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
+			g.draw(shape);
+			g.setStroke(saved);
 		}
 
-		g.setColor(color(accent ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP));
-		g.fill(shape);
-		Stroke saved = g.getStroke();
-		g.setColor(color(ThemeColor.PANEL_BORDER));
-		g.setStroke(new BasicStroke(Math.max(1f, metrics.border)));
-		g.draw(shape);
-		g.setStroke(saved);
+		depth.over(g, WindowDepth.Element.CHIP, shape, pane);
 	}
 
 	/**
@@ -655,10 +720,28 @@ final class WindowStyle
 	 */
 	void chipBody(Graphics2D g, Shape shape, Color[] outline)
 	{
-		if (theme.glass())
-			GlassStyle.chip(g, shape, this, false, outline);
-		else
-			chipBody(g, shape, false);
+		chipBody(g, shape, outline, WindowDepth.Pane.NONE);
+	}
+
+	/**
+	 * Paints a move's pill that belongs to one of the page's panes, at that pane's height.
+	 *
+	 * @param g the graphics
+	 * @param shape the pill's outline
+	 * @param outline the three colours (light, middle, dark) of the outline, from {@link GlassTokens}
+	 * @param pane which pane it belongs to
+	 */
+	void chipBody(Graphics2D g, Shape shape, Color[] outline, WindowDepth.Pane pane)
+	{
+		if (!theme.glass())
+		{
+			chipBody(g, shape, false, pane);
+			return;
+		}
+
+		depth.under(g, WindowDepth.Element.CHIP, shape, pane);
+		GlassStyle.chip(g, shape, this, false, outline);
+		depth.over(g, WindowDepth.Element.CHIP, shape, pane);
 	}
 
 	/**
@@ -765,18 +848,22 @@ final class WindowStyle
 	Shape row(Graphics2D g, Rectangle2D box, boolean lead, double hover, double press)
 	{
 		Shape shape = outline(Kind.ROW, box);
+		depth.under(g, WindowDepth.Element.ROW, shape, WindowDepth.Pane.NONE);
 		if (theme.glass())
 		{
 			GlassStyle.row(g, shape, this, lead, hover, press);
-			return shape;
+		}
+		else
+		{
+			g.setColor(color(lead ? ThemeColor.LEAD_ROW : ThemeColor.ROW));
+			g.fill(shape);
+			shade(g, shape, hover, press);
+			g.setColor(color(lead ? ThemeColor.LEAD_BORDER : ThemeColor.ROW_BORDER));
+			g.setStroke(new BasicStroke(metrics.border));
+			g.draw(outline(Kind.ROW, inset(box, metrics.border / 2.0)));
 		}
 
-		g.setColor(color(lead ? ThemeColor.LEAD_ROW : ThemeColor.ROW));
-		g.fill(shape);
-		shade(g, shape, hover, press);
-		g.setColor(color(lead ? ThemeColor.LEAD_BORDER : ThemeColor.ROW_BORDER));
-		g.setStroke(new BasicStroke(metrics.border));
-		g.draw(outline(Kind.ROW, inset(box, metrics.border / 2.0)));
+		depth.over(g, WindowDepth.Element.ROW, shape, WindowDepth.Pane.NONE);
 		return shape;
 	}
 
@@ -937,6 +1024,7 @@ final class WindowStyle
 	void tab(Graphics2D g, Rectangle2D box, String label, boolean active, boolean disabled, double hover)
 	{
 		Shape shape = outline(Kind.TAB, box);
+		depth.under(g, WindowDepth.Element.BUTTON, shape, WindowDepth.Pane.NONE);
 		Color text = color(disabled ? ThemeColor.TAB_DISABLED_TEXT
 			: active ? ThemeColor.TAB_ACTIVE_TEXT : ThemeColor.TAB_TEXT);
 		if (theme.glass())
@@ -954,6 +1042,7 @@ final class WindowStyle
 				shade(g, shape, active ? 0 : hover, 0);
 		}
 
+		depth.over(g, WindowDepth.Element.BUTTON, shape, WindowDepth.Pane.NONE);
 		Font font = fitted(g, WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS, label,
 			(int) box.getWidth() - 2 * metrics.tabSlant);
 		FontMetrics fm = g.getFontMetrics(font);
@@ -976,7 +1065,25 @@ final class WindowStyle
 	void button(Graphics2D g, Rectangle2D box, String label, boolean primary, boolean disabled, double hover,
 		double press)
 	{
-		paintButton(g, box, primary, disabled, hover, press, (gg, color) ->
+		button(g, box, label, primary, disabled, hover, press, WindowDepth.Pane.NONE);
+	}
+
+	/**
+	 * Paints a button that belongs to one of the page's panes, at that pane's height.
+	 *
+	 * @param g the graphics
+	 * @param box the button's box
+	 * @param label the button's text
+	 * @param primary whether it is the main choice, which stands out
+	 * @param disabled whether it cannot be pressed
+	 * @param hover how much the pointer is on it, from 0 to 1
+	 * @param press how much it is pressed, from 0 to 1
+	 * @param pane which pane it belongs to
+	 */
+	void button(Graphics2D g, Rectangle2D box, String label, boolean primary, boolean disabled, double hover,
+		double press, WindowDepth.Pane pane)
+	{
+		paintButton(g, box, primary, disabled, hover, press, pane, (gg, color) ->
 		{
 			Font font = fitted(gg, WindowFonts.Face.BOLD, WindowFonts.BODY_UNITS, label,
 				(int) box.getWidth() - 2 * metrics.chipSlant);
@@ -997,7 +1104,7 @@ final class WindowStyle
 	 */
 	void closeButton(Graphics2D g, Rectangle2D box, double hover, double press)
 	{
-		paintButton(g, box, false, false, hover, press, (gg, ink) ->
+		paintButton(g, box, false, false, hover, press, WindowDepth.Pane.NONE, (gg, ink) ->
 		{
 			double side = Math.min(box.getHeight(), box.getWidth() - 2 * metrics.chipSlant) * CROSS_SHARE;
 			gg.setColor(color(ink));
@@ -1016,7 +1123,7 @@ final class WindowStyle
 	}
 
 	private void paintButton(Graphics2D g, Rectangle2D box, boolean primary, boolean disabled, double hover,
-		double press, ButtonContent content)
+		double press, WindowDepth.Pane pane, ButtonContent content)
 	{
 		AffineTransform saved = g.getTransform();
 		double shrink = 1.0 - (1.0 - WindowTimes.PRESS_SCALE) * Math.max(0.0, Math.min(1.0, press));
@@ -1024,6 +1131,7 @@ final class WindowStyle
 		g.scale(shrink, shrink);
 		g.translate(-box.getCenterX(), -box.getCenterY());
 		Shape shape = outline(Kind.BUTTON, box);
+		depth.under(g, WindowDepth.Element.BUTTON, shape, pane);
 		ThemeColor body = disabled ? ThemeColor.TAB_DISABLED : primary ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP;
 		ThemeColor text = disabled ? ThemeColor.TAB_DISABLED_TEXT
 			: primary ? ThemeColor.CHIP_ACCENT_TEXT : ThemeColor.CHIP_TEXT;
@@ -1039,6 +1147,7 @@ final class WindowStyle
 				shade(g, shape, hover, press);
 		}
 
+		depth.over(g, WindowDepth.Element.BUTTON, shape, pane);
 		content.paint(g, text);
 		g.setTransform(saved);
 	}
@@ -1068,18 +1177,37 @@ final class WindowStyle
 	 */
 	int chip(Graphics2D g, int x, int y, String label, boolean accent)
 	{
+		return chip(g, x, y, label, accent, WindowDepth.Pane.NONE);
+	}
+
+	/**
+	 * Paints a chip that belongs to one of the page's panes, at that pane's height.
+	 *
+	 * @param g the graphics
+	 * @param x the left edge
+	 * @param y the top edge
+	 * @param label the chip's text
+	 * @param accent whether it stands out
+	 * @param pane which pane it belongs to
+	 * @return the chip's width in pixels
+	 */
+	int chip(Graphics2D g, int x, int y, String label, boolean accent, WindowDepth.Pane pane)
+	{
 		int w = chipWidth(g, label);
 		Rectangle2D box = new Rectangle2D.Double(x, y, w, metrics.chipHeight);
+		Shape shape = outline(Kind.CHIP, box);
+		depth.under(g, WindowDepth.Element.CHIP, shape, pane);
 		if (theme.glass())
 		{
-			GlassStyle.chip(g, outline(Kind.CHIP, box), this, accent);
+			GlassStyle.chip(g, shape, this, accent);
 		}
 		else
 		{
 			g.setColor(color(accent ? ThemeColor.CHIP_ACCENT : ThemeColor.CHIP));
-			g.fill(outline(Kind.CHIP, box));
+			g.fill(shape);
 		}
 
+		depth.over(g, WindowDepth.Element.CHIP, shape, pane);
 		Font font = font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
 		text(g, label, x + metrics.chipPad, baseline(box, g.getFontMetrics(font)), font,
 			accent ? ThemeColor.CHIP_ACCENT_TEXT : ThemeColor.CHIP_TEXT);

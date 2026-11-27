@@ -136,9 +136,17 @@ final class SummaryPainter
 			CreatureView view = row.view();
 			IdleStrip moving = idle == null || !ctx.mode.loops() ? null : idle.strip(row.species(), view.npcId());
 			double lift = moving == null ? bob : 0;
+			WindowDepth depth = st.depth();
+			Shape frame = depth.shows(WindowDepth.Element.PANEL) ? st.panelShape(box) : null;
+			if (frame != null)
+				depth.under(g, WindowDepth.Element.PANEL, frame, WindowDepth.Pane.SUMMARY_PORTRAIT);
+
 			if (scene == null || !scene.paint(g, ctx, pictures, content.row(), box, top, lift, moving))
 				PortraitFrame.paint(g, st, pictures, content.row(), box, st.metrics().slant / 2.0, lift, ctx.now,
 					ctx.mode, moving);
+
+			if (frame != null)
+				depth.over(g, WindowDepth.Element.PANEL, frame, WindowDepth.Pane.SUMMARY_PORTRAIT);
 		}
 
 		header(g, ctx, layout, content);
@@ -166,7 +174,7 @@ final class SummaryPainter
 		int d = box.height;
 		Shape pill = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(box.x + d / 2.0, box.y,
 			Math.max(0, box.width - d / 2.0), box.height));
-		st.card(g, pill);
+		st.card(g, pill, WindowDepth.Pane.SUMMARY_NAME_BAR);
 		Shape badge = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(box.x, box.y, d, d));
 		st.accentChip(g, badge);
 		double icon = d * 0.62;
@@ -213,7 +221,7 @@ final class SummaryPainter
 			if (box.height < st.metrics().chipHeight || x + w > box.x + box.width)
 				return;
 
-			st.chip(g, x, box.y, chip.label(), chip.style());
+			st.chip(g, x, box.y, chip.label(), chip.style(), WindowDepth.Pane.SUMMARY_TYPE_BADGES);
 			x += w + gap + st.metrics().chipSlant;
 		}
 	}
@@ -223,12 +231,13 @@ final class SummaryPainter
 	 *
 	 * @return whether the box has any room, so the caller paints its content
 	 */
-	private boolean frame(Graphics2D g, WindowStyle st, SummaryLayout layout, Rectangle box, String heading)
+	private boolean frame(Graphics2D g, WindowStyle st, SummaryLayout layout, Rectangle box, String heading,
+		WindowDepth.Pane pane)
 	{
 		if (box.height < layout.headingH || box.width <= 0)
 			return false;
 
-		st.panel(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height));
+		st.panel(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height), pane);
 		Font bold = st.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
 		new PageText(st, sink).draw(g, heading, layout.heading(box), bold, ThemeColor.TEXT, PageText.Align.CENTER);
 		g.setColor(st.color(ThemeColor.PANEL_BORDER));
@@ -239,7 +248,7 @@ final class SummaryPainter
 	private void stats(Graphics2D g, PageContext ctx, SummaryLayout layout, SummaryContent content, long since)
 	{
 		WindowStyle st = ctx.style;
-		if (!frame(g, st, layout, layout.stats, STATS_HEADING))
+		if (!frame(g, st, layout, layout.stats, STATS_HEADING, WindowDepth.Pane.SUMMARY_STATS))
 			return;
 
 		PageText text = new PageText(st, sink);
@@ -273,7 +282,7 @@ final class SummaryPainter
 	{
 		WindowStyle st = ctx.style;
 		Rectangle box = layout.nature;
-		if (!frame(g, st, layout, box, NATURE_HEADING))
+		if (!frame(g, st, layout, box, NATURE_HEADING, WindowDepth.Pane.SUMMARY_NATURE))
 			return;
 
 		PageText text = new PageText(st, sink);
@@ -330,7 +339,7 @@ final class SummaryPainter
 
 		WindowStyle st = ctx.style;
 		Shape pill = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(box.x, box.y, box.width, box.height));
-		st.card(g, pill);
+		st.card(g, pill, WindowDepth.Pane.SUMMARY_HEARTS);
 		int hearts = BondRules.MAX_HEARTS;
 		int between = 2;
 		int size = Math.max(4, Math.min(box.height - 2 * Math.max(1, layout.pad / 2),
@@ -347,7 +356,7 @@ final class SummaryPainter
 	{
 		WindowStyle st = ctx.style;
 		Rectangle box = layout.description;
-		if (!frame(g, st, layout, box, DESCRIPTION_HEADING))
+		if (!frame(g, st, layout, box, DESCRIPTION_HEADING, WindowDepth.Pane.SUMMARY_DESCRIPTION))
 			return;
 
 		PageText text = new PageText(st, sink);
@@ -371,7 +380,7 @@ final class SummaryPainter
 	{
 		WindowStyle st = ctx.style;
 		Rectangle box = layout.moves;
-		if (!frame(g, st, layout, box, MOVES_HEADING))
+		if (!frame(g, st, layout, box, MOVES_HEADING, WindowDepth.Pane.SUMMARY_MOVES))
 			return;
 
 		PageText text = new PageText(st, sink);
@@ -404,9 +413,9 @@ final class SummaryPainter
 			Shape shape = st.outline(WindowStyle.Kind.CHIP, new Rectangle2D.Double(pill.x, pill.y, pill.width,
 				pill.height));
 			if (pendingPill || i >= moves.size())
-				st.chipBody(g, shape);
+				st.chipBody(g, shape, WindowDepth.Pane.SUMMARY_MOVE_PILLS);
 			else
-				st.chipBody(g, shape, moveOutline(moves.get(i).style()));
+				st.chipBody(g, shape, moveOutline(moves.get(i).style()), WindowDepth.Pane.SUMMARY_MOVE_PILLS);
 
 			int icon = Math.max(4, pill.height * 6 / 10);
 			int inset = Math.max(3, (pill.height - icon) / 2 + 2);
@@ -448,7 +457,8 @@ final class SummaryPainter
 			String id = WindowPages.summaryButtonId(i);
 			Rectangle b = layout.buttons[i];
 			Rectangle2D shape = new Rectangle2D.Double(b.x, b.y, b.width, b.height);
-			st.button(g, shape, labels[i], i == 0, !enabled[i], ctx.hoverOf(id), ctx.pressOf(id));
+			st.button(g, shape, labels[i], i == 0, !enabled[i], ctx.hoverOf(id), ctx.pressOf(id),
+				WindowDepth.Pane.SUMMARY_BUTTONS);
 			if (ctx.focused && id.equals(ctx.highlight))
 				st.focusRing(g, st.outline(WindowStyle.Kind.BUTTON, shape));
 		}

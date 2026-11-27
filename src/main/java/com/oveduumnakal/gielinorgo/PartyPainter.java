@@ -409,7 +409,7 @@ final class PartyPainter
 		FontMetrics bm = g.getFontMetrics(bold);
 		FontMetrics sm = g.getFontMetrics(small);
 		Rectangle eggs = layout.eggs;
-		st.panel(g, new Rectangle2D.Double(eggs.x, eggs.y, eggs.width, eggs.height));
+		st.panel(g, new Rectangle2D.Double(eggs.x, eggs.y, eggs.width, eggs.height), WindowDepth.Pane.PARTY_EGGS);
 		List<EggView> carried = state == null ? Collections.emptyList() : state.eggs();
 		Rectangle title = inner(eggs, pad, bm.getHeight());
 		text.draw(g, "Eggs  " + carried.size() + " / " + SaveData.MAX_EGGS, title, bold, ThemeColor.TEXT,
@@ -444,7 +444,7 @@ final class PartyPainter
 		FontMetrics bm = g.getFontMetrics(bold);
 		FontMetrics sm = g.getFontMetrics(small);
 		Rectangle box = layout.tasks;
-		st.panel(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height));
+		st.panel(g, new Rectangle2D.Double(box.x, box.y, box.width, box.height), WindowDepth.Pane.PARTY_TASKS);
 		Rectangle title = inner(box, pad, bm.getHeight());
 		text.draw(g, "Tasks", title, bold, ThemeColor.TEXT, PageText.Align.LEFT);
 		List<TaskView.Row> rows = state == null || state.tasks() == null ? Collections.emptyList()

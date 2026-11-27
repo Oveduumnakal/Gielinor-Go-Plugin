@@ -253,6 +253,11 @@ final class BubblePainter
 			g.draw(circle(cx, cy, r + 2 + 3 * p));
 		}
 
+		WindowDepth depth = style.depth();
+		Shape disc = depth.shows(WindowDepth.Element.BUBBLE) ? circle(cx, cy, r) : null;
+		if (disc != null)
+			depth.under(g, WindowDepth.Element.BUBBLE, disc, WindowDepth.Pane.NONE);
+
 		if (glass)
 		{
 			GlassStyle.disc(g, style, cx, cy, r, fill, discWash(g, d, cx, cy, r, style));
@@ -272,6 +277,9 @@ final class BubblePainter
 			g.setColor(withAlpha(d.disabled() ? WindowTheme.mix(INNER, GREY, 0.3) : INNER, INNER_OPACITY));
 			g.fill(circle(cx, cy, r * INNER_RATIO));
 		}
+
+		if (disc != null)
+			depth.over(g, WindowDepth.Element.BUBBLE, disc, WindowDepth.Pane.NONE);
 
 		if (jar)
 			jarFace(g, d, fill, opacity, style);

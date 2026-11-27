@@ -217,7 +217,6 @@ final class LabAnimations
 		final BufferedImage draw(long at)
 		{
 			rig.now = now;
-			LabDepth.frame();
 			LabElements.frame();
 			return rig.paint();
 		}
@@ -377,7 +376,6 @@ final class LabAnimations
 		BufferedImage draw(long at)
 		{
 			rig.now = now;
-			LabDepth.frame();
 			LabElements.frame();
 			return rig.paint();
 		}

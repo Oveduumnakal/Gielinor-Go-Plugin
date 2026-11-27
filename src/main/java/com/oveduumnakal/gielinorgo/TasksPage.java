@@ -191,8 +191,8 @@ final class TasksPage
 		PageText text = new PageText(st, sink);
 		Font regular = st.font(WindowFonts.Face.REGULAR, WindowFonts.BODY_UNITS);
 		Font small = st.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
-		st.panel(g, rect(left));
-		st.panel(g, rect(right));
+		st.panel(g, rect(left), WindowDepth.Pane.TASKS_TASKS);
+		st.panel(g, rect(right), WindowDepth.Pane.TASKS_MILESTONES);
 		TaskView tasks = panel.tasks();
 		List<TaskView.Row> rows = tasks == null ? new ArrayList<>() : tasks.rows();
 		if (rows.isEmpty())

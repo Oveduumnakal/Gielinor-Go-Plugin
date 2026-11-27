@@ -529,8 +529,8 @@ final class CollectionPage
 		PageText text = new PageText(st, sink);
 		Font regular = st.font(WindowFonts.Face.REGULAR, WindowFonts.BODY_UNITS);
 		Font small = st.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
-		st.panel(g, rect(left));
-		st.panel(g, rect(right));
+		st.panel(g, rect(left), WindowDepth.Pane.COLLECTION_SUMMARY);
+		st.panel(g, rect(right), WindowDepth.Pane.COLLECTION_LIST);
 		paintLeft(g, st, text, panel, regular, small);
 		paintFilter(g, ctx, text, small);
 		paintSearch(g, ctx);
@@ -650,7 +650,7 @@ final class CollectionPage
 
 	private void paintDetail(Graphics2D g, WindowStyle st, PageText text, LogEntry entry, Font regular, Font small)
 	{
-		st.panel(g, rect(detail));
+		st.panel(g, rect(detail), WindowDepth.Pane.COLLECTION_DETAILS);
 		int pad = st.metrics().pad;
 		int line = st.px(LINE_UNITS);
 		int x = detail.x + pad;

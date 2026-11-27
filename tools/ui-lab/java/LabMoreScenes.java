@@ -300,7 +300,6 @@ final class LabMoreScenes
 				build();
 
 			rig.now = base + t;
-			LabDepth.frame();
 			LabElements.frame();
 			return rig.paint();
 		}
