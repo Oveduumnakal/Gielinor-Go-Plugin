@@ -1,0 +1,4 @@
+# Your own working state, never committed.
+.autosave*.json
+.portraits/
+__pycache__/

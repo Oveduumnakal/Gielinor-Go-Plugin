@@ -1,0 +1,10 @@
+// Adds a task that prints the test runtime classpath, for tools/ui-lab/ui_lab.py. The root build is not changed.
+allprojects {
+	afterEvaluate {
+		tasks.register('uiLabClasspath') {
+			doLast {
+				println 'UILAB_CP=' + configurations.testRuntimeClasspath.asPath
+			}
+		}
+	}
+}
