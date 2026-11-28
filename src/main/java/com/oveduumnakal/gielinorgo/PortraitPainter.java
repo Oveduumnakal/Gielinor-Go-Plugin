@@ -406,7 +406,8 @@ final class PortraitPainter
 	}
 
 	/**
-	 * Averages the samples down to the final picture.
+	 * Averages the samples down to the final picture. A sample's colour is already weighted by its coverage, so the
+	 * pixel's colour is the sum of the colours over the sum of the coverage.
 	 *
 	 * @param canvas the finished drawing surface
 	 * @param size width and height of the picture, in pixels
@@ -424,9 +425,9 @@ final class PortraitPainter
 				for (int sample = 0; sample < SAMPLES * SAMPLES; sample++)
 				{
 					int index = (py * SAMPLES + sample / SAMPLES) * canvas.side + px * SAMPLES + sample % SAMPLES;
-					sum[0] += canvas.red[index] * canvas.coverage[index];
-					sum[1] += canvas.green[index] * canvas.coverage[index];
-					sum[2] += canvas.blue[index] * canvas.coverage[index];
+					sum[0] += canvas.red[index];
+					sum[1] += canvas.green[index];
+					sum[2] += canvas.blue[index];
 					sum[3] += canvas.coverage[index];
 				}
 

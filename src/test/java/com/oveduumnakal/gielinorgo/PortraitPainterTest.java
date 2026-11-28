@@ -132,6 +132,18 @@ public class PortraitPainterTest
 	}
 
 	@Test
+	public void seeThroughFacesKeepTheirColourInsteadOfDarkening()
+	{
+		byte[] half = {(byte) 128, (byte) 128, (byte) 128, (byte) 128};
+		BufferedImage solid = PortraitPainter.paint(pyramid(RED, PortraitPainter.FLAT, null), SIZE);
+		BufferedImage faint = PortraitPainter.paint(pyramid(RED, PortraitPainter.FLAT, half), SIZE);
+
+		Color opaque = new Color(solid.getRGB(SIZE / 2, SIZE / 2 + 4));
+		Color through = new Color(faint.getRGB(SIZE / 2, SIZE / 2 + 4));
+		assertTrue(opaque + " against " + through, through.getRed() > opaque.getRed() * 3 / 4);
+	}
+
+	@Test
 	public void anEmptyOrBrokenModelGivesNoPicture()
 	{
 		int[][] none = {new int[0], new int[0], new int[0]};
