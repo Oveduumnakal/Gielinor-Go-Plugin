@@ -323,4 +323,22 @@ public class FriendFaintTest
 		assertTrue(session.fighters().get(0) == first);
 		assertTrue(session.fighters().get(1) == second);
 	}
+
+	@Test
+	public void onlyWhatCanBeTradedIsListedAndABossEggKeepsItsSpecies()
+	{
+		bobData.team.add(fainted("imp", 10, now));
+		bobData.team.add(new Creature("chicken", 5, now));
+		Egg boss = new Egg(DRAGON.rarity());
+		boss.species = DRAGON.key();
+		bobData.eggs.add(boss);
+		annData.team.add(new Creature("imp", 3, now));
+		meet();
+
+		List<GielinorGoPartyMessage.Item> listed = ann.tradeable(BOB);
+
+		assertEquals(2, listed.size());
+		assertEquals("chicken", listed.get(0).species());
+		assertEquals(DRAGON.key(), listed.get(1).eggSpecies());
+	}
 }
