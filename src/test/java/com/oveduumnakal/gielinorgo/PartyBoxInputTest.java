@@ -31,8 +31,20 @@ public class PartyBoxInputTest
 	private final List<String> swaps = new ArrayList<>();
 	private List<Rectangle> rows = Arrays.asList(new Rectangle(10, 10, 100, 10), new Rectangle(10, 30, 100, 10));
 	private boolean covered;
-	private final PartyBoxInput input = new PartyBoxInput(() -> rows, new DragKey(() -> Keybind.NOT_SET),
-		point -> covered, (from, onto) -> swaps.add(from + ">" + onto));
+	private final List<String> told = new ArrayList<>();
+	private final GoGame shown = twoCreatureGame();
+	private final PartyBoxInput input = new PartyBoxInput(() -> rows, () -> shown.snapshot().team(),
+		new DragKey(() -> Keybind.NOT_SET), point -> covered,
+		(from, onto) -> swaps.add(from.index() + ">" + onto.index()));
+
+	private GoGame twoCreatureGame()
+	{
+		GoGame game = new GoGame(new SpeciesTable(Arrays.asList(new Species("Chicken", 1, CombatType.STAB),
+			new Species("Cow", 2, CombatType.STAB))), new Random(1), () -> 0L, notice -> told.add(notice.text()));
+		game.data().team.add(new Creature("chicken", 3, 0L));
+		game.data().team.add(new Creature("cow", 5, 0L));
+		return game;
+	}
 
 	private static MouseEvent event(int id, int y, int button)
 	{
@@ -102,5 +114,28 @@ public class PartyBoxInputTest
 
 		assertTrue(game.data().team.get(0) == second);
 		assertTrue(game.data().team.get(1) == first);
+	}
+
+	@Test
+	public void aDragIsRefusedWhenTheTeamChangedUnderIt()
+	{
+		List<TradePick> picked = new ArrayList<>();
+		PartyBoxInput dragging = new PartyBoxInput(() -> rows, () -> shown.snapshot().team(),
+			new DragKey(() -> Keybind.NOT_SET), point -> false, (from, onto) ->
+			{
+				picked.add(from);
+				picked.add(onto);
+			});
+		dragging.mousePressed(event(MouseEvent.MOUSE_PRESSED, SECOND, MouseEvent.BUTTON1));
+		Creature left = shown.data().team.remove(1);
+		Creature arrived = new Creature("chicken", 9, 0L);
+		shown.data().team.add(arrived);
+		dragging.mouseReleased(event(MouseEvent.MOUSE_RELEASED, FIRST, MouseEvent.BUTTON1));
+
+		shown.swapTeam(picked.get(0), picked.get(1));
+
+		assertFalse(shown.data().team.contains(left));
+		assertTrue(shown.data().team.get(1) == arrived);
+		assertEquals(Collections.singletonList("That creature moved. Try again."), told);
 	}
 }
