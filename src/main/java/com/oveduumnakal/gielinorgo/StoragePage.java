@@ -752,7 +752,8 @@ final class StoragePage
 				ticked.isEmpty(), ctx.hoverOf(ID_RELEASE), ctx.pressOf(ID_RELEASE));
 		}
 
-		if (query.active())
+		boolean chips = query.active() && refused == null;
+		if (chips)
 			paintChips(g, ctx, text, small);
 
 		if (storage.isEmpty())
@@ -761,7 +762,7 @@ final class StoragePage
 			return;
 		}
 
-		if (!query.active())
+		if (!chips)
 			text.draw(g, stripText(storage), controls.strip(), small, ThemeColor.SUBTEXT, PageText.Align.LEFT);
 
 		if (entries.isEmpty())
