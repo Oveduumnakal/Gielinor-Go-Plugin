@@ -90,13 +90,17 @@ final class PartyBoxOverlay extends Overlay
 	}
 
 	/**
-	 * Hands the overlay the rows to draw. Call it from the game thread; the overlay only reads it.
+	 * Hands the overlay the rows to draw. Call it from the game thread; the overlay only reads it. With fewer than two
+	 * rows nothing stays draggable: after a logout the box is no longer rendered, so the rows it drew last would go on
+	 * taking clicks.
 	 *
 	 * @param rows the rows, from {@link PartyBoxModel#rows}
 	 */
 	void publish(List<RowModel> rows)
 	{
 		frame = Collections.unmodifiableList(rows);
+		if (rows.size() < 2)
+			draggable = Collections.emptyList();
 	}
 
 	/**

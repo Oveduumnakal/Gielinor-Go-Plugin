@@ -74,6 +74,12 @@ final class PartyBoxInput implements MouseListener
 	@Override
 	public MouseEvent mousePressed(MouseEvent event)
 	{
+		if (from >= 0 && event.getButton() != MouseEvent.BUTTON1)
+		{
+			event.consume();
+			return event;
+		}
+
 		from = -1;
 		over = -1;
 		releaseTaken = false;
@@ -110,6 +116,12 @@ final class PartyBoxInput implements MouseListener
 	@Override
 	public MouseEvent mouseReleased(MouseEvent event)
 	{
+		if (releaseTaken && event.getButton() != MouseEvent.BUTTON1)
+		{
+			event.consume();
+			return event;
+		}
+
 		int dragged = from;
 		from = -1;
 		over = -1;
@@ -128,6 +140,12 @@ final class PartyBoxInput implements MouseListener
 	@Override
 	public MouseEvent mouseClicked(MouseEvent event)
 	{
+		if (releaseTaken && event.getButton() != MouseEvent.BUTTON1)
+		{
+			event.consume();
+			return event;
+		}
+
 		if (clickTaken)
 		{
 			clickTaken = false;
