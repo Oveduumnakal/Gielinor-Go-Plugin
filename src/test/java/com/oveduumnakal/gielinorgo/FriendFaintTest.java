@@ -6,6 +6,7 @@ package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -263,5 +264,63 @@ public class FriendFaintTest
 
 		assertFalse(strong.fainted);
 		assertEquals(1.0, strong.hpFraction, 1e-9);
+	}
+
+	@Test
+	public void crossingChallengesAreBothDeclinedAndNoBattleIsFought()
+	{
+		annData.team.add(new Creature("imp", 10, now));
+		bobData.team.add(new Creature("chicken", 5, now));
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		bob.challenge(ANN, "Ann", bobData);
+		GielinorGoPartyMessage fromAnnFirst = last(fromAnn);
+		GielinorGoPartyMessage fromBobFirst = last(fromBob);
+
+		assertNull(bob.receive(fromAnnFirst, BOB, "Ann", bobData, true));
+		assertNull(ann.receive(fromBobFirst, ANN, "Bob", annData, true));
+
+		assertEquals(GielinorGoPartyMessage.DECLINE, last(fromAnn).kind());
+		assertEquals(GielinorGoPartyMessage.DECLINE, last(fromBob).kind());
+	}
+
+	@Test
+	public void anAnswerThatArrivesWhileBusyStartsNoBattleEvenWhenNotSteered()
+	{
+		Creature imp = new Creature("imp", 3, now);
+		annData.team.add(imp);
+		bobData.team.add(new Creature("king black dragon", 60, now));
+		meet();
+		ann.challenge(BOB, "Bob", annData);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true);
+
+		assertNull(ann.receive(last(fromBob), ANN, "Bob", annData, false, false, false));
+
+		assertFalse(imp.fainted);
+		assertEquals(GielinorGoPartyMessage.LEAVE, last(fromAnn).kind());
+	}
+
+	@Test
+	public void aTurnBattleKeepsTheCreaturesThatWereChallengedAfterAReorder()
+	{
+		SpeciesTable species = new SpeciesTable(Arrays.asList(IMP, CHICKEN, DRAGON));
+		GoGame game = new GoGame(species, new Random(5), () -> now, notice ->
+		{
+		});
+		Creature first = new Creature("imp", 3, now);
+		Creature second = new Creature("imp", 4, now);
+		game.data().team.add(first);
+		game.data().team.add(second);
+		bobData.team.add(new Creature("chicken", 5, now));
+		meet();
+		ann.challenge(BOB, "Bob", game.data(), true);
+		bob.receive(last(fromAnn), BOB, "Ann", bobData, true, true);
+		Collections.swap(game.data().team, 0, 1);
+
+		ann.receive(last(fromBob), ANN, "Bob", game.data(), true, true);
+		BattleSession session = game.startFriendBattle(ann.takeStarted());
+
+		assertTrue(session.fighters().get(0) == first);
+		assertTrue(session.fighters().get(1) == second);
 	}
 }

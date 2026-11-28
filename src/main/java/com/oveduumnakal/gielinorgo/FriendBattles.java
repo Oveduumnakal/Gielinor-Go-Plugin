@@ -324,9 +324,9 @@ final class FriendBattles
 
 	/**
 	 * Handles a message from another party member, for a player who may be busy with a battle of their own. A friend
-	 * who accepts a challenge to a battle both players choose the turns of, while the player is busy, starts no
-	 * battle: the player is told and the friend is sent a {@link GielinorGoPartyMessage#LEAVE} so their side ends
-	 * too.
+	 * who accepts a challenge while the player is busy starts no battle: the player is told and the friend is sent a
+	 * {@link GielinorGoPartyMessage#LEAVE} so a side played turn by turn ends too. A challenge that arrives while the
+	 * player's own is unanswered is declined.
 	 *
 	 * @param message the message; nothing in it is trusted
 	 * @param myId this player's party member id
@@ -399,7 +399,7 @@ final class FriendBattles
 			return null;
 
 		remember(message);
-		if (!free && answered.steered && message.steered())
+		if (!free)
 		{
 			tell(senderName + " accepted, but you are in a battle", Tone.BAD);
 			outbox.accept(GielinorGoPartyMessage.leave(sender, answered.battle));
@@ -410,7 +410,8 @@ final class FriendBattles
 		long seed = answered.seed ^ message.seed();
 		if (answered.steered && message.steered())
 		{
-			begin(new FriendTurnBattle(answered.battle, sender, senderName, true, mine, theirs, seed, outbox));
+			begin(new FriendTurnBattle(answered.battle, sender, senderName, true, mine, theirs, seed, outbox)
+				.sent(answered.creatures));
 			return null;
 		}
 
@@ -600,7 +601,7 @@ final class FriendBattles
 		GielinorGoPartyMessage answer = message(GielinorGoPartyMessage.ACCEPT, message.getMemberId(),
 			message.battle(), random.nextLong(), data, team).steering(steering);
 		List<Combatant> mine = fighters(answer);
-		if (!accepting || busy() || mine == null || mine.isEmpty() || now - lastBattleMs < REST_MS)
+		if (!accepting || busy() || waiting(now) || mine == null || mine.isEmpty() || now - lastBattleMs < REST_MS)
 		{
 			outbox.accept(new GielinorGoPartyMessage(GielinorGoPartyMessage.DECLINE, message.getMemberId(),
 				message.battle(), 0, 0, new String[0], new int[0]));
@@ -614,7 +615,7 @@ final class FriendBattles
 		if (steering && message.steered())
 		{
 			begin(new FriendTurnBattle(message.battle(), message.getMemberId(), senderName, false, mine, theirs, seed,
-				outbox));
+				outbox).sent(team));
 			return null;
 		}
 

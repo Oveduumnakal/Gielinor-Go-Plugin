@@ -5,6 +5,7 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Random;
@@ -100,6 +101,7 @@ final class FriendTurnBattle
 	private final String friendName;
 	private final BattleState state;
 	private final Consumer<GielinorGoPartyMessage> outbox;
+	private List<Creature> sent = Collections.emptyList();
 	private final Deque<Played> played = new ArrayDeque<>();
 	private int turn = 1;
 	private BattleChoice localChoice;
@@ -109,6 +111,25 @@ final class FriendTurnBattle
 	private int readyTurn;
 	private long readyMs = NOT_OPEN;
 	private End end;
+
+	/**
+	 * Records which of the player's creatures this side's team was built from, since the party box may be reordered
+	 * between a challenge and its answer.
+	 *
+	 * @param creatures the creatures, in the order of the fighters
+	 * @return this battle
+	 */
+	FriendTurnBattle sent(List<Creature> creatures)
+	{
+		sent = creatures;
+		return this;
+	}
+
+	/** @return the creatures behind this side's fighters, in order; empty when never recorded */
+	List<Creature> sent()
+	{
+		return sent;
+	}
 
 	/**
 	 * Starts a battle. Both players call this with the same teams in the same order and the same seed.

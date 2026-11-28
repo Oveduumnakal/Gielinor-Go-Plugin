@@ -1400,7 +1400,8 @@ final class GoGame
 	{
 		BattleState state = battle.state();
 		List<Creature> fighters = new ArrayList<>();
-		for (Creature creature : FriendBattles.fit(data, species))
+		List<Creature> sent = battle.sent().isEmpty() ? FriendBattles.fit(data, species) : battle.sent();
+		for (Creature creature : sent)
 		{
 			if (fighters.size() < state.team().size())
 				fighters.add(creature);
