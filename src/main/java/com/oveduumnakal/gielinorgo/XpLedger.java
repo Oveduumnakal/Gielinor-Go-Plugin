@@ -6,6 +6,7 @@ package com.oveduumnakal.gielinorgo;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Remembers the OSRS XP the client reported this session, and decides when it may be written to the save. Kept free
@@ -53,10 +54,26 @@ final class XpLedger
 		}
 	}
 
-	/** @return whether the login has readings and has not been reconciled with the save yet */
-	boolean reconcileDue()
+	/**
+	 * Tells whether the login can be compared with the save: it has not been yet, and every skill the save knows has
+	 * reported. A skill that reports after the comparison is stamped straight into the save, so its XP from time away
+	 * would be lost.
+	 *
+	 * @param saved the skills in the save's XP snapshot
+	 * @return whether to reconcile now
+	 */
+	boolean reconcileDue(Set<String> saved)
 	{
-		return !reconciled && !login.isEmpty();
+		if (reconciled || login.isEmpty())
+			return false;
+
+		for (String skill : saved)
+		{
+			if (!OVERALL.equals(skill) && !login.containsKey(skill))
+				return false;
+		}
+
+		return true;
 	}
 
 	/** @return a copy of each skill's first reading this session */
