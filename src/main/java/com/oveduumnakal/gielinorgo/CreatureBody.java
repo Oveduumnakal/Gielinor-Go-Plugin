@@ -24,6 +24,9 @@ import net.runelite.api.RuneLiteObject;
  */
 final class CreatureBody extends RuneLiteObject
 {
+	/** How many sizes a lying body shrinks through. */
+	private static final int SHRINK_STEPS = 16;
+
 	private static final Logger log = LoggerFactory.getLogger(CreatureBody.class);
 
 	/** One move of a battle. */
@@ -68,6 +71,9 @@ final class CreatureBody extends RuneLiteObject
 	private final int restLift;
 	private final AnimationController controller;
 	private boolean lying;
+	private Model shrunk;
+	private int shrunkSteps;
+	private int shrunkLevel;
 	private boolean defeated;
 	private double size = 1.0;
 	private int level = OpacityFade.SOLID;
@@ -616,7 +622,7 @@ final class CreatureBody extends RuneLiteObject
 	public Model getModel()
 	{
 		if (lying)
-			return tipped[level] != null ? tipped[level] : stillNow();
+			return lyingNow();
 
 		if (controller.getAnimation() == null)
 			return stillNow();
@@ -632,6 +638,35 @@ final class CreatureBody extends RuneLiteObject
 
 		restOnTheGround(posed, tall);
 		return posed;
+	}
+
+	/**
+	 * The model of a body that lies down, at the size it is drawn now. The tipped model of a level is cached and shared
+	 * between frames, so a shrinking body gets a model of its own, built again only when it has shrunk by another step.
+	 */
+	private Model lyingNow()
+	{
+		Model full = tipped[level] != null ? tipped[level] : stillNow();
+		int steps = (int) Math.ceil(size * SHRINK_STEPS);
+		if (steps >= SHRINK_STEPS || steps <= 0 || tipped[level] == null)
+			return full;
+
+		if (shrunk == null || steps != shrunkSteps || level != shrunkLevel)
+		{
+			try
+			{
+				shrunk = lieDown(faded(level), steps / (double) SHRINK_STEPS);
+				shrunkSteps = steps;
+				shrunkLevel = level;
+			}
+			catch (RuntimeException | AssertionError e)
+			{
+				log.debug("Gielinor Go: could not shrink NPC {}", npcId, e);
+				return full;
+			}
+		}
+
+		return shrunk != null ? shrunk : full;
 	}
 
 	/**
@@ -801,9 +836,16 @@ final class CreatureBody extends RuneLiteObject
 	 */
 	private Model lieDown(ModelData data)
 	{
+		return lieDown(data, 1.0);
+	}
+
+	private Model lieDown(ModelData data, double factor)
+	{
+		int wide = Math.max(1, (int) Math.round(widthScale * factor));
+		int tall = Math.max(1, (int) Math.round(heightScale * factor));
 		ModelData copy = data.shallowCopy()
 			.cloneVertices()
-			.scale(widthScale, heightScale, widthScale);
+			.scale(wide, tall, wide);
 		ModelTilt.lieDown(copy.getVerticesY(), copy.getVerticesZ(), copy.getVerticesCount());
 		return copy.light();
 	}
