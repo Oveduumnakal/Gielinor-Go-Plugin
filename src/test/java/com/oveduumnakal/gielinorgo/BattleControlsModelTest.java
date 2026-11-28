@@ -219,6 +219,25 @@ public class BattleControlsModelTest
 	}
 
 	@Test
+	public void aClickOnAListThatShrankSinceItWasDrawnDoesNothing()
+	{
+		List<BattleView.Option> both = pair();
+		BattleView.ItemOption salve = new BattleView.ItemOption(ItemType.SMALL_SALVE, 3, both);
+		BattleView.ItemOption antidote = new BattleView.ItemOption(ItemType.ANTIDOTE, 1,
+			Collections.singletonList(both.get(0)));
+		model.show(viewWithItems(Arrays.asList(salve, antidote)), BattleControlsModel.Keys.NONE);
+		click(BattleControlsModel.ID_ITEM);
+		Rectangle second = hit("item:1").bounds();
+		model.onPressed(second.x + 1, second.y + 1, MouseEvent.BUTTON1);
+
+		model.show(viewWithItems(Collections.singletonList(salve)), BattleControlsModel.Keys.NONE);
+		model.onReleased(second.x + 1, second.y + 1, MouseEvent.BUTTON1);
+
+		assertTrue(chosen.isEmpty());
+		assertTrue(model.hits().isEmpty());
+	}
+
+	@Test
 	public void theItemButtonIsGreyWhenNoItemWouldHelp()
 	{
 		model.show(viewWithItems(Collections.emptyList()), BattleControlsModel.Keys.NONE);

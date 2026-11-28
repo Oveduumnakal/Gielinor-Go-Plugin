@@ -230,6 +230,7 @@ final class BattleControlsModel
 	private List<Hit> hits = Collections.emptyList();
 	private String hover;
 	private String pressed;
+	private String listed = "";
 
 	/**
 	 * Makes the model, showing nothing.
@@ -243,7 +244,8 @@ final class BattleControlsModel
 
 	/**
 	 * Shows the battle that waits, or hides the controls. A list that no longer makes sense for the new state, such as
-	 * the move list of a creature that was switched out, closes.
+	 * the move list of a creature that was switched out, closes. When the page or what a list holds changes, the
+	 * buttons drawn last are forgotten, so a click cannot act on an entry that moved; the next layout brings them back.
 	 *
 	 * @param next the battle, or null when none waits
 	 * @param hotkeys the hotkeys the player set
@@ -267,6 +269,33 @@ final class BattleControlsModel
 			if (pending == null)
 				page = Page.ITEMS;
 		}
+
+		String now = listing();
+		if (!now.equals(listed))
+		{
+			listed = now;
+			pressed = null;
+			hits = Collections.emptyList();
+		}
+	}
+
+	/** @return a line that changes whenever a button of the page that shows would mean something else */
+	private String listing()
+	{
+		StringBuilder line = new StringBuilder(page.name());
+		line.append(' ');
+		line.append(view.moves().size());
+		for (BattleView.Option option : view.options())
+			line.append(" s").append(option.teamIndex());
+
+		for (BattleView.ItemOption item : view.items())
+		{
+			line.append(" i").append(item.type());
+			for (BattleView.Option target : item.targets())
+				line.append(',').append(target.teamIndex());
+		}
+
+		return line.toString();
 	}
 
 	/** @return whether the controls are shown */
@@ -669,6 +698,7 @@ final class BattleControlsModel
 		pending = null;
 		hover = null;
 		pressed = null;
+		listed = "";
 		hits = Collections.emptyList();
 	}
 
