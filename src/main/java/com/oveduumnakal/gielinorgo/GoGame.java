@@ -753,7 +753,7 @@ final class GoGame
 
 			if (hatch(egg))
 				carried.remove();
-			else if (!wasReady)
+			else if (!wasReady && !hasRoomForCreature())
 				tell("An egg is ready, but storage is full", Tone.BAD);
 		}
 
@@ -2724,15 +2724,12 @@ final class GoGame
 	 * species for a boss egg, otherwise of a random species of the egg's rarity.
 	 *
 	 * @param egg the egg whose walking is done
-	 * @return true when the egg is used up; false when there is no room, so it waits
+	 * @return true when the egg is used up; false when there is no room or no species to hatch, so it waits
 	 */
 	private boolean hatch(Egg egg)
 	{
 		if (!hasRoomForCreature())
 			return false;
-
-		if (egg.pinned)
-			pinNews.add(new EggView(egg.rarityTier(), 0, 0, eggName(egg)).label());
 
 		Species born = egg.species == null ? null : species.find(egg.species);
 		if (born == null)
@@ -2745,10 +2742,13 @@ final class GoGame
 			}
 
 			if (pool.isEmpty())
-				return true;
+				return false;
 
 			born = pool.get(random.nextInt(pool.size()));
 		}
+
+		if (egg.pinned)
+			pinNews.add(new EggView(egg.rarityTier(), 0, 0, eggName(egg)).label());
 
 		Creature creature = new Creature(born.key(), egg.rarityTier().hatchLevel(), clock.getAsLong());
 		creature.gilded = random.nextInt(gildedOneIn()) == 0;

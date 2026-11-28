@@ -641,6 +641,7 @@ public class FriendTradesTest
 	{
 		Egg egg = new Egg(Rarity.RARE);
 		egg.tilesLeft = 5;
+		egg.species = "imp";
 		annGame.data().eggs.add(egg);
 		ann.offer(BOB, "Bob", egg, null);
 		assertTrue(ann.locked(egg));
