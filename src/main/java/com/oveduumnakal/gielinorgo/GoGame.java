@@ -67,6 +67,9 @@ final class GoGame
 	/** What the player is told when no creature of the team can fight because every one of them has fainted. */
 	static final String FAINTED_TEAM_TEXT = "Your team has fainted. Revive it at a bank";
 
+	/** What the player reads when something is refused because no starter is picked yet. */
+	static final String STARTER_FIRST_TEXT = "Choose your first creature first.";
+
 	/** Most evolutions one creature can go through in a single burst of XP. */
 	private static final int MAX_EVOLUTIONS_AT_ONCE = 5;
 
@@ -308,6 +311,39 @@ final class GoGame
 	}
 
 	/**
+	 * Tells whether progress is locked: the save is still waiting for its starter. While locked nothing is earned,
+	 * counted or paid, and nothing earned is made up for later; only the XP snapshot keeps up. A species table that
+	 * lacks a starter never locks, since no starter could be picked to lift it.
+	 *
+	 * @return true until a starter is picked
+	 */
+	boolean locked()
+	{
+		return StarterRules.offered(data) && startersKnown();
+	}
+
+	private boolean startersKnown()
+	{
+		for (String name : StarterRules.STARTERS)
+		{
+			if (species.find(name) == null)
+				return false;
+		}
+
+		return true;
+	}
+
+	/** @return whether progress is locked, after telling the player why nothing happened */
+	private boolean refusedWhileLocked()
+	{
+		if (!locked())
+			return false;
+
+		tell(STARTER_FIRST_TEXT, Tone.BAD);
+		return true;
+	}
+
+	/**
 	 * Gives the starters on offer. They are rolled when first asked for and kept until picked or the offer ends,
 	 * so closing and opening the panel never rerolls them. With a seed from {@link #starterSeed(Long)} a roll after a
 	 * load gives the same three again.
@@ -322,11 +358,8 @@ final class GoGame
 			return Collections.emptyList();
 		}
 
-		for (String name : StarterRules.STARTERS)
-		{
-			if (species.find(name) == null)
-				return Collections.emptyList();
-		}
+		if (!startersKnown())
+			return Collections.emptyList();
 
 		if (starters == null)
 			starters = StarterRules.roll(starterSeed == null ? starterRandom : new Random(starterSeed),
@@ -532,6 +565,9 @@ final class GoGame
 	 */
 	void addOsrsXp(int gained)
 	{
+		if (locked())
+			return;
+
 		if (gained > 0)
 			payTasks(startTasks().gainedXp(gained));
 
@@ -569,6 +605,9 @@ final class GoGame
 	 */
 	void addOfflineXp(OfflineXp.Result result)
 	{
+		if (locked())
+			return;
+
 		if (result.isEmpty())
 			return;
 
@@ -672,7 +711,7 @@ final class GoGame
 	 */
 	void addSkillXp(String skill, int gained)
 	{
-		if (gained <= 0)
+		if (gained <= 0 || locked())
 			return;
 
 		addOsrsXp(gained);
@@ -694,7 +733,7 @@ final class GoGame
 	 */
 	void addSteps(int tiles)
 	{
-		if (tiles <= 0)
+		if (tiles <= 0 || locked())
 			return;
 
 		payTasks(startTasks().walked(tiles));
@@ -714,7 +753,7 @@ final class GoGame
 	/** @return whether the player carries at least one egg, so an action step would count toward something */
 	boolean carriesEgg()
 	{
-		return !data.eggs.isEmpty();
+		return !locked() && !data.eggs.isEmpty();
 	}
 
 	/**
@@ -726,7 +765,7 @@ final class GoGame
 	 */
 	void addActionSteps(int steps)
 	{
-		if (steps <= 0 || data.eggs.isEmpty())
+		if (steps <= 0 || data.eggs.isEmpty() || locked())
 			return;
 
 		dirty = true;
@@ -930,6 +969,9 @@ final class GoGame
 	 */
 	TeamBattleResult challenge(String championId)
 	{
+		if (refusedWhileLocked())
+			return null;
+
 		if (eliteBusy())
 			return null;
 
@@ -992,6 +1034,9 @@ final class GoGame
 	/** Rewards an OSRS level-up with Bronze jars. */
 	void onLevelUp()
 	{
+		if (locked())
+			return;
+
 		data.addJars(JarType.BRONZE, JARS_PER_LEVEL_UP);
 		dirty = true;
 		tell(foundJars(JarType.BRONZE, JARS_PER_LEVEL_UP, "level up"), Tone.FIND, JarType.BRONZE);
@@ -1005,6 +1050,9 @@ final class GoGame
 	 */
 	boolean markSeen(WildEntry entry)
 	{
+		if (locked())
+			return !data.seen.contains(entry.species().key());
+
 		if (!data.seen.add(entry.species().key()))
 			return false;
 
@@ -1142,6 +1190,12 @@ final class GoGame
 
 	private CatchOutcome throwJar(WildEntry entry, JarType jar, DoubleSupplier chance)
 	{
+		if (locked())
+		{
+			tell(entry, STARTER_FIRST_TEXT, Tone.BAD);
+			return CatchOutcome.LOCKED;
+		}
+
 		String name = entry.species().name();
 		if (jar == null || data.jarCount(jar) <= 0)
 		{
@@ -1268,6 +1322,9 @@ final class GoGame
 	 */
 	BattleSession startAutoBattle(WildEntry entry)
 	{
+		if (refusedWhileLocked())
+			return null;
+
 		if (eliteBusy())
 			return null;
 
@@ -1310,6 +1367,9 @@ final class GoGame
 	 */
 	BattleSession startBattle(WildEntry entry)
 	{
+		if (refusedWhileLocked())
+			return null;
+
 		if (eliteBusy())
 			return null;
 
@@ -1359,6 +1419,9 @@ final class GoGame
 	 */
 	BattleSession startChallenge(String championId)
 	{
+		if (refusedWhileLocked())
+			return null;
+
 		if (eliteBusy())
 			return null;
 
@@ -3115,6 +3178,9 @@ final class GoGame
 	 */
 	void bossKilled(String chatName)
 	{
+		if (locked())
+			return;
+
 		Species boss = bossTable.speciesFor(chatName);
 		if (boss == null)
 			return;
@@ -3177,7 +3243,7 @@ final class GoGame
 	 */
 	private void settleMilestones()
 	{
-		if (milestonesDue && !walking)
+		if (milestonesDue && !walking && !locked())
 			payMilestones();
 	}
 
@@ -3307,6 +3373,9 @@ final class GoGame
 	 */
 	TeamBattleResult eliteChallenge()
 	{
+		if (refusedWhileLocked())
+			return null;
+
 		if (!eliteOpen() && !eliteBegin())
 			return null;
 
@@ -3322,6 +3391,9 @@ final class GoGame
 	 */
 	BattleSession eliteSteered()
 	{
+		if (refusedWhileLocked())
+			return null;
+
 		if (!eliteOpen() && !eliteBegin())
 			return null;
 

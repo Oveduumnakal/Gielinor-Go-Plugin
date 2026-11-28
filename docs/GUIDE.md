@@ -149,8 +149,10 @@ Every feature and every number, in detail. For the short version, see the [READM
   you look at them. It is an ordinary creature from then on, never gilded. It counts in the Creature Log, but not
   for the daily tasks, the login streak or trainer XP, because it is not a catch.
 
-  The offer shows only while your team and Storage are empty and you have caught nothing. You can ignore it and
-  catch a wild creature instead; your first catch ends the offer. The Gnome Archer starts a new line: Gnome Archer,
+  The offer shows only while your team and Storage are empty and you have caught nothing. Until you pick, nothing
+  progresses: wild creatures still appear but refuse a jar (`Choose your first creature first.`), and there are no
+  battles or trades, no jar finds, items, XP, eggs, daily tasks, milestones or boss eggs, and nothing new in the
+  Creature Log. What you walked and the XP you earned before picking are not paid later. The Gnome Archer starts a new line: Gnome Archer,
   Archer (Lv 20), Tower Archer (Lv 40), Elf Archer (Lv 60).
 
 - **Your XP trains your creatures**

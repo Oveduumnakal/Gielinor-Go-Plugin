@@ -267,7 +267,7 @@ final class FriendBattles
 
 		if (data.team.isEmpty())
 		{
-			tell("Catch a creature first", Tone.BAD);
+			tell(StarterRules.offered(data) ? GoGame.STARTER_FIRST_TEXT : "Catch a creature first", Tone.BAD);
 			return;
 		}
 

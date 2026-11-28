@@ -379,6 +379,10 @@ public class FriendBattlesTest
 		meet();
 		SaveData nobody = SaveData.fresh();
 		ann.challenge(BOB, "Bob", nobody);
+		assertEquals(GoGame.STARTER_FIRST_TEXT, last(annTold));
+
+		nobody.caught.put("goblin", 1);
+		ann.challenge(BOB, "Bob", nobody);
 		assertEquals("Catch a creature first", last(annTold));
 
 		ann.challenge(CAT, "Cat", annData);
