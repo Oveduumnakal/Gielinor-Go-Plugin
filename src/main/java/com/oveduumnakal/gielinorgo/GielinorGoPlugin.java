@@ -353,7 +353,7 @@ public class GielinorGoPlugin extends Plugin
 		keyManager.unregisterKeyListener(hotkeys);
 		choiceOpen = false;
 		autoBattleOpen = false;
-		clientThread.invoke(director::end);
+		clientThread.invoke(this::endBattleThenLeaveParty);
 		GoGame endingGame = loaded ? game : null;
 		GoPersistence endingPersistence = persistence;
 		String endingProfile = saveProfileKey;
@@ -377,7 +377,6 @@ public class GielinorGoPlugin extends Plugin
 		clientThread.invoke(effects::clear);
 		clientThread.invoke(jarFlight::clear);
 		overlayManager.remove(jarFlight);
-		wsClient.unregisterMessage(GielinorGoPartyMessage.class);
 		overlayManager.remove(wildOverlay);
 		overlayManager.remove(floatingText);
 		overlayManager.remove(followerTag);
@@ -391,6 +390,16 @@ public class GielinorGoPlugin extends Plugin
 		ledger.reset();
 		stepCounter.reset();
 		actionSteps.reset();
+	}
+
+	/**
+	 * Ends the battle on, on the client thread, and only then stops listening to the party: leaving a friend battle
+	 * sends the friend a message, which cannot be sent once the message type is unregistered.
+	 */
+	private void endBattleThenLeaveParty()
+	{
+		director.end();
+		wsClient.unregisterMessage(GielinorGoPartyMessage.class);
 	}
 
 	/**
