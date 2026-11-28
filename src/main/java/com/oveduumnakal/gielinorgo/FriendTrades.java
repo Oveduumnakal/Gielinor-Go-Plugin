@@ -217,6 +217,12 @@ final class FriendTrades implements GoGame.TradeLocks
 			return;
 		}
 
+		if (game.locked())
+		{
+			tell(GoGame.STARTER_FIRST_TEXT, Tone.BAD);
+			return;
+		}
+
 		if (offer.asked != null && !owns(offer.asked))
 		{
 			incoming.remove(friendId);
@@ -535,6 +541,12 @@ final class FriendTrades implements GoGame.TradeLocks
 
 	private void offer(long friendId, String friendName, Mine give, Item want)
 	{
+		if (game.locked())
+		{
+			tell(GoGame.STARTER_FIRST_TEXT, Tone.BAD);
+			return;
+		}
+
 		long now = clock.getAsLong();
 		if (!owns(give))
 		{
@@ -590,6 +602,12 @@ final class FriendTrades implements GoGame.TradeLocks
 
 		if (open != null && !stale(open, now))
 			return false;
+
+		if (game.locked())
+		{
+			send(GielinorGoPartyMessage.REFUSE, sender, message.battle());
+			return false;
+		}
 
 		Mine asked = null;
 		if (message.want() != null)

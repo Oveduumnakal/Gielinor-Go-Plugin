@@ -237,20 +237,6 @@ public class StarterRulesTest
 	}
 
 	@Test
-	public void aCatchDuringTheOfferEndsIt()
-	{
-		Species goblin = table.find("Goblin");
-		WildEntry entry = new WildEntry(1, goblin, 3, 5);
-		CatchOutcome outcome = game.tryCatch(entry);
-		for (int i = 0; i < 200 && outcome != CatchOutcome.CAUGHT; i++)
-			outcome = game.tryCatch(entry);
-
-		assertEquals(CatchOutcome.CAUGHT, outcome);
-		assertTrue(game.starterOffer().isEmpty());
-		assertFalse(game.pickStarter(0));
-	}
-
-	@Test
 	public void noOfferWhenASpeciesIsMissingAndNoneAfterAReset()
 	{
 		GoGame bare = new GoGame(new SpeciesTable(Arrays.asList(new Species("Imp", 7, CombatType.SLASH))),

@@ -2483,7 +2483,8 @@ public class GielinorGoPlugin extends Plugin
 	 */
 	private void showCatch(CatchOutcome outcome, int wildId, JarType jar)
 	{
-		boolean thrown = outcome != CatchOutcome.NO_JARS && outcome != CatchOutcome.FULL;
+		boolean thrown = outcome != CatchOutcome.NO_JARS && outcome != CatchOutcome.FULL
+			&& outcome != CatchOutcome.LOCKED;
 		if (!thrown)
 			return;
 

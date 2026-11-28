@@ -63,6 +63,7 @@ public class HunterCreatureGameTest
 	{
 		Species fox = table.find("Pyre fox");
 		WildEntry entry = new WildEntry(1, fox, 23, WildEligibility.combatLevel(fox, 0));
+		game.data().caught.put("goblin", 1);
 		game.markSeen(entry);
 
 		CatchOutcome outcome = game.tryCatch(entry);
@@ -70,7 +71,7 @@ public class HunterCreatureGameTest
 			outcome = game.tryCatch(entry);
 
 		assertEquals(CatchOutcome.CAUGHT, outcome);
-		assertEquals(1, game.snapshot().caughtSpecies());
+		assertEquals(2, game.snapshot().caughtSpecies());
 		Creature caught = game.data().team.get(0);
 		assertEquals("pyre fox", caught.species);
 	}

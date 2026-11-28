@@ -155,7 +155,7 @@ final class BagPainter
 				BagText.eggTip(state.eggs().get(i))));
 
 		hits.add(new Hit("bag:steps", Hit.Kind.AREA, layout.stepsLine, -1, true,
-			BagText.stepsTip(state.stepProgress())));
+			state.starters().isEmpty() ? BagText.stepsTip(state.stepProgress()) : GoGame.STARTER_FIRST_TEXT));
 		hits.add(new Hit("bag:level", Hit.Kind.AREA, layout.trainerBar, -1, true,
 			Math.round(state.trainerProgress() * 100) + "% to the next trainer level"));
 		return hits;

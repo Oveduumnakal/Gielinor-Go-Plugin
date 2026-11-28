@@ -16,5 +16,7 @@ enum CatchOutcome
 	/** The player has no jars, so nothing was thrown. */
 	NO_JARS,
 	/** The team and storage are both full, so nothing was thrown. */
-	FULL
+	FULL,
+	/** No starter is picked yet, so nothing was thrown. */
+	LOCKED
 }

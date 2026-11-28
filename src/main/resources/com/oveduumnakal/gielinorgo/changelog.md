@@ -32,6 +32,8 @@ A Creature Log, daily tasks and daily events give you goals.
 
 - **Training and the lead creature.** Every XP drop trains your team. The lead learns twice as fast and follows you.
   (#3, #29, #30, #57)
+- **Starter first.** Nothing progresses until you pick your first creature, and nothing from before the pick is
+  paid later. (#83, #478)
 - **Unique creatures.** Hidden stat rolls, temperaments and nicknames make every creature different. (#23, #25, #61)
 - **Evolutions, eggs, moves and healing items.** Over 150 evolutions, eggs from battle wins, up to four moves per
   creature and healing items for use in and out of battle. (#1, #21, #24, #52, #62)
