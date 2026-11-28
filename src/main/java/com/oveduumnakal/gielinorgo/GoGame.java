@@ -2023,6 +2023,18 @@ final class GoGame
 	}
 
 	/**
+	 * Swaps two team members a panel picked, if both are still where the panel listed them.
+	 *
+	 * @param first one team member as the panel showed it
+	 * @param second the other
+	 */
+	void swapTeam(TradePick first, TradePick second)
+	{
+		if (stillThere(first) && stillThere(second))
+			swapTeam(first.index(), second.index());
+	}
+
+	/**
 	 * Checks that a creature a panel picked is still where the panel listed it. When it is not, says so and the
 	 * caller does nothing.
 	 *

@@ -7,6 +7,7 @@ package com.oveduumnakal.gielinorgo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -21,33 +22,38 @@ import net.runelite.client.input.MouseListener;
 final class PartyBoxInput implements MouseListener
 {
 	private final Supplier<List<Rectangle>> rows;
+	private final Supplier<List<CreatureView>> team;
 	private final DragKey drag;
 	private final Predicate<Point> covered;
 	private final Sink sink;
 	private volatile int from = -1;
 	private volatile int over = -1;
+	private List<CreatureView> pressed = Collections.emptyList();
 	private boolean releaseTaken;
 	private boolean clickTaken;
 
-	/** What a finished drag does. */
+	/** What a finished drag does. The picks name the creatures as they were listed when the drag began. */
 	interface Sink
 	{
 		/**
-		 * @param from the place of the row that was dragged
-		 * @param onto the place of the row it was dropped on
+		 * @param from the creature whose row was dragged
+		 * @param onto the creature whose row it was dropped on
 		 */
-		void swap(int from, int onto);
+		void swap(TradePick from, TradePick onto);
 	}
 
 	/**
 	 * @param rows the canvas boxes of the rows that may be dragged now, in team order; empty for none
+	 * @param team the creatures the rows show, in team order
 	 * @param drag RuneLite's drag key, which moves the box instead
 	 * @param covered whether something else lies over the box at a point
 	 * @param sink takes a finished drag
 	 */
-	PartyBoxInput(Supplier<List<Rectangle>> rows, DragKey drag, Predicate<Point> covered, Sink sink)
+	PartyBoxInput(Supplier<List<Rectangle>> rows, Supplier<List<CreatureView>> team, DragKey drag,
+		Predicate<Point> covered, Sink sink)
 	{
 		this.rows = rows;
+		this.team = team;
 		this.drag = drag;
 		this.covered = covered;
 		this.sink = sink;
@@ -80,6 +86,7 @@ final class PartyBoxInput implements MouseListener
 		if (place < 0)
 			return event;
 
+		pressed = team.get();
 		from = place;
 		over = place;
 		releaseTaken = true;
@@ -112,8 +119,8 @@ final class PartyBoxInput implements MouseListener
 		releaseTaken = false;
 		event.consume();
 		int onto = placeAt(event.getPoint());
-		if (dragged >= 0 && onto >= 0 && onto != dragged)
-			sink.swap(dragged, onto);
+		if (dragged >= 0 && onto >= 0 && onto != dragged && Math.max(dragged, onto) < pressed.size())
+			sink.swap(pick(dragged), pick(onto));
 
 		return event;
 	}
@@ -146,6 +153,11 @@ final class PartyBoxInput implements MouseListener
 	public MouseEvent mouseExited(MouseEvent event)
 	{
 		return event;
+	}
+
+	private TradePick pick(int place)
+	{
+		return TradePick.of(Holding.TEAM, place, pressed.get(place));
 	}
 
 	private int placeAt(Point point)

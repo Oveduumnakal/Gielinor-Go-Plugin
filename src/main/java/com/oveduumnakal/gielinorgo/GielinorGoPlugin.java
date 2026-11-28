@@ -230,6 +230,7 @@ public class GielinorGoPlugin extends Plugin
 	private TrackerOverlay trackerOverlay;
 	private PartyBoxOverlay partyBoxOverlay;
 	private PartyBoxInput partyBoxInput;
+	private volatile List<CreatureView> partyShown = Collections.emptyList();
 	private TrackerModel trackerModel;
 	private TrackerView lastTracker = TrackerView.NONE;
 	private BattleHotkeys hotkeys;
@@ -1704,6 +1705,7 @@ public class GielinorGoPlugin extends Plugin
 		publishWindow(state);
 		lastTracker = state.tracker();
 		trackerOverlay.publish(trackerModel.frame(lastTracker, System.currentTimeMillis()));
+		partyShown = state.team();
 		partyBoxOverlay.publish(PartyBoxModel.rows(state.team()));
 	}
 
@@ -3495,7 +3497,7 @@ public class GielinorGoPlugin extends Plugin
 		partyBoxOverlay = new PartyBoxOverlay(windowPortraits, this::windowStyle, config::windowFraction,
 			client::getCanvasWidth, client::getCanvasHeight, config::pinParty, director::active, () -> loaded,
 			System::currentTimeMillis);
-		partyBoxInput = new PartyBoxInput(partyBoxOverlay::draggableRows, dragKey,
+		partyBoxInput = new PartyBoxInput(partyBoxOverlay::draggableRows, () -> partyShown, dragKey,
 			point -> bubbleOverlay != null && bubbleOverlay.hits().at(point.x, point.y) != null,
 			(from, onto) -> onGameThread(() -> swapTeam(from, onto)));
 		partyBoxOverlay.reorder(this::mayReorderParty, partyBoxInput);
@@ -3513,7 +3515,7 @@ public class GielinorGoPlugin extends Plugin
 			&& !combatWatch.inCombat(System.currentTimeMillis());
 	}
 
-	private void swapTeam(int from, int onto)
+	private void swapTeam(TradePick from, TradePick onto)
 	{
 		if (!mayReorderParty())
 			return;
