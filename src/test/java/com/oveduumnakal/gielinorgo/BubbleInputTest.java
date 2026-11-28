@@ -179,4 +179,18 @@ public class BubbleInputTest
 
 		assertFalse(dragged.isConsumed());
 	}
+
+	@Test
+	public void aDraggedPressDoesNotSwallowTheNextClick()
+	{
+		press(200, 150, MouseEvent.BUTTON1, 0);
+		input.mouseReleased(WindowEvents.mouse(MouseEvent.MOUSE_RELEASED, 205, 152, MouseEvent.BUTTON1, 0));
+		press(10, 10, MouseEvent.BUTTON1, 0);
+		input.mouseReleased(WindowEvents.mouse(MouseEvent.MOUSE_RELEASED, 10, 10, MouseEvent.BUTTON1, 0));
+		MouseEvent click = WindowEvents.mouse(MouseEvent.MOUSE_CLICKED, 10, 10, MouseEvent.BUTTON1, 0);
+
+		input.mouseClicked(click);
+
+		assertFalse(click.isConsumed());
+	}
 }

@@ -66,6 +66,8 @@ final class BubbleInput implements MouseListener
 	public MouseEvent mousePressed(MouseEvent event)
 	{
 		pressDown = false;
+		releaseTaken = false;
+		clickTaken = false;
 		if (drag.heldIn(event))
 			return event;
 
