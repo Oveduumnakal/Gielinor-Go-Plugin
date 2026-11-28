@@ -92,7 +92,7 @@ final class BattleDirector
 	private Scene scene;
 	private boolean promptOpen;
 	private boolean automatic;
-	private boolean fleeAsked;
+	private BattleChoice queued;
 	private int waited;
 
 	/**
@@ -149,8 +149,8 @@ final class BattleDirector
 
 	/**
 	 * Starts a wild battle that plays itself turn by turn, the creature picking its own attacks. No choice is ever
-	 * open, but the player may ask to run ({@link #flee()}). Walking away does not end it: what is left is played at
-	 * once and the result is written, as a battle that plays itself always has.
+	 * open, but the player may ask to run ({@link #flee()}) or to use an item ({@link #queueItem}). Walking away does
+	 * not end it: what is left is played at once and the result is written, as a battle that plays itself always has.
 	 *
 	 * @param battle the battle
 	 * @param stage what acts it out, or null for text only
@@ -162,7 +162,7 @@ final class BattleDirector
 		scene = stage;
 		promptOpen = false;
 		automatic = true;
-		fleeAsked = false;
+		queued = null;
 		waited = 0;
 	}
 
@@ -173,7 +173,8 @@ final class BattleDirector
 	}
 
 	/**
-	 * Asks to run from the automatic battle. The try is made in place of the creature's next attack.
+	 * Asks to run from the automatic battle. The try is made in place of the creature's next attack, and replaces
+	 * an item that was waiting.
 	 *
 	 * @return whether an automatic battle is on to run from
 	 */
@@ -182,14 +183,33 @@ final class BattleDirector
 		if (!automatic())
 			return false;
 
-		fleeAsked = true;
+		queued = BattleChoice.run();
+		return true;
+	}
+
+	/**
+	 * Asks to use an item in the automatic battle. It is used in place of the creature's next attack, and replaces a
+	 * try to run or an item that was waiting. The item is spent only when the turn is played; it is kept when it
+	 * would do nothing by then or the battle ends without that turn. Nothing is queued while a fainted creature
+	 * waits to be replaced.
+	 *
+	 * @param item an item choice with its type and target
+	 * @return whether the item now waits for its turn
+	 */
+	boolean queueItem(BattleChoice item)
+	{
+		if (!automatic() || item.kind() != BattleChoice.Kind.ITEM || item.itemType() == null
+			|| session.state().needsSwitch())
+			return false;
+
+		queued = item;
 		return true;
 	}
 
 	/** @return whether a try to run from the automatic battle waits for its turn */
 	boolean fleeing()
 	{
-		return automatic() && fleeAsked;
+		return automatic() && queued != null && queued.kind() == BattleChoice.Kind.RUN;
 	}
 
 	/**
@@ -224,7 +244,7 @@ final class BattleDirector
 	/** Plays the rest of the automatic battle and drops it. */
 	private TurnResult playOut()
 	{
-		fleeAsked = false;
+		queued = null;
 		TurnResult last = null;
 		while (!session.over())
 		{
@@ -340,11 +360,12 @@ final class BattleDirector
 			return;
 
 		waited = 0;
-		if (fleeAsked && !session.state().needsSwitch())
+		if (queued != null && !session.state().needsSwitch())
 		{
-			fleeAsked = false;
-			play(BattleChoice.run());
-			return;
+			BattleChoice asked = queued;
+			queued = null;
+			if (play(asked))
+				return;
 		}
 
 		play(autoChoice());
@@ -525,7 +546,7 @@ final class BattleDirector
 		session = null;
 		scene = null;
 		automatic = false;
-		fleeAsked = false;
+		queued = null;
 	}
 
 	private void open()

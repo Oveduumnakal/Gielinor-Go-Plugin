@@ -29,21 +29,26 @@ public class FollowerOffersTest
 	}
 
 	@Test
-	public void aBattleThatPlaysItselfOffersOnlyRun()
+	public void aBattleThatPlaysItselfOffersItemsAndRun()
 	{
-		FollowerOffer offer = FollowerOffers.inBattle(wild(), null, true);
+		BattleView.ItemOption salve = new BattleView.ItemOption(ItemType.SMALL_SALVE, 2,
+			Collections.singletonList(new BattleView.Option(0, "Goblin", 20, 0.5)));
+
+		FollowerOffer offer = FollowerOffers.inBattle(wild(), null, true, Collections.singletonList(salve));
 
 		assertTrue(offer.runShown());
 		assertTrue(offer.runEnabled());
 		assertFalse(offer.switchShown());
-		assertFalse(offer.itemShown());
+		assertTrue(offer.itemShown());
+		assertTrue(offer.itemEnabled());
+		assertEquals(1, offer.items().size());
 		assertEquals(0.5, offer.runChance(), 1e-9);
 	}
 
 	@Test
 	public void aSteeredBattleWaitingForItsTurnGreysEverything()
 	{
-		FollowerOffer offer = FollowerOffers.inBattle(wild(), null, false);
+		FollowerOffer offer = FollowerOffers.inBattle(wild(), null, false, Collections.emptyList());
 
 		assertTrue(offer.switchShown());
 		assertTrue(offer.itemShown());

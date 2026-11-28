@@ -129,7 +129,7 @@ Then replace this comment with:
 
   Click the red Battle bubble on a wild creature and your lead walks up and fights it in front of you. When one of your creatures
   faints, the next steps in by itself. Each hit floats over the creature that took it, so you can carry on with
-  what you were doing while the battle runs.
+  what you were doing while the battle runs. The bubbles over your creature still let you use an item or run.
 
 - **Styles and status effects**
 

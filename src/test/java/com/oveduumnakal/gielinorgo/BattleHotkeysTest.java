@@ -24,18 +24,20 @@ import static org.junit.Assert.assertTrue;
 public class BattleHotkeysTest
 {
 	@Test
-	public void onlyTheRunKeyIsLiveDuringABattleThatPlaysItself()
+	public void onlyTheRunAndItemKeysAreLiveDuringABattleThatPlaysItself()
 	{
 		List<BattleChoice.Kind> heard = new java.util.ArrayList<>();
 		Keybind attack = new Keybind(KeyEvent.VK_A, 0);
 		Keybind run = new Keybind(KeyEvent.VK_R, 0);
+		Keybind item = new Keybind(KeyEvent.VK_I, 0);
 		BattleHotkeys keys = new BattleHotkeys(() -> attack, () -> Keybind.NOT_SET, () -> Keybind.NOT_SET, () -> run,
-			() -> false, heard::add).runAlso(() -> true);
+			() -> item, () -> false, heard::add).automaticAlso(() -> true);
 
 		keys.keyPressed(press(KeyEvent.VK_A));
 		keys.keyPressed(press(KeyEvent.VK_R));
+		keys.keyPressed(press(KeyEvent.VK_I));
 
-		assertEquals(java.util.Collections.singletonList(BattleChoice.Kind.RUN), heard);
+		assertEquals(java.util.Arrays.asList(BattleChoice.Kind.RUN, BattleChoice.Kind.ITEM), heard);
 	}
 
 	private final List<BattleChoice.Kind> pressed = new ArrayList<>();

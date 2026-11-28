@@ -49,6 +49,8 @@ A Creature Log, daily tasks and daily events give you goals.
 - **Living backgrounds.** The Summary page plays each creature's home biome behind it, shifting a little with
   your mouse. (#380)
 - **Follower bubbles.** Rest your mouse on your lead creature to switch, use an item or run. (#379)
+- **Items in battles that play themselves.** In a wild battle that plays itself, an item you pick takes the place
+  of your next attack. (#474)
 - **Running can fail.** Against a wild creature the chance depends on both levels, and is better when it has a
   status effect. A failed try costs your turn. (#387)
 

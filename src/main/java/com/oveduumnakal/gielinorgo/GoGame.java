@@ -1837,7 +1837,7 @@ final class GoGame
 	 * @param session the battle; against a friend the count is what is left of the battle's own budget
 	 * @return one option per such item, in item order
 	 */
-	private List<BattleView.ItemOption> itemOptions(BattleSession session)
+	List<BattleView.ItemOption> itemOptions(BattleSession session)
 	{
 		BattleState state = session.state();
 		List<BattleView.ItemOption> items = new ArrayList<>();

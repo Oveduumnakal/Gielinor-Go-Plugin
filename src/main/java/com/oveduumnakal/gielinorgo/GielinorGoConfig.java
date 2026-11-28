@@ -346,9 +346,9 @@ public interface GielinorGoConfig extends Config
 	@ConfigItem(
 		keyName = "itemKey",
 		name = "Item hotkey",
-		description = "Uses the first healing item that would help while a battle waits for your choice: \nSmall"
-			+ " salve, Large salve, Revive draught, then Antidote.\nIt costs your turn. To pick the item and the"
-			+ " creature, use the Item button in the battle controls box. Unset by default.",
+		description = "Uses the first healing item that would help, while a battle waits for your choice or a wild"
+			+ " battle\nplays itself: Small salve, Large salve, Revive draught, then Antidote.\nIt costs your turn. To"
+			+ " pick the item and the creature, use the Item bubble or button. Unset by default.",
 		position = 17
 	)
 	default Keybind itemKey()
