@@ -164,6 +164,7 @@ final class GoGame
 	private final List<String> pinNews = new ArrayList<>();
 	private Milestones milestoneTable = Milestones.NONE;
 	private boolean milestonesDue;
+	private boolean evolutionDue;
 	private boolean walking;
 	private Creature bondLead;
 	private int bondTiles;
@@ -261,6 +262,7 @@ final class GoGame
 		dirty = false;
 		run = null;
 		milestonesDue = true;
+		evolutionDue = true;
 		settleMilestones();
 	}
 
@@ -829,18 +831,21 @@ final class GoGame
 
 	/**
 	 * Tells the game what the world is like, so evolutions with a condition can fire. Call it every tick; nothing
-	 * happens unless something changed. A team creature that has its level and now meets the condition evolves on
-	 * the spot. Creatures in Storage do not evolve.
+	 * happens unless something changed or a creature may have joined the team at its evolution level, as after a load,
+	 * a catch, a hatch, a trade or a move out of Storage. A team creature that has its level and meets the condition
+	 * evolves on the spot. Creatures in Storage do not evolve.
 	 *
 	 * @param now whether it is night and whether the player is underground
-	 * @return true when the conditions changed, so the panel needs a refresh
+	 * @return true when the conditions changed or a creature evolved, so the panel needs a refresh
 	 */
 	boolean setConditions(Conditions now)
 	{
-		if (now.equals(conditions))
+		boolean changed = !now.equals(conditions);
+		if (!changed && !evolutionDue)
 			return false;
 
 		conditions = now;
+		evolutionDue = false;
 		boolean evolved = false;
 		for (Creature creature : new ArrayList<>(data.team))
 			evolved |= evolveIfReady(creature);
@@ -851,7 +856,7 @@ final class GoGame
 			cues.accept(Cue.EVOLVE);
 		}
 
-		return true;
+		return changed || evolved;
 	}
 
 	/**
@@ -2174,6 +2179,7 @@ final class GoGame
 		}
 
 		data.team.add(data.storage.remove(storageIndex));
+		evolutionDue = true;
 		dirty = true;
 	}
 
@@ -3698,9 +3704,14 @@ final class GoGame
 		}
 
 		if (data.team.size() < SaveData.TEAM_SIZE)
+		{
 			data.team.add(creature);
+			evolutionDue = true;
+		}
 		else
+		{
 			data.storage.add(creature);
+		}
 	}
 
 	private void rewardWin(Creature lead, Species leadSpecies, WildEntry entry)
