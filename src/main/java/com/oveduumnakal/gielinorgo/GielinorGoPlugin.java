@@ -457,13 +457,19 @@ public class GielinorGoPlugin extends Plugin
 
 	/**
 	 * Saves when the client is closed, because RuneLite does not stop plugins then. The event does not arrive on the
-	 * client thread, so the save is written here and the config is flushed to disk afterwards: the config manager's
-	 * own handler may have run first, and without the flush the save would stay in memory.
+	 * client thread, which may still be changing the game, so the save is handed to that thread and the shutdown waits
+	 * for it. The config is flushed to disk afterwards: the config manager's own handler may have run first, and
+	 * without the flush the save would stay in memory.
 	 *
 	 * @param event the shutdown
 	 */
 	@Subscribe
 	public void onClientShutdown(ClientShutdown event)
+	{
+		event.waitFor(SaveFlush.handOver(clientThread::invoke, this::saveForShutdown));
+	}
+
+	private void saveForShutdown()
 	{
 		try
 		{

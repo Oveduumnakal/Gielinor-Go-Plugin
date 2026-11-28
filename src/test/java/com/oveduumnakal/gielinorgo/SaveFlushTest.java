@@ -4,10 +4,13 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Future;
 
 import com.google.gson.Gson;
 import org.junit.Test;
@@ -112,5 +115,31 @@ public class SaveFlushTest
 		assertTrue(SaveFlush.write(dirtyGame(), new GoPersistence(store, gson), null, false));
 
 		assertTrue(store.values.containsKey("other/" + GoPersistence.KEY_SAVE));
+	}
+
+	@Test
+	public void handedWorkIsDoneOnlyOnceTheOwningThreadRanIt()
+	{
+		List<Runnable> queued = new ArrayList<>();
+		List<String> ran = new ArrayList<>();
+
+		Future<Void> done = SaveFlush.handOver(queued::add, () -> ran.add("saved"));
+
+		assertFalse(done.isDone());
+		assertTrue(ran.isEmpty());
+		queued.get(0).run();
+		assertTrue(done.isDone());
+		assertEquals(1, ran.size());
+	}
+
+	@Test
+	public void handedWorkThatThrowsStillEndsTheWait()
+	{
+		Future<Void> done = SaveFlush.handOver(Runnable::run, () ->
+		{
+			throw new IllegalStateException("boom");
+		});
+
+		assertTrue(done.isDone());
 	}
 }
