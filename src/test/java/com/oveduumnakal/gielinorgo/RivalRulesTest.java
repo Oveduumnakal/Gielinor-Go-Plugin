@@ -55,7 +55,9 @@ public class RivalRulesTest
 	{
 		assertEquals("wizard", RivalRules.counterOf("Imp"));
 		assertEquals("gnome archer", RivalRules.counterOf("Wizard"));
-		assertEquals("imp", RivalRules.counterOf("Gnome Archer"));
+		assertEquals("bat", RivalRules.counterOf("Gnome Archer"));
+		assertEquals("frog", RivalRules.counterOf("Bat"));
+		assertEquals("imp", RivalRules.counterOf("Frog"));
 		assertNull(RivalRules.counterOf("Goblin"));
 	}
 
@@ -73,8 +75,10 @@ public class RivalRulesTest
 	@Test
 	public void aSaveWithNoStarterAnswersTheStyleOfItsLead()
 	{
-		assertEquals("wizard", RivalRules.starterAgainst(species.find("Goblin"), species));
-		assertEquals("imp", RivalRules.starterAgainst(species.find("Guard"), species));
+		assertEquals("imp", RivalRules.starterAgainst(species.find("Goblin"), species));
+		assertEquals("frog", RivalRules.starterAgainst(species.find("Thug"), species));
+		assertEquals("wizard", RivalRules.starterAgainst(species.find("Imp"), species));
+		assertEquals("bat", RivalRules.starterAgainst(species.find("Guard"), species));
 		assertEquals("gnome archer", RivalRules.starterAgainst(species.find("Banshee"), species));
 	}
 

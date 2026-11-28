@@ -23,6 +23,20 @@
 [{"species":"Tower Archer","level":50},{"species":"Pyrefiend","level":48},{"species":"Banshee","level":47},{"species":"Battle mage","level":46}],
 [{"species":"Elf Archer","level":70},{"species":"Battle mage","level":68},{"species":"Zamorak wizard","level":69},{"species":"Pyrefiend","level":67},{"species":"Jelly","level":66}],
 [{"species":"Elf Archer","level":96},{"species":"Spiritual Mage","level":85},{"species":"Smoke devil","level":87},{"species":"Wyrm","level":89},{"species":"Hydra","level":91},{"species":"Wallasalki","level":93}]
+],
+"frog":[
+[{"species":"Frog","level":15},{"species":"Thug","level":14}],
+[{"species":"Big frog","level":30},{"species":"King Scorpion","level":29},{"species":"Cave crawler","level":28}],
+[{"species":"Giant frog","level":50},{"species":"Giant spider","level":48},{"species":"Jungle spider","level":47},{"species":"Scorpion","level":46}],
+[{"species":"Giant frog","level":70},{"species":"Brine rat","level":68},{"species":"Wolf","level":69},{"species":"Turoth","level":67},{"species":"Dagannoth","level":66}],
+[{"species":"Giant frog","level":96},{"species":"Hellhound","level":85},{"species":"Dagannoth","level":87},{"species":"Abyssal demon","level":89},{"species":"Turoth","level":91},{"species":"Elf Warrior","level":93}]
+],
+"bat":[
+[{"species":"Bat","level":15},{"species":"Bark Blamish Snail","level":14}],
+[{"species":"Giant bat","level":30},{"species":"Guard","level":29},{"species":"Skeleton Champion","level":28}],
+[{"species":"Dire bat","level":50},{"species":"Archer","level":48},{"species":"Scarab","level":47},{"species":"Icelord","level":46}],
+[{"species":"Dire bat","level":70},{"species":"Zamorak ranger","level":68},{"species":"Baboon Thrower","level":69},{"species":"Parasite","level":67},{"species":"Thrower Troll","level":66}],
+[{"species":"Dire bat","level":96},{"species":"Iorwerth Archer","level":85},{"species":"Elite Dark Ranger","level":87},{"species":"Skeletal Wyvern","level":89},{"species":"Aviansie","level":91},{"species":"Drake","level":93}]
 ]
 }
 }
