@@ -44,6 +44,7 @@ final class BattleStage implements StageAnchors
 	private boolean switched;
 	private boolean unreachable;
 	private boolean frozen;
+	private boolean steered;
 	private final DuelActing acting;
 	private int extraTicks;
 
@@ -176,6 +177,7 @@ final class BattleStage implements StageAnchors
 				: new BattleTimeline(BattleTimeline.stepsOf(lines), leadWon);
 			acting.release();
 			frozen = false;
+			steered = open;
 			return true;
 		}
 		catch (RuntimeException | AssertionError e)
@@ -279,7 +281,7 @@ final class BattleStage implements StageAnchors
 			return;
 		}
 
-		if (frozen)
+		if (frozen && !resumeAfterBreakFree())
 		{
 			finish();
 			return;
@@ -536,6 +538,22 @@ final class BattleStage implements StageAnchors
 
 		unreachable = true;
 		return false;
+	}
+
+	/**
+	 * Takes a steered battle up again after the creature broke out of a jar: it stands idle then, and the battle is not
+	 * over, so it goes back into battle and the turns still to be shown, its counter-attack among them, play.
+	 *
+	 * @return false when there is no battle to go on with
+	 */
+	private boolean resumeAfterBreakFree()
+	{
+		if (!steered || foe.life().state() != WildLife.State.IDLE || !foe.life().beginBattle())
+			return false;
+
+		foe.stand();
+		frozen = false;
+		return true;
 	}
 
 	private boolean stillValid()
