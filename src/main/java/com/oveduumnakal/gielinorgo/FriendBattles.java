@@ -33,6 +33,9 @@ final class FriendBattles
 	/** Most party members remembered as players. */
 	static final int MAX_FRIENDS = 50;
 
+	/** Splits a boss egg's rarity from its species in a message. */
+	private static final char EGG_SPECIES = '/';
+
 	/** A party member who said they play, and the team and eggs they last showed. */
 	private static final class Friend
 	{
@@ -41,11 +44,13 @@ final class FriendBattles
 		private final int[] levels;
 		private final List<StatRolls> rolls;
 		private final String[][] moves;
-		private final List<Rarity> eggs;
+		private final List<String> eggs;
+		private final boolean[] fainted;
 
 		private Friend(int trainerLevel, String[] species, int[] levels, List<StatRolls> rolls, String[][] moves,
-			List<Rarity> eggs)
+			List<String> eggs, boolean[] fainted)
 		{
+			this.fainted = fainted;
 			this.trainerLevel = trainerLevel;
 			this.species = species;
 			this.levels = levels;
@@ -58,7 +63,8 @@ final class FriendBattles
 		{
 			return trainerLevel == other.trainerLevel && Arrays.equals(species, other.species)
 				&& Arrays.equals(levels, other.levels) && rolls.equals(other.rolls)
-				&& Arrays.deepEquals(moves, other.moves) && eggs.equals(other.eggs);
+				&& Arrays.deepEquals(moves, other.moves) && eggs.equals(other.eggs)
+				&& Arrays.equals(fainted, other.fainted);
 		}
 	}
 
@@ -556,8 +562,8 @@ final class FriendBattles
 	}
 
 	/**
-	 * Lists what a friend has shown that can be asked for in a trade: the creatures on their team, then their
-	 * eggs. The panel shows the same list in the same order, and passes back a place in it.
+	 * Lists what a friend has shown that can be asked for in a trade: the creatures on their team that have not
+	 * fainted, then their eggs. The panel shows the same list in the same order, and passes back a place in it.
 	 *
 	 * @param friendId the friend's party member id
 	 * @return the creatures and eggs, empty for someone unknown
@@ -570,11 +576,14 @@ final class FriendBattles
 			return items;
 
 		for (int i = 0; i < friend.species.length; i++)
-			items.add(GielinorGoPartyMessage.Item.creature(friend.species[i], friend.levels[i], 0, false,
-				friend.rolls.get(i), friend.moves[i]));
+		{
+			if (!friend.fainted[i])
+				items.add(GielinorGoPartyMessage.Item.creature(friend.species[i], friend.levels[i], 0, false,
+					friend.rolls.get(i), friend.moves[i]));
+		}
 
-		for (Rarity egg : friend.eggs)
-			items.add(GielinorGoPartyMessage.Item.egg(egg.name(), 0));
+		for (String egg : friend.eggs)
+			items.add(eggItem(egg));
 
 		return items;
 	}
@@ -683,7 +692,7 @@ final class FriendBattles
 		int trainer = Math.max(1, Math.min(XpRules.MAX_LEVEL, message.trainer()));
 		Friend kept = new Friend(trainer, message.species().clone(), message.levels().clone(),
 			rollsFor(message.species().length, message.rolls(), message.temperaments()), movesKept(message),
-			eggsOf(message.eggs()));
+			eggsOf(message.eggs()), faintedOf(message));
 		Friend before = friends.put(sender, kept);
 		changed |= before == null || !before.sameAs(kept);
 		return true;
@@ -692,20 +701,49 @@ final class FriendBattles
 	/**
 	 * Reads the eggs a party member says they carry.
 	 *
-	 * @param rarities rarity names, as sent
-	 * @return the rarities that are real, at most as many as a player can carry
+	 * @param sent the eggs as sent, see {@link GielinorGoPartyMessage#carrying}
+	 * @return those that are real, a boss egg's species being one of its rarity, at most as many as a player can carry
 	 */
-	private static List<Rarity> eggsOf(String[] rarities)
+	private List<String> eggsOf(String[] sent)
 	{
-		List<Rarity> eggs = new ArrayList<>();
-		for (int i = 0; rarities != null && i < rarities.length && eggs.size() < SaveData.MAX_EGGS; i++)
+		List<String> eggs = new ArrayList<>();
+		for (int i = 0; sent != null && i < sent.length && eggs.size() < SaveData.MAX_EGGS; i++)
 		{
-			Rarity rarity = FriendTrades.rarityNamed(rarities[i]);
-			if (rarity != null)
-				eggs.add(rarity);
+			if (sent[i] != null && eggItem(sent[i]) != null)
+				eggs.add(sent[i]);
 		}
 
 		return eggs;
+	}
+
+	/**
+	 * Turns one egg as sent into what can be asked for in a trade.
+	 *
+	 * @param sent a rarity name, or a rarity name, {@code /} and a boss egg's species key
+	 * @return the egg, or null when the text makes no sense
+	 */
+	private GielinorGoPartyMessage.Item eggItem(String sent)
+	{
+		int slash = sent.indexOf(EGG_SPECIES);
+		Rarity rarity = FriendTrades.rarityNamed(slash < 0 ? sent : sent.substring(0, slash));
+		if (rarity == null)
+			return null;
+
+		if (slash < 0)
+			return GielinorGoPartyMessage.Item.egg(rarity.name(), 0);
+
+		String key = sent.substring(slash + 1);
+		Species boss = species.find(key);
+		return boss == null || boss.rarity() != rarity ? null
+			: GielinorGoPartyMessage.Item.egg(rarity.name(), 0, key);
+	}
+
+	/** @return which of the message's creatures have fainted, all false when it does not say */
+	private static boolean[] faintedOf(GielinorGoPartyMessage message)
+	{
+		int count = message.species().length;
+		boolean[] sent = message.fainted();
+		return sent == null || sent.length != count ? new boolean[count] : sent.clone();
 	}
 
 	/**
@@ -994,8 +1032,10 @@ final class FriendBattles
 		int[][] rolls = new int[known.size()][];
 		String[] temperaments = new String[known.size()];
 		String[][] moves = new String[known.size()][];
+		boolean[] fainted = new boolean[known.size()];
 		for (int i = 0; i < keys.length; i++)
 		{
+			fainted[i] = known.get(i).fainted;
 			keys[i] = known.get(i).species;
 			levels[i] = known.get(i).level();
 			moves[i] = MoveLearning.sendable(known.get(i), species.find(known.get(i).species), moveTable);
@@ -1007,15 +1047,17 @@ final class FriendBattles
 		String[] eggs = new String[data.eggs.size()];
 		for (int i = 0; i < eggs.length; i++)
 		{
-			Rarity rarity = data.eggs.get(i).rarityTier();
-			eggs[i] = rarity.name();
+			Egg egg = data.eggs.get(i);
+			Rarity rarity = egg.rarityTier();
+			eggs[i] = egg.species == null ? rarity.name() : rarity.name() + EGG_SPECIES + egg.species;
 		}
 
 		GielinorGoPartyMessage message = new GielinorGoPartyMessage(kind, to, battle, seed,
 			XpRules.trainerLevelForXp(data.trainerXp), keys, levels);
 		return message.rolled(rolls, temperaments)
 			.moved(moves)
-			.carrying(eggs);
+			.carrying(eggs)
+			.fainting(fainted);
 	}
 
 	private boolean waiting(long now)

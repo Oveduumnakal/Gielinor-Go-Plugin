@@ -282,6 +282,7 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	private String[][] moves;
 	private int version;
 	private String[] eggs;
+	private boolean[] fainted;
 	private Item give;
 	private Item want;
 	private boolean steered;
@@ -414,9 +415,9 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 	}
 
 	/**
-	 * Adds the rarities of the eggs the sender carries.
+	 * Adds the eggs the sender carries.
 	 *
-	 * @param rarities one {@link Rarity#name()} per egg
+	 * @param rarities one {@link Rarity#name()} per egg, followed for a boss egg by {@code /} and its species key
 	 * @return this message
 	 */
 	GielinorGoPartyMessage carrying(String[] rarities)
@@ -500,7 +501,25 @@ public class GielinorGoPartyMessage extends PartyMemberMessage
 		return version;
 	}
 
-	/** @return the rarities of the eggs the sender carries; as sent, so it may be null or nonsense */
+	/**
+	 * Marks which creatures in {@code species} have fainted, so they are not offered for trade.
+	 *
+	 * @param marks one flag per creature
+	 * @return this message
+	 */
+	GielinorGoPartyMessage fainting(boolean[] marks)
+	{
+		fainted = marks;
+		return this;
+	}
+
+	/** @return which creatures have fainted; as sent, so it may be null or the wrong length */
+	boolean[] fainted()
+	{
+		return fainted;
+	}
+
+	/** @return the eggs the sender carries, see {@link #carrying}; as sent, so it may be null or nonsense */
 	String[] eggs()
 	{
 		return eggs;
