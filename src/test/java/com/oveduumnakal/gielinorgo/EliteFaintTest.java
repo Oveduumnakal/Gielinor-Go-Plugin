@@ -83,6 +83,19 @@ public class EliteFaintTest
 	}
 
 	@Test
+	public void aReplayStartsFromTheLeadEvenWhenItFaintsInTheFirstDuel()
+	{
+		Creature weak = new Creature("mite", 1, now);
+		game.data().team.add(weak);
+		game.data().team.add(new Creature("brute", 60, now));
+
+		TeamBattleResult result = game.eliteChallenge();
+
+		assertTrue(weak.fainted);
+		assertTrue(result.leadFirst());
+	}
+
+	@Test
 	public void anAutoEliteLossFaintsTheCreature()
 	{
 		Creature weak = new Creature("mite", 1, now);
