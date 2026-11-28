@@ -171,11 +171,12 @@ final class TasksPage
 
 	/**
 	 * @param row a milestone
-	 * @return what it pays, and a note when the reward waits for an egg slot
+	 * @return what it pays, and a note when a reward with an egg waits for an egg slot
 	 */
 	static String milestoneTip(MilestoneView.Row row)
 	{
-		return row.reward() + (row.reached() && !row.paid() ? " (waiting for an egg slot)" : "");
+		boolean waiting = row.givesEgg() && row.reached() && !row.paid();
+		return row.reward() + (waiting ? " (waiting for an egg slot)" : "");
 	}
 
 	/**

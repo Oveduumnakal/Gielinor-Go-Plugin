@@ -64,8 +64,8 @@ public class CollectionPageTest
 			new TodayView.Pick("Species number 15", Rarity.LEGENDARY)),
 			"Dragon weekend: x2 wild, x2 gilded", true, 312, true) : TodayView.NONE;
 		List<MilestoneView.Row> rows = Arrays.asList(new MilestoneView.Row("Log 25 species", 25, 25, "3 Iron jars",
-			true, false), new MilestoneView.Row("Log 100 species", 80, 100, "5 Rune jars", false, false));
-		MilestoneView milestones = new MilestoneView("Log 100 species", 80, 100, rows);
+			true, false), new MilestoneView.Row("100 species", 80, 100, "5 Rune jars", false, false));
+		MilestoneView milestones = new MilestoneView("Next: 100 species", 80, 100, rows);
 		return new PanelState(7, 0.2, 4, new EnumMap<>(JarType.class), JarType.BRONZE, 0, Collections.emptyList(),
 			Collections.emptyList(), log, caught, seen, Collections.emptyList(), Collections.emptyList(), view,
 			TaskView.NONE, new EnumMap<>(ItemType.class)).withGoals(milestones, EliteView.NONE);
@@ -105,7 +105,7 @@ public class CollectionPageTest
 		assertTrue(words.toString(), words.contains("Caught " + Milestones.count(state.caughtSpecies()) + " / "
 			+ Milestones.count(state.totalSpecies())));
 		assertTrue(words.toString(), words.contains("Seen " + Milestones.count(state.seenSpecies())));
-		assertTrue(words.toString(), words.contains("Next reward: 5 Rune jars at Log 100 species"));
+		assertTrue(words.toString(), words.contains("Next reward: 5 Rune jars at 100 species"));
 		assertTrue(words.toString(), words.contains("Today · resets in 5h 12m"));
 		assertTrue(words.toString(), words.contains("Goblin"));
 		assertTrue(words.toString(), words.contains("Uncommon"));
