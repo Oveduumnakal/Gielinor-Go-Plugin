@@ -168,6 +168,17 @@ final class WindowKeys implements KeyListener
 		}
 	}
 
+	/**
+	 * Forgets which keys are held when the client loses focus: their releases go elsewhere, and a key still thought to
+	 * be down would have its next press taken for a repeat.
+	 */
+	@Override
+	public void focusLost()
+	{
+		down.clear();
+		swallowed.clear();
+	}
+
 	private void take(KeyEvent event)
 	{
 		event.consume();

@@ -386,4 +386,14 @@ public class WindowKeysTest
 
 		assertFalse(released(KeyEvent.VK_LEFT));
 	}
+
+	@Test
+	public void aPressAfterAReleaseLostWithTheFocusCountsAgain()
+	{
+		pressed(KeyEvent.VK_ENTER);
+		keys.focusLost();
+		pressed(KeyEvent.VK_ENTER);
+
+		assertEquals(2, calls.size());
+	}
 }
