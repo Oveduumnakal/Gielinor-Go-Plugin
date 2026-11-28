@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  */
 final class TextLayout
 {
-	private static final Pattern LINK = Pattern.compile("^\\[([^\\]]+)]\\(([^)\\s]+)\\)");
+	private static final Pattern LINK = Pattern.compile("^\\[([^\\]]+)]\\(((?:[^()\\s]|\\([^()\\s]*\\))+)\\)");
 
 	private final List<Line> lines;
 	private final int lineHeight;
@@ -433,7 +433,7 @@ final class TextLayout
 			bullet = null;
 			if (line.isEmpty())
 			{
-				if (!blank)
+				if (!markup || !blank)
 					out.add(new Block(false, false));
 
 				blank = true;
