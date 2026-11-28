@@ -138,4 +138,18 @@ public class PartyBoxInputTest
 		assertTrue(shown.data().team.get(1) == arrived);
 		assertEquals(Collections.singletonList("That creature moved. Try again."), told);
 	}
+
+	@Test
+	public void aRightClickDuringADragIsSwallowedAndTheDropStillSwaps()
+	{
+		input.mousePressed(event(MouseEvent.MOUSE_PRESSED, FIRST, MouseEvent.BUTTON1));
+		MouseEvent press = input.mousePressed(event(MouseEvent.MOUSE_PRESSED, FIRST, MouseEvent.BUTTON3));
+		MouseEvent release = input.mouseReleased(event(MouseEvent.MOUSE_RELEASED, FIRST, MouseEvent.BUTTON3));
+		MouseEvent left = input.mouseReleased(event(MouseEvent.MOUSE_RELEASED, SECOND, MouseEvent.BUTTON1));
+
+		assertTrue(press.isConsumed());
+		assertTrue(release.isConsumed());
+		assertTrue(left.isConsumed());
+		assertEquals(Collections.singletonList("0>1"), swaps);
+	}
 }
