@@ -273,14 +273,14 @@ public class WindowKeysTest
 	}
 
 	@Test
-	public void aMenuTakesUpAndDownButNotLeftAndRight()
+	public void aMenuTakesTheArrowsSoSubmenusOpenAndClose()
 	{
 		mode = WindowKeyRules.KeyMode.MENU;
 
 		assertTrue(pressed(KeyEvent.VK_UP));
 		assertTrue(pressed(KeyEvent.VK_ENTER));
-		assertFalse(pressed(KeyEvent.VK_LEFT));
-		assertFalse(pressed(KeyEvent.VK_RIGHT));
+		assertTrue(pressed(KeyEvent.VK_LEFT));
+		assertTrue(pressed(KeyEvent.VK_RIGHT));
 	}
 
 	@Test

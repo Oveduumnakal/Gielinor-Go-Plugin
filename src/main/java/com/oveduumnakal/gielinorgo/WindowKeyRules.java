@@ -57,7 +57,8 @@ final class WindowKeyRules
 				return !chorded(modifiers) && (horizontal(keyCode) || vertical(keyCode) || confirm(keyCode)
 					|| back(keyCode));
 			case MENU:
-				return !chorded(modifiers) && (vertical(keyCode) || confirm(keyCode) || back(keyCode));
+				return !chorded(modifiers) && (horizontal(keyCode) || vertical(keyCode) || confirm(keyCode)
+					|| back(keyCode));
 			case MODAL:
 				return !chorded(modifiers) && (horizontal(keyCode) || confirm(keyCode) || back(keyCode));
 			default:
