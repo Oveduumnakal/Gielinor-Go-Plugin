@@ -187,4 +187,44 @@ public class GoGameConditionTest
 
 		assertNull(nextForm());
 	}
+
+	@Test
+	public void aCreatureThatArrivesPastItsLevelEvolvesOnTheNextTick()
+	{
+		game.setConditions(Conditions.NONE);
+		assertTrue(game.receive(new Creature("bat", 15, 1_000L)));
+		assertEquals("bat", lead().species);
+
+		assertTrue(game.setConditions(Conditions.NONE));
+
+		assertEquals("giant bat", lead().species);
+		assertFalse(game.setConditions(Conditions.NONE));
+	}
+
+	@Test
+	public void aStoredCreatureEvolvesWhenItJoinsTheTeam()
+	{
+		game.data().team.add(new Creature("imp", 3, 1_000L));
+		game.data().storage.add(new Creature("bat", 15, 1_000L));
+		game.setConditions(Conditions.NONE);
+		game.setBankNear(true);
+
+		game.moveToTeam(0);
+		game.setConditions(Conditions.NONE);
+
+		assertEquals("giant bat", speciesAt(1));
+	}
+
+	@Test
+	public void aLoadedCreatureEvolvesEvenWhenNothingChanged()
+	{
+		game.setConditions(NIGHT);
+		SaveData saved = SaveData.fresh();
+		saved.team.add(new Creature("zombie", 45, 1_000L));
+		game.load(saved);
+
+		game.setConditions(NIGHT);
+
+		assertEquals("armoured zombie", lead().species);
+	}
 }

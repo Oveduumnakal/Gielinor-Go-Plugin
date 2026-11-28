@@ -56,11 +56,14 @@ public class CreatureViewMovesTest
 			});
 		game.moves(MoveTable.load(new Gson(), new StringReader(
 			"{\"moves\":[{\"id\":\"a\",\"name\":\"Aa\",\"style\":\"STAB\",\"power\":1.0,\"accuracy\":1.0},"
-			+ "{\"id\":\"b\",\"name\":\"Bb\",\"style\":\"STAB\",\"power\":1.2,\"accuracy\":0.9}],"
+			+ "{\"id\":\"b\",\"name\":\"Bb\",\"style\":\"STAB\",\"power\":1.2,\"accuracy\":0.9},"
+			+ "{\"id\":\"c\",\"name\":\"Cc\",\"style\":\"STAB\",\"power\":1.0,\"accuracy\":1.0},"
+			+ "{\"id\":\"d\",\"name\":\"Dd\",\"style\":\"STAB\",\"power\":1.0,\"accuracy\":1.0},"
+			+ "{\"id\":\"e\",\"name\":\"Ee\",\"style\":\"STAB\",\"power\":1.0,\"accuracy\":1.0}],"
 			+ "\"defaults\":{\"STAB\":\"p\"},\"pools\":{\"p\":{\"styles\":[\"STAB\"],"
-			+ "\"learns\":[[\"a\",1],[\"b\",5]]}},\"species\":{}}")));
+			+ "\"learns\":[[\"a\",1],[\"b\",5],[\"c\",1],[\"d\",1],[\"e\",1]]}},\"species\":{}}")));
 		Creature cub = new Creature("cub", 6, 1L);
-		cub.moves = new ArrayList<>(Collections.singletonList("a"));
+		cub.moves = new ArrayList<>(Arrays.asList("a", "c", "d", "e"));
 		cub.pendingMoves = new ArrayList<>(Collections.singletonList("b"));
 		SaveData save = SaveData.fresh();
 		save.team.add(cub);
@@ -69,7 +72,7 @@ public class CreatureViewMovesTest
 		List<CreatureView> team = game.snapshot().team();
 		CreatureView shown = team.get(0);
 
-		assertEquals(Collections.singletonList("a"), moveIds(shown.moves()));
+		assertEquals(Arrays.asList("a", "c", "d", "e"), moveIds(shown.moves()));
 		assertEquals(Collections.singletonList("b"), moveIds(shown.pending()));
 	}
 

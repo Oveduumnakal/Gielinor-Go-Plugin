@@ -120,8 +120,16 @@ final class MoveLearning
 
 		creature.moves = kept;
 		creature.pendingMoves = waiting;
-		if (waiting.isEmpty())
+		fillFromPending(creature);
+		if (creature.pendingMoves.isEmpty())
 			topUp(creature, species, table);
+	}
+
+	/** Learns the oldest pending moves while there is a free slot, since a pending move only waits for room. */
+	private static void fillFromPending(Creature creature)
+	{
+		while (creature.moves.size() < MoveTable.MAX_KNOWN && !creature.pendingMoves.isEmpty())
+			creature.moves.add(creature.pendingMoves.remove(0));
 	}
 
 	private static void topUp(Creature creature, Species species, MoveTable table)
@@ -190,6 +198,7 @@ final class MoveLearning
 		int level = creature.level();
 		creature.moves.removeIf(id -> !table.knows(species, level, id));
 		creature.pendingMoves.removeIf(id -> !table.knows(species, level, id) || creature.moves.contains(id));
+		fillFromPending(creature);
 		if (creature.pendingMoves.isEmpty())
 			topUp(creature, species, table);
 	}

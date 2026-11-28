@@ -254,4 +254,16 @@ public class MoveLearningTest
 		assertTrue("the creature's own moves are named in its lines", mineNamed);
 		assertTrue("the wild creature fights with the moves its level unlocked", foeNamed);
 	}
+
+	@Test
+	public void aPendingMoveTakesAFreeSlot()
+	{
+		Creature pup = own("pup", 30, "a", "b");
+		pup.pendingMoves = new ArrayList<>(Arrays.asList("e"));
+
+		MoveLearning.settle(pup, PUP, MoveTable.load(new Gson(), new StringReader(MOVES)));
+
+		assertTrue(pup.pendingMoves.isEmpty());
+		assertTrue(pup.moves.contains("e"));
+	}
 }
