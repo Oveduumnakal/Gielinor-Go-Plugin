@@ -113,6 +113,8 @@ final class StoragePage
 	private String refused;
 	private int carrying = NOT_ON_TEAM;
 	private int[] move;
+	private CreatureView carried;
+	private CreatureView grabbed;
 	private List<CreatureView> shown;
 	private StorageQuery query = StorageQuery.NONE;
 	private List<StorageView.Entry> entries = new ArrayList<>();
@@ -312,10 +314,24 @@ final class StoragePage
 	 * Starts carrying a creature, so the arrow keys pick its new place and Enter puts it there.
 	 *
 	 * @param place the creature's place in storage
+	 * @param view the creature as it was listed there
 	 */
-	void carry(int place)
+	void carry(int place, CreatureView view)
 	{
 		carrying = place;
+		carried = view;
+	}
+
+	/** @return the creature the keys are carrying, as it was when picked up; meaningful while carrying */
+	CreatureView carried()
+	{
+		return carried;
+	}
+
+	/** @return the creature the last drag took, as it was when the button went down */
+	CreatureView movedView()
+	{
+		return grabbed;
 	}
 
 	/** Stops carrying; the creature stays where it is. */
@@ -856,11 +872,8 @@ final class StoragePage
 
 	private String stripText(List<CreatureView> storage)
 	{
-		if (carrying >= 0 && carrying < storage.size())
-		{
-			CreatureView view = storage.get(carrying);
-			return String.format(CARRY_HINT, view.nickname() == null ? view.name() : view.nickname());
-		}
+		if (carrying >= 0)
+			return String.format(CARRY_HINT, carried.nickname() == null ? carried.name() : carried.nickname());
 
 		if (refused != null)
 			return refused;
@@ -1136,7 +1149,9 @@ final class StoragePage
 		if (mode == StorageMode.BOX)
 		{
 			int slot = onBar ? NOT_ON_TEAM : cellAt(x, y);
-			drag.press(slot >= 0 && slot < entries.size() ? slot : NOT_ON_TEAM, x, y);
+			boolean onCreature = slot >= 0 && slot < entries.size();
+			grabbed = onCreature ? entries.get(slot).view() : null;
+			drag.press(onCreature ? slot : NOT_ON_TEAM, x, y);
 		}
 
 		return onBar && took;

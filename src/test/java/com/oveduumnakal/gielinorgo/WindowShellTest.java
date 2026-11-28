@@ -558,7 +558,7 @@ public class WindowShellTest
 
 		assertTrue(calls.isEmpty());
 		assertEquals("Ze", shell.draft());
-		assertEquals("Ze", shell.takeDraft());
+		assertEquals("Ze", shell.takeDraft(""));
 		assertEquals("", shell.draft());
 		assertEquals(WindowKeyRules.KeyMode.NONE, shell.keyMode());
 	}

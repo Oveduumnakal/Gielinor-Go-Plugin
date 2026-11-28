@@ -35,6 +35,9 @@ final class PartyRig
 	/** What the panel actions were called with, one line per call, such as {@code setLead 2}. */
 	final List<String> calls = new ArrayList<>();
 
+	/** Every creature or egg a panel action was called with, as picked. */
+	final List<TradePick> picks = new ArrayList<>();
+
 	/** Every string the pages drew: its text, width, line height and box. */
 	final List<Drawn> drawn = new ArrayList<>();
 
@@ -162,7 +165,11 @@ final class PartyRig
 			{
 				StringBuilder line = new StringBuilder(method.getName());
 				for (int i = 0; args != null && i < args.length; i++)
+				{
 					line.append(' ').append(describe(args[i]));
+					if (args[i] instanceof TradePick)
+						picks.add((TradePick) args[i]);
+				}
 
 				calls.add(line.toString());
 				return null;
