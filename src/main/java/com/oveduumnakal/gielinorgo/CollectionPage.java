@@ -398,11 +398,11 @@ final class CollectionPage
 
 		for (MilestoneView.Row row : view.rows())
 		{
-			if (!row.paid() && row.label().equals(view.nextLabel()))
-				return "Next reward: " + row.reward() + " at " + view.nextLabel();
+			if (!row.paid() && !row.family() && row.target() == view.nextTarget())
+				return "Next reward: " + row.reward() + " at " + row.label();
 		}
 
-		return "Next: " + view.nextLabel();
+		return view.nextLabel();
 	}
 
 	/**

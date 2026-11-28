@@ -24,6 +24,7 @@ final class MilestoneView
 		private final String reward;
 		private final boolean paid;
 		private final boolean family;
+		private boolean egg;
 
 		Row(String label, int current, int target, String reward, boolean paid, boolean family)
 		{
@@ -36,6 +37,19 @@ final class MilestoneView
 		}
 
 		/** @return the goal in words, such as {@code 100 species} or {@code All Goblins} */
+		/** @return a copy of this row whose reward includes an egg, which needs a free egg slot */
+		Row givingEgg()
+		{
+			Row copy = new Row(label, current, target, reward, paid, family);
+			copy.egg = true;
+			return copy;
+		}
+
+		boolean givesEgg()
+		{
+			return egg;
+		}
+
 		String label()
 		{
 			return label;
@@ -85,13 +99,13 @@ final class MilestoneView
 
 			Row that = (Row) other;
 			return current == that.current && target == that.target && paid == that.paid && family == that.family
-				&& Objects.equals(label, that.label) && Objects.equals(reward, that.reward);
+				&& egg == that.egg && Objects.equals(label, that.label) && Objects.equals(reward, that.reward);
 		}
 
 		@Override
 		public int hashCode()
 		{
-			return Objects.hash(label, current, target, reward, paid, family);
+			return Objects.hash(label, current, target, reward, paid, family, egg);
 		}
 	}
 

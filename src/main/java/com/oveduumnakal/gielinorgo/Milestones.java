@@ -400,8 +400,11 @@ final class Milestones
 		List<MilestoneView.Row> rows = new ArrayList<>();
 		for (Milestone milestone : all)
 		{
-			rows.add(new MilestoneView.Row(milestone.label(), progressOf(milestone, data), milestone.target(),
-				milestone.reward().text(), data.milestones.contains(milestone.id()), milestone.family() != null));
+			MilestoneView.Row row = new MilestoneView.Row(milestone.label(), progressOf(milestone, data),
+				milestone.target(), milestone.reward().text(), data.milestones.contains(milestone.id()),
+				milestone.family() != null);
+			Reward reward = milestone.reward();
+			rows.add(reward.egg() == null ? row : row.givingEgg());
 		}
 
 		return new MilestoneView(nextLabel, caught, nextTarget, rows);
