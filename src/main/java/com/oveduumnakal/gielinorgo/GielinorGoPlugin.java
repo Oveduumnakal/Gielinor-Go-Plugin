@@ -361,6 +361,9 @@ public class GielinorGoPlugin extends Plugin
 		loaded = false;
 		clientThread.invoke(() ->
 		{
+			if (endingGame != null)
+				trades.settleHeld();
+
 			if (endingGame != null && endingXp != null)
 				endingGame.stampXp(endingXp);
 
@@ -450,6 +453,7 @@ public class GielinorGoPlugin extends Plugin
 		clientThread.invoke(() ->
 		{
 			director.end();
+			trades.settleHeld();
 			saveNow();
 			loadSave();
 		});
@@ -474,6 +478,7 @@ public class GielinorGoPlugin extends Plugin
 		try
 		{
 			director.settle();
+			trades.settleHeld();
 			saveNow();
 			configManager.sendConfig();
 		}
@@ -513,6 +518,9 @@ public class GielinorGoPlugin extends Plugin
 		battleControls.model().show(null, BattleControlsModel.Keys.NONE);
 		clearTracker();
 		pendingLines.clear();
+		if (loaded)
+			trades.settleHeld();
+
 		saveNow();
 		trades.clear();
 		stage.clear();

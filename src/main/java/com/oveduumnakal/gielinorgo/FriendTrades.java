@@ -153,7 +153,8 @@ final class FriendTrades implements GoGame.TradeLocks
 
 	/**
 	 * Tells the service how to find out whether a battle is on. A confirmation that arrives while one is on is held
-	 * until it ends, so the creature does not leave the save in the middle of the fight it is in.
+	 * until it ends, and a friend's agreement that arrives then calls the trade off, so a creature does not leave the
+	 * save in the middle of the fight it is in.
 	 *
 	 * @param battle true while the player is in a battle
 	 */
@@ -309,7 +310,7 @@ final class FriendTrades implements GoGame.TradeLocks
 	boolean expire()
 	{
 		long now = clock.getAsLong();
-		boolean changed = applyHeld();
+		boolean changed = !battleOn.getAsBoolean() && settleHeld();
 		if (outgoing != null && now - outgoing.sentMs > OFFER_TIMEOUT_MS)
 		{
 			outgoing = null;
@@ -344,13 +345,41 @@ final class FriendTrades implements GoGame.TradeLocks
 	}
 
 	/**
-	 * Drops every trade with a friend who left the party.
+	 * Makes every swap held back for a battle, for a caller that has just ended the battle and is about to save: the
+	 * friend has made their half already, so it must be in that save.
+	 *
+	 * @return true when at least one was made
+	 */
+	boolean settleHeld()
+	{
+		List<Long> ready = new ArrayList<>();
+		for (Map.Entry<Long, Incoming> entry : incoming.entrySet())
+		{
+			if (entry.getValue().confirmHeld)
+				ready.add(entry.getKey());
+		}
+
+		for (long sender : ready)
+		{
+			Incoming offer = incoming.get(sender);
+			swapConfirmed(sender, offer, offer.heldFrom);
+		}
+
+		return !ready.isEmpty();
+	}
+
+	/**
+	 * Drops every trade with a friend who left the party. A swap held back for a battle stays, since the friend has
+	 * made their half.
 	 *
 	 * @param memberId the friend's party member id
 	 */
 	void forget(long memberId)
 	{
-		incoming.remove(memberId);
+		Incoming offer = incoming.get(memberId);
+		if (offer != null && !offer.confirmHeld)
+			incoming.remove(memberId);
+
 		noticedMs.remove(memberId);
 		if (outgoing != null && outgoing.friendId == memberId)
 			outgoing = null;
@@ -406,10 +435,10 @@ final class FriendTrades implements GoGame.TradeLocks
 		return reserved(true);
 	}
 
-	/** Drops every trade, for when the player joins or leaves a party. */
+	/** Drops every trade, for when the player joins or leaves a party, except a swap held back for a battle. */
 	void clear()
 	{
-		incoming.clear();
+		incoming.values().removeIf(offer -> !offer.confirmHeld);
 		noticedMs.clear();
 		outgoing = null;
 	}
@@ -603,6 +632,13 @@ final class FriendTrades implements GoGame.TradeLocks
 
 		Outgoing mine = outgoing;
 		outgoing = null;
+		if (battleOn.getAsBoolean())
+		{
+			send(GielinorGoPartyMessage.REFUSE, sender, mine.id);
+			tell("The trade with " + senderName + " fell through: you are in a battle", Tone.BAD);
+			return true;
+		}
+
 		Item theirs = message.give();
 		boolean asExpected = mine.want == null ? theirs == null : valid(theirs) && sameThing(mine.want, theirs);
 		boolean stays = mine.give.tradeable() && unchanged(mine.give, mine.offered);
@@ -651,32 +687,6 @@ final class FriendTrades implements GoGame.TradeLocks
 		}
 
 		return swapConfirmed(sender, offer, senderName);
-	}
-
-	/**
-	 * Makes the swaps held back while a battle was on, once it is over.
-	 *
-	 * @return true when at least one was made
-	 */
-	private boolean applyHeld()
-	{
-		if (battleOn.getAsBoolean())
-			return false;
-
-		List<Long> ready = new ArrayList<>();
-		for (Map.Entry<Long, Incoming> entry : incoming.entrySet())
-		{
-			if (entry.getValue().confirmHeld)
-				ready.add(entry.getKey());
-		}
-
-		for (long sender : ready)
-		{
-			Incoming offer = incoming.get(sender);
-			swapConfirmed(sender, offer, offer.heldFrom);
-		}
-
-		return !ready.isEmpty();
 	}
 
 	private boolean swapConfirmed(long sender, Incoming offer, String senderName)

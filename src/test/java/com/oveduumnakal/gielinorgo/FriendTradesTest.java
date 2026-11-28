@@ -1407,4 +1407,62 @@ public class FriendTradesTest
 		assertEquals("The trade with Bob fell through", last(annTold));
 		assertSame(annImp, annGame.data().team.get(0));
 	}
+
+	@Test
+	public void anAgreementThatArrivesMidBattleCallsTheTradeOff()
+	{
+		boolean[] battle = {false};
+		ann.battleOn(() -> battle[0]);
+		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
+		bob.receive(last(fromAnn), BOB, "Ann");
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
+		battle[0] = true;
+
+		ann.receive(last(fromBob), ANN, "Bob");
+		bob.receive(last(fromAnn), BOB, "Ann");
+
+		assertTrue(annGame.owns(annImp));
+		assertTrue(bobGame.owns(bobCow));
+		assertEquals(GielinorGoPartyMessage.REFUSE, last(fromAnn).kind());
+	}
+
+	@Test
+	public void aHeldSwapSurvivesTheFriendLeavingAndThePartyEnding()
+	{
+		boolean[] battle = {false};
+		holdBobsHalf(battle);
+
+		bob.forget(ANN);
+		bob.clear();
+		battle[0] = false;
+
+		assertTrue(bob.expire());
+		assertFalse(bobGame.owns(bobCow));
+		Creature arrived = bobGame.data().team.get(0);
+		assertEquals("imp", arrived.species);
+	}
+
+	@Test
+	public void aHeldSwapIsMadeBeforeLeavingTheGame()
+	{
+		boolean[] battle = {false};
+		holdBobsHalf(battle);
+
+		assertTrue(bob.settleHeld());
+		bob.clear();
+
+		assertFalse(bobGame.owns(bobCow));
+		assertFalse(bob.settleHeld());
+	}
+
+	private void holdBobsHalf(boolean[] battle)
+	{
+		bob.battleOn(() -> battle[0]);
+		ann.offer(BOB, "Bob", annImp, Item.creature("cow", 5, 0, false));
+		bob.receive(last(fromAnn), BOB, "Ann");
+		bob.answer(ANN, "Ann", bob.offerId(ANN), true);
+		ann.receive(last(fromBob), ANN, "Bob");
+		battle[0] = true;
+		bob.receive(last(fromAnn), BOB, "Ann");
+	}
 }
