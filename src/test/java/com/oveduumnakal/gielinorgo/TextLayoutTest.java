@@ -196,6 +196,25 @@ public class TextLayoutTest
 	}
 
 	@Test
+	public void plainTextKeepsEveryBlankLine()
+	{
+		TextLayout layout = TextLayout.plain("\nLine one\n\n\nLine two\n\n", REGULAR, 400, 0);
+
+		assertEquals(5, layout.lineCount());
+	}
+
+	@Test
+	public void aLinkMayHaveBracketsInItsAddress()
+	{
+		TextLayout layout = markup("See [Fire rune](https://oldschool.runescape.wiki/w/Fire_(rune)) now", 400);
+
+		List<TextLayout.Link> links = layout.links(0, 0);
+		assertEquals(1, links.size());
+		assertEquals("https://oldschool.runescape.wiki/w/Fire_(rune)", links.get(0).url);
+		assertEquals("See Fire rune now", layout.lineText(0));
+	}
+
+	@Test
 	public void blankLinesBecomeOneEmptyLineAndEdgesAreTrimmed()
 	{
 		TextLayout layout = markup("\n\nFirst\n\n\n\nSecond\n\n", 400);
