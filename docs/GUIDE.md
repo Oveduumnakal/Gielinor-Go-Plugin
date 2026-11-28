@@ -308,10 +308,19 @@ Every feature and every number, in detail. For the short version, see the [READM
   Rest your mouse on your lead creature for a moment and bubbles pop out above it: **Switch**, **Item** and, in a wild
   battle, **Run**. Click the backpack, right-click Switch, or hold the mouse on either, for the list. Out of
   battle Switch changes your lead and items work on any team member they would help. In a battle you steer they do
-  what the battle box does and are dim until it is your turn. In a battle that plays itself only Run shows. In battle
+  what the battle box does and are dim until it is your turn. A wild battle that plays itself offers
+  **Item** and **Run**. In battle
   a left click on Switch brings in the next creature. A click on Item, the backpack, opens your items: click
   the one to use, then the creature if it would help several. Wild creature
   bubbles come first when both would show. The **Follower bubbles** setting turns them off.
+
+- **Using an item in a battle that plays itself**
+
+  In a wild battle that plays itself, click the backpack over your creature, or press the **Item** hotkey, and pick
+  an item that would help. It takes the place of your creature's next attack, so the other creature attacks. A newer
+  item or **Run** replaces the one waiting. The item is spent only when its turn is played: it stays in your bag if it
+  would do nothing by then, or if the battle ends first, or you walk away or log out. With no click the battle plays
+  itself as always. City Champion, rival and Elite battles that play themselves take no items.
 
 - **Running from a battle that plays itself**
 
@@ -352,7 +361,8 @@ Every feature and every number, in detail. For the short version, see the [READM
   Choose nothing for 10 seconds (set **Seconds per turn** from 5 to 30) and your creature attacks by itself, or steps
   in the next creature after a faint. A small prompt on the game screen shows whose turn it is, the time left and both
   health values, and you can set **Attack**, **Switch**, **Catch**, **Item** and **Run** hotkeys (none are set by default, so no
-  key is taken from chat or dialogue, and they work only while a choice is open, except Run, which also works during a wild battle that plays itself). The Switch hotkey steps in the first
+  key is taken from chat or dialogue, and they work only while a choice is open, except Run and Item, which also work during a wild battle that plays
+  itself). The Switch hotkey steps in the first
   creature that can fight, and the Item hotkey uses the first item that would help (Small salve, Large salve, Revive
   draught, Antidote); use the box's buttons to pick a creature or an item.
 

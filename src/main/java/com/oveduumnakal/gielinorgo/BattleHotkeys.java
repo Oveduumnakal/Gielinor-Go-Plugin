@@ -25,7 +25,7 @@ final class BattleHotkeys implements KeyListener
 	private final Supplier<Keybind> run;
 	private final Supplier<Keybind> item;
 	private final BooleanSupplier open;
-	private BooleanSupplier runOnly = () -> false;
+	private BooleanSupplier automaticBattle = () -> false;
 	private final Consumer<BattleChoice.Kind> pressed;
 
 	/**
@@ -68,15 +68,15 @@ final class BattleHotkeys implements KeyListener
 	}
 
 	/**
-	 * Lets the Run key through at a time when the others are not live: during a battle that plays itself, which can
-	 * be run from but takes no other choice.
+	 * Lets the Run and Item keys through at a time when the others are not live: during a battle that plays itself,
+	 * which can be run from and takes items but no other choice.
 	 *
-	 * @param when whether the Run key is live on its own
+	 * @param when whether those two keys are live on their own
 	 * @return these keys
 	 */
-	BattleHotkeys runAlso(BooleanSupplier when)
+	BattleHotkeys automaticAlso(BooleanSupplier when)
 	{
-		this.runOnly = when;
+		this.automaticBattle = when;
 		return this;
 	}
 
@@ -121,7 +121,8 @@ final class BattleHotkeys implements KeyListener
 		if (kind == null)
 			return;
 
-		if (!open.getAsBoolean() && !(kind == BattleChoice.Kind.RUN && runOnly.getAsBoolean()))
+		boolean alsoLive = kind == BattleChoice.Kind.RUN || kind == BattleChoice.Kind.ITEM;
+		if (!open.getAsBoolean() && !(alsoLive && automaticBattle.getAsBoolean()))
 			return;
 
 		event.consume();

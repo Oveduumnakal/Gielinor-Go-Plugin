@@ -5,6 +5,7 @@
 package com.oveduumnakal.gielinorgo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -62,21 +63,32 @@ final class FollowerOffers
 	}
 
 	/**
-	 * What may be done in a battle. A battle that plays itself offers only Run, against a wild creature. A steered one
-	 * offers what its battle box does, greyed while no choice is open, and only Switch after a faint.
+	 * What may be done in a battle. A battle that plays itself offers Item and Run, against a wild creature, and only
+	 * Run after a faint. A steered one offers what its battle box does, greyed while no choice is open, and only
+	 * Switch after a faint.
 	 *
 	 * @param session the battle
 	 * @param view the open choice, or null when none is open
 	 * @param automatic whether the battle plays itself
+	 * @param own the items that would do something now in a battle that plays itself; unused for a steered one
 	 * @return the offer
 	 */
-	static FollowerOffer inBattle(BattleSession session, BattleView view, boolean automatic)
+	static FollowerOffer inBattle(BattleSession session, BattleView view, boolean automatic,
+		List<BattleView.ItemOption> own)
 	{
 		boolean open = automatic || view != null && !view.waitingForFriend();
 		FollowerOffer.Builder offer = new FollowerOffer.Builder().battle(open);
 		BattleState state = session.state();
 		if (automatic)
-			return session.wild() ? offer.running(state.fleeChance()).build() : offer.build();
+		{
+			if (!session.wild())
+				return offer.build();
+
+			if (!state.needsSwitch())
+				offer.items(items(state, own));
+
+			return offer.running(state.fleeChance()).build();
+		}
 
 		List<FollowerOffer.Member> others = new ArrayList<>();
 		for (int place : state.switchTargets())
@@ -86,24 +98,26 @@ final class FollowerOffers
 		if (state.needsSwitch())
 			return offer.build();
 
-		List<FollowerOffer.Item> items = new ArrayList<>();
-		if (view != null)
-		{
-			for (BattleView.ItemOption option : view.items())
-			{
-				List<FollowerOffer.Member> targets = new ArrayList<>();
-				for (BattleView.Option target : option.targets())
-					targets.add(fighter(state, target.teamIndex()));
-
-				items.add(new FollowerOffer.Item(option.type(), option.count(), targets));
-			}
-		}
-
-		offer.items(items);
+		offer.items(items(state, view == null ? Collections.emptyList() : view.items()));
 		if (session.wild())
 			offer.running(state.fleeChance());
 
 		return offer.build();
+	}
+
+	private static List<FollowerOffer.Item> items(BattleState state, List<BattleView.ItemOption> options)
+	{
+		List<FollowerOffer.Item> items = new ArrayList<>();
+		for (BattleView.ItemOption option : options)
+		{
+			List<FollowerOffer.Member> targets = new ArrayList<>();
+			for (BattleView.Option target : option.targets())
+				targets.add(fighter(state, target.teamIndex()));
+
+			items.add(new FollowerOffer.Item(option.type(), option.count(), targets));
+		}
+
+		return items;
 	}
 
 	private static FollowerOffer.Member member(GoGame game, Creature creature, int index, long now)

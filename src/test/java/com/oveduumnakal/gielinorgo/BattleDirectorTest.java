@@ -357,6 +357,86 @@ public class BattleDirectorTest
 		assertFalse(director.fleeing());
 	}
 
+	/** Starts an automatic battle in text with a hurt lead that outlasts a few turns, holding two salves. */
+	private void hurtAutomatic()
+	{
+		Creature lead = creature("king black dragon", 60);
+		lead.hpFraction = 0.5;
+		lead.hpStampMs = now;
+		game.data().team.add(lead);
+		game.data().addItems(ItemType.SMALL_SALVE, 2);
+		director.beginAutomatic(game.startAutoBattle(new WildEntry(1, DRAGON, 60, 1)), null);
+	}
+
+	private static BattleChoice salve()
+	{
+		return BattleChoice.item(ItemType.SMALL_SALVE, 0);
+	}
+
+	@Test
+	public void aQueuedItemTakesThePlaceOfTheNextAttackAndIsSpentOnce()
+	{
+		hurtAutomatic();
+
+		assertTrue(director.queueItem(salve()));
+		assertEquals("nothing is spent before the turn", 2, game.data().itemCount(ItemType.SMALL_SALVE));
+		ticks(BattleDirector.TEXT_PAUSE);
+
+		assertEquals(1, game.data().itemCount(ItemType.SMALL_SALVE));
+		assertEquals("the lead did not attack", 1.0, director.session().state().foe().hpFraction(), 0.0);
+		ticks(BattleDirector.TEXT_PAUSE);
+		assertEquals(1, game.data().itemCount(ItemType.SMALL_SALVE));
+	}
+
+	@Test
+	public void anItemThatWouldDoNothingIsKeptAndTheCreatureAttacks()
+	{
+		hurtAutomatic();
+		game.data().addItems(ItemType.REVIVE, 1);
+
+		director.queueItem(BattleChoice.item(ItemType.REVIVE, 0));
+		ticks(BattleDirector.TEXT_PAUSE);
+
+		assertEquals(1, game.data().itemCount(ItemType.REVIVE));
+		assertEquals(1, shown.size());
+	}
+
+	@Test
+	public void runningReplacesAQueuedItemAndAnItemReplacesRunning()
+	{
+		hurtAutomatic();
+
+		director.queueItem(salve());
+		director.flee();
+		assertTrue(director.fleeing());
+
+		director.queueItem(salve());
+		assertFalse(director.fleeing());
+	}
+
+	@Test
+	public void aQueuedItemIsKeptWhenThePlayerWalksAwayOrLeaves()
+	{
+		hurtAutomatic();
+		director.queueItem(salve());
+		director.gameTick(true);
+		assertFalse(director.active());
+		assertEquals(2, game.data().itemCount(ItemType.SMALL_SALVE));
+
+		game.data().team.clear();
+		build(new Random(5));
+		hurtAutomatic();
+		director.queueItem(salve());
+		director.settle();
+		assertEquals(2, game.data().itemCount(ItemType.SMALL_SALVE));
+	}
+
+	@Test
+	public void noItemIsQueuedWithoutAnAutomaticBattle()
+	{
+		assertFalse(director.queueItem(salve()));
+	}
+
 	@Test
 	public void walkingAwayFromAnAutomaticBattlePlaysItOutAndWritesTheResult()
 	{

@@ -326,7 +326,7 @@ public class GielinorGoPlugin extends Plugin
 		trades.battleOn(director::active);
 		hotkeys = new BattleHotkeys(config::attackKey, config::switchKey, config::catchKey, config::runKey,
 			config::itemKey, () -> choiceOpen, this::hotkeyPressed)
-				.runAlso(() -> autoBattleOpen);
+				.automaticAlso(() -> autoBattleOpen);
 		keyManager.registerKeyListener(hotkeys);
 		detectVersionChange();
 		startWindow();
@@ -1165,7 +1165,8 @@ public class GielinorGoPlugin extends Plugin
 			BattleSession battle = director.session();
 			FollowerOffer offer = battle == null
 				? FollowerOffers.outOfBattle(game, now)
-				: FollowerOffers.inBattle(battle, director.view(), director.automatic());
+				: FollowerOffers.inBattle(battle, director.view(), director.automatic(),
+					director.automatic() ? game.itemOptions(battle) : Collections.emptyList());
 			followerModel.tick(now, offer, new double[] {head.getX(), head.getY()}, onBody,
 				new double[] {mouse.getX(), mouse.getY()}, new Rectangle(client.getViewportXOffset(),
 					client.getViewportYOffset(), client.getViewportWidth(), client.getViewportHeight()));
@@ -1230,7 +1231,9 @@ public class GielinorGoPlugin extends Plugin
 				break;
 
 			case ITEM:
-				if (battling)
+				if (director.automatic())
+					askToUse(BattleChoice.item(action.item(), action.index()));
+				else if (battling)
 					chooseBattle(BattleChoice.item(action.item(), action.index()));
 				else if (action.index() < game.data().team.size())
 					game.useItem(game.data().team.get(action.index()), action.item());
@@ -2921,6 +2924,8 @@ public class GielinorGoPlugin extends Plugin
 		BattleChoice choice = game.quickItem(battle);
 		if (choice == null)
 			announce(Notice.player("No item would help right now", Tone.BAD));
+		else if (director.automatic())
+			askToUse(choice);
 		else
 			chooseBattle(choice);
 	}
@@ -2951,6 +2956,12 @@ public class GielinorGoPlugin extends Plugin
 				return;
 			}
 
+			if (kind == BattleChoice.Kind.ITEM && director.automatic())
+			{
+				quickItem(battle);
+				return;
+			}
+
 			if (battle == null || !director.promptOpen())
 				return;
 
@@ -2976,6 +2987,13 @@ public class GielinorGoPlugin extends Plugin
 			else if (kind == BattleChoice.Kind.RUN)
 				chooseBattle(BattleChoice.run());
 		});
+	}
+
+	/** Asks to use an item in the battle that plays itself, and says which. */
+	private void askToUse(BattleChoice item)
+	{
+		if (director.queueItem(item))
+			announce(Notice.player("Using a " + item.itemType().label() + " next", Tone.INFO));
 	}
 
 	/** Asks to run from the battle that plays itself, and says so once. */
