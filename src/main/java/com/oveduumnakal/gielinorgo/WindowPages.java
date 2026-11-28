@@ -690,6 +690,10 @@ final class WindowPages implements WindowShell.PageActions
 			return;
 		}
 
+		Rectangle pressed = hit.bounds();
+		anchorX = pressed.x + pressed.width / 2;
+		anchorY = pressed.y + pressed.height / 2;
+
 		if (id.startsWith(STARTER_PREFIX))
 		{
 			actions.pickStarter(Integer.parseInt(id.substring(STARTER_PREFIX.length())));
