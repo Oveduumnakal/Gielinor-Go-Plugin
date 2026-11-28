@@ -4,8 +4,12 @@
  */
 package com.oveduumnakal.gielinorgo;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -17,6 +21,8 @@ import static org.junit.Assert.assertTrue;
 /** Checks the rules that keep the XP snapshot from being written at the wrong time. */
 public class XpLedgerTest
 {
+	private static final Set<String> NOTHING_SAVED = Collections.emptySet();
+
 	@Test
 	public void firstReadingIsKeptSeparateFromTheLatest()
 	{
@@ -26,7 +32,7 @@ public class XpLedgerTest
 		ledger.read("MINING", 250);
 
 		assertEquals(Integer.valueOf(100), ledger.login().get("MINING"));
-		assertTrue(ledger.reconcileDue());
+		assertTrue(ledger.reconcileDue(NOTHING_SAVED));
 	}
 
 	@Test
@@ -36,14 +42,14 @@ public class XpLedgerTest
 
 		ledger.read("OVERALL", 5_000);
 
-		assertFalse(ledger.reconcileDue());
+		assertFalse(ledger.reconcileDue(NOTHING_SAVED));
 		assertTrue(ledger.login().isEmpty());
 	}
 
 	@Test
 	public void nothingIsDueBeforeAnyReading()
 	{
-		assertFalse(new XpLedger().reconcileDue());
+		assertFalse(new XpLedger().reconcileDue(NOTHING_SAVED));
 	}
 
 	@Test
@@ -57,7 +63,7 @@ public class XpLedgerTest
 
 		ledger.markReconciled();
 
-		assertFalse(ledger.reconcileDue());
+		assertFalse(ledger.reconcileDue(NOTHING_SAVED));
 		assertEquals(Integer.valueOf(100), ledger.stamp().get("MINING"));
 	}
 
@@ -111,7 +117,7 @@ public class XpLedgerTest
 
 		assertEquals(Integer.valueOf(900), ledger.login().get("MINING"));
 		assertFalse(ledger.login().containsKey("OVERALL"));
-		assertTrue(ledger.reconcileDue());
+		assertTrue(ledger.reconcileDue(NOTHING_SAVED));
 	}
 
 	@Test
@@ -126,7 +132,7 @@ public class XpLedgerTest
 
 		assertTrue(ledger.login().isEmpty());
 		assertNull(ledger.stamp());
-		assertFalse(ledger.reconcileDue());
+		assertFalse(ledger.reconcileDue(NOTHING_SAVED));
 		assertFalse(ledger.worldOk());
 	}
 
@@ -140,7 +146,7 @@ public class XpLedgerTest
 
 		ledger.markUnreconciled();
 
-		assertTrue(ledger.reconcileDue());
+		assertTrue(ledger.reconcileDue(NOTHING_SAVED));
 		assertNull(ledger.stamp());
 	}
 
@@ -157,5 +163,20 @@ public class XpLedgerTest
 		ledger.worldOk(true);
 
 		assertNull("the old save is written before the new one is reconciled", ledger.stamp());
+	}
+
+	@Test
+	public void reconcilingWaitsForEverySkillTheSaveKnows()
+	{
+		XpLedger ledger = new XpLedger();
+		Set<String> saved = new HashSet<>(Arrays.asList("MINING", "FISHING", "OVERALL"));
+
+		ledger.read("MINING", 100);
+
+		assertFalse(ledger.reconcileDue(saved));
+
+		ledger.read("FISHING", 200);
+
+		assertTrue(ledger.reconcileDue(saved));
 	}
 }

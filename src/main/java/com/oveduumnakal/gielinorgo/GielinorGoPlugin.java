@@ -1669,7 +1669,7 @@ public class GielinorGoPlugin extends Plugin
 	{
 		boolean worldOk = OfflineXp.countsWorld(worldTypeNames());
 		ledger.worldOk(worldOk);
-		if (!ledger.reconcileDue() || !worldOk || saveProfileKey == null
+		if (!ledger.reconcileDue(game.xpSnapshot().keySet()) || !worldOk || saveProfileKey == null
 			|| !saveProfileKey.equals(configManager.getRSProfileKey()))
 			return;
 
