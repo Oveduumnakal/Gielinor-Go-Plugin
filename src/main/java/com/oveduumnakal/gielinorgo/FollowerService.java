@@ -308,12 +308,13 @@ final class FollowerService
 	/**
 	 * Swaps the old body for a fresh one of the same creature, for after a map load: a new scene object with newly
 	 * lit models. The old body leaves the scene first. The path is left alone, so the follower reappears where it
-	 * was. When the new body cannot be built, the remembered creature is forgotten so each game tick tries again.
+	 * was, and an errand to a battle spot goes on.
+	 * When the new body cannot be built, the remembered creature is forgotten so each game tick tries again.
 	 */
 	private void renewBody()
 	{
 		String key = shownKey;
-		rebuild(key, shownNpc, shownGilded);
+		swap(key, shownNpc, shownGilded);
 		if (body == null)
 			shownKey = null;
 	}
