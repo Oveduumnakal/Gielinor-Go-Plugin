@@ -386,13 +386,21 @@ final class PartyPainter
 			Rectangle p = parts.portrait;
 			PortraitFrame.paint(g, st, pictures, model, new Rectangle2D.Double(p.x, p.y, p.width, p.height),
 				st.metrics().slant / 2.0, 0, ctx.now, ctx.mode);
-			Rectangle nameBox = new Rectangle(parts.name.x, parts.name.y, parts.level.x - parts.name.x - parts.pad,
-				parts.name.height);
-			text.drawName(g, model.name(), nameBox, ThemeColor.ROW_TEXT);
 			Font small = st.font(WindowFonts.Face.SMALL, WindowFonts.SMALL_UNITS);
-			text.draw(g, model.levelText(), parts.level, small, ThemeColor.ROW_TEXT, PageText.Align.RIGHT);
 			Rectangle info = new Rectangle(parts.name.x, parts.hp.y - parts.pad, card.x + card.width - parts.name.x
 				- st.metrics().slant - parts.pad, Math.max(0, card.y + card.height - parts.hp.y));
+			Rectangle top = parts.name;
+			if (info.height < g.getFontMetrics(small).getHeight())
+			{
+				top = new Rectangle(parts.name.x, card.y + parts.pad / 2, parts.name.width, bm.getHeight());
+				int below = top.y + top.height;
+				info = new Rectangle(info.x, below, info.width, Math.max(0, card.y + card.height - below));
+			}
+
+			Rectangle nameBox = new Rectangle(top.x, top.y, parts.level.x - top.x - parts.pad, top.height);
+			text.drawName(g, model.name(), nameBox, ThemeColor.ROW_TEXT);
+			Rectangle levelBox = new Rectangle(parts.level.x, top.y, parts.level.width, top.height);
+			text.draw(g, model.levelText(), levelBox, small, ThemeColor.ROW_TEXT, PageText.Align.RIGHT);
 			text.drawWrapped(g, starter.growsInto(), info, small, ThemeColor.SUBTEXT);
 			if (ctx.focused && id.equals(ctx.highlight))
 				st.focusRing(g, shape);

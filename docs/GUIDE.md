@@ -104,8 +104,7 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   To remember it: Stab and Slash beat Ranged, Ranged beats Magic, Magic beats Stab and Slash. Crush is the odd one
   out: it beats Magic and falls to Ranged. Among the melee styles, Stab beats Slash, Slash beats Crush and Crush
-  beats Stab. The starters hold the old triangle: Imp (Slash) beats Gnome Archer (Ranged), which beats Wizard
-  (Magic), which beats Imp. Friends on an older version cannot battle or trade with you.
+  beats Stab. There is one starter for each style. Friends on an older version cannot battle or trade with you.
 
 - **Healing items**
 
@@ -142,18 +141,21 @@ Every feature and every number, in detail. For the short version, see the [READM
 
 - **Your first creature**
 
-  A new player sees **Choose your first creature** at the top of the Party tab: an Imp (Melee), a Gnome Archer
-  (Ranged) or a Wizard (Magic), one of each style. Each card shows the portrait, the style, the temperament and
+  A new player sees **Choose your first creature** at the top of the Party tab: an Imp (Slash), a Gnome Archer
+  (Ranged), a Wizard (Magic), a Bat (Stab) or a Frog (Crush), one of each style. Each card shows the portrait, the style, the temperament and
   rating it rolled (rolled like a catch, so two Imps differ) and what it grows into. Click a card, then **Yes**: the
-  creature joins as your lead at level 5 and starts following you. The three are rolled once and stay the same while
+  creature joins as your lead at level 5 and starts following you. All five are rolled once and stay the same while
   you look at them. It is an ordinary creature from then on, never gilded. It counts in the Creature Log, but not
   for the daily tasks, the login streak or trainer XP, because it is not a catch.
 
   The offer shows only while your team and Storage are empty and you have caught nothing. Until you pick, nothing
   progresses: wild creatures still appear but refuse a jar (`Choose your first creature first.`), and there are no
   battles or trades, no jar finds, items, XP, eggs, daily tasks, milestones or boss eggs, and nothing new in the
-  Creature Log. What you walked and the XP you earned before picking are not paid later. The Gnome Archer starts a new line: Gnome Archer,
-  Archer (Lv 20), Tower Archer (Lv 40), Elf Archer (Lv 60).
+  Creature Log. What you walked and the XP you earned before picking are not paid later. 
+
+  The lines they grow through: Imp, Lesser demon (Lv 20), Greater demon (Lv 40), Black demon (Lv 60). Gnome Archer,
+  Archer (Lv 20), Tower Archer (Lv 40), Elf Archer (Lv 60). Wizard, Dark wizard (Lv 15), Elite Dark Mage (Lv 40).
+  Bat, Giant bat (Lv 12), Dire bat (Lv 40, underground). Frog, Big frog (Lv 10), Giant frog (Lv 40).
 
 - **Your XP trains your creatures**
 
@@ -528,8 +530,9 @@ Every feature and every number, in detail. For the short version, see the [READM
 
   A rival trainer named Bryn has a card above the City Champions on the Battle tab. Nothing is drawn in the game
   world: the card shows what Bryn says, the team for the next battle, and what a win pays. When you pick a starter,
-  Bryn takes the one that beats it: the Wizard against your Imp, the Gnome Archer against your Wizard and the Imp
-  against your Gnome Archer. A save that never picked a starter gets the one that beats the style of your lead, or
+  Bryn takes the one that beats it: the Frog against your Bat, the Imp against your Frog, the Wizard against your
+  Imp, the Gnome Archer against your Wizard and the Bat against your Gnome Archer. A save that never picked a
+  starter gets the one that beats the style of your lead, or
   the Imp when none matches. The choice is saved the first time it is needed and never changes.
 
 - **Five battles**

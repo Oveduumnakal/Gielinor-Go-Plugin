@@ -139,8 +139,8 @@ A Creature Log, daily tasks and daily events give you goals.
   at once. (#92)
 - **Reset progress.** A link at the bottom of the Team tab starts you over after two clicks; the old save is kept
   aside. (#84)
-- **Starter creatures.** New players pick an Imp, a Gnome Archer or a Wizard at level 5; the Gnome Archer starts a
-  new evolution line. (#83)
+- **Starter creatures.** New players pick an Imp, a Gnome Archer, a Wizard, a Bat or a Frog at level 5, one for
+  each combat style; the Gnome Archer starts a new evolution line. (#83, #476)
 - **Richer Log entries.** Click a species in the Creature Log for its examine text, evolution line and how many
   you caught; right-click it to open its wiki page. (#93)
 - **Log rewards and titles.** The Creature Log pays at 750 species, 1,000 and a complete Log, which earns the

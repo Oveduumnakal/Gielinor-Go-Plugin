@@ -11,8 +11,10 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import com.google.gson.Gson;
 import org.junit.Before;
@@ -24,7 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-/** Checks who is offered a starter creature, the three starters, and what happens when one is picked. */
+/** Checks who is offered a starter creature, the starters, and what happens when one is picked. */
 public class StarterRulesTest
 {
 	private final List<String> messages = new ArrayList<>();
@@ -77,14 +79,16 @@ public class StarterRulesTest
 	}
 
 	@Test
-	public void threeStartersAtLevelFiveAreRolledNeverGildedInOrder()
+	public void theStartersAtLevelFiveAreRolledNeverGildedInOrder()
 	{
 		List<Creature> rolled = StarterRules.roll(new Random(3), now);
 
-		assertEquals(3, rolled.size());
+		assertEquals(5, rolled.size());
 		assertEquals("imp", rolled.get(0).species);
 		assertEquals("gnome archer", rolled.get(1).species);
 		assertEquals("wizard", rolled.get(2).species);
+		assertEquals("bat", rolled.get(3).species);
+		assertEquals("frog", rolled.get(4).species);
 		for (Creature creature : rolled)
 		{
 			assertEquals(StarterRules.LEVEL, creature.level());
@@ -94,12 +98,12 @@ public class StarterRulesTest
 	}
 
 	@Test
-	public void aFixedSeedGivesTheSameThree()
+	public void aFixedSeedGivesTheSameRolls()
 	{
 		List<Creature> first = StarterRules.roll(new Random(9), now);
 		List<Creature> second = StarterRules.roll(new Random(9), now);
 
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < StarterRules.STARTERS.size(); i++)
 		{
 			StatRolls a = first.get(i).rolls();
 			StatRolls b = second.get(i).rolls();
@@ -125,7 +129,7 @@ public class StarterRulesTest
 		game.load(SaveData.fresh());
 		List<String> after = offerDescribed();
 
-		assertEquals(3, before.size());
+		assertEquals(5, before.size());
 		assertEquals(before, after);
 	}
 
@@ -160,11 +164,30 @@ public class StarterRulesTest
 	@Test
 	public void theStartersAreOneOfEachStyleAndAllExist()
 	{
-		assertEquals(CombatType.SLASH, table.find("Imp").style());
-		assertEquals(CombatType.RANGED, table.find("Gnome Archer").style());
-		assertEquals(CombatType.MAGIC, table.find("Wizard").style());
+		Set<CombatType> styles = EnumSet.noneOf(CombatType.class);
 		for (String name : StarterRules.STARTERS)
+		{
 			assertFalse(name, table.find(name).questOnly());
+			styles.add(table.find(name).style());
+		}
+
+		assertEquals(EnumSet.allOf(CombatType.class), styles);
+		assertEquals(CombatType.values().length, StarterRules.STARTERS.size());
+	}
+
+	@Test
+	public void theBatAndFrogLinesKeepTheirStyle()
+	{
+		for (String name : Arrays.asList("Bat", "Frog"))
+		{
+			Species base = table.find(name);
+			EvolutionTable.Step step = evolutions.next(name);
+			while (step != null)
+			{
+				assertEquals(step.to(), base.style(), table.find(step.to()).style());
+				step = evolutions.next(step.to());
+			}
+		}
 	}
 
 	@Test
@@ -192,8 +215,8 @@ public class StarterRulesTest
 		List<StarterView> first = game.starterOffer();
 		List<StarterView> second = game.starterOffer();
 
-		assertEquals(3, first.size());
-		for (int i = 0; i < 3; i++)
+		assertEquals(5, first.size());
+		for (int i = 0; i < 5; i++)
 		{
 			CreatureView a = first.get(i).creature();
 			CreatureView b = second.get(i).creature();
@@ -202,7 +225,7 @@ public class StarterRulesTest
 
 		assertEquals("Grows into Lesser demon (20), Greater demon (40), Black demon (60)", first.get(0).growsInto());
 		PanelState state = game.snapshot();
-		assertEquals(3, state.starters().size());
+		assertEquals(5, state.starters().size());
 	}
 
 	@Test
@@ -228,7 +251,7 @@ public class StarterRulesTest
 	@Test
 	public void aSecondPickIsRefusedAndABadIndexToo()
 	{
-		assertFalse(game.pickStarter(3));
+		assertFalse(game.pickStarter(5));
 		assertFalse(game.pickStarter(-1));
 		assertTrue(game.pickStarter(0));
 		assertFalse(game.pickStarter(0));
@@ -247,6 +270,6 @@ public class StarterRulesTest
 		assertNull(game.resetBlocker());
 		game.reset();
 
-		assertEquals(3, game.starterOffer().size());
+		assertEquals(5, game.starterOffer().size());
 	}
 }

@@ -14,8 +14,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 /**
- * The rival's name, lines and teams, loaded from {@code rival.json}. There is a team for each of the three starters
- * and each of the five battles; a file that is missing a team, or names a creature that cannot be caught, loads as
+ * The rival's name, lines and teams, loaded from {@code rival.json}. There is a team for each starter and each of
+ * the five battles; a file that is missing a team, or names a creature that cannot be caught, loads as
  * no rival at all.
  */
 final class RivalTable

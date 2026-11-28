@@ -298,7 +298,9 @@ public class PartyRenderSmokeTest
 		StringBuilder problems = new StringBuilder();
 		List<StarterView> offer = Arrays.asList(
 			new StarterView(variety(0), "Grows into Lesser demon (20), Greater demon (40)"),
-			new StarterView(variety(1), "Does not evolve"), new StarterView(variety(2), "Grows into Hobgoblin (20)"));
+			new StarterView(variety(1), "Does not evolve"), new StarterView(variety(2), "Grows into Hobgoblin (20)"),
+			new StarterView(variety(3), "Grows into Giant bat (12), Dire bat (40)"),
+			new StarterView(variety(4), "Grows into Big frog (10), Giant frog (40)"));
 		for (WindowTheme theme : WindowTheme.values())
 			for (int[] canvas : CANVASES)
 				for (double fraction : FRACTIONS)
@@ -313,6 +315,9 @@ public class PartyRenderSmokeTest
 						String where = theme + " " + rig.width + "x" + rig.height + " starters " + starters;
 						assertFalse(where, rig.drawn.isEmpty());
 						problems.append(problems(rig, where));
+						if (starters)
+							assertEquals(where, 4, rig.drawn.stream().filter(d -> d.text.startsWith("Grows into"))
+								.count());
 					}
 
 		assertEquals(problems.toString(), "", problems.toString());
