@@ -81,8 +81,11 @@ final class StoragePageFlow
 			return false;
 		}
 
-		/** @return the text kept from a Rename box the window closed on, or an empty text */
-		String takeDraft();
+		/**
+		 * @param subject the creature being renamed, see {@link CreatureView#identity()}
+		 * @return the text kept from a Rename box the window closed on for that creature, or an empty text
+		 */
+		String takeDraft(String subject);
 
 		/** @return the stored creatures as the window shows them now */
 		List<CreatureView> storage();
@@ -168,7 +171,7 @@ final class StoragePageFlow
 		boolean took = page.released(x, y);
 		int[] drop = page.takeMove();
 		if (drop != null)
-			arrange(drop[0], drop[1]);
+			arrange(drop[0], drop[1], page.movedView());
 
 		return took;
 	}
@@ -176,18 +179,23 @@ final class StoragePageFlow
 	private void putDown(int place)
 	{
 		int from = page.carrying();
+		CreatureView carried = page.carried();
 		page.stopCarrying();
 		if (from != place)
-			arrange(from, place);
+			arrange(from, place, carried);
 	}
 
-	private void arrange(int from, int onto)
+	/**
+	 * Asks for a creature to be moved. The pick names the creature as it was when it was picked up, so the game
+	 * refuses when another one has slid into its place since.
+	 */
+	private void arrange(int from, int onto, CreatureView taken)
 	{
 		List<CreatureView> storage = host.storage();
-		if (from < 0 || from >= storage.size())
+		if (from < 0 || taken == null)
 			return;
 
-		TradePick dragged = pick(from, storage.get(from));
+		TradePick dragged = pick(from, taken);
 		TradePick target = onto < 0 || onto >= storage.size() ? null : pick(onto, storage.get(onto));
 		actions.arrangeStorage(dragged, target);
 	}
@@ -292,8 +300,8 @@ final class StoragePageFlow
 		List<ContextMenu.Item> items = new ArrayList<>(ContextMenuRules.stored(facts(view), commands(place, view)));
 		if (page.arrangeAllowed())
 		{
-			items.add(ContextMenu.Item.of(MOVE_WITHIN, () -> page.carry(place)));
-			items.add(ContextMenu.Item.of(MOVE_TO_END, () -> arrange(place, -1)));
+			items.add(ContextMenu.Item.of(MOVE_WITHIN, () -> page.carry(place, view)));
+			items.add(ContextMenu.Item.of(MOVE_TO_END, () -> arrange(place, -1, view)));
 		}
 
 		host.menu(items, x, y, keyboard);
@@ -425,7 +433,8 @@ final class StoragePageFlow
 	private void rename(int place, CreatureView view)
 	{
 		TextBox box = new TextBox(Nickname.MAX_LENGTH, WindowPages::renameClean, TextBox.system());
-		String draft = host.takeDraft();
+		box.subject(view.identity());
+		String draft = host.takeDraft(view.identity());
 		box.setText(draft.isEmpty() ? view.nickname() == null ? "" : view.nickname() : draft);
 		box.placeholder(view.name());
 		openRename(box, place, view);

@@ -387,6 +387,24 @@ public class WindowPagesTest
 	}
 
 	@Test
+	public void aDraftTypedForOneCreatureDoesNotFillAnothersRenameBox()
+	{
+		TextBox box = new TextBox();
+		box.subject("first");
+		open(3, true);
+		rig.shell.openModal(new Modal("Rename", "", Arrays.asList("Cancel", "Save"), 1, choice ->
+		{
+		}, () ->
+		{
+		}).withField(box, 1), box, rig.now);
+		type("Abc");
+		rig.shell.close(rig.now, ShellMotion.Phase.COMBAT_CLOSE);
+
+		assertEquals("", rig.shell.takeDraft("second"));
+		assertEquals("another creature's box drops the draft", "", rig.shell.takeDraft("first"));
+	}
+
+	@Test
 	public void hotkeysDoNotFireWhileTypingInTheRenameBox()
 	{
 		open(3, true);

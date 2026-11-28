@@ -234,6 +234,16 @@ final class CreatureView
 	}
 
 	/**
+	 * Names this creature among the others for as long as it is owned, through XP, level, nickname and evolution.
+	 *
+	 * @return a key made of when it was caught and what it rolled
+	 */
+	String identity()
+	{
+		return caughtAtMs + "/" + rolls.hashCode();
+	}
+
+	/**
 	 * Attaches the creature's real stat numbers, which the Summary shows beside each bar.
 	 *
 	 * @param health its health when fully rested

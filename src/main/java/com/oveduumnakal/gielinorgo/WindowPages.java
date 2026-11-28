@@ -1334,9 +1334,9 @@ final class WindowPages implements WindowShell.PageActions
 		}
 
 		@Override
-		public String takeDraft()
+		public String takeDraft(String subject)
 		{
-			return shell.takeDraft();
+			return shell.takeDraft(subject);
 		}
 
 		@Override
@@ -1395,7 +1395,8 @@ final class WindowPages implements WindowShell.PageActions
 		public void rename()
 		{
 			TextBox box = new TextBox(Nickname.MAX_LENGTH, WindowPages::renameClean, TextBox.system());
-			String draft = shell.takeDraft();
+			box.subject(view.identity());
+			String draft = shell.takeDraft(view.identity());
 			box.setText(draft.isEmpty() ? view.nickname() == null ? "" : view.nickname() : draft);
 			box.placeholder(view.name());
 			openRename(box);

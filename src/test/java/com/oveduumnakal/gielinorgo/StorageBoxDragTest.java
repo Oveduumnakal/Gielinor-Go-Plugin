@@ -375,4 +375,22 @@ public class StorageBoxDragTest
 		assertEquals(-1, rig.pages.storagePage().carrying());
 		assertEquals(Arrays.asList(), rig.calls);
 	}
+
+	@Test
+	public void aCreatureThatSlidIntoTheCarriedPlaceIsNotTheOnePickedUp()
+	{
+		List<CreatureView> storage = stored(20);
+		PartyRig rig = box(storage, StorageMode.BOX);
+		menuItem(rig, StoragePage.rowId(2), CARRY_ITEM);
+		List<CreatureView> shifted = new ArrayList<>(storage);
+		shifted.remove(0);
+		PanelState after = state(shifted);
+		rig.publish(after, true);
+		rig.paint();
+
+		rig.click(StoragePage.rowId(5));
+
+		assertFalse("the game refuses the pick", rig.picks.get(0).matches(after));
+		assertTrue(rig.picks.get(0).matches(state(storage)));
+	}
 }

@@ -53,6 +53,7 @@ final class TextBox
 	private int scrollX;
 	private boolean selecting;
 	private String placeholder = "";
+	private String subject = "";
 	private Consumer<String> onSubmit = s ->
 	{
 	};
@@ -95,6 +96,22 @@ final class TextBox
 		this.maxLength = maxLength;
 		this.cleaner = cleaner;
 		this.clipboard = clipboard;
+	}
+
+	/**
+	 * Records what the typed text is about, so a draft of it is only given back for the same thing.
+	 *
+	 * @param key names the thing, such as {@link CreatureView#identity()}
+	 */
+	void subject(String key)
+	{
+		subject = key;
+	}
+
+	/** @return what the typed text is about, empty when never set */
+	String subject()
+	{
+		return subject;
 	}
 
 	/** @return the system clipboard, which does nothing when it cannot be reached, as in a headless run */

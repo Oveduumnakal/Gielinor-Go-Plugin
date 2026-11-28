@@ -73,6 +73,7 @@ final class WindowShell
 	private ChangelogPage changelog;
 	private TextBox field;
 	private String draft = "";
+	private String draftSubject = "";
 	private int seenDoneTasks;
 
 	/** What the shell asks of the plugin: the settings it reads and the things its footer buttons do. */
@@ -448,11 +449,17 @@ final class WindowShell
 		return draft;
 	}
 
-	/** @return the draft, and forgets it so the next open starts clean */
-	String takeDraft()
+	/**
+	 * Takes the draft for a new text box, and forgets it so the next one starts clean.
+	 *
+	 * @param subject what the new box is about, see {@link TextBox#subject()}
+	 * @return the draft when it was typed about the same thing, else an empty text
+	 */
+	String takeDraft(String subject)
 	{
-		String kept = draft;
+		String kept = draftSubject.equals(subject) ? draft : "";
 		draft = "";
+		draftSubject = "";
 		return kept;
 	}
 
@@ -515,6 +522,7 @@ final class WindowShell
 		if (modalOpen())
 		{
 			draft = field == null ? "" : field.text();
+			draftSubject = field == null ? "" : field.subject();
 			modal.close();
 		}
 
