@@ -66,6 +66,7 @@ final class WindowShell
 	private WindowLayout layout;
 	private WindowStyle style;
 	private String pressedId;
+	private String lockedId;
 	private WindowLayout.ResizeZone resizing = WindowLayout.ResizeZone.NONE;
 	private String shakeId = "";
 	private long shakeMs;
@@ -701,19 +702,24 @@ final class WindowShell
 		if (!open)
 			return;
 
-		tooltip.clear();
 		if (modalOpen())
 		{
+			tooltip.clear();
 			modal.onMouseMoved(x, y);
 			return;
 		}
 
 		if (menu.onMouseMoved(x, y))
+		{
+			tooltip.clear();
 			return;
+		}
 
 		Hit hit = hitAt(x, y);
 		focus.hover(hit);
-		if (hit != null)
+		if (hit == null)
+			tooltip.clear();
+		else
 			tooltip.hover(hit.id(), hit.tip(), x, y, nowMs);
 	}
 
@@ -748,8 +754,12 @@ final class WindowShell
 
 		focus.focus(true);
 		tooltip.clear();
+		lockedId = null;
 		if (modalOpen())
 		{
+			if (field != null && !field.focused())
+				field.focus(true, nowMs);
+
 			modal.onMousePressed(x, y, button, modifiers, nowMs);
 			return;
 		}
@@ -777,6 +787,7 @@ final class WindowShell
 
 		Hit hit = hitAt(x, y);
 		pressedId = hit != null && hit.enabled() ? hit.id() : null;
+		lockedId = hit != null && !hit.enabled() ? hit.id() : null;
 	}
 
 	/** Alt and a right click on the window asks for it to go back to its normal size and place. */
@@ -797,7 +808,9 @@ final class WindowShell
 	void onReleased(int x, int y, int button, long nowMs)
 	{
 		String down = pressedId;
+		String locked = lockedId;
 		pressedId = null;
+		lockedId = null;
 		if (resizing != WindowLayout.ResizeZone.NONE)
 		{
 			resizing = WindowLayout.ResizeZone.NONE;
@@ -822,7 +835,9 @@ final class WindowShell
 
 		if (!hit.enabled())
 		{
-			lockedClick(hit, nowMs);
+			if (hit.id().equals(locked))
+				lockedClick(hit, nowMs);
+
 			return;
 		}
 

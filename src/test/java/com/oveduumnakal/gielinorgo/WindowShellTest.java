@@ -252,6 +252,31 @@ public class WindowShellTest
 	}
 
 	@Test
+	public void closingAMenuOverTheGreyedStorageTabDoesNotShakeIt()
+	{
+		openPainted(false);
+		shell.openMenu(List.of(ContextMenu.Item.of("Summary", () -> calls.add("summary"))), 40, 40, true, now);
+		paint();
+
+		click("tab:STORAGE");
+
+		assertEquals(List.of(), calls);
+	}
+
+	@Test
+	public void aDialogsTextBoxTakesTheKeysAgainAfterAPressOnTheDialog()
+	{
+		openPainted(true);
+		TextBox box = new TextBox();
+		shell.openModal(renameModal(box), box, now);
+		shell.focusLost(now);
+
+		shell.onPressed(3, 3, MouseEvent.BUTTON1, 0, now);
+
+		assertEquals(WindowKeyRules.KeyMode.FIELD, shell.keyMode());
+	}
+
+	@Test
 	public void storageOpensAgainOnceTheTeamMayBeChanged()
 	{
 		openPainted(false);
