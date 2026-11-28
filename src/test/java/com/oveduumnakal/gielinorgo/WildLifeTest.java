@@ -36,6 +36,18 @@ public class WildLifeTest
 	}
 
 	@Test
+	public void leavingWhileFadingInFadesOutFromThereInsteadOfFlashingSolid()
+	{
+		WildLife life = born();
+
+		life.update(WildLife.APPEAR_MS / 2, 3, false);
+
+		assertEquals(WildLife.State.LEAVING, life.state());
+		assertEquals(0.5, life.opacity(WildLife.APPEAR_MS / 2), 0.0001);
+		assertEquals(0.25, life.opacity(WildLife.APPEAR_MS / 2 + WildLife.FADE_MS / 2), 0.0001);
+	}
+
+	@Test
 	public void aWanderIsDueAfterARestAndTakesItBackToIdle()
 	{
 		WildLife life = born();
