@@ -383,7 +383,8 @@ public class BattleDirectorTest
 		ticks(BattleDirector.TEXT_PAUSE);
 
 		assertEquals(1, game.data().itemCount(ItemType.SMALL_SALVE));
-		assertEquals("the lead did not attack", 1.0, director.session().state().foe().hpFraction(), 0.0);
+		BattleState state = director.session().state();
+		assertEquals("the lead did not attack", 1.0, state.foe().hpFraction(), 0.0);
 		ticks(BattleDirector.TEXT_PAUSE);
 		assertEquals(1, game.data().itemCount(ItemType.SMALL_SALVE));
 	}
