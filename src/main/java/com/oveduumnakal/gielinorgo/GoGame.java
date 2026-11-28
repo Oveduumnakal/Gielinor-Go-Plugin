@@ -972,6 +972,7 @@ final class GoGame
 		for (Champion.Member member : foe.team())
 			theirs.add(foeOf(species.find(member.species()), member.level()));
 
+		boolean leadFirst = fighters.get(0) == followerCreature();
 		TeamBattleResult fought = BattleSim.teamFight(mine, theirs, random);
 		for (int i = 0; i < fighters.size(); i++)
 			writeBack(fighters.get(i), mine.get(i), now);
@@ -984,7 +985,6 @@ final class GoGame
 		if (fought.won())
 			payChampionWin(foe, again);
 
-		boolean leadFirst = fighters.get(0) == followerCreature();
 		promoteLiving();
 		return new TeamBattleResult(fought.won(), lines, fought.duels()).withLeadFirst(leadFirst);
 	}
@@ -3470,6 +3470,7 @@ final class GoGame
 		int number = run.stage() + 1;
 		String opponent = run.opponent();
 		Champion foe = elite.stages().get(run.stage());
+		boolean leadFirst = fighters.get(0) == followerCreature();
 		TeamBattleResult fought = run.fight(mine, random);
 		for (int i = 0; i < fighters.size(); i++)
 			writeBack(fighters.get(i), mine.get(i), now);
@@ -3498,7 +3499,6 @@ final class GoGame
 			run = null;
 		}
 
-		boolean leadFirst = fighters.get(0) == followerCreature();
 		promoteLiving();
 		return new TeamBattleResult(fought.won(), lines, fought.duels()).withLeadFirst(leadFirst);
 	}
