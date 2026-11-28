@@ -204,8 +204,11 @@ public class StorageBoxDragTest
 		}
 
 		drag(rig, rows.get(0), rows.get(1));
+		rig.drawn.clear();
+		rig.paint();
 
 		assertTrue(rig.calls.toString(), rig.calls.isEmpty());
+		assertTrue("the refusal shows in place of the chips", said(rig, StoragePage.REFUSE_SORT));
 	}
 
 	@Test
