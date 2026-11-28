@@ -78,6 +78,7 @@ final class WildLife
 	private long stayLeftMs = STAY_MS;
 	private long nextWanderMs;
 	private long leaveMs;
+	private double leaveFrom = 1.0;
 	private boolean beaten;
 
 	/**
@@ -133,6 +134,7 @@ final class WildLife
 
 	private void startLeaving(long nowMs)
 	{
+		leaveFrom = opacity(nowMs);
 		state = State.LEAVING;
 		leaveMs = nowMs;
 	}
@@ -159,7 +161,7 @@ final class WildLife
 	 * Tells how solid the body is drawn.
 	 *
 	 * @param nowMs the clock now, in milliseconds
-	 * @return 0 to 1: rising while it appears, falling while it leaves, else 1; 0 once gone
+	 * @return 0 to 1: rising while it appears, falling from what it was while it leaves, else 1; 0 once gone
 	 */
 	double opacity(long nowMs)
 	{
@@ -167,7 +169,7 @@ final class WildLife
 			return 0.0;
 
 		if (state == State.LEAVING)
-			return clamp(1.0 - (nowMs - leaveMs) / (double) FADE_MS);
+			return leaveFrom * clamp(1.0 - (nowMs - leaveMs) / (double) FADE_MS);
 
 		if (state == State.APPEARING)
 			return clamp((nowMs - bornMs) / (double) APPEAR_MS);
