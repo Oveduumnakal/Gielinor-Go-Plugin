@@ -142,6 +142,24 @@ public class EliteSteeredTest
 	}
 
 	@Test
+	public void leavingAtThePickAReplacementPromptStillEndsTheRun()
+	{
+		SpeciesTable species = new SpeciesTable(Arrays.asList(new Species("Brute", 200, CombatType.STAB),
+			new Species("Titan", 400, CombatType.STAB)));
+		game.elite(EliteTable.load(new Gson(), new StringReader(json("Titan", 99)), species));
+		game.data().team.add(new Creature("brute", 60, now));
+		lead().hpFraction = 0.02;
+		BattleSession battle = game.eliteSteered();
+		while (!battle.state().needsSwitch())
+			assertNotNull(game.act(battle, BattleChoice.attack()));
+
+		assertNotNull(game.forfeit(battle));
+
+		assertTrue(battle.over());
+		assertFalse(game.eliteOpen());
+	}
+
+	@Test
 	public void leavingTheBattleCountsAsALossAndSaysSo()
 	{
 		BattleSession battle = game.eliteSteered();

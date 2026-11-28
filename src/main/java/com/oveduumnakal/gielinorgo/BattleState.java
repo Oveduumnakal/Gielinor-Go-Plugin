@@ -260,7 +260,7 @@ final class BattleState
 	/**
 	 * Plays one turn.
 	 *
-	 * @param choice what the player does; after a faint only a switch is allowed
+	 * @param choice what the player does; after a faint only a switch or {@link BattleChoice#leave()} is allowed
 	 * @return what happened and where the battle stands
 	 * @throws IllegalStateException when the battle is over
 	 * @throws IllegalArgumentException when the choice cannot be made now
@@ -270,7 +270,7 @@ final class BattleState
 		if (over != null)
 			throw new IllegalStateException("The battle is over: " + over);
 
-		if (needsSwitch && choice.kind() != BattleChoice.Kind.SWITCH)
+		if (needsSwitch && choice.kind() != BattleChoice.Kind.SWITCH && !choice.sure())
 			throw new IllegalArgumentException("A creature must be picked first");
 
 		Turn turn = new Turn();
