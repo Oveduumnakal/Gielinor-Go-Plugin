@@ -243,7 +243,8 @@ public interface GielinorGoConfig extends Config
 		description = "A battle with a wild creature or a City Champion waits for you each turn: Attack, Switch,"
 			+ " Catch or Run.\nChoose with the buttons on the game screen, or with the hotkeys below.\nWith no choice"
 			+ " in time, your creature attacks by itself.\nOff means a battle is one click and plays itself, with your"
-			+ " lead alone.\nA friend battle is played turn by turn only when both players have this on.",
+			+ " next creature stepping in when one faints.\nA friend battle is played turn by turn only when both"
+			+ " players have this on.",
 		position = 11
 	)
 	default boolean chooseBattleActions()
