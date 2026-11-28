@@ -120,7 +120,7 @@ public class RivalGameTest
 		assertEquals(RivalView.Mode.READY, view.mode());
 		assertEquals(1, view.battle());
 		assertEquals(rivals.before(1), view.line());
-		assertEquals("Wizard 15, Goblin 14", view.team());
+		assertEquals("Frog 15, Thug 14", view.team());
 		assertTrue(view.reward().endsWith("a Rare egg"));
 	}
 
@@ -256,11 +256,11 @@ public class RivalGameTest
 		assertNull(game.data().rival);
 		game.snapshot();
 
-		assertEquals("wizard", game.data().rival.starter);
+		assertEquals("frog", game.data().rival.starter);
 		game.data().team.clear();
 		game.data().team.add(new Creature("banshee", 20, now));
 		game.snapshot();
-		assertEquals("wizard", game.data().rival.starter);
+		assertEquals("frog", game.data().rival.starter);
 	}
 
 	@Test

@@ -12,13 +12,17 @@ import java.util.Random;
 
 /**
  * Who a new player may start with, and when. A starter is offered while the player has no creature anywhere and has
- * never caught a species; the three below make the style triangle, one of each. No RuneLite types here, so every rule
- * is tested with a seeded random.
+ * never caught a species; there is one below for each combat style. No RuneLite types here, so every rule is tested
+ * with a seeded random.
  */
 final class StarterRules
 {
-	/** The species offered, by name: one Slash, one Ranged and one Magic. */
-	static final List<String> STARTERS = Collections.unmodifiableList(Arrays.asList("Imp", "Gnome Archer", "Wizard"));
+	/**
+	 * The species offered, by name: Slash, Ranged, Magic, Stab and Crush. A new starter goes at the end, so the seeded
+	 * rolls of the ones before it do not change.
+	 */
+	static final List<String> STARTERS =
+		Collections.unmodifiableList(Arrays.asList("Imp", "Gnome Archer", "Wizard", "Bat", "Frog"));
 
 	/** The level a starter joins at. */
 	static final int LEVEL = 5;
@@ -39,7 +43,7 @@ final class StarterRules
 	}
 
 	/**
-	 * Rolls the three starters like a catch: stat rolls and a temperament each, never gilded. They are not saved.
+	 * Rolls the starters like a catch: stat rolls and a temperament each, never gilded. They are not saved.
 	 *
 	 * @param random the source of every roll
 	 * @param nowMs the time to stamp them with

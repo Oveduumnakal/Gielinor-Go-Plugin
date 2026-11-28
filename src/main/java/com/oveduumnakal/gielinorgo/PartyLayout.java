@@ -29,7 +29,7 @@ final class PartyLayout
 	static final double ARROW_UNITS = 12;
 
 	/** The most starter cards the first-run page shows. */
-	static final int STARTERS = 3;
+	static final int STARTERS = 5;
 
 	/** The area of the rows, and of the starter cards and the empty message. */
 	final Rectangle main;

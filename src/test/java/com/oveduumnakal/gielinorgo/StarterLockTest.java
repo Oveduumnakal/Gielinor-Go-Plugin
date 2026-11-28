@@ -33,7 +33,8 @@ public class StarterLockTest
 	public void setUp()
 	{
 		SpeciesTable table = new SpeciesTable(Arrays.asList(GOBLIN, new Species("Imp", 7, CombatType.SLASH),
-			new Species("Gnome Archer", 5, CombatType.RANGED), new Species("Wizard", 9, CombatType.MAGIC)));
+			new Species("Gnome Archer", 5, CombatType.RANGED), new Species("Wizard", 9, CombatType.MAGIC),
+			new Species("Bat", 6, CombatType.STAB), new Species("Frog", 5, CombatType.CRUSH)));
 		game = new GoGame(table, new Random(11), () -> now, notice -> messages.add(notice.text()));
 		game.starterRandom(new Random(5));
 	}
@@ -145,7 +146,8 @@ public class StarterLockTest
 	public void tradesAreRefusedWhileLocked()
 	{
 		SpeciesTable table = new SpeciesTable(Arrays.asList(GOBLIN, new Species("Imp", 7, CombatType.SLASH),
-			new Species("Gnome Archer", 5, CombatType.RANGED), new Species("Wizard", 9, CombatType.MAGIC)));
+			new Species("Gnome Archer", 5, CombatType.RANGED), new Species("Wizard", 9, CombatType.MAGIC),
+			new Species("Bat", 6, CombatType.STAB), new Species("Frog", 5, CombatType.CRUSH)));
 		List<GielinorGoPartyMessage> fromLocked = new ArrayList<>();
 		List<GielinorGoPartyMessage> fromFriend = new ArrayList<>();
 		FriendTrades mine = new FriendTrades(table, game, new Random(1), () -> now, fromLocked::add,
